@@ -1,0 +1,121 @@
+{
+    "Logical Inventory": {},
+    "Physical Inventory": {},
+    "Log Directory": "/var/log/vmware/vcf/sddc-support/healthcheck-2022-03-29-14-37-21-84958",
+    "vrm_ip": "ldn-vcf01.ldn.cloudy.io",
+    "Number of IAAS Workflows": 1,
+    "Number of Servers": 8,
+    "Services": [
+        {
+            "NTP": {
+                "area": "SDDC : ldn-vcf01.ldn.cloudy.io",
+                "title": "NTP",
+                "state": "RUNNING",
+                "timestamp": "Tue Mar 29 14:37:25 2022",
+                "message": "NTP service is running successfully. Verified by running command systemctl status ntpd | grep Active:",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        },
+        {
+            "SOSREST": {
+                "area": "SDDC : ldn-vcf01.ldn.cloudy.io",
+                "title": "SOSREST",
+                "state": "RUNNING",
+                "timestamp": "Tue Mar 29 14:37:25 2022",
+                "message": "SOSREST service is running successfully. Verified by running command systemctl status sosrest | grep Active:",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        },
+        {
+            "POSTGRES": {
+                "area": "SDDC : ldn-vcf01.ldn.cloudy.io",
+                "title": "POSTGRES",
+                "state": "RUNNING",
+                "timestamp": "Tue Mar 29 14:37:25 2022",
+                "message": "POSTGRES service is running successfully. Verified by running command systemctl status postgres | grep Active:",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        },
+        {
+            "COMMON_SERVICES": {
+                "area": "SDDC : ldn-vcf01.ldn.cloudy.io",
+                "title": "COMMON_SERVICES",
+                "state": "RUNNING",
+                "timestamp": "Tue Mar 29 14:37:25 2022",
+                "message": "COMMON_SERVICES service is running successfully. Verified by running command systemctl status commonsvcs | grep Active:",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        },
+        {
+            "SDDC_MANAGER_UI": {
+                "area": "SDDC : ldn-vcf01.ldn.cloudy.io",
+                "title": "SDDC_MANAGER_UI",
+                "state": "RUNNING",
+                "timestamp": "Tue Mar 29 14:37:25 2022",
+                "message": "SDDC_MANAGER_UI service is running successfully. Verified by running command systemctl status sddc-manager-ui-app | grep Active:",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        },
+        {
+            "DOMAIN_MANAGER": {
+                "area": "SDDC : ldn-vcf01.ldn.cloudy.io",
+                "title": "DOMAIN_MANAGER",
+                "state": "RUNNING",
+                "timestamp": "Tue Mar 29 14:37:25 2022",
+                "message": "DOMAIN_MANAGER service is running successfully. Verified by running command systemctl status domainmanager | grep Active:",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        },
+        {
+            "OPERATIONS_MANAGER": {
+                "area": "SDDC : ldn-vcf01.ldn.cloudy.io",
+                "title": "OPERATIONS_MANAGER",
+                "state": "RUNNING",
+                "timestamp": "Tue Mar 29 14:37:25 2022",
+                "message": "OPERATIONS_MANAGER service is running successfully. Verified by running command systemctl status operationsmanager | grep Active:",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        },
+        {
+            "VIP-MANAGER-i18n": {
+                "area": "SDDC : ldn-vcf01.ldn.cloudy.io",
+                "title": "VIP-MANAGER-i18n",
+                "state": "RUNNING",
+                "timestamp": "Tue Mar 29 14:37:25 2022",
+                "message": "VIP-MANAGER-i18n service is running successfully. Verified by running command systemctl status vip-manager-i18n | grep Active:",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        },
+        {
+            "LCM": {
+                "area": "SDDC : ldn-vcf01.ldn.cloudy.io",
+                "title": "LCM",
+                "state": "RUNNING",
+                "timestamp": "Tue Mar 29 14:37:25 2022",
+                "message": "LCM service is running successfully. Verified by running command systemctl status lcm | grep Active:",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        },
+        {
+            "ldn-m01-vc01.ldn.cloudy.io": {
+                "area": "VCENTER : ldn-m01-vc01.ldn.cloudy.io",
+                "title": "applmgmt",
+                "state": "RUNNING",
+                "timestamp": "Tue Mar 29 14:37:26 2022",
+                "message": "ldn-m01-vc01.ldn.cloudy.io:green Good. All components in the appliance are healthy.",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        }
+    ],
+    "Status": "GREEN"
+}

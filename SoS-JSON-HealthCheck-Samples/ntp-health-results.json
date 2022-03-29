@@ -1,0 +1,185 @@
+{
+    "Logical Inventory": {},
+    "Physical Inventory": {},
+    "Log Directory": "/var/log/vmware/vcf/sddc-support/healthcheck-2022-03-29-14-57-34-86102",
+    "vrm_ip": "ldn-vcf01.ldn.cloudy.io",
+    "Number of IAAS Workflows": 1,
+    "Number of Servers": 8,
+    "NTP": {
+        "ldn01-m01-esx01.ldn.cloudy.io": {
+            "area": "ESXi : ldn01-m01-esx01.ldn.cloudy.io",
+            "title": "NTP Status",
+            "state": "FAILED",
+            "timestamp": "Tue Mar 29 15:00:29 2022",
+            "message": "ESXi NTP is NOT configured as expected.Actual NTP :['ntp.ldn.cloudy.io'], Valid NTP: ['172.16.11.4', 'mcw-dc01.cloudy.io']",
+            "status": "failed",
+            "alert": "YELLOW"
+        },
+        "ldn01-m01-esx02.ldn.cloudy.io": {
+            "area": "ESXi : ldn01-m01-esx02.ldn.cloudy.io",
+            "title": "NTP Status",
+            "state": "FAILED",
+            "timestamp": "Tue Mar 29 15:00:29 2022",
+            "message": "ESXi NTP is NOT configured as expected.Actual NTP :['ntp.ldn.cloudy.io'], Valid NTP: ['172.16.11.4', 'mcw-dc01.cloudy.io']",
+            "status": "failed",
+            "alert": "YELLOW"
+        },
+        "ldn01-w01-esx04.ldn.cloudy.io": {
+            "area": "ESXi : ldn01-w01-esx04.ldn.cloudy.io",
+            "title": "NTP Status",
+            "state": "FAILED",
+            "timestamp": "Tue Mar 29 15:00:29 2022",
+            "message": "ESXi NTP is NOT configured as expected.Actual NTP :['ntp.ldn.cloudy.io'], Valid NTP: ['172.16.11.4', 'mcw-dc01.cloudy.io']",
+            "status": "failed",
+            "alert": "YELLOW"
+        },
+        "ldn01-w01-esx01.ldn.cloudy.io": {
+            "area": "ESXi : ldn01-w01-esx01.ldn.cloudy.io",
+            "title": "NTP Status",
+            "state": "FAILED",
+            "timestamp": "Tue Mar 29 15:00:29 2022",
+            "message": "ESXi NTP is NOT configured as expected.Actual NTP :['ntp.ldn.cloudy.io'], Valid NTP: ['172.16.11.4', 'mcw-dc01.cloudy.io']",
+            "status": "failed",
+            "alert": "YELLOW"
+        },
+        "ldn01-m01-esx03.ldn.cloudy.io": {
+            "area": "ESXi : ldn01-m01-esx03.ldn.cloudy.io",
+            "title": "NTP Status",
+            "state": "FAILED",
+            "timestamp": "Tue Mar 29 15:00:29 2022",
+            "message": "ESXi NTP is NOT configured as expected.Actual NTP :['ntp.ldn.cloudy.io'], Valid NTP: ['172.16.11.4', 'mcw-dc01.cloudy.io']",
+            "status": "failed",
+            "alert": "YELLOW"
+        },
+        "ldn01-m01-esx04.ldn.cloudy.io": {
+            "area": "ESXi : ldn01-m01-esx04.ldn.cloudy.io",
+            "title": "NTP Status",
+            "state": "FAILED",
+            "timestamp": "Tue Mar 29 15:00:29 2022",
+            "message": "ESXi NTP is NOT configured as expected.Actual NTP :['ntp.ldn.cloudy.io'], Valid NTP: ['172.16.11.4', 'mcw-dc01.cloudy.io']",
+            "status": "failed",
+            "alert": "YELLOW"
+        },
+        "ldn01-w01-esx03.ldn.cloudy.io": {
+            "area": "ESXi : ldn01-w01-esx03.ldn.cloudy.io",
+            "title": "NTP Status",
+            "state": "FAILED",
+            "timestamp": "Tue Mar 29 15:00:30 2022",
+            "message": "ESXi NTP is NOT configured as expected.Actual NTP :['ntp.ldn.cloudy.io'], Valid NTP: ['172.16.11.4', 'mcw-dc01.cloudy.io']",
+            "status": "failed",
+            "alert": "YELLOW"
+        },
+        "ldn01-w01-esx02.ldn.cloudy.io": {
+            "area": "ESXi : ldn01-w01-esx02.ldn.cloudy.io",
+            "title": "NTP Status",
+            "state": "FAILED",
+            "timestamp": "Tue Mar 29 15:00:30 2022",
+            "message": "ESXi NTP is NOT configured as expected.Actual NTP :['ntp.ldn.cloudy.io'], Valid NTP: ['172.16.11.4', 'mcw-dc01.cloudy.io']",
+            "status": "failed",
+            "alert": "YELLOW"
+        },
+        "ESXi HW Time": {},
+        "ESXi Time": {
+            "ldn01-m01-esx02.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-m01-esx02.ldn.cloudy.io",
+                "title": "ESX Time",
+                "state": "PASSED",
+                "timestamp": "Tue Mar 29 15:00:29 2022",
+                "message": "ESX date within 5 minutes of vrm",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-m01-esx01.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-m01-esx01.ldn.cloudy.io",
+                "title": "ESX Time",
+                "state": "PASSED",
+                "timestamp": "Tue Mar 29 15:00:29 2022",
+                "message": "ESX date within 5 minutes of vrm",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-w01-esx01.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-w01-esx01.ldn.cloudy.io",
+                "title": "ESX Time",
+                "state": "PASSED",
+                "timestamp": "Tue Mar 29 15:00:29 2022",
+                "message": "ESX date within 5 minutes of vrm",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-m01-esx03.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-m01-esx03.ldn.cloudy.io",
+                "title": "ESX Time",
+                "state": "PASSED",
+                "timestamp": "Tue Mar 29 15:00:29 2022",
+                "message": "ESX date within 5 minutes of vrm",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-m01-esx04.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-m01-esx04.ldn.cloudy.io",
+                "title": "ESX Time",
+                "state": "PASSED",
+                "timestamp": "Tue Mar 29 15:00:29 2022",
+                "message": "ESX date within 5 minutes of vrm",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-w01-esx04.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-w01-esx04.ldn.cloudy.io",
+                "title": "ESX Time",
+                "state": "PASSED",
+                "timestamp": "Tue Mar 29 15:00:30 2022",
+                "message": "ESX date within 5 minutes of vrm",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-w01-esx02.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-w01-esx02.ldn.cloudy.io",
+                "title": "ESX Time",
+                "state": "PASSED",
+                "timestamp": "Tue Mar 29 15:00:30 2022",
+                "message": "ESX date within 5 minutes of vrm",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-w01-esx03.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-w01-esx03.ldn.cloudy.io",
+                "title": "ESX Time",
+                "state": "PASSED",
+                "timestamp": "Tue Mar 29 15:00:30 2022",
+                "message": "ESX date within 5 minutes of vrm",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        },
+        "ldn-m01-vc01.ldn.cloudy.io": {
+            "area": "vCenter : ldn-m01-vc01.ldn.cloudy.io",
+            "title": "NTP Status",
+            "state": "FAILED",
+            "timestamp": "Tue Mar 29 14:59:17 2022",
+            "message": "VC NTP is not configured as expected.Configured:['ntp.ldn.cloudy.io'], Expected: ['172.16.11.4', 'mcw-dc01.cloudy.io']",
+            "status": "failed",
+            "alert": "YELLOW"
+        },
+        "ldn-w01-vc01.ldn.cloudy.io": {
+            "area": "VC : ldn-w01-vc01.ldn.cloudy.io",
+            "title": "NTP Status",
+            "state": "Failed to get details",
+            "timestamp": "Tue Mar 29 14:59:22 2022",
+            "message": "Failed to get details",
+            "status": "failed",
+            "alert": "RED"
+        },
+        "ldn-vcf01.ldn.cloudy.io": {
+            "area": "SDDC-Manager: ldn-vcf01.ldn.cloudy.io",
+            "title": "NTP Status",
+            "state": "PASSED",
+            "timestamp": "Tue Mar 29 14:59:17 2022",
+            "message": "SDDC-Manager NTP is configured as expected",
+            "status": "passed",
+            "alert": "GREEN"
+        }
+    },
+    "Status": "RED"
+}

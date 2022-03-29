@@ -1,0 +1,158 @@
+{
+    "Logical Inventory": {},
+    "Physical Inventory": {},
+    "Log Directory": "/var/log/vmware/vcf/sddc-support/healthcheck-2022-03-29-15-09-20-86764",
+    "vrm_ip": "ldn-vcf01.ldn.cloudy.io",
+    "Number of IAAS Workflows": 1,
+    "Number of Servers": 8,
+    "General": {
+        "ESXi Core Dump Status": {
+            "ldn01-m01-esx03.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-m01-esx03.ldn.cloudy.io",
+                "title": "Check for error dumps in ESXi",
+                "state": "GREEN",
+                "timestamp": "Tue Mar 29 15:09:37 2022",
+                "message": "No core dumps found for ESXi : ldn01-m01-esx03.ldn.cloudy.io",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-m01-esx01.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-m01-esx01.ldn.cloudy.io",
+                "title": "Check for error dumps in ESXi",
+                "state": "GREEN",
+                "timestamp": "Tue Mar 29 15:09:37 2022",
+                "message": "No core dumps found for ESXi : ldn01-m01-esx01.ldn.cloudy.io",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-m01-esx02.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-m01-esx02.ldn.cloudy.io",
+                "title": "Check for error dumps in ESXi",
+                "state": "GREEN",
+                "timestamp": "Tue Mar 29 15:09:37 2022",
+                "message": "No core dumps found for ESXi : ldn01-m01-esx02.ldn.cloudy.io",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-w01-esx04.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-w01-esx04.ldn.cloudy.io",
+                "title": "Check for error dumps in ESXi",
+                "state": "GREEN",
+                "timestamp": "Tue Mar 29 15:10:37 2022",
+                "message": "No core dumps found for ESXi : ldn01-w01-esx04.ldn.cloudy.io",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-w01-esx03.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-w01-esx03.ldn.cloudy.io",
+                "title": "Check for error dumps in ESXi",
+                "state": "GREEN",
+                "timestamp": "Tue Mar 29 15:10:37 2022",
+                "message": "No core dumps found for ESXi : ldn01-w01-esx03.ldn.cloudy.io",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-w01-esx01.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-w01-esx01.ldn.cloudy.io",
+                "title": "Check for error dumps in ESXi",
+                "state": "GREEN",
+                "timestamp": "Tue Mar 29 15:10:37 2022",
+                "message": "No core dumps found for ESXi : ldn01-w01-esx01.ldn.cloudy.io",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-m01-esx04.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-m01-esx04.ldn.cloudy.io",
+                "title": "Check for error dumps in ESXi",
+                "state": "GREEN",
+                "timestamp": "Tue Mar 29 15:10:37 2022",
+                "message": "No core dumps found for ESXi : ldn01-m01-esx04.ldn.cloudy.io",
+                "status": "passed",
+                "alert": "GREEN"
+            },
+            "ldn01-w01-esx02.ldn.cloudy.io": {
+                "area": "ESXi : ldn01-w01-esx02.ldn.cloudy.io",
+                "title": "Check for error dumps in ESXi",
+                "state": "GREEN",
+                "timestamp": "Tue Mar 29 15:11:37 2022",
+                "message": "No core dumps found for ESXi : ldn01-w01-esx02.ldn.cloudy.io",
+                "status": "passed",
+                "alert": "GREEN"
+            }
+        },
+        "NSX Health": {
+            "NSX Manager": {
+                "NSX: ldn-w01-nsx01.ldn.cloudy.io": {
+                    "area": "NSX: ldn-w01-nsx01.ldn.cloudy.io",
+                    "title": "NSX Manager Status",
+                    "state": "UNREACHABLE",
+                    "timestamp": "Tue Mar 29 15:09:24 2022",
+                    "message": "NSX Manager 172.16.11.75 is NOT reachable.",
+                    "status": "failed",
+                    "alert": "RED"
+                },
+                "ldn-m01-nsx01.ldn.cloudy.io": {
+                    "area": "ldn-m01-nsx01.ldn.cloudy.io",
+                    "title": "NSX Manager Status",
+                    "state": "GREEN",
+                    "timestamp": "Tue Mar 29 15:09:32 2022",
+                    "message": "NSX Manager ldn-m01-nsx01.ldn.cloudy.io is running successfully.",
+                    "status": "passed",
+                    "alert": "GREEN"
+                }
+            },
+            "NSX Edge": {
+                "ldn-m01-nsx01.ldn.cloudy.io": {
+                    "94205ddd-5347-4a53-b922-200565d0c57a": {
+                        "area": "ldn-m01-nsx01.ldn.cloudy.io",
+                        "title": "NSX Edge Cluster Health Status\nCluster-Id(94205ddd-5347-4a53-b922-200565d0c57a)",
+                        "state": "UP",
+                        "timestamp": "Tue Mar 29 15:09:35 2022",
+                        "message": "Cluster-Id(94205ddd-5347-4a53-b922-200565d0c57a) status->UP, TransportNode-Id(6b3422b6-2bec-4c13-8bdb-1193717ff5bb) Status->UP; TransportNode-Id(c0c6b606-73ab-4952-9215-25dd88fdeb7b) Status->UP; ",
+                        "status": "passed",
+                        "alert": "GREEN"
+                    }
+                }
+            },
+            "NSX Controllers": {
+                "ldn-m01-nsx01.ldn.cloudy.io": {
+                    "Cluster Status": {
+                        "area": "ldn-m01-nsx01.ldn.cloudy.io",
+                        "title": "Controller Cluster Health status",
+                        "state": "GREEN",
+                        "timestamp": "Tue Mar 29 15:09:34 2022",
+                        "message": "Controller Cluster Status is healthy",
+                        "status": "passed",
+                        "alert": "GREEN"
+                    }
+                }
+            },
+            "NSX Cluster Status": {
+                "ldn-m01-nsx01.ldn.cloudy.io": {
+                    "Management": {
+                        "area": "ldn-m01-nsx01.ldn.cloudy.io",
+                        "title": "Mgmt Cluster Health status",
+                        "state": "GREEN",
+                        "timestamp": "Tue Mar 29 15:09:34 2022",
+                        "message": "Management Cluster Status is healthy",
+                        "status": "passed",
+                        "alert": "GREEN"
+                    }
+                }
+            },
+            "NSX Host Prep Status": {},
+            "NSX Container Cluster Health Status": {
+                "ldn-m01-nsx01.ldn.cloudy.io": {
+                    "area": "ldn-m01-nsx01.ldn.cloudy.io",
+                    "title": "** Container Clusters are not available",
+                    "state": "DISABLED",
+                    "timestamp": "Tue Mar 29 15:09:35 2022",
+                    "message": "Container cluster info not found for ldn-m01-nsx01.ldn.cloudy.io",
+                    "status": "passed",
+                    "alert": "GREEN"
+                }
+            }
+        }
+    },
+    "Status": "RED"
+}

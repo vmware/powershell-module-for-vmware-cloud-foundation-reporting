@@ -1,0 +1,8 @@
+{
+    "Logical Inventory": {},
+    "Physical Inventory": {},
+    "Log Directory": "/var/log/vmware/vcf/sddc-support/healthcheck-2022-03-29-14-51-38-85820",
+    "vrm_ip": "ldn-vcf01.ldn.cloudy.io",
+    "Number of IAAS Workflows": 1,
+    "Number of Servers": 8
+}
