@@ -104,7 +104,9 @@ $reportTitle = "<h1>Health Check Report for SDDC Manager: $sddcManagerFqdn</h1>"
 
 # Check the Status of the Backup Account on the SDDC Manager Instance
 Write-LogMessage -Type INFO -Message "Check the Status of the Backup Account on SDDC Manager Appliance ($($sddcManagerFqdn.Split(".")[0]))"
-$backupUserHtml = Test-VCFLocalUser -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -localUser backup -html
+$backupUserHtml = Show-SddcManagerLocalUser -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -localUser backup -html
+
+$dnsHtml = Show-DnsHealth -json .\SoS-JSON-HealthCheck-Samples\dns-health-results.json -html
 
 # Generating the System Password Report from SDDC Manager 
 Write-LogMessage -Type INFO -Message "Generating the System Password Report from SDDC Manager ($sddcManagerFqdn)"
@@ -130,7 +132,7 @@ foreach ($workloadDomain in $allWorkloadDomain) {
 }
 
 # Combine all information gathered into a single HTML report
-$report = ConvertTo-HTML -Body "$reportTitle $backupUserHtml $systemPasswordHtml $datastoreTitle $allStorageCapacityHtml $coreDumpTitle $allEsxiCoreDumpHtml " -Title "SDDC Manager Health Check Report" -Head $reportFormat -PostContent "<p>Creation Date: $(Get-Date)<p>"
+$report = ConvertTo-HTML -Body "$reportTitle $backupUserHtml $dnsHtml $systemPasswordHtml $datastoreTitle $allStorageCapacityHtml $coreDumpTitle $allEsxiCoreDumpHtml " -Title "SDDC Manager Health Check Report" -Head $reportFormat -PostContent "<p>Creation Date: $(Get-Date)<p>"
 
 # Generate the report to an HTML file and then open it in the default browser
 Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"

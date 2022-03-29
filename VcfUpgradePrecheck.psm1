@@ -159,6 +159,66 @@ Function Show-SddcManagerLocalUser {
 }
 Export-ModuleMember -Function Show-SddcManagerLocalUser
 
+Function Show-DnsHealth {
+    <#
+        .SYNOPSIS
+        Check the status of a local account on SDDC Manager
+
+        .DESCRIPTION
+        The Show-DnsHealth cmdlets checks the status of the local user on the SDDC Manager appliance.
+
+        .EXAMPLE
+        Show-DnsHealth -json <file-name>
+        This example executes the command provided on the SDDC Manager appliance
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+
+    Try {
+
+        $targetContent = Get-Content $json | ConvertFrom-Json
+        $forwaredLookup = $targetContent.'DNS lookup Status'.'Forward lookup Status'
+        $forwardLookupObject = New-Object -TypeName psobject
+        $allForwardLookupObject = New-Object System.Collections.ArrayList
+        foreach ($elem in $forwaredLookup.PsObject.Properties.Value) {
+            $forwardLookupObject = New-Object -TypeName psobject
+            $forwardLookupObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $elem.area.Split(": ")[-1]
+            $forwardLookupObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $elem.status.ToUpper()
+            $forwardLookupObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $elem.alert
+            $forwardLookupObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $elem.message
+            $allForwardLookupObject += $forwardLookupObject
+        }
+
+        $reverseLookup = $targetContent.'DNS lookup Status'.'Reverse lookup Status'
+        $reverseLookupObject = New-Object -TypeName psobject
+        $allReverseLookupObject = New-Object System.Collections.ArrayList
+        foreach ($elem in $reverseLookup.PsObject.Properties.Value) {
+            $reverseLookupObject = New-Object -TypeName psobject
+            $reverseLookupObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $elem.area.Split(": ")[-1]
+            $reverseLookupObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $elem.status.ToUpper()
+            $reverseLookupObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $elem.alert
+            $reverseLookupObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $elem.message
+            $allReverseLookupObject += $reverseLookupObject
+        }
+
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            $allForwardLookupObject | Sort-Object Component | ConvertTo-Html -Fragment -PreContent "<h2>DNS Forward Lookup Status</h3>" -As Table
+            $allReverseLookupObject | Sort-Object Component | ConvertTo-Html -Fragment -PreContent "<h2>DNS Reverse Lookup Status</h3>" -As Table
+        }
+        else {
+            $allForwardLookupObject | Sort-Object Component 
+            $allReverseLookupObject | Sort-Object Component 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Show-DnsHealth
+
 Function Export-EsxiCoreDumpConfig {
     <#
 		.SYNOPSIS
