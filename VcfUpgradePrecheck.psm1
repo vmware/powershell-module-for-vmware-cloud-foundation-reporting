@@ -112,6 +112,53 @@ Function Export-SystemPassword {
 }
 Export-ModuleMember -Function Export-SystemPassword
 
+Function Show-SddcManagerLocalUser {
+        <#
+		.SYNOPSIS
+        Check the status of a local account on SDDC Manager
+
+        .DESCRIPTION
+        The Show-SddcManagerLocalUser cmdlets checks the status of the local user on the SDDC Manager appliance.
+
+        .EXAMPLE
+        Show-SddcManagerLocalUser -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -localUser backup
+        This example executes the command provided on the SDDC Manager appliance
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$localUser,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+    
+    Try {
+        $command = "chage -l " + $localuser
+        $output = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command
+        $formatOutput = ($output.ScriptOutput -split '\r?\n').Trim()
+        $formatOutput = $formatOutput -replace '(^\s+|\s+$)','' -replace '\s+',' '
+        $todaysDate = Get-Date -UFormat "%b %d, %Y"
+        $status = "GREEN" # To Do compare dates
+        $userReport = New-Object -TypeName psobject
+        $userReport | Add-Member -notepropertyname 'User' -notepropertyvalue $localUser
+        $userReport | Add-Member -notepropertyname 'Password Expires' -notepropertyvalue ($formatOutput[1] -Split (":"))[1].Trim()
+        $userReport | Add-Member -notepropertyname 'Account Expires' -notepropertyvalue ($formatOutput[3] -Split (":"))[1].Trim()
+        $userReport | Add-Member -notepropertyname 'Status' -notepropertyvalue $status
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            $userReport | ConvertTo-Html -Fragment -PreContent "<h2>SDDC Manager Local User Expiry</h3>" -As Table
+        }
+        else {
+            $userReport
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Show-SddcManagerLocalUser
+
 Function Export-EsxiCoreDumpConfig {
     <#
 		.SYNOPSIS
@@ -223,7 +270,6 @@ Function Export-StorageCapacity {
     }
 }
 Export-ModuleMember -Function Export-StorageCapacity
-
 
 Function Convert-TextToHtml {
     Param (
