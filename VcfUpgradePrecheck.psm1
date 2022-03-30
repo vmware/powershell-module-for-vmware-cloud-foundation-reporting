@@ -159,65 +159,352 @@ Function Show-SddcManagerLocalUser {
 }
 Export-ModuleMember -Function Show-SddcManagerLocalUser
 
-Function Show-DnsHealth {
+Function Publish-ServiceHealth {
     <#
         .SYNOPSIS
-        Check the status of a local account on SDDC Manager
+        Formats Service Health data from SoS output JSON
 
         .DESCRIPTION
-        The Show-DnsHealth cmdlets checks the status of the local user on the SDDC Manager appliance.
+        The Publish-ServiceHealth cmdlets formats the Service Health data from the SoS output JSON so that it can be consume
+        either as a standard powershell object or an HTML based object for reporting purposes. 
 
         .EXAMPLE
-        Show-DnsHealth -json <file-name>
-        This example executes the command provided on the SDDC Manager appliance
+        Publish-ServiceHealth -json <file-name>
+        This example uses the JSON file provided to extracts the Service Health data and formats as a powershell object
+
+        .EXAMPLE
+        Publish-ServiceHealth -json <file-name> -html
+        This example uses the JSON file provided to extracts the Service Health data and formats as an HTML object
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     Try {
-
-        $targetContent = Get-Content $json | ConvertFrom-Json
-        $forwaredLookup = $targetContent.'DNS lookup Status'.'Forward lookup Status'
-        $forwardLookupObject = New-Object -TypeName psobject
-        $allForwardLookupObject = New-Object System.Collections.ArrayList
-        foreach ($elem in $forwaredLookup.PsObject.Properties.Value) {
-            $forwardLookupObject = New-Object -TypeName psobject
-            $forwardLookupObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $elem.area.Split(": ")[-1]
-            $forwardLookupObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $elem.status.ToUpper()
-            $forwardLookupObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $elem.alert
-            $forwardLookupObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $elem.message
-            $allForwardLookupObject += $forwardLookupObject
-        }
-
-        $reverseLookup = $targetContent.'DNS lookup Status'.'Reverse lookup Status'
-        $reverseLookupObject = New-Object -TypeName psobject
-        $allReverseLookupObject = New-Object System.Collections.ArrayList
-        foreach ($elem in $reverseLookup.PsObject.Properties.Value) {
-            $reverseLookupObject = New-Object -TypeName psobject
-            $reverseLookupObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $elem.area.Split(": ")[-1]
-            $reverseLookupObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $elem.status.ToUpper()
-            $reverseLookupObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $elem.alert
-            $reverseLookupObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $elem.message
-            $allReverseLookupObject += $reverseLookupObject
-        }
-
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            $allForwardLookupObject | Sort-Object Component | ConvertTo-Html -Fragment -PreContent "<h2>DNS Forward Lookup Status</h3>" -As Table
-            $allReverseLookupObject | Sort-Object Component | ConvertTo-Html -Fragment -PreContent "<h2>DNS Reverse Lookup Status</h3>" -As Table
+        if (!(Test-Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
         }
         else {
-            $allForwardLookupObject | Sort-Object Component 
-            $allReverseLookupObject | Sort-Object Component 
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+        $serviceData = $targetContent.'Services'
+        $allServiceObject = New-Object System.Collections.ArrayList
+        foreach ($service in $serviceData) {
+            foreach ($element in $service.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
+                $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
+                $elementObject | Add-Member -notepropertyname 'Service Name' -notepropertyvalue $element.title.ToUpper()
+                $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+                $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+                $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+                if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                    if (($element.status -eq "FAILED")) {
+                        $allServiceObject += $elementObject
+                    }
+                }
+                else {
+                    $allServiceObject += $elementObject
+                }
+            }
+        }
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            $allServiceObject | Sort-Object Component, Resource, 'Service Name' | ConvertTo-Html -Fragment -PreContent "<h3>Service Health Status</h3>" -As Table
+        }
+        else {
+            $allServiceObject | Sort-Object Component, Resource, 'Service Name' 
         }
     }
     Catch {
         Debug-CatchWriter -object $_
     }
 }
-Export-ModuleMember -Function Show-DnsHealth
+Export-ModuleMember -Function Publish-ServiceHealth
+
+Function Publish-DnsHealth {
+    <#
+        .SYNOPSIS
+        Formats DNS Health data from SoS output JSON
+
+        .DESCRIPTION
+        The Publish-DnsHealth cmdlets formats the DNS Health data from the SoS output JSON so that it can be consume
+        either as a standard powershell object or an HTML based object for reporting purposes. 
+
+        .EXAMPLE
+        Publish-DnsHealth -json <file-name>
+        This example uses the JSON file provided to extracts the DNS Health data and formats as a powershell object
+
+        .EXAMPLE
+        Publish-DnsHealth -json <file-name> -html
+        This example uses the JSON file provided to extracts the DNS Health data and formats as an HTML object
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        }
+        else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+        $forwaredLookup = $targetContent.'DNS lookup Status'.'Forward lookup Status'
+        $allForwardLookupObject = New-Object System.Collections.ArrayList
+        foreach ($element in $forwaredLookup.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
+            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
+            $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                if (($element.status -eq "FAILED")) {
+                    $allForwardLookupObject += $elementObject
+                }
+            }
+            else {
+                $allForwardLookupObject += $elementObject
+            }
+        }
+        $reverseLookup = $targetContent.'DNS lookup Status'.'Reverse lookup Status'
+        $allReverseLookupObject = New-Object System.Collections.ArrayList
+        foreach ($element in $reverseLookup.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
+            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
+            $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                if (($element.status -eq "FAILED")) {
+                    $allReverseLookupObject += $elementObject
+                }
+            }
+            else {
+                $allReverseLookupObject += $elementObject
+            }
+        }
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Forward Lookup Health Status</h3>" -As Table
+            $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Reverse Lookup Health Status</h3>" -As Table
+        }
+        else {
+            $allForwardLookupObject | Sort-Object Component, Resource 
+            $allReverseLookupObject | Sort-Object Component, Resource 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-DnsHealth
+
+Function Publish-NtpHealth {
+    <#
+        .SYNOPSIS
+        Formats NTP Health data from SoS output JSON
+
+        .DESCRIPTION
+        The Publish-NtpHealth cmdlets formats the NTP Health data from the SoS output JSON so that it can be consume
+        either as a standard powershell object or an HTML based object for reporting purposes. 
+
+        .EXAMPLE
+        Publish-NtpHealth -json <file-name>
+        This example uses the JSON file provided to extracts the NTP Health data and formats as a powershell object
+
+        .EXAMPLE
+        Publish-NtpHealth -json <file-name> -html
+        This example uses the JSON file provided to extracts the NTP Health data and formats as an HTML object
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        }
+        else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        $ntpData = $targetContent.'NTP'
+        $ntpData.PSObject.Properties.Remove('ESXi HW Time')
+        $ntpData.PSObject.Properties.Remove('ESXi Time')
+        $allNtpObject = New-Object System.Collections.ArrayList
+        foreach ($element in $ntpData.PsObject.Properties.Value) { 
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
+            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
+            $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                if (($element.status -eq "FAILED")) {
+                    $allNtpObject += $elementObject
+                }
+            }
+            else {
+                $allNtpObject += $elementObject
+            }
+        }
+
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            $allNtpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>NTP Health Status</h3>" -As Table
+        }
+        else {
+            $allNtpObject | Sort-Object Component, Resource 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-NtpHealth
+
+Function Publish-VsanHealth {
+    <#
+        .SYNOPSIS
+        Formats VSAN Health data from SoS output JSON
+
+        .DESCRIPTION
+        The Publish-VsanHealth cmdlets formats the VSAN Health data from the SoS output JSON so that it can be consume
+        either as a standard powershell object or an HTML based object for reporting purposes. 
+
+        .EXAMPLE
+        Publish-VsanHealth -json <file-name>
+        This example uses the JSON file provided to extracts the VSAN Health data and formats as a powershell object
+
+        .EXAMPLE
+        Publish-VsanHealth -json <file-name> -html
+        This example uses the JSON file provided to extracts the VSAN Health data and formats as an HTML object
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        }
+        else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+        $allvsanClusterObject = New-Object System.Collections.ArrayList # Define the object for all data
+        $vsanClusterData = $targetContent.VSAN.'Cluster vSAN Status' # Extract specific data from all data read in from the JSON file
+        foreach ($element in $vsanClusterData.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
+            $elementObject | Add-Member -notepropertyname 'Cluster' -notepropertyvalue ($element.area -Split ("Cluster : "))[-1]
+            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
+            $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                if (($element.status -eq "FAILED")) {
+                    $allvsanClusterObject += $elementObject
+                }
+            }
+            else {
+                $allvsanClusterObject += $elementObject
+            }
+        }
+        $clusterDiskData = $targetContent.VSAN.'Cluster Disk Status' # Extract specific data from all data read in from the JSON file
+        foreach ($element in $clusterDiskData.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
+            $elementObject | Add-Member -notepropertyname 'Cluster' -notepropertyvalue ($element.area -Split ("Cluster : "))[-1]
+            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
+            $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                if (($element.status -eq "FAILED")) {
+                    $allvsanClusterObject += $elementObject
+                }
+            }
+            else {
+                $allvsanClusterObject += $elementObject
+            }
+            $allvsanClusterObject += $elementObject
+        }
+        $compressionData = $targetContent.VSAN.'Cluster Data Compression Status' # Extract specific data from all data read in from the JSON file
+        foreach ($element in $compressionData.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
+            $elementObject | Add-Member -notepropertyname 'Cluster' -notepropertyvalue ($element.area -Split ("Cluster : "))[-1]
+            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
+            $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                if (($element.status -eq "FAILED")) {
+                    $allvsanClusterObject += $elementObject
+                }
+            }
+            else {
+                $allvsanClusterObject += $elementObject
+            }
+        }
+        $encryptionData = $targetContent.VSAN.'Cluster Data Encryption Status' # Extract specific data from all data read in from the JSON file
+        foreach ($element in $encryptionData.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
+            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
+            $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                if (($element.status -eq "FAILED")) {
+                    $allvsanClusterObject += $elementObject
+                }
+            }
+            else {
+                $allvsanClusterObject += $elementObject
+            }
+        }
+        $dedupeData = $targetContent.VSAN.'Cluster Data Deduplication Status' # Extract specific data from all data read in from the JSON file
+        foreach ($element in $dedupeData.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
+            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
+            $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                if (($element.status -eq "FAILED")) {
+                    $allvsanClusterObject += $elementObject
+                }
+            }
+            else {
+                $allvsanClusterObject += $elementObject
+            }
+        }
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            $allvsanClusterObject | Sort-Object Resource, Cluster, 'Check' | ConvertTo-Html -Fragment -PreContent "<h3>VSAN Cluster Health Status</h3>" -As Table
+        }
+        else {
+            $allvsanClusterObject | Sort-Object Resource, Cluster, 'Check' 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-VsanHealth
 
 Function Export-EsxiCoreDumpConfig {
     <#
