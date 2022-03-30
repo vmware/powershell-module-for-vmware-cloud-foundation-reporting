@@ -69,7 +69,6 @@ $reportFormat = @"
     .alertCritical { color: #9F2842; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
     .statusPass { color: #78BE20; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
     .statusFail { color: #9F2842; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-
 </style>
 "@
 
@@ -109,6 +108,13 @@ $ntpHtml = $ntpHtml -replace $oldAlertCritical,$newAlertCritical
 $ntpHtml = $ntpHtml -replace $oldAlertWarning,$newAlertWarning
 $ntpHtml = $ntpHtml -replace $oldStatusPass,$newStatusPass
 $ntpHtml = $ntpHtml -replace $oldStatusFail,$newStatusFail
+Write-LogMessage -Type INFO -Message "Generating the Certififcate Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+$certificateHtml = Publish-CertificateHealth -json .\SoS-JSON-HealthCheck-Samples\all-health-results.json -html
+$certificateHtml = $certificateHtml -replace $oldAlertOK,$newAlertOK
+$certificateHtml = $certificateHtml -replace $oldAlertCritical,$newAlertCritical
+$certificateHtml = $certificateHtml -replace $oldAlertWarning,$newAlertWarning
+$certificateHtml = $certificateHtml -replace $oldStatusPass,$newStatusPass
+$certificateHtml = $certificateHtml -replace $oldStatusFail,$newStatusFail
 Write-LogMessage -Type INFO -Message "Generating the VSAN Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 $vsanHtml = Publish-VsanHealth -json .\SoS-JSON-HealthCheck-Samples\all-health-results.json -html
 $vsanHtml = $vsanHtml -replace $oldAlertOK,$newAlertOK
@@ -145,7 +151,7 @@ $systemPasswordHtml = Export-SystemPassword -server $sddcManagerFqdn -user $sddc
 # }
 
 # Combine all information gathered into a single HTML report
-$report = ConvertTo-HTML -Body "$reportTitle $sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $vsanHtml $systemPasswordHtml $backupUserHtml $datastoreTitle $allStorageCapacityHtml $coreDumpTitle $allEsxiCoreDumpHtml " -Title "SDDC Manager Health Check Report" -Head $reportFormat -PostContent "<p>Creation Date: $(Get-Date)<p>"
+$report = ConvertTo-HTML -Body "$reportTitle $sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $certificateHtml $vsanHtml $systemPasswordHtml $backupUserHtml $datastoreTitle $allStorageCapacityHtml $coreDumpTitle $allEsxiCoreDumpHtml " -Title "SDDC Manager Health Check Report" -Head $reportFormat -PostContent "<p>Creation Date: $(Get-Date)<p>"
 
 # Generate the report to an HTML file and then open it in the default browser
 Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"

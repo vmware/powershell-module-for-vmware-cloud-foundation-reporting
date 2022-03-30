@@ -393,6 +393,90 @@ Function Publish-NtpHealth {
 }
 Export-ModuleMember -Function Publish-NtpHealth
 
+Function Publish-CertificateHealth {
+    <#
+        .SYNOPSIS
+        Formats Certificate Health data from SoS output JSON
+
+        .DESCRIPTION
+        The Publish-CertificateHealth cmdlets formats the Certificate Health data from the SoS output JSON so that it can be consume
+        either as a standard powershell object or an HTML based object for reporting purposes. 
+
+        .EXAMPLE
+        Publish-CertificateHealth -json <file-name>
+        This example uses the JSON file provided to extracts the Certificate Health data and formats as a powershell object
+
+        .EXAMPLE
+        Publish-CertificateHealth -json <file-name> -html
+        This example uses the JSON file provided to extracts the Certificate Health data and formats as an HTML object
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        }
+        else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        $certificateData = $targetContent.'Certificates'.'Certificate Status'
+        $esxiOnlyCertificate = $targetContent.'Certificates'.'Certificate Status'.ESXI
+        $certificateData.PSObject.Properties.Remove('ESXI')
+        $allCertificateObject = New-Object System.Collections.ArrayList
+        foreach ($certificate in $certificateData.PsObject.Properties.Value) { 
+            foreach ($element in $certificate.PsObject.Properties.Value) { 
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
+                $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
+                $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+                $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+                $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+                if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                    if (($element.status -eq "FAILED")) {
+                        $allCertificateObject += $elementObject
+                    }
+                }
+                else {
+                    $allCertificateObject += $elementObject
+                }
+            }
+        }
+        foreach ($element in $esxiOnlyCertificate.PsObject.Properties.Value) { 
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
+            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
+            $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                if (($element.status -eq "FAILED")) {
+                    $allCertificateObject += $elementObject
+                }
+            }
+            else {
+                $allCertificateObject += $elementObject
+            }
+        }
+
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            $allCertificateObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Certificate Health Status</h3>" -As Table
+        }
+        else {
+            $allCertificateObject | Sort-Object Component, Resource 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-CertificateHealth
+
 Function Publish-VsanHealth {
     <#
         .SYNOPSIS
