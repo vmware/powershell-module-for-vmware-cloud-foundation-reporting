@@ -135,20 +135,41 @@ Function Show-SddcManagerLocalUser {
     )
     
     Try {
-        $command = "chage -l " + $localuser
+        $command = 'chage -l ' + $localuser
+        $htmlTitle = '<h2>SDDC Manager Local User Report</h2>'
         $output = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command
         $formatOutput = ($output.ScriptOutput -split '\r?\n').Trim()
-        $formatOutput = $formatOutput -replace '(^\s+|\s+$)','' -replace '\s+',' '
-        $todaysDate = Get-Date -UFormat "%b %d, %Y"
-        $status = "GREEN" # To Do compare dates
-        $userReport = New-Object -TypeName psobject
-        $userReport | Add-Member -notepropertyname 'User' -notepropertyvalue $localUser
-        $userReport | Add-Member -notepropertyname 'Password Expires' -notepropertyvalue ($formatOutput[1] -Split (":"))[1].Trim()
-        $userReport | Add-Member -notepropertyname 'Account Expires' -notepropertyvalue ($formatOutput[3] -Split (":"))[1].Trim()
-        $userReport | Add-Member -notepropertyname 'Status' -notepropertyvalue $status
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            $userReport | ConvertTo-Html -Fragment -PreContent "<h2>SDDC Manager Local User Expiry</h3>" -As Table
+        $formatOutput = $formatOutput -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
+ 
+        # Get the current date and expiration date
+        Add-Type  -AssemblyName  Microsoft.VisualBasic
+        $endDate = ($formatOutput[1] -Split (':'))[1].Trim()
+        $expiryDays = [math]::Ceiling((([DateTime]$endDate) - (Get-Date)).TotalDays)
+
+        # Set the status of the local user account based on the expiry date
+        if ($expiryDays -le 15) {
+            $status = 'YELLOW'  # Warning: <= 15 days
         }
+        if ($expiryDays -le 7) {
+            $status = 'RED'     # Critical: <= 7 days
+        }
+        else {
+            $status = 'GREEN'   # OK: > 15 days
+        }
+
+        # Generate the results
+        $userReport = New-Object -TypeName psobject
+        $userReport | Add-Member -NotePropertyName 'User' -NotePropertyValue $localUser
+        $userReport | Add-Member -NotePropertyName 'Password Expires' -NotePropertyValue ($formatOutput[1] -Split (':'))[1].Trim()
+        $userReport | Add-Member -NotePropertyName 'Password Days Remaining' -NotePropertyValue $expiryDays     
+        $userReport | Add-Member -NotePropertyName 'Account Expires' -NotePropertyValue ($formatOutput[3] -Split (':'))[1].Trim()
+        $userReport | Add-Member -NotePropertyName 'Status' -NotePropertyValue $status
+
+        # Output the results to HTML
+        if ($PsBoundParameters.ContainsKey('html')) { 
+            $userReport | ConvertTo-Html -Fragment -PreContent $htmlTitle -As Table
+        }
+        # Output the results to the console
         else {
             $userReport
         }
