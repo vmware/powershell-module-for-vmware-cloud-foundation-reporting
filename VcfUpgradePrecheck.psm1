@@ -140,7 +140,7 @@ Function Show-SddcManagerLocalUser {
         $output = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command
         $formatOutput = ($output.ScriptOutput -split '\r?\n').Trim()
         $formatOutput = $formatOutput -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
- 
+
         # Get the current date and expiration date
         Add-Type  -AssemblyName  Microsoft.VisualBasic
         $endDate = ($formatOutput[1] -Split (':'))[1].Trim()
@@ -499,6 +499,22 @@ Function Publish-VsanHealth {
         }
         $dedupeData = $targetContent.VSAN.'Cluster Data Deduplication Status' # Extract specific data from all data read in from the JSON file
         foreach ($element in $dedupeData.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
+            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
+            $elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
+            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                if (($element.status -eq "FAILED")) {
+                    $allvsanClusterObject += $elementObject
+                }
+            }
+            else {
+                $allvsanClusterObject += $elementObject
+            }
+        $stretchedClusterData = $targetContent.VSAN.'Stretched Cluster Status' # Extract specific data from all data read in from the JSON file
+        foreach ($element in $stretchedClusterData.PsObject.Properties.Value) {
             $elementObject = New-Object -TypeName psobject
             $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
             $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
