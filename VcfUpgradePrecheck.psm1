@@ -513,6 +513,7 @@ Function Publish-VsanHealth {
             else {
                 $allvsanClusterObject += $elementObject
             }
+        }
         $stretchedClusterData = $targetContent.VSAN.'Stretched Cluster Status' # Extract specific data from all data read in from the JSON file
         foreach ($element in $stretchedClusterData.PsObject.Properties.Value) {
             $elementObject = New-Object -TypeName psobject

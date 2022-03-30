@@ -64,18 +64,25 @@ $reportFormat = @"
     th { background: #717074; background: linear-gradient(#464547, #717074); color: #fff; font-size: 11px; text-transform: capitalize; padding: 10px 15px; vertical-align: middle; }
     tbody tr:nth-child(even) { background: #f0f0f2; }
     #CreationDate { font-family: Arial, Helvetica, sans-serif; color: #ff3300; font-size: 12px; }
-    .statusOK { color: #78BE20; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .statusWarning { color: #EC7700; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .statusCritical { color: #9F2842; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
+    .alertOK { color: #78BE20; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
+    .alertWarning { color: #EC7700; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
+    .alertCritical { color: #9F2842; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
+    .statusPass { color: #78BE20; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
+    .statusFail { color: #9F2842; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
+
 </style>
 "@
 
-$oldStatusOK = '<td>GREEN</td>'
-$newStatusOK = '<td class="statusOK">GREEN</td>'
-$oldStatusCritical = '<td>RED</td>'
-$newStatusCritical = '<td class="statusCritical">RED</td>'
-$oldStatusWarning = '<td>YELLOW</td>'
-$newStatusWarning = '<td class="statusWarning">YELLOW</td>'
+$oldAlertOK = '<td>GREEN</td>'
+$newAlertOK = '<td class="alertOK">GREEN</td>'
+$oldAlertCritical = '<td>RED</td>'
+$newAlertCritical = '<td class="alertCritical">RED</td>'
+$oldAlertWarning = '<td>YELLOW</td>'
+$newAlertWarning = '<td class="alertWarning">YELLOW</td>'
+$oldStatusPass = '<td>PASSED</td>'
+$newStatusPass = '<td class="statusPass">PASSED</td>'
+$oldStatusFail = '<td>FAILED</td>'
+$newStatusFail = '<td class="statusFail">FAILED</td>'
 
 # Define the Report Tile
 $reportTitle = "<h1>Health Check Report for SDDC Manager: $sddcManagerFqdn</h1>"
@@ -83,24 +90,32 @@ $reportTitle = "<h1>Health Check Report for SDDC Manager: $sddcManagerFqdn</h1>"
 $sosHealthTitle = "<h2>SoS Health Check Data</h2>"
 Write-LogMessage -Type INFO -Message "Generating the Service Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 $serviceHtml = Publish-ServiceHealth -json .\SoS-JSON-HealthCheck-Samples\all-health-results.json -html
-$serviceHtml = $serviceHtml -replace $oldStatusOK,$newStatusOK
-$serviceHtml = $serviceHtml -replace $oldStatusCritical,$newStatusCritical
-$serviceHtml = $serviceHtml -replace $oldStatusWarning,$newStatusWarning
+$serviceHtml = $serviceHtml -replace $oldAlertOK,$newAlertOK
+$serviceHtml = $serviceHtml -replace $oldAlertCritical,$newAlertCritical
+$serviceHtml = $serviceHtml -replace $oldAlertWarning,$newAlertWarning
+$serviceHtml = $serviceHtml -replace $oldStatusPass,$newStatusPass
+$serviceHtml = $serviceHtml -replace $oldStatusFail,$newStatusFail
 Write-LogMessage -Type INFO -Message "Generating the DNS Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 $dnsHtml = Publish-DnsHealth -json .\SoS-JSON-HealthCheck-Samples\all-health-results.json -html
-$dnsHtml = $dnsHtml -replace $oldStatusOK,$newStatusOK
-$dnsHtml = $dnsHtml -replace $oldStatusCritical,$newStatusCritical
-$dnsHtml = $dnsHtml -replace $oldStatusWarning,$newStatusWarning
+$dnsHtml = $dnsHtml -replace $oldAlertOK,$newAlertOK
+$dnsHtml = $dnsHtml -replace $oldAlertCritical,$newAlertCritical
+$dnsHtml = $dnsHtml -replace $oldAlertWarning,$newAlertWarning
+$dnsHtml = $dnsHtml -replace $oldStatusPass,$newStatusPass
+$dnsHtml = $dnsHtml -replace $oldStatusFail,$newStatusFail
 Write-LogMessage -Type INFO -Message "Generating the NTP Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 $ntpHtml = Publish-NtpHealth -json .\SoS-JSON-HealthCheck-Samples\all-health-results.json -html
-$ntpHtml = $ntpHtml -replace $oldStatusOK,$newStatusOK
-$ntpHtml = $ntpHtml -replace $oldStatusCritical,$newStatusCritical
-$ntpHtml = $ntpHtml -replace $oldStatusWarning,$newStatusWarning
+$ntpHtml = $ntpHtml -replace $oldAlertOK,$newAlertOK
+$ntpHtml = $ntpHtml -replace $oldAlertCritical,$newAlertCritical
+$ntpHtml = $ntpHtml -replace $oldAlertWarning,$newAlertWarning
+$ntpHtml = $ntpHtml -replace $oldStatusPass,$newStatusPass
+$ntpHtml = $ntpHtml -replace $oldStatusFail,$newStatusFail
 Write-LogMessage -Type INFO -Message "Generating the VSAN Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 $vsanHtml = Publish-VsanHealth -json .\SoS-JSON-HealthCheck-Samples\all-health-results.json -html
-$vsanHtml = $vsanHtml -replace $oldStatusOK,$newStatusOK
-$vsanHtml = $vsanHtml -replace $oldStatusCritical,$newStatusCritical
-$vsanHtml = $vsanHtml -replace $oldStatusWarning,$newStatusWarning
+$vsanHtml = $vsanHtml -replace $oldAlertOK,$newAlertOK
+$vsanHtml = $vsanHtml -replace $oldAlertCritical,$newAlertCritical
+$vsanHtml = $vsanHtml -replace $oldAlertWarning,$newAlertWarning
+$vsanHtml = $vsanHtml -replace $oldStatusPass,$newStatusPass
+$vsanHtml = $vsanHtml -replace $oldStatusFail,$newStatusFail
 
 # Generating the System Password Report from SDDC Manager 
 Write-LogMessage -Type INFO -Message "Generating the System Password Report from SDDC Manager ($sddcManagerFqdn)"
