@@ -65,8 +65,7 @@ Function Publish-ServiceHealth {
     Try {
         if (!(Test-Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -131,8 +130,7 @@ Function Publish-DnsHealth {
     Try {
         if (!(Test-Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -200,8 +198,7 @@ Function Publish-NtpHealth {
     Try {
         if (!(Test-Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -258,8 +255,7 @@ Function Publish-CertificateHealth {
     Try {
         if (!(Test-Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -286,8 +282,7 @@ Function Publish-CertificateHealth {
                     if (($element.status -eq "FAILED")) {
                         $customObject += $elementObject
                     }
-                }
-                else {
+                } else {
                     $customObject += $elementObject
                 }
             }
@@ -392,8 +387,7 @@ Function Publish-EsxiHealth {
     Try {
         if (!(Test-Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -487,8 +481,7 @@ Function Publish-VsanHealth {
     Try {
         if (!(Test-Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -589,51 +582,48 @@ Function Publish-NsxtHealth {
     Try {
         if (!(Test-Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
-        $htmlPreContent = "<h3>NSX-T Health Status</h3>"
-        $outputObject = New-Object System.Collections.ArrayList
-        # Collect NSX Manager Health data from SOS JSON
+
+        $customObject = New-Object System.Collections.ArrayList
+    
+        # NSX Manager Health
         $component = "NSX Manager"
         $inputData = $targetContent.General.'NSX Health'.'NSX Manager'
         foreach ($element in $inputData.PsObject.Properties.Value) {
             $elementObject = New-Object -TypeName psobject
             $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
             $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
             $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
             $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 if (($element.status -eq "FAILED")) {
-                    $outputObject += $elementObject
+                    $customObject += $elementObject
                 }
-            }
-            else {
-                $outputObject += $elementObject
+            } else {
+                $customObject += $elementObject
             }
         }
-        # Collect NSX Container Cluster Health Status data from SOS JSON
+
+        # NSX Container Cluster Health Status
         $component = "NSX Container Cluster"
         $inputData = $targetContent.General.'NSX Health'.'NSX Container Cluster Health Status'
         foreach ($element in $inputData.PsObject.Properties.Value) {
             $elementObject = New-Object -TypeName psobject
             $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
             $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
             $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
             $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 if (($element.status -eq "FAILED")) {
-                    $outputObject += $elementObject
+                    $customObject += $elementObject
                 }
-            }
-            else {
-                $outputObject += $elementObject
+            } else {
+                $customObject += $elementObject
             }
         }
-        # Collect NSX Cluster Status data from SOS JSON
+        # NSX Cluster Status
         $component = "NSX Cluster Status"
         $inputData = $targetContent.General.'NSX Health'.'NSX Cluster Status'
         foreach ($resource in $inputData.PsObject.Properties.Value) {
@@ -641,25 +631,25 @@ Function Publish-NsxtHealth {
                 $elementObject = New-Object -TypeName psobject
                 $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
                 $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-                #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
                 $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
                 $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
                 if ($PsBoundParameters.ContainsKey("failureOnly")) {
                     if (($element.status -eq "FAILED")) {
-                        $outputObject += $elementObject
+                        $customObject += $elementObject
                     }
-                }
-                else {
-                    $outputObject += $elementObject
+                } else {
+                    $customObject += $elementObject
                 }
             }
         }
 
+        # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent $htmlPreContent -As Table
-        }
-        else {
-            $outputObject | Sort-Object Component, Resource 
+            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent $htmlPreContent -As Table
+            $customObject = Convert-AlertClass -htmldata $customObject
+            $customObject
+        } else {
+            $customObject | Sort-Object Component, Resource 
         }
     }
     Catch {
