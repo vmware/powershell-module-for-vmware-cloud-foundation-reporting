@@ -558,19 +558,19 @@ Export-ModuleMember -Function Publish-VsanHealth
 Function Publish-NsxtHealth {
     <#
         .SYNOPSIS
-        Formats Password Health data from SoS output JSON
+        Formats NSX Health data from SoS output JSON
 
         .DESCRIPTION
-        The Publish-NsxtHealth cmdlets formats the Password Health data from the SoS output JSON so that it can be consume
+        The Publish-NsxtHealth cmdlets formats the NSX Health data from the SoS output JSON so that it can be consume
         either as a standard powershell object or an HTML based object for reporting purposes. 
 
         .EXAMPLE
         Publish-NsxtHealth -json <file-name>
-        This example uses the JSON file provided to extracts the Password Health data and formats as a powershell object
+        This example uses the JSON file provided to extracts the NSX Health data and formats as a powershell object
 
         .EXAMPLE
         Publish-NsxtHealth -json <file-name> -html
-        This example uses the JSON file provided to extracts the Password Health data and formats as an HTML object
+        This example uses the JSON file provided to extracts the NSX Health data and formats as an HTML object
     #>
 
     Param (
@@ -751,6 +751,82 @@ Function Publish-VcenterHealth {
     }
 }
 Export-ModuleMember -Function Publish-VcenterHealth
+
+Function Publish-ConnectivityHealth {
+    <#
+        .SYNOPSIS
+        Formats Connectivity Health data from SoS output JSON
+
+        .DESCRIPTION
+        The Publish-ConnectivityHealth cmdlets formats the Connectivity Health data from the SoS output JSON so that it can be consume
+        either as a standard powershell object or an HTML based object for reporting purposes. 
+
+        .EXAMPLE
+        Publish-ConnectivityHealth -json <file-name>
+        This example uses the JSON file provided to extracts the Connectivity Health data and formats as a powershell object
+
+        .EXAMPLE
+        Publish-ConnectivityHealth -json <file-name> -html
+        This example uses the JSON file provided to extracts the Connectivity Health data and formats as an HTML object
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        } else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        $customObject = New-Object System.Collections.ArrayList
+        # ESXi SSH Status
+        $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi SSH Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
+        }
+        $customObject += $outputObject # Adding individual component to main customeObject
+
+        # ESXi API Status
+        $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi API Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
+        }
+        $customObject += $outputObject # Adding individual component to main customeObject
+
+        # Additional Items Status
+        $jsonInputData = $targetContent.Connectivity.'Connectivity Status' # Extract Data from the provided SOS JSON
+        $jsonInputData.PSObject.Properties.Remove('ESXi SSH Status')
+        $jsonInputData.PSObject.Properties.Remove('ESXi API Status')
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
+        }
+        $customObject += $outputObject # Adding individual component to main customeObject
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Connectivity Health Status</h3>" -As Table
+            $customObject = Convert-AlertClass -htmldata $customObject
+            $customObject
+        } else {
+            $customObject | Sort-Object Component, Resource 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-ConnectivityHealth
 
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
