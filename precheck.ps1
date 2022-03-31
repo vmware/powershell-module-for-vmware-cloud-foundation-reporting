@@ -57,18 +57,6 @@ $reportName = $reportsPath + "\" + $sddcManagerFqdn.Split(".")[0] + "-healthChec
 # Obtain the formatting of the HTML report using default CSS styles
 $reportFormat = Get-DefaultHtmlReportStyle
 
-# TO DO: Function to perform HTML style replacements
-# $oldAlertOK = '<td>GREEN</td>'
-# $newAlertOK = '<td class="alertOK">GREEN</td>'
-# $oldAlertCritical = '<td>RED</td>'
-# $newAlertCritical = '<td class="alertCritical">RED</td>'
-# $oldAlertWarning = '<td>YELLOW</td>'
-# $newAlertWarning = '<td class="alertWarning">YELLOW</td>'
-# $oldStatusPass = '<td>PASSED</td>'
-# $newStatusPass = '<td class="statusPass">PASSED</td>'
-# $oldStatusFail = '<td>FAILED</td>'
-# $newStatusFail = '<td class="statusFail">FAILED</td>'
-
 # Define the Report Tile
 $reportTitle = "<h1>Health Check Report for SDDC Manager: $sddcManagerFqdn</h1>"
 

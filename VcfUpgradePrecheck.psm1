@@ -135,53 +135,34 @@ Function Publish-DnsHealth {
         else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
-        # Collect DNS Forward Lookup Health data from SOS JSON
-        $htmlPreContentForward = "<h3>DNS Forward Lookup Health Status</h3>"
-        $allForwardLookupObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.'DNS lookup Status'.'Forward lookup Status'
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $allForwardLookupObject += $elementObject
-                }
-            }
-            else {
-                $allForwardLookupObject += $elementObject
-            }
+
+        # Forward Lookup Health Status
+        $jsonInputData = $targetContent.'DNS lookup Status'.'Forward lookup Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $allForwardLookupObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $allForwardLookupObject = Read-JsonElement -inputData $jsonInputData
         }
-        # Collect DNS Revers Lookup Health data from SOS JSON
-        $htmlPreContentReverse = "<h3>DNS Reverse Lookup Health Status</h3>"
-        $allReverseLookupObject = New-Object System.Collections.ArrayList
-        $reverseLookup = $targetContent.'DNS lookup Status'.'Reverse lookup Status'
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $allReverseLookupObject += $elementObject
-                }
-            }
-            else {
-                $allReverseLookupObject += $elementObject
-            }
+
+        # Reverse Lookup Health Status
+        $jsonInputData = $targetContent.'DNS lookup Status'.'Reverse lookup Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $allReverseLookupObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $allReverseLookupObject = Read-JsonElement -inputData $jsonInputData
         }
+
+        # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent $htmlPreContentForward -As Table
-            $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent $htmlPreContentReverse -As Table
-        }
-        else {
-            $allForwardLookupObject | Sort-Object Component, Resource 
-            $allReverseLookupObject | Sort-Object Component, Resource 
+            $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Forward Lookup Health Status</h3>" -As Table
+            $allForwardLookupObject = Convert-AlertClass -htmldata $allForwardLookupObject
+            $allForwardLookupObject
+            $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Reverse Lookup Health Status</h3>" -As Table
+            $allReverseLookupObject = Convert-AlertClass -htmldata $allReverseLookupObject
+            $allReverseLookupObject
+        } else {
+            $allForwardLookupObject | Sort-Object Component, Resource
+            $allReverseLookupObject | Sort-Object Component, Resource
         }
     }
     Catch {
@@ -221,16 +202,18 @@ Function Publish-NtpHealth {
         else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
-        # Extract data from the provided SOS JSON Health Check file
-        $jsonInputData = $targetContent.'NTP'
+
+        # NTP Health Status
+        $jsonInputData = $targetContent.'NTP' # Extract Data from the provided SOS JSON
         $jsonInputData.PSObject.Properties.Remove('ESXi HW Time')
         $jsonInputData.PSObject.Properties.Remove('ESXi Time')
-        # Run the extracted data through the Read-JsonElement function to structure the data for report output
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
             $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
         } else {
             $outputObject = Read-JsonElement -inputData $jsonInputData
         }
+
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
             $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>NTP Health Status</h3>" -As Table
@@ -288,7 +271,7 @@ Function Publish-CertificateHealth {
         
         # Certificate Health (Except ESXi)
         $customObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.'Certificates'.'Certificate Status'
+        $inputData = $targetContent.'Certificates'.'Certificate Status' # Extract Data from the provided SOS JSON
         $inputData.PSObject.Properties.Remove('ESXI')
         foreach ($component in $inputData.PsObject.Properties.Value) { 
             foreach ($element in $component.PsObject.Properties.Value) { 
@@ -310,6 +293,7 @@ Function Publish-CertificateHealth {
 
         $outputObject += $customObject # Combined ESXi Certificate Health with Remaining Components
 
+        # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
             $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Certificate Health Status</h3>" -As Table
             $outputObject = Convert-AlertClass -htmldata $outputObject
@@ -352,18 +336,15 @@ Function Publish-PasswordHealth {
     Try {
         if (!(Test-Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
-        # Extract data from the provided SOS JSON Health Check file
-        $jsonInputData = $targetContent.'Password Expiry Status'
-        # Run the extracted data through the Read-JsonElement function to structure the data for report output
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+        # Password Expiry Health
+        $jsonInputData = $targetContent.'Password Expiry Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
             $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
-        }
-        else {
+        } else {
             $outputObject = Read-JsonElement -inputData $jsonInputData
         }
 
@@ -372,8 +353,7 @@ Function Publish-PasswordHealth {
             $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Password Health Status</h3>" -As Table
             $outputObject = Convert-AlertClass -htmldata $outputObject
             $outputObject
-        }
-        else {
+        } else {
             $outputObject | Sort-Object Component, Resource 
         }
     }
@@ -417,7 +397,7 @@ Function Publish-EsxiHealth {
         # Collect ESXi Overall Health Status from SOS JSON 
         $htmlPreContentOverall = "<h3>ESXi Overall Health Status</h3>"
         $allOverallDumpObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.Compute.'ESXi Overall Health'
+        $inputData = $targetContent.Compute.'ESXi Overall Health' # Extract Data from the provided SOS JSON
         foreach ($element in $inputData.PsObject.Properties.Value) { 
             $elementObject = New-Object -TypeName psobject
             $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
@@ -1104,13 +1084,6 @@ Function Read-JsonElement {
 }
 Export-ModuleMember -Function Read-JsonElement
 
-##############################  End Supporting Functions ###############################
-########################################################################################
-
-
-#########################################################################################
-##############################  Start Internal Functions  ###############################
-
 Function PercentCalc {
     Param (
         [Parameter (Mandatory = $true)] [Int]$InputNum1,
@@ -1123,7 +1096,7 @@ Function Convert-AlertClass {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [PSCustomObject]$htmlData
     )
 
-    # Function to replace Alerts with colour coded CSS Stylea
+    # Function to replace Alerts with colour coded CSS Style
     $oldAlertOK = '<td>GREEN</td>'
     $newAlertOK = '<td class="alertOK">GREEN</td>'
     $oldAlertCritical = '<td>RED</td>'
@@ -1138,5 +1111,5 @@ Function Convert-AlertClass {
 }
 Export-ModuleMember -Function Convert-AlertClass
 
-###############################  End Internal Functions ################################
+##############################  End Supporting Functions ###############################
 ########################################################################################
