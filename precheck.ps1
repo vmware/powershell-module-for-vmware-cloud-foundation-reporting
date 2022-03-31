@@ -40,19 +40,9 @@ $jsonFile = ".\SoS-JSON-HealthCheck-Samples\all-health-results.json" # TO DO: Fu
 Clear-Host; Write-Host ""
 
 Start-SetupLogFile -Path $filePath -ScriptName $MyInvocation.MyCommand.Name
+Start-CreateReportDirectory -path $filePath -sddcManagerFqdn $sddcManagerFqdn
 Write-LogMessage -Type INFO -Message "Starting the Process of Running Health Checks for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
 Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
-
-# Setup the file name of the HTML based health check report
-# TO DO: Function Required
-$filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
-$reportLocation = ".\"
-$reportFolder = "reports"
-$reportsPath = $reportLocation + $reportFolder
-if (!(Test-Path -Path $reportsPath)) {
-    New-Item -Path $reportLocation -Name $reportFolder -ItemType "directory" | Out-Null
-}
-$reportName = $reportsPath + "\" + $sddcManagerFqdn.Split(".")[0] + "-healthCheck-" + $filetimeStamp + ".htm"
 
 # Obtain the formatting of the HTML report using default CSS styles
 $reportFormat = Get-DefaultHtmlReportStyle

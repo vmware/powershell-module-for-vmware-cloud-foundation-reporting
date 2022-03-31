@@ -643,9 +643,49 @@ Function Publish-NsxtHealth {
             }
         }
 
+        # NSX Edge Health
+        $component = "NSX Edge"
+        $inputData = $targetContent.General.'NSX Health'.'NSX Edge'
+        foreach ($resource in $inputData.PsObject.Properties.Value) {
+            foreach ($element in $resource.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
+                $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
+                $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+                $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+                if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                    if (($element.status -eq "FAILED")) {
+                        $customObject += $elementObject
+                    }
+                } else {
+                    $customObject += $elementObject
+                }
+            }
+        }
+
+        # NSX Controllers Health
+        $component = "NSX Controllers"
+        $inputData = $targetContent.General.'NSX Health'.'NSX Controllers'
+        foreach ($resource in $inputData.PsObject.Properties.Value) {
+            foreach ($element in $resource.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
+                $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
+                $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+                $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+                if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                    if (($element.status -eq "FAILED")) {
+                        $customObject += $elementObject
+                    }
+                } else {
+                    $customObject += $elementObject
+                }
+            }
+        }
+
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent $htmlPreContent -As Table
+            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>NSX-T Data Center Health Status</h3>" -As Table
             $customObject = Convert-AlertClass -htmldata $customObject
             $customObject
         } else {
@@ -984,6 +1024,16 @@ Function Invoke-SddcCommand {
 }
 Export-ModuleMember -Function Invoke-SddcCommand
 
+Function Start-CreateReportDirectory ($path, $sddcManagerFqdn) {
+    $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
+    $reportFolder = $path + '\HealthReports\'
+    if (!(Test-Path -Path $reportFolder)) {
+        New-Item -Path $reportFolder -ItemType "directory" | Out-Null
+    }
+    $Global:reportName = $reportFolder + $sddcManagerFqdn.Split(".")[0] + "-healthCheck-" + $filetimeStamp + ".htm"
+}
+Export-ModuleMember -Function Start-CreateReportDirectory
+
 Function Convert-TextToHtml {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sourceFile,
@@ -998,20 +1048,20 @@ Function Get-DefaultHtmlReportStyle {
 # Define the default Cascading Style Sheets (CSS) for the HTML report
 $defaultCssStyle = @"
 <style>
-    h1 { font-family: Arial, Helvetica, sans-serif; color: #1A4288; font-size: 30px; }
-    h2 { font-family: Arial, Helvetica, sans-serif; color: #459B36; font-size: 20px; }
-    h3 { font-family: Arial, Helvetica, sans-serif; color: #7F35B2; font-size: 16px; }
+    h1 { font-family: Metropolis, Arial, Helvetica, sans-serif; color: #1A4288; font-size: 30px; }
+    h2 { font-family: Metropolis, Arial, Helvetica, sans-serif; color: #459B36; font-size: 20px; }
+    h3 { ffont-family: Metropolis, Arial, Helvetica, sans-serif; color: #7F35B2; font-size: 16px; }
     body { font-family: Arial, Helvetica, sans-serif; color: #464547; font-size: 12px; }
     table { font-size: 12px; border: 0px;  font-family: monospace; } 
     td { padding: 4px; margin: 0px; border: 0; }
     th { background: #717074; background: linear-gradient(#464547, #717074); color: #fff; font-size: 11px; text-transform: capitalize; padding: 10px 15px; vertical-align: middle; }
     tbody tr:nth-child(even) { background: #f0f0f2; }
-    #CreationDate { font-family: Arial, Helvetica, sans-serif; color: #ff3300; font-size: 12px; }
-    .alertOK { color: #78BE20; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .alertWarning { color: #EC7700; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .alertCritical { color: #9F2842; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .statusPass { color: #78BE20; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .statusFail { color: #9F2842; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
+    #CreationDate { font-family: Metropolis, Arial, Helvetica, sans-serif; color: #ff3300; font-size: 12px; }
+    .alertOK { color: #78BE20; border: 0px; font-family: Metropolis, Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
+    .alertWarning { color: #EC7700; border: 0px; font-family: Metropolis, Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
+    .alertCritical { color: #9F2842; border: 0px; font-family: Metropolis, Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
+    .statusPass { color: #78BE20; border: 0px; font-family: Metropolis, Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
+    .statusFail { color: #9F2842; border: 0px; font-family: Metropolis, Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
 </style>
 "@
 $defaultCssStyle
