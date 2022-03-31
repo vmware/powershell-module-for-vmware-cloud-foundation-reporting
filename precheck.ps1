@@ -12,7 +12,7 @@
     ===================================================================================================================
     .CHANGE_LOG
 
-    - 1.0.000   (Gary Blake / 2022-03-17) - Initial script creation
+    - 1.0.000   (Gary Blake / 2022-03-29) - Initial script creation
 
     ===================================================================================================================
     
@@ -35,14 +35,16 @@ Param (
     [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
 )
 
+$jsonFile = ".\SoS-JSON-HealthCheck-Samples\all-health-results.json" # TO DO: Function to generate and retrieve SOS JSON
+
 Clear-Host; Write-Host ""
 
 Start-SetupLogFile -Path $filePath -ScriptName $MyInvocation.MyCommand.Name
 Write-LogMessage -Type INFO -Message "Starting the Process of Running Health Checks for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
 Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
 
-
 # Setup the file name of the HTML based health check report
+# TO DO: Function Required
 $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
 $reportLocation = ".\"
 $reportFolder = "reports"
@@ -52,26 +54,10 @@ if (!(Test-Path -Path $reportsPath)) {
 }
 $reportName = $reportsPath + "\" + $sddcManagerFqdn.Split(".")[0] + "-healthCheck-" + $filetimeStamp + ".htm"
 
-# Define the formatting of the HTML report using CSS
-$reportFormat = @"
-<style>
-    h1 { font-family: Arial, Helvetica, sans-serif; color: #1A4288; font-size: 30px; }
-    h2 { font-family: Arial, Helvetica, sans-serif; color: #459B36; font-size: 20px; }
-    h3 { font-family: Arial, Helvetica, sans-serif; color: #7F35B2; font-size: 16px; }
-    body { font-family: Arial, Helvetica, sans-serif; color: #464547; font-size: 12px; }
-    table { font-size: 12px; border: 0px;  font-family: monospace; } 
-    td { padding: 4px; margin: 0px; border: 0; }
-    th { background: #717074; background: linear-gradient(#464547, #717074); color: #fff; font-size: 11px; text-transform: capitalize; padding: 10px 15px; vertical-align: middle; }
-    tbody tr:nth-child(even) { background: #f0f0f2; }
-    #CreationDate { font-family: Arial, Helvetica, sans-serif; color: #ff3300; font-size: 12px; }
-    .alertOK { color: #78BE20; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .alertWarning { color: #EC7700; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .alertCritical { color: #9F2842; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .statusPass { color: #78BE20; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .statusFail { color: #9F2842; border: 0px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-</style>
-"@
+# Obtain the formatting of the HTML report using default CSS styles
+$reportFormat = Get-DefaultHtmlReportStyle
 
+# TO DO: Function to perform HTML style replacements
 $oldAlertOK = '<td>GREEN</td>'
 $newAlertOK = '<td class="alertOK">GREEN</td>'
 $oldAlertCritical = '<td>RED</td>'
@@ -86,42 +72,72 @@ $newStatusFail = '<td class="statusFail">FAILED</td>'
 # Define the Report Tile
 $reportTitle = "<h1>Health Check Report for SDDC Manager: $sddcManagerFqdn</h1>"
 
-$sosHealthTitle = "<h2>SoS Health Check Data</h2>"
+$sosHealthTitle = "<h2>SoS Health Check Data</h2>" # Define SoS Health Title
 Write-LogMessage -Type INFO -Message "Generating the Service Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$serviceHtml = Publish-ServiceHealth -json .\SoS-JSON-HealthCheck-Samples\all-health-results.json -html
+$serviceHtml = Publish-ServiceHealth $jsonFile -html
 $serviceHtml = $serviceHtml -replace $oldAlertOK,$newAlertOK
 $serviceHtml = $serviceHtml -replace $oldAlertCritical,$newAlertCritical
 $serviceHtml = $serviceHtml -replace $oldAlertWarning,$newAlertWarning
 $serviceHtml = $serviceHtml -replace $oldStatusPass,$newStatusPass
 $serviceHtml = $serviceHtml -replace $oldStatusFail,$newStatusFail
+
 Write-LogMessage -Type INFO -Message "Generating the DNS Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$dnsHtml = Publish-DnsHealth -json .\SoS-JSON-HealthCheck-Samples\all-health-results.json -html
+$dnsHtml = Publish-DnsHealth -json $jsonFile -html
 $dnsHtml = $dnsHtml -replace $oldAlertOK,$newAlertOK
 $dnsHtml = $dnsHtml -replace $oldAlertCritical,$newAlertCritical
 $dnsHtml = $dnsHtml -replace $oldAlertWarning,$newAlertWarning
 $dnsHtml = $dnsHtml -replace $oldStatusPass,$newStatusPass
 $dnsHtml = $dnsHtml -replace $oldStatusFail,$newStatusFail
+
 Write-LogMessage -Type INFO -Message "Generating the NTP Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$ntpHtml = Publish-NtpHealth -json .\SoS-JSON-HealthCheck-Samples\all-health-results.json -html
-$ntpHtml = $ntpHtml -replace $oldAlertOK,$newAlertOK
-$ntpHtml = $ntpHtml -replace $oldAlertCritical,$newAlertCritical
-$ntpHtml = $ntpHtml -replace $oldAlertWarning,$newAlertWarning
-$ntpHtml = $ntpHtml -replace $oldStatusPass,$newStatusPass
-$ntpHtml = $ntpHtml -replace $oldStatusFail,$newStatusFail
+if ($PsBoundParameters.ContainsKey("failureOnly")) {
+    $ntpHtml = Publish-NtpHealth -json $jsonFile -html -failureOnly
+} else {
+    $ntpHtml = Publish-NtpHealth -json $jsonFile -html
+}
+
 Write-LogMessage -Type INFO -Message "Generating the Certififcate Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$certificateHtml = Publish-CertificateHealth -json .\SoS-JSON-HealthCheck-Samples\all-health-results.json -html
+$certificateHtml = Publish-CertificateHealth -json $jsonFile -html
 $certificateHtml = $certificateHtml -replace $oldAlertOK,$newAlertOK
 $certificateHtml = $certificateHtml -replace $oldAlertCritical,$newAlertCritical
 $certificateHtml = $certificateHtml -replace $oldAlertWarning,$newAlertWarning
 $certificateHtml = $certificateHtml -replace $oldStatusPass,$newStatusPass
 $certificateHtml = $certificateHtml -replace $oldStatusFail,$newStatusFail
+
+Write-LogMessage -Type INFO -Message "Generating the Password Expiry Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+$passwordHtml = Publish-PasswordHealth -json $jsonFile -html
+$passwordHtml = $passwordHtml -replace $oldAlertOK,$newAlertOK
+$passwordHtml = $passwordHtml -replace $oldAlertCritical,$newAlertCritical
+$passwordHtml = $passwordHtml -replace $oldAlertWarning,$newAlertWarning
+$passwordHtml = $passwordHtml -replace $oldStatusPass,$newStatusPass
+$passwordHtml = $passwordHtml -replace $oldStatusFail,$newStatusFail
+
+Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+$esxiHtml = Publish-EsxiHealth -json $jsonFile -html
+$esxiHtml = $esxiHtml -replace $oldAlertOK,$newAlertOK
+$esxiHtml = $esxiHtml -replace $oldAlertCritical,$newAlertCritical
+$esxiHtml = $esxiHtml -replace $oldAlertWarning,$newAlertWarning
+$esxiHtml = $esxiHtml -replace $oldStatusPass,$newStatusPass
+$esxiHtml = $esxiHtml -replace $oldStatusFail,$newStatusFail
+
 Write-LogMessage -Type INFO -Message "Generating the VSAN Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$vsanHtml = Publish-VsanHealth -json .\SoS-JSON-HealthCheck-Samples\all-health-results.json -html
+$vsanHtml = Publish-VsanHealth -json $jsonFile -html
 $vsanHtml = $vsanHtml -replace $oldAlertOK,$newAlertOK
 $vsanHtml = $vsanHtml -replace $oldAlertCritical,$newAlertCritical
 $vsanHtml = $vsanHtml -replace $oldAlertWarning,$newAlertWarning
 $vsanHtml = $vsanHtml -replace $oldStatusPass,$newStatusPass
 $vsanHtml = $vsanHtml -replace $oldStatusFail,$newStatusFail
+
+Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+$nsxtHtml = Publish-NsxtHealth -json $jsonFile -html
+$nsxtHtml = $nsxtHtml -replace $oldAlertOK,$newAlertOK
+$nsxtHtml = $nsxtHtml -replace $oldAlertCritical,$newAlertCritical
+$nsxtHtml = $nsxtHtml -replace $oldAlertWarning,$newAlertWarning
+$nsxtHtml = $nsxtHtml -replace $oldStatusPass,$newStatusPass
+$nsxtHtml = $nsxtHtml -replace $oldStatusFail,$newStatusFail
+
+# Combine all SoS Health Reports into single variable for consumption when generating the report
+$sosHealthHtml = "$sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $certificateHtml $passwordHtml $esxiHtml $vsanHtml $nsxtHtml"
 
 # Generating the System Password Report from SDDC Manager 
 Write-LogMessage -Type INFO -Message "Generating the System Password Report from SDDC Manager ($sddcManagerFqdn)"
@@ -151,7 +167,7 @@ $systemPasswordHtml = Export-SystemPassword -server $sddcManagerFqdn -user $sddc
 # }
 
 # Combine all information gathered into a single HTML report
-$report = ConvertTo-HTML -Body "$reportTitle $sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $certificateHtml $vsanHtml $systemPasswordHtml $backupUserHtml $datastoreTitle $allStorageCapacityHtml $coreDumpTitle $allEsxiCoreDumpHtml " -Title "SDDC Manager Health Check Report" -Head $reportFormat -PostContent "<p>Creation Date: $(Get-Date)<p>"
+$report = ConvertTo-HTML -Body "$reportTitle $sosHealthHtml $backupUserHtml $systemPasswordHtml $datastoreTitle $allStorageCapacityHtml $coreDumpTitle $allEsxiCoreDumpHtml " -Title "SDDC Manager Health Check Report" -Head $reportFormat -PostContent "<p>Creation Date: $(Get-Date)<p>"
 
 # Generate the report to an HTML file and then open it in the default browser
 Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
