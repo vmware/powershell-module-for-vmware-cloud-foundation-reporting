@@ -58,16 +58,16 @@ $reportName = $reportsPath + "\" + $sddcManagerFqdn.Split(".")[0] + "-healthChec
 $reportFormat = Get-DefaultHtmlReportStyle
 
 # TO DO: Function to perform HTML style replacements
-$oldAlertOK = '<td>GREEN</td>'
-$newAlertOK = '<td class="alertOK">GREEN</td>'
-$oldAlertCritical = '<td>RED</td>'
-$newAlertCritical = '<td class="alertCritical">RED</td>'
-$oldAlertWarning = '<td>YELLOW</td>'
-$newAlertWarning = '<td class="alertWarning">YELLOW</td>'
-$oldStatusPass = '<td>PASSED</td>'
-$newStatusPass = '<td class="statusPass">PASSED</td>'
-$oldStatusFail = '<td>FAILED</td>'
-$newStatusFail = '<td class="statusFail">FAILED</td>'
+# $oldAlertOK = '<td>GREEN</td>'
+# $newAlertOK = '<td class="alertOK">GREEN</td>'
+# $oldAlertCritical = '<td>RED</td>'
+# $newAlertCritical = '<td class="alertCritical">RED</td>'
+# $oldAlertWarning = '<td>YELLOW</td>'
+# $newAlertWarning = '<td class="alertWarning">YELLOW</td>'
+# $oldStatusPass = '<td>PASSED</td>'
+# $newStatusPass = '<td class="statusPass">PASSED</td>'
+# $oldStatusFail = '<td>FAILED</td>'
+# $newStatusFail = '<td class="statusFail">FAILED</td>'
 
 # Define the Report Tile
 $reportTitle = "<h1>Health Check Report for SDDC Manager: $sddcManagerFqdn</h1>"
@@ -97,12 +97,11 @@ if ($PsBoundParameters.ContainsKey("failureOnly")) {
 }
 
 Write-LogMessage -Type INFO -Message "Generating the Certififcate Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$certificateHtml = Publish-CertificateHealth -json $jsonFile -html
-$certificateHtml = $certificateHtml -replace $oldAlertOK,$newAlertOK
-$certificateHtml = $certificateHtml -replace $oldAlertCritical,$newAlertCritical
-$certificateHtml = $certificateHtml -replace $oldAlertWarning,$newAlertWarning
-$certificateHtml = $certificateHtml -replace $oldStatusPass,$newStatusPass
-$certificateHtml = $certificateHtml -replace $oldStatusFail,$newStatusFail
+if ($PsBoundParameters.ContainsKey("failureOnly")) {
+    $certificateHtml = Publish-CertificateHealth -json $jsonFile -html -failureOnly
+} else {
+    $certificateHtml = Publish-CertificateHealth -json $jsonFile -html
+}
 
 Write-LogMessage -Type INFO -Message "Generating the Password Expiry Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 $passwordHtml = Publish-PasswordHealth -json $jsonFile -html
