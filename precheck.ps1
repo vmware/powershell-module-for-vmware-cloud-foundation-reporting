@@ -68,6 +68,7 @@ Write-LogMessage -Type INFO -Message "Generating the Certificate Health Report f
 Write-LogMessage -Type INFO -Message "Generating the Password Expiry Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 Write-LogMessage -Type INFO -Message "Generating the VSAN Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 if ($PsBoundParameters.ContainsKey("failureOnly")) {
     $serviceHtml = Publish-ServiceHealth -json $jsonFile -html -failureOnly
@@ -77,6 +78,7 @@ if ($PsBoundParameters.ContainsKey("failureOnly")) {
     $passwordHtml = Publish-PasswordHealth -json $jsonFile -html -failureOnly
     $esxiHtml = Publish-EsxiHealth -json $jsonFile -html -failureOnly
     $vsanHtml = Publish-VsanHealth -json $jsonFile -html -failureOnly
+    $vcenterHtml = Publish-VcenterHealth -json $jsonFile -html -failureOnly
     $nsxtHtml = Publish-NsxtHealth -json $jsonFile -html -failureOnly
 } else {
     $serviceHtml = Publish-ServiceHealth -json $jsonFile -html
@@ -86,10 +88,11 @@ if ($PsBoundParameters.ContainsKey("failureOnly")) {
     $passwordHtml = Publish-PasswordHealth -json $jsonFile -html
     $esxiHtml = Publish-EsxiHealth -json $jsonFile -html
     $vsanHtml = Publish-VsanHealth -json $jsonFile -html
+    $vcenterHtml = Publish-VcenterHealth -json $jsonFile -html
     $nsxtHtml = Publish-NsxtHealth -json $jsonFile -html
 }
 # Combine all SoS Health Reports into single variable for consumption when generating the report
-$sosHealthHtml = "$sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $certificateHtml $passwordHtml $esxiHtml $vsanHtml $nsxtHtml"
+$sosHealthHtml = "$sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $certificateHtml $passwordHtml $esxiHtml $vsanHtml $vcenterHtml $nsxtHtml"
 
 # Generating the System Password Report from SDDC Manager 
 Write-LogMessage -Type INFO -Message "Generating the System Password Report from SDDC Manager ($sddcManagerFqdn)"

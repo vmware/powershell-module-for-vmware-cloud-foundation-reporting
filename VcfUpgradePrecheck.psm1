@@ -658,6 +658,60 @@ Function Publish-NsxtHealth {
 }
 Export-ModuleMember -Function Publish-NsxtHealth
 
+Function Publish-VcenterHealth {
+    <#
+        .SYNOPSIS
+        Formats vCenter Server Health data from SoS output JSON
+
+        .DESCRIPTION
+        The Publish-VcenterHealth cmdlets formats the vCenter Server Health data from the SoS output JSON so that it can be consume
+        either as a standard powershell object or an HTML based object for reporting purposes. 
+
+        .EXAMPLE
+        Publish-VcenterHealth -json <file-name>
+        This example uses the JSON file provided to extracts the vCenter Server Health data and formats as a powershell object
+
+        .EXAMPLE
+        Publish-VcenterHealth -json <file-name> -html
+        This example uses the JSON file provided to extracts the vCenter Server Health data and formats as an HTML object
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        } else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        # vCenter Overall Health
+        $jsonInputData = $targetContent.Compute.'vCenter Overall Health' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
+        }
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>vCenter Server Health Status</h3>" -As Table
+            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject
+        } else {
+            $outputObject | Sort-Object Component, Resource 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-VcenterHealth
+
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
