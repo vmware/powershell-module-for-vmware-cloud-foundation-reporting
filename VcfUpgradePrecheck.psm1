@@ -491,119 +491,69 @@ Function Publish-VsanHealth {
         else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
-        $outputObject = New-Object System.Collections.ArrayList # Define the object for all data
-        # Collect VSAN Cluster Health Statusfrom SOS JSON
-        $htmlPreContent = "<h3>VSAN Cluster Health Status</h3>"
-        $inputData = $targetContent.VSAN.'Cluster vSAN Status' # Extract specific data from all data read in from the JSON file
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
-            $elementObject | Add-Member -notepropertyname 'Cluster' -notepropertyvalue ($element.area -Split ("Cluster : "))[-1]
-            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $outputObject += $elementObject
-                }
-            }
-            else {
-                $outputObject += $elementObject
-            }
+
+        $customObject = New-Object System.Collections.ArrayList
+        # VSAN Cluster Health Status
+        $jsonInputData = $targetContent.VSAN.'Cluster vSAN Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $inputData = $targetContent.VSAN.'Cluster Disk Status' # Extract specific data from all data read in from the JSON file
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
-            $elementObject | Add-Member -notepropertyname 'Cluster' -notepropertyvalue ($element.area -Split ("Cluster : "))[-1]
-            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $outputObject += $elementObject
-                }
-            }
-            else {
-                $outputObject += $elementObject
-            }
+        $customObject += $outputObject # Adding individual component to main customeObject
+        
+        # Cluster Disk Status
+        $jsonInputData = $targetContent.VSAN.'Cluster Disk Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $inputData = $targetContent.VSAN.'Cluster Data Compression Status' # Extract specific data from all data read in from the JSON file
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
-            $elementObject | Add-Member -notepropertyname 'Cluster' -notepropertyvalue ($element.area -Split ("Cluster : "))[-1]
-            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $outputObject += $elementObject
-                }
-            }
-            else {
-                $outputObject += $elementObject
-            }
+        $customObject += $outputObject # Adding individual component to main customeObject
+
+        # Cluster Data Compression Status
+        $jsonInputData = $targetContent.VSAN.'Cluster Data Compression Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $inputData = $targetContent.VSAN.'Cluster Data Encryption Status' # Extract specific data from all data read in from the JSON file
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
-            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $outputObject += $elementObject
-                }
-            }
-            else {
-                $outputObject += $elementObject
-            }
+        $customObject += $outputObject # Adding individual component to main customeObject
+
+        # Cluster Data Encryption Status
+        $jsonInputData = $targetContent.VSAN.'Cluster Data Encryption Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $inputData = $targetContent.VSAN.'Cluster Data Deduplication Status' # Extract specific data from all data read in from the JSON file
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
-            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $outputObject += $elementObject
-                }
-            }
-            else {
-                $outputObject += $elementObject
-            }
+        $customObject += $outputObject # Adding individual component to main customeObject
+
+        # Cluster Data Deduplication Status
+        $jsonInputData = $targetContent.VSAN.'Cluster Data Deduplication Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $inputData = $targetContent.VSAN.'Stretched Cluster Status' # Extract specific data from all data read in from the JSON file
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue (($element.area -Split (" : "))[1].Trim() -Split (" - "))[0]
-            $elementObject | Add-Member -notepropertyname 'Check' -notepropertyvalue $element.title
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $outputObject += $elementObject
-                }
-            }
-            else {
-                $outputObject += $elementObject
-            }
+        $customObject += $outputObject # Adding individual component to main customeObject
+
+        # Stretched Cluster Status
+        $jsonInputData = $targetContent.VSAN.'Stretched Cluster Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
         }
+        $customObject += $outputObject # Adding individual component to main customeObject
+
+        # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject | Sort-Object Resource, Cluster, 'Check' | ConvertTo-Html -Fragment -PreContent $htmlPreContent -As Table
-        }
-        else {
-            $outputObject | Sort-Object Resource, Cluster, 'Check' 
+            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>VSAN Health Status</h3>" -As Table
+            $customObject = Convert-AlertClass -htmldata $customObject
+            $customObject
+        } else {
+            $customObject | Sort-Object Component, Resource 
         }
     }
     Catch {

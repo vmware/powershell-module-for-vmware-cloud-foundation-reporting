@@ -64,9 +64,11 @@ $sosHealthTitle = "<h2>SoS Health Check Data</h2>" # Define SoS Health Title
 Write-LogMessage -Type INFO -Message "Generating the Service Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 Write-LogMessage -Type INFO -Message "Generating the DNS Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 Write-LogMessage -Type INFO -Message "Generating the NTP Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-Write-LogMessage -Type INFO -Message "Generating the Certififcate Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+Write-LogMessage -Type INFO -Message "Generating the Certificate Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 Write-LogMessage -Type INFO -Message "Generating the Password Expiry Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+Write-LogMessage -Type INFO -Message "Generating the VSAN Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 if ($PsBoundParameters.ContainsKey("failureOnly")) {
     $serviceHtml = Publish-ServiceHealth -json $jsonFile -html -failureOnly
     $dnsHtml = Publish-DnsHealth -json $jsonFile -html -failureOnly
@@ -74,6 +76,8 @@ if ($PsBoundParameters.ContainsKey("failureOnly")) {
     $certificateHtml = Publish-CertificateHealth -json $jsonFile -html -failureOnly
     $passwordHtml = Publish-PasswordHealth -json $jsonFile -html -failureOnly
     $esxiHtml = Publish-EsxiHealth -json $jsonFile -html -failureOnly
+    $vsanHtml = Publish-VsanHealth -json $jsonFile -html -failureOnly
+    $nsxtHtml = Publish-NsxtHealth -json $jsonFile -html -failureOnly
 } else {
     $serviceHtml = Publish-ServiceHealth -json $jsonFile -html
     $dnsHtml = Publish-DnsHealth -json $jsonFile -html
@@ -81,24 +85,9 @@ if ($PsBoundParameters.ContainsKey("failureOnly")) {
     $certificateHtml = Publish-CertificateHealth -json $jsonFile -html
     $passwordHtml = Publish-PasswordHealth -json $jsonFile -html
     $esxiHtml = Publish-EsxiHealth -json $jsonFile -html
+    $vsanHtml = Publish-VsanHealth -json $jsonFile -html
+    $nsxtHtml = Publish-NsxtHealth -json $jsonFile -html
 }
-
-Write-LogMessage -Type INFO -Message "Generating the VSAN Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$vsanHtml = Publish-VsanHealth -json $jsonFile -html
-$vsanHtml = $vsanHtml -replace $oldAlertOK,$newAlertOK
-$vsanHtml = $vsanHtml -replace $oldAlertCritical,$newAlertCritical
-$vsanHtml = $vsanHtml -replace $oldAlertWarning,$newAlertWarning
-$vsanHtml = $vsanHtml -replace $oldStatusPass,$newStatusPass
-$vsanHtml = $vsanHtml -replace $oldStatusFail,$newStatusFail
-
-Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$nsxtHtml = Publish-NsxtHealth -json $jsonFile -html
-$nsxtHtml = $nsxtHtml -replace $oldAlertOK,$newAlertOK
-$nsxtHtml = $nsxtHtml -replace $oldAlertCritical,$newAlertCritical
-$nsxtHtml = $nsxtHtml -replace $oldAlertWarning,$newAlertWarning
-$nsxtHtml = $nsxtHtml -replace $oldStatusPass,$newStatusPass
-$nsxtHtml = $nsxtHtml -replace $oldStatusFail,$newStatusFail
-
 # Combine all SoS Health Reports into single variable for consumption when generating the report
 $sosHealthHtml = "$sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $certificateHtml $passwordHtml $esxiHtml $vsanHtml $nsxtHtml"
 
