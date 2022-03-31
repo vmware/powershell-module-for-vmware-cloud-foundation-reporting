@@ -89,7 +89,7 @@ Function Publish-ServiceHealth {
                 }
             }
         }
-        
+
         if ($PsBoundParameters.ContainsKey("html")) { 
             $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Service Health Status</h3>" -As Table
             $outputObject = Convert-AlertClass -htmldata $outputObject
@@ -356,28 +356,22 @@ Function Publish-PasswordHealth {
         else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
-        $htmlPreContent = "<h3>Password Health Status</h3>"
-        $outputObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.'Password Expiry Status'
-        foreach ($element in $inputData.PsObject.Properties.Value) { 
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $outputObject += $elementObject
-                }
-            }
-            else {
-                $outputObject += $elementObject
-            }
+
+        # Extract data from the provided SOS JSON Health Check file
+        $jsonInputData = $targetContent.'Password Expiry Status'
+        # Run the extracted data through the Read-JsonElement function to structure the data for report output
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        }
+        else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
         }
 
+        # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent $htmlPreContent -As Table
+            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Password Health Status</h3>" -As Table
+            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject
         }
         else {
             $outputObject | Sort-Object Component, Resource 

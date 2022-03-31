@@ -77,25 +77,20 @@ Write-LogMessage -Type INFO -Message "Generating the Service Health Report from 
 Write-LogMessage -Type INFO -Message "Generating the DNS Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 Write-LogMessage -Type INFO -Message "Generating the NTP Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 Write-LogMessage -Type INFO -Message "Generating the Certififcate Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+Write-LogMessage -Type INFO -Message "Generating the Password Expiry Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 if ($PsBoundParameters.ContainsKey("failureOnly")) {
     $serviceHtml = Publish-ServiceHealth -json $jsonFile -html -failureOnly
     $dnsHtml = Publish-DnsHealth -json $jsonFile -html -failureOnly
     $ntpHtml = Publish-NtpHealth -json $jsonFile -html -failureOnly
     $certificateHtml = Publish-CertificateHealth -json $jsonFile -html -failureOnly
+    $passwordHtml = Publish-PasswordHealth -json $jsonFile -html -failureOnly
 } else {
     $serviceHtml = Publish-ServiceHealth -json $jsonFile -html
     $dnsHtml = Publish-DnsHealth -json $jsonFile -html
     $ntpHtml = Publish-NtpHealth -json $jsonFile -html
     $certificateHtml = Publish-CertificateHealth -json $jsonFile -html
+    $passwordHtml = Publish-PasswordHealth -json $jsonFile -html
 }
-
-Write-LogMessage -Type INFO -Message "Generating the Password Expiry Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$passwordHtml = Publish-PasswordHealth -json $jsonFile -html
-$passwordHtml = $passwordHtml -replace $oldAlertOK,$newAlertOK
-$passwordHtml = $passwordHtml -replace $oldAlertCritical,$newAlertCritical
-$passwordHtml = $passwordHtml -replace $oldAlertWarning,$newAlertWarning
-$passwordHtml = $passwordHtml -replace $oldStatusPass,$newStatusPass
-$passwordHtml = $passwordHtml -replace $oldStatusFail,$newStatusFail
 
 Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 $esxiHtml = Publish-EsxiHealth -json $jsonFile -html
