@@ -66,27 +66,22 @@ Write-LogMessage -Type INFO -Message "Generating the DNS Health Report from SoS 
 Write-LogMessage -Type INFO -Message "Generating the NTP Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 Write-LogMessage -Type INFO -Message "Generating the Certififcate Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 Write-LogMessage -Type INFO -Message "Generating the Password Expiry Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 if ($PsBoundParameters.ContainsKey("failureOnly")) {
     $serviceHtml = Publish-ServiceHealth -json $jsonFile -html -failureOnly
     $dnsHtml = Publish-DnsHealth -json $jsonFile -html -failureOnly
     $ntpHtml = Publish-NtpHealth -json $jsonFile -html -failureOnly
     $certificateHtml = Publish-CertificateHealth -json $jsonFile -html -failureOnly
     $passwordHtml = Publish-PasswordHealth -json $jsonFile -html -failureOnly
+    $esxiHtml = Publish-EsxiHealth -json $jsonFile -html -failureOnly
 } else {
     $serviceHtml = Publish-ServiceHealth -json $jsonFile -html
     $dnsHtml = Publish-DnsHealth -json $jsonFile -html
     $ntpHtml = Publish-NtpHealth -json $jsonFile -html
     $certificateHtml = Publish-CertificateHealth -json $jsonFile -html
     $passwordHtml = Publish-PasswordHealth -json $jsonFile -html
+    $esxiHtml = Publish-EsxiHealth -json $jsonFile -html
 }
-
-Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$esxiHtml = Publish-EsxiHealth -json $jsonFile -html
-$esxiHtml = $esxiHtml -replace $oldAlertOK,$newAlertOK
-$esxiHtml = $esxiHtml -replace $oldAlertCritical,$newAlertCritical
-$esxiHtml = $esxiHtml -replace $oldAlertWarning,$newAlertWarning
-$esxiHtml = $esxiHtml -replace $oldStatusPass,$newStatusPass
-$esxiHtml = $esxiHtml -replace $oldStatusFail,$newStatusFail
 
 Write-LogMessage -Type INFO -Message "Generating the VSAN Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 $vsanHtml = Publish-VsanHealth -json $jsonFile -html

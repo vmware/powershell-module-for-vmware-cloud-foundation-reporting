@@ -137,6 +137,7 @@ Function Publish-DnsHealth {
         }
 
         # Forward Lookup Health Status
+        $allForwardLookupObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.'DNS lookup Status'.'Forward lookup Status' # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
             $allForwardLookupObject = Read-JsonElement -inputData $jsonInputData -failureOnly
@@ -145,6 +146,7 @@ Function Publish-DnsHealth {
         }
 
         # Reverse Lookup Health Status
+        $allReverseLookupObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.'DNS lookup Status'.'Reverse lookup Status' # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
             $allReverseLookupObject = Read-JsonElement -inputData $jsonInputData -failureOnly
@@ -154,10 +156,10 @@ Function Publish-DnsHealth {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Forward Lookup Health Status</h3>" -As Table
+            $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Forward Lookup Health Status</h3>" -As Table
             $allForwardLookupObject = Convert-AlertClass -htmldata $allForwardLookupObject
             $allForwardLookupObject
-            $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Reverse Lookup Health Status</h3>" -As Table
+            $allReverseLookupObject =$allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Reverse Lookup Health Status</h3>" -As Table
             $allReverseLookupObject = Convert-AlertClass -htmldata $allReverseLookupObject
             $allReverseLookupObject
         } else {
@@ -394,94 +396,58 @@ Function Publish-EsxiHealth {
         else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
-        # Collect ESXi Overall Health Status from SOS JSON 
-        $htmlPreContentOverall = "<h3>ESXi Overall Health Status</h3>"
-        $allOverallDumpObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.Compute.'ESXi Overall Health' # Extract Data from the provided SOS JSON
-        foreach ($element in $inputData.PsObject.Properties.Value) { 
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $allOverallDumpObject += $elementObject
-                }
-            }
-            else {
-                $allOverallDumpObject += $elementObject
-            }
-        }
-        # Collect ESXi Core Dump Health Status from SOS JSON
-        $htmlPreContentCoreDump = "<h3>ESXi Core Dump Health Status</h3>"
-        $allCoreDumpObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.General.'ESXi Core Dump Status'
-        foreach ($element in $inputData.PsObject.Properties.Value) { 
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $allCoreDumpObject += $elementObject
-                }
-            }
-            else {
-                $allCoreDumpObject += $elementObject
-            }
-        }
-        # Collect ESXi License Health Status from SOS JSON
-        $htmlPreContentLicense = "<h3>ESXi License Health Status</h3>"
-        $allLicenseObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.Compute.'ESXi License Status'
-        foreach ($element in $inputData.PsObject.Properties.Value) { 
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $allLicenseObject += $elementObject
-                }
-            }
-            else {
-                $allLicenseObject += $elementObject
-            }
-        }
-        # Collect ESXi Disk Health Status from SOS JSON
-        $htmlPreContentDisk = "<h3>ESXi Disk Health Status</h3>"
-        $allDiskObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.Compute.'ESXi Disk Status'
-        foreach ($element in $inputData.PsObject.Properties.Value) { 
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-            #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $allDiskObject += $elementObject
-                }
-            }
-            else {
-                $allDiskObject += $elementObject
-            }
+
+        # ESXi Overall Health Status
+        $allOverallHealthObject = New-Object System.Collections.ArrayList
+        $jsonInputData = $targetContent.Compute.'ESXi Overall Health' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData
         }
 
-        if ($PsBoundParameters.ContainsKey("html")) {
-            $allOverallDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent $htmlPreContentOverall -As Table
-            $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent $htmlPreContentCoreDump -As Table
-            $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent $htmlPreContentLicense -As Table
-            $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent $htmlPreContentDisk -As Table
+        # ESXi Core Dump Status
+        $allCoreDumpObject = New-Object System.Collections.ArrayList
+        $jsonInputData = $targetContent.General.'ESXi Core Dump Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData
         }
-        else {
+        
+        # ESXi License Status
+        $allLicenseObject = New-Object System.Collections.ArrayList
+        $jsonInputData = $targetContent.Compute.'ESXi License Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $allLicenseObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $allLicenseObject = Read-JsonElement -inputData $jsonInputData
+        }
+
+        # ESXi Disk Status
+        $allDiskObject = New-Object System.Collections.ArrayList
+        $jsonInputData = $targetContent.Compute.'ESXi Disk Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $allDiskObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $allDiskObject = Read-JsonElement -inputData $jsonInputData
+        }
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>ESXi Overall Health Status</h3>" -As Table;
+            $allOverallHealthObject = Convert-AlertClass -htmldata $allOverallHealthObject
+            $allOverallHealthObject
+            $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>ESXi Core Dump Health Status</h3>" -As Table
+            $allCoreDumpObject = Convert-AlertClass -htmldata $allCoreDumpObject
+            $allCoreDumpObject
+            $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>ESXi License Health Status</h3>" -As Table
+            $allLicenseObject = Convert-AlertClass -htmldata $allLicenseObject
+            $allLicenseObject
+            $allDiskObject= $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>ESXi Disk Health Status</h3>" -As Table
+            $allDiskObject = Convert-AlertClass -htmldata $allDiskObject
+            $allDiskObject
+        } else {
             $allOverallDumpObject | Sort-Object Component, Resource
             $allCoreDumpObject | Sort-Object Component, Resource
             $allLicenseObject | Sort-Object Component, Resource
