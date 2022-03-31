@@ -69,33 +69,33 @@ Function Publish-ServiceHealth {
         else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
-        $htmlPreContent = "<h3>Service Health Status</h3>"
+
         $outputObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.'Services'
+        $inputData = $targetContent.'Services' # Extract Data from the provided SOS JSON
         foreach ($component in $inputData) {
             foreach ($element in $component.PsObject.Properties.Value) {
                 $elementObject = New-Object -TypeName psobject
                 $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
                 $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
                 $elementObject | Add-Member -notepropertyname 'Service Name' -notepropertyvalue $element.title.ToUpper()
-                #$elementObject | Add-Member -notepropertyname 'Status' -notepropertyvalue $element.status.ToUpper()
                 $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
                 $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
                 if ($PsBoundParameters.ContainsKey("failureOnly")) {
                     if (($element.status -eq "FAILED")) {
                         $outputObject += $elementObject
                     }
-                }
-                else {
+                } else {
                     $outputObject += $elementObject
                 }
             }
         }
+        
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject | Sort-Object Component, Resource, 'Service Name' | ConvertTo-Html -Fragment -PreContent $htmlPreContent -As Table
-        }
-        else {
-            $outputObject | Sort-Object Component, Resource, 'Service Name' 
+            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Service Health Status</h3>" -As Table
+            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject
+        } else {
+            $outputObject | Sort-Object Component, Resource 
         }
     }
     Catch {
@@ -222,7 +222,6 @@ Function Publish-NtpHealth {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
         # Extract data from the provided SOS JSON Health Check file
-        $htmlPreContent = "<h3>NTP Health Status</h3>"
         $jsonInputData = $targetContent.'NTP'
         $jsonInputData.PSObject.Properties.Remove('ESXi HW Time')
         $jsonInputData.PSObject.Properties.Remove('ESXi Time')
@@ -234,7 +233,7 @@ Function Publish-NtpHealth {
         }
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent $htmlPreContent -As Table
+            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>NTP Health Status</h3>" -As Table
             $outputObject = Convert-AlertClass -htmldata $outputObject
             $outputObject
         } else {
@@ -310,7 +309,7 @@ Function Publish-CertificateHealth {
         }
 
         $outputObject += $customObject # Combined ESXi Certificate Health with Remaining Components
-        
+
         if ($PsBoundParameters.ContainsKey("html")) { 
             $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Certificate Health Status</h3>" -As Table
             $outputObject = Convert-AlertClass -htmldata $outputObject

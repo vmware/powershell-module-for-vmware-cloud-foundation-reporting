@@ -74,32 +74,18 @@ $reportTitle = "<h1>Health Check Report for SDDC Manager: $sddcManagerFqdn</h1>"
 
 $sosHealthTitle = "<h2>SoS Health Check Data</h2>" # Define SoS Health Title
 Write-LogMessage -Type INFO -Message "Generating the Service Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$serviceHtml = Publish-ServiceHealth $jsonFile -html
-$serviceHtml = $serviceHtml -replace $oldAlertOK,$newAlertOK
-$serviceHtml = $serviceHtml -replace $oldAlertCritical,$newAlertCritical
-$serviceHtml = $serviceHtml -replace $oldAlertWarning,$newAlertWarning
-$serviceHtml = $serviceHtml -replace $oldStatusPass,$newStatusPass
-$serviceHtml = $serviceHtml -replace $oldStatusFail,$newStatusFail
-
 Write-LogMessage -Type INFO -Message "Generating the DNS Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-$dnsHtml = Publish-DnsHealth -json $jsonFile -html
-$dnsHtml = $dnsHtml -replace $oldAlertOK,$newAlertOK
-$dnsHtml = $dnsHtml -replace $oldAlertCritical,$newAlertCritical
-$dnsHtml = $dnsHtml -replace $oldAlertWarning,$newAlertWarning
-$dnsHtml = $dnsHtml -replace $oldStatusPass,$newStatusPass
-$dnsHtml = $dnsHtml -replace $oldStatusFail,$newStatusFail
-
 Write-LogMessage -Type INFO -Message "Generating the NTP Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-if ($PsBoundParameters.ContainsKey("failureOnly")) {
-    $ntpHtml = Publish-NtpHealth -json $jsonFile -html -failureOnly
-} else {
-    $ntpHtml = Publish-NtpHealth -json $jsonFile -html
-}
-
 Write-LogMessage -Type INFO -Message "Generating the Certififcate Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
 if ($PsBoundParameters.ContainsKey("failureOnly")) {
+    $serviceHtml = Publish-ServiceHealth -json $jsonFile -html -failureOnly
+    $dnsHtml = Publish-DnsHealth -json $jsonFile -html -failureOnly
+    $ntpHtml = Publish-NtpHealth -json $jsonFile -html -failureOnly
     $certificateHtml = Publish-CertificateHealth -json $jsonFile -html -failureOnly
 } else {
+    $serviceHtml = Publish-ServiceHealth -json $jsonFile -html
+    $dnsHtml = Publish-DnsHealth -json $jsonFile -html
+    $ntpHtml = Publish-NtpHealth -json $jsonFile -html
     $certificateHtml = Publish-CertificateHealth -json $jsonFile -html
 }
 
