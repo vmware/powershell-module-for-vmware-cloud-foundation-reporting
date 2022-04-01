@@ -94,6 +94,7 @@ Try {
     $sosHealthHtml = "$sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $certificateHtml $passwordHtml $esxiHtml $vsanHtml $vcenterHtml $nsxtHtml $connectivityHtml"
 
     # Generating the Password Expiry Report
+    # TO DO: Wrapper Function to be called here
     Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report from SDDC Manager ($sddcManagerFqdn)"
     $allPasswordExpiryObject = New-Object System.Collections.ArrayList
     $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass; $allPasswordExpiryObject += $sddcPasswordExpiry
