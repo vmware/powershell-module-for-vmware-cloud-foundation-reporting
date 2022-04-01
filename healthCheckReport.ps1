@@ -93,14 +93,14 @@ Try {
     # Combine all SoS Health Reports into single variable for consumption when generating the report
     $sosHealthHtml = "$sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $certificateHtml $passwordHtml $esxiHtml $vsanHtml $vcenterHtml $nsxtHtml $connectivityHtml"
 
-    # Generating the System Password Report from SDDC Manager 
+    # Generating the Password Expiry Report
     Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report from SDDC Manager ($sddcManagerFqdn)"
-    $passwordHtml = Request-SddcManagerUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html
-    #$systemPasswordHtml = Export-SystemPassword -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -html
-
-    # # Check the Status of the Backup Account on the SDDC Manager Instance
-    # Write-LogMessage -Type INFO -Message "Check the Status of the Backup Account on SDDC Manager Appliance ($($sddcManagerFqdn.Split(".")[0]))"
-    # $backupUserHtml = Show-SddcManagerLocalUser -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -localUser backup -html
+    $allPasswordExpiryObject = New-Object System.Collections.ArrayList
+    $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass; $allPasswordExpiryObject += $sddcPasswordExpiry
+    $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass; $allPasswordExpiryObject += $vcenterPasswordExpiry
+    $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass; $allPasswordExpiryObject += $vrslcmPasswordExpiry
+    $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
+    $allPasswordExpiryObject = Convert-AlertClass -htmldata $allPasswordExpiryObject
 
     # $datastoreTitle = "<h2>Datastore Capacity for all Workload Domains</h2>"
     # # Generating Datastore Capacity Report for all Workload Domains
@@ -122,7 +122,7 @@ Try {
     # }
 
     # Combine all information gathered into a single HTML report
-    $report = ConvertTo-HTML -Body "$reportTitle $passwordHtml $sosHealthHtml $backupUserHtml $datastoreTitle $allStorageCapacityHtml $coreDumpTitle $allEsxiCoreDumpHtml" -Title "SDDC Manager Health Check Report" -Head $reportFormat -PostContent "<p>Creation Date: $(Get-Date)<p>"
+    $report = ConvertTo-HTML -Body "$reportTitle $allPasswordExpiryObject $sosHealthHtml $backupUserHtml $datastoreTitle $allStorageCapacityHtml $coreDumpTitle $allEsxiCoreDumpHtml" -Title "SDDC Manager Health Check Report" -Head $reportFormat -PostContent "<p>Creation Date: $(Get-Date)<p>"
 
     # Generate the report to an HTML file and then open it in the default browser
     Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"

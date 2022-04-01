@@ -1053,7 +1053,7 @@ Function Request-SddcManagerUserExpiry {
         -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
-        - Performs checks on the user
+        - Performs checks on the user and outputs the results
 
         .EXAMPLE
         Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1!
@@ -1082,7 +1082,7 @@ Function Request-SddcManagerUserExpiry {
 
                         # Return the structured data to the console or format using HTML CSS Styles
                         if ($PsBoundParameters.ContainsKey("html")) { 
-                            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Custom Password Expiry Health Status</h3>" -As Table
+                            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
                             $customObject = Convert-AlertClass -htmldata $customObject
                             $customObject
                         } else {
@@ -1096,6 +1096,116 @@ Function Request-SddcManagerUserExpiry {
     }
 }
 Export-ModuleMember -Function Request-SddcManagerUserExpiry
+
+
+Function Request-vCenterUserExpiry {
+    <#
+		.SYNOPSIS
+        Checks vCenter Server local user expiry
+
+        .DESCRIPTION
+        The Request-vCenterUserExpiry cmdlets checks the expiry date of local accounts on vCenter Server. The cmdlet 
+        connects to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the details for each vCenter Server
+        - Collects information for the local root account
+        - Checks when the password will expire and outputs the results
+
+        .EXAMPLE
+        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+
+    if (Test-VCFConnection -server $server) {
+        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                        $customObject = New-Object System.Collections.ArrayList
+                        $allVcenters = Get-VCFvCenter
+                        foreach ($vcenter in $allVcenters) {
+                            $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn}).password
+                            $elementObject = Request-LocalUserExpiry -fqdn $vcenter.fqdn -component vCenter -rootPass $rootPass -checkUser root
+                            $customObject += $elementObject
+                        }
+
+                        # Return the structured data to the console or format using HTML CSS Styles
+                        if ($PsBoundParameters.ContainsKey("html")) { 
+                            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
+                            $customObject = Convert-AlertClass -htmldata $customObject
+                            $customObject
+                        } else {
+                            $customObject | Sort-Object Component, Resource 
+                        }
+                    }
+                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                }
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Request-vCenterUserExpiry
+
+Function Request-vRslcmUserExpiry {
+    <#
+		.SYNOPSIS
+        Checks vCenter Server local user expiry
+
+        .DESCRIPTION
+        The Request-vRslcmUserExpiry cmdlets checks the expiry date of local accounts on vCenter Server. The cmdlet 
+        connects to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the details for each vCenter Server
+        - Collects information for the local root account
+        - Checks when the password will expire and outputs the results
+
+        .EXAMPLE
+        Request-vRslcmUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+
+    if (Test-VCFConnection -server $server) {
+        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                        if (Get-VCFvRSLCM) {
+                            $customObject = New-Object System.Collections.ArrayList
+                            $vrslcm = Get-VCFvRSLCM
+                            $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vrslcm.fqdn}).password
+                            $customObject = Request-LocalUserExpiry -fqdn $vrslcm.fqdn -component vRSLCM -rootPass $rootPass -checkUser root
+
+                            # Return the structured data to the console or format using HTML CSS Styles
+                            if ($PsBoundParameters.ContainsKey("html")) { 
+                                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
+                                $customObject = Convert-AlertClass -htmldata $customObject
+                                $customObject
+                            } else {
+                                $customObject | Sort-Object Component, Resource 
+                            }
+                        }
+                    }
+                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                }
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Request-vRslcmUserExpiry
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
