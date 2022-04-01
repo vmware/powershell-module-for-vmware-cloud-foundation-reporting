@@ -1156,14 +1156,14 @@ Export-ModuleMember -Function Request-vCenterUserExpiry
 Function Request-vRslcmUserExpiry {
     <#
 		.SYNOPSIS
-        Checks vCenter Server local user expiry
+        Checks vRealize Suite Lifecycle Manager local user expiry
 
         .DESCRIPTION
-        The Request-vRslcmUserExpiry cmdlets checks the expiry date of local accounts on vCenter Server. The cmdlet 
-        connects to SDDC Manager using the -server, -user, and -password values:
+        The Request-vRslcmUserExpiry cmdlets checks the expiry date of local accounts on vRealize Suite
+        Lifecycle Manager. The cmdlet connects to SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the details for each vCenter Server
+        - Gathers the details for vRealize Suite Lifecycle Manager
         - Collects information for the local root account
         - Checks when the password will expire and outputs the results
 
