@@ -38,6 +38,63 @@ if ($PSEdition -eq 'Desktop') {
 #######################################################################################################################
 #############################  S O S   J S O N   E X T R A C T I O N   F U N C T I O N S   ############################
 
+Function Request-SoSHealthJson {
+    <#
+        .SYNOPSIS
+        Execute SoS and Retrive the JSON File
+
+        .DESCRIPTION
+        The Request-SoSHealthJson cmdlets connects to SDDC Manager, triggers SoS Health collection to JSON and then
+        downloads the JSON file to the local file system
+
+        .EXAMPLE
+        Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -reportPath F:\Precheck\HealthReports -allDomains
+        This example uses the JSON file provided to extracts the Service Health data and formats as a powershell object
+
+        .EXAMPLE
+        
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+
+    Try {
+        if ($PsBoundParameters.ContainsKey("allDomains")) { 
+            $command = "/opt/vmware/sddc-support/sos --health-check --skip-known-host-check --json-output-dir /tmp/jsons --domain-name ALL"
+            $reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json")
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $command = "/opt/vmware/sddc-support/sos --health-check --skip-known-host-check --json-output-dir /tmp/jsons --domain-name " + $workloadDomain
+            $reportDestination = ($reportPath + "\" + $workloadDomain + "-all-health-results.json")
+        }
+        Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command | Out-Null
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            Copy-VMGuestFile -Source "/tmp/jsons/health-results.json" -Destination $reportDestination -VM $server.Split(".")[0] -GuestToLocal -GuestUser root -GuestPassword $rootPass
+                            $temp = Get-Content -Path $reportDestination; $temp = $temp -replace '""', '"-"'; $temp | Out-File $reportDestination
+                            $reportDestination
+                        }
+                        Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-SoSHealthJson
+
 Function Publish-ServiceHealth {
     <#
         .SYNOPSIS
@@ -63,7 +120,7 @@ Function Publish-ServiceHealth {
     )
 
     Try {
-        if (!(Test-Path $json)) {
+        if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
         } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
@@ -128,7 +185,7 @@ Function Publish-DnsHealth {
     )
 
     Try {
-        if (!(Test-Path $json)) {
+        if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
         } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
@@ -196,7 +253,7 @@ Function Publish-NtpHealth {
     )
 
     Try {
-        if (!(Test-Path $json)) {
+        if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
         } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
@@ -253,7 +310,7 @@ Function Publish-CertificateHealth {
     )
 
     Try {
-        if (!(Test-Path $json)) {
+        if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
         } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
@@ -331,7 +388,7 @@ Function Publish-PasswordHealth {
     )
 
     Try {
-        if (!(Test-Path $json)) {
+        if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
         } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
@@ -347,7 +404,7 @@ Function Publish-PasswordHealth {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Password Health Status</h3>" -As Table
+            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Password Expiry Health Status</h3>" -As Table
             $outputObject = Convert-AlertClass -htmldata $outputObject
             $outputObject
         } else {
@@ -385,7 +442,7 @@ Function Publish-EsxiHealth {
     )
 
     Try {
-        if (!(Test-Path $json)) {
+        if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
         } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
@@ -479,7 +536,7 @@ Function Publish-VsanHealth {
     )
 
     Try {
-        if (!(Test-Path $json)) {
+        if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
         } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
@@ -580,7 +637,7 @@ Function Publish-NsxtHealth {
     )
 
     Try {
-        if (!(Test-Path $json)) {
+        if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
         } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
@@ -723,7 +780,7 @@ Function Publish-VcenterHealth {
     )
 
     Try {
-        if (!(Test-Path $json)) {
+        if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
         } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
@@ -777,7 +834,7 @@ Function Publish-ConnectivityHealth {
     )
 
     Try {
-        if (!(Test-Path $json)) {
+        if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
         } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
@@ -872,74 +929,6 @@ Function Export-SystemPassword {
     }
 }
 Export-ModuleMember -Function Export-SystemPassword
-
-Function Show-SddcManagerLocalUser {
-        <#
-		.SYNOPSIS
-        Check the status of a local account on SDDC Manager
-
-        .DESCRIPTION
-        The Show-SddcManagerLocalUser cmdlets checks the status of the local user on the SDDC Manager appliance.
-
-        .EXAMPLE
-        Show-SddcManagerLocalUser -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -localUser backup
-        This example executes the command provided on the SDDC Manager appliance
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$localUser,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
-    )
-    
-    Try {
-        $command = 'chage -l ' + $localuser
-        $htmlPreContent = '<h2>SDDC Manager Local User Report</h2>'
-        $output = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command
-        $formatOutput = ($output.ScriptOutput -split '\r?\n').Trim()
-        $formatOutput = $formatOutput -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
-
-        # Get the current date and expiration date
-        Add-Type  -AssemblyName  Microsoft.VisualBasic
-        $endDate = ($formatOutput[1] -Split (':'))[1].Trim()
-        $expiryDays = [math]::Ceiling((([DateTime]$endDate) - (Get-Date)).TotalDays)
-
-        # Set the status of the local user account based on the expiry date
-        if ($expiryDays -le 15) {
-            $status = 'YELLOW'  # Warning: <= 15 days
-        }
-        if ($expiryDays -le 7) {
-            $status = 'RED'     # Critical: <= 7 days
-        }
-        else {
-            $status = 'GREEN'   # OK: > 15 days
-        }
-
-        # Generate the results
-        $userReport = New-Object -TypeName psobject
-        $userReport | Add-Member -NotePropertyName 'User' -NotePropertyValue $localUser
-        $userReport | Add-Member -NotePropertyName 'Password Expires' -NotePropertyValue ($formatOutput[1] -Split (':'))[1].Trim()
-        $userReport | Add-Member -NotePropertyName 'Password Days Remaining' -NotePropertyValue $expiryDays     
-        $userReport | Add-Member -NotePropertyName 'Account Expires' -NotePropertyValue ($formatOutput[3] -Split (':'))[1].Trim()
-        $userReport | Add-Member -NotePropertyName 'Status' -NotePropertyValue $status
-
-        # Output the results to HTML
-        if ($PsBoundParameters.ContainsKey('html')) { 
-            $userReport | ConvertTo-Html -Fragment -PreContent $htmlPreContent -As Table
-        }
-        # Output the results to the console
-        else {
-            $userReport
-        }
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Show-SddcManagerLocalUser
 
 Function Export-EsxiCoreDumpConfig {
     <#
@@ -1053,12 +1042,77 @@ Function Export-StorageCapacity {
 }
 Export-ModuleMember -Function Export-StorageCapacity
 
+Function Request-SddcManagerUserExpiry {
+    <#
+		.SYNOPSIS
+        Checks user expiry
+
+        .DESCRIPTION
+        The Request-SddcManagerUserExpiry cmdlets checks additional user expiry details across a VMWare Cloud Foundation instance
+        where the SoS Health Check does not. The cmdlet connects to SDDC Manager using the -server, -user, and
+        -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Performs checks on the user
+
+        .EXAMPLE
+        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1!
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+
+    if (Test-VCFConnection -server $server) {
+        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                        $customObject = New-Object System.Collections.ArrayList
+                        $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser backup
+                        $customObject += $elementObject
+                        $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser root
+                        $customObject += $elementObject
+                        $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser vcf
+                        $customObject += $elementObject
+
+                        # Return the structured data to the console or format using HTML CSS Styles
+                        if ($PsBoundParameters.ContainsKey("html")) { 
+                            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Custom Password Expiry Health Status</h3>" -As Table
+                            $customObject = Convert-AlertClass -htmldata $customObject
+                            $customObject
+                        } else {
+                            $customObject | Sort-Object Component, Resource 
+                        }
+                    }
+                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                }
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Request-SddcManagerUserExpiry
+
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
 
 
 #########################################################################################
 #############################  Start Supporting Functions  ##############################
+
+Function Start-CreateReportDirectory ($path, $sddcManagerFqdn) {
+    $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
+    $Global:reportFolder = $path + '\HealthReports\'
+    if (!(Test-Path -Path $reportFolder)) {
+        New-Item -Path $reportFolder -ItemType "directory" | Out-Null
+    }
+    $Global:reportName = $reportFolder + $sddcManagerFqdn.Split(".")[0] + "-healthCheck-" + $filetimeStamp + ".htm"
+}
+Export-ModuleMember -Function Start-CreateReportDirectory
 
 Function Invoke-SddcCommand {
     <#
@@ -1093,6 +1147,7 @@ Function Invoke-SddcCommand {
                         $output = Invoke-VMScript -VM ($server.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass -Server $vcfVcenterDetails.fqdn
                         $output
                     }
+                    Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                 }
             }
         }
@@ -1100,15 +1155,31 @@ Function Invoke-SddcCommand {
 }
 Export-ModuleMember -Function Invoke-SddcCommand
 
-Function Start-CreateReportDirectory ($path, $sddcManagerFqdn) {
-    $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
-    $reportFolder = $path + '\HealthReports\'
-    if (!(Test-Path -Path $reportFolder)) {
-        New-Item -Path $reportFolder -ItemType "directory" | Out-Null
+Function Read-JsonElement {
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [PSCustomObject]$inputData,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    $outputData = New-Object System.Collections.ArrayList
+    foreach ($element in $inputData.PsObject.Properties.Value) {
+        $elementObject = New-Object -TypeName psobject
+        $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
+        $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
+        $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
+        $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            if (($element.status -eq "FAILED")) {
+                $outputData += $elementObject
+            }
+        }
+        else {
+            $outputData += $elementObject
+        }
     }
-    $Global:reportName = $reportFolder + $sddcManagerFqdn.Split(".")[0] + "-healthCheck-" + $filetimeStamp + ".htm"
+    $outputData
 }
-Export-ModuleMember -Function Start-CreateReportDirectory
+Export-ModuleMember -Function Read-JsonElement
 
 Function Convert-TextToHtml {
     Param (
@@ -1144,32 +1215,6 @@ $defaultCssStyle
 }
 Export-ModuleMember -Function Get-DefaultHtmlReportStyle
 
-Function Read-JsonElement {
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [PSCustomObject]$inputData,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
-    )
-
-    $outputData = New-Object System.Collections.ArrayList
-    foreach ($element in $inputData.PsObject.Properties.Value) {
-        $elementObject = New-Object -TypeName psobject
-        $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
-        $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-        $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-        $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            if (($element.status -eq "FAILED")) {
-                $outputData += $elementObject
-            }
-        }
-        else {
-            $outputData += $elementObject
-        }
-    }
-    $outputData
-}
-Export-ModuleMember -Function Read-JsonElement
-
 Function PercentCalc {
     Param (
         [Parameter (Mandatory = $true)] [Int]$InputNum1,
@@ -1196,6 +1241,70 @@ Function Convert-AlertClass {
     $htmlData
 }
 Export-ModuleMember -Function Convert-AlertClass
+
+Function Request-LocalUserExpiry {
+    <#
+        .SYNOPSIS
+        Check the expiry of a local linux user
+
+        .DESCRIPTION
+        The Request-LocalUserExpiry cmdlets checks the expiry details of a local user on a linux operating system and
+        outputs the data.
+
+        .EXAMPLE
+        Request-LocalUserExpiry -vmName sfo-vcf01.sfo.rainpole.io -rootPass VMw@re1! -component SDDC -checkUser backup
+        This example executes the command to check the expiration status of the backup user 
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$checkUser,
+        [Parameter (Mandatory = $true)] [ValidateSet("SDDC","vCenter","vRSLCM")] [String]$component
+    )
+
+    Try {
+        if (Get-VM -Name ($server.Split(".")[0])) {
+            $command = 'chage -l ' + $checkUser
+            $output = Invoke-VMScript -VM ($server.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass
+            $formatOutput = ($output.ScriptOutput -split '\r?\n').Trim()
+            $formatOutput = $formatOutput -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
+
+            # Get the current date and expiration date
+            Add-Type  -AssemblyName  Microsoft.VisualBasic
+            $endDate = ($formatOutput[1] -Split (':'))[1].Trim()
+            $expiryDays = [math]::Ceiling((([DateTime]$endDate) - (Get-Date)).TotalDays)
+
+            # Set the status of the local user account based on the expiry date
+            if ($expiryDays -le 15) {
+                $alert = 'YELLOW'  # Warning: <= 15 days
+                $message = "Password will expire in 15 or lese days. Verfied using $command"
+            }
+            if ($expiryDays -le 5) {
+                $alert = 'RED'     # Critical: <= 5 days
+                $message = "Password will expiration in less than 5 days or has already expired. Verfied using $command"
+            } else {
+                $alert = 'GREEN'   # OK: > 15 days
+                $message = "Password will not expire within the next 15 days. Verfied using $command"
+            }
+
+            $userObject = New-Object -TypeName psobject
+            $userObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
+            $userObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue $fqdn
+            $userObject | Add-Member -notepropertyname 'User' -notepropertyvalue $checkUser
+            $userObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $alert
+            $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
+            $userObject
+        } else {
+            Write-Error "Unable to locate Virtual Machine ($($server.Split(".")[0])) in the vCenter Server inventory, check details"
+        }
+
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-LocalUserExpiry
 
 ##############################  End Supporting Functions ###############################
 ########################################################################################
