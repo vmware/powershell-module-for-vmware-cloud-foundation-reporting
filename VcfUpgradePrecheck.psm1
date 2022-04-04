@@ -7,15 +7,16 @@
 # This PowerShell module should be considered entirely experimental. It is still in development & not tested beyond lab
 # scenarios. It is recommended you don't use it for any production environment without testing extensively!
 
-# Enable communication with self signed certs when using Powershell Core. If you require all communications to be secure
-# and do not wish to allow communication with self-signed certificates remove lines 13-36 before importing the module.
+# Allow communication with self-signed certificates when using Powershell Core. If you require all communications to be
+# secure and do not wish to allow communication with self-signed certificates, remove lines 13-36 before importing the
+# module.
 
 if ($PSEdition -eq 'Core') {
     $PSDefaultParameterValues.Add("Invoke-RestMethod:SkipCertificateCheck", $true)
 }
 
 if ($PSEdition -eq 'Desktop') {
-    # Enable communication with self signed certs when using Windows Powershell
+    # Allow communication with self-signed certificates when using Windows Powershell
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
 
     if ("TrustAllCertificatePolicy" -as [type]) {} else {
@@ -41,18 +42,16 @@ if ($PSEdition -eq 'Desktop') {
 Function Request-SoSHealthJson {
     <#
         .SYNOPSIS
-        Execute SoS and Retrive the JSON File
+        Run SoS and save the JSON output.
 
         .DESCRIPTION
-        The Request-SoSHealthJson cmdlets connects to SDDC Manager, triggers SoS Health collection to JSON and then
-        downloads the JSON file to the local file system
+        The Request-SoSHealthJson cmdlet connects to SDDC Manager, runs an SoS Health collection to JSON, and saves the
+        JSON file to the local file system.
 
         .EXAMPLE
         Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -reportPath F:\Precheck\HealthReports -allDomains
-        This example uses the JSON file provided to extracts the Service Health data and formats as a powershell object
-
-        .EXAMPLE
-        
+        This example runs an SoS Health collection on all domains on the SDDC and saves the JSON output to the local
+        file system.
     #>
 
     Param (
@@ -95,22 +94,27 @@ Function Request-SoSHealthJson {
 }
 Export-ModuleMember -Function Request-SoSHealthJson
 
-Function Publish-ServiceHealth {
+Function Publish-CertificateHealth {
     <#
         .SYNOPSIS
-        Formats Service Health data from SoS output JSON
+        Formats the Certificate Health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-ServiceHealth cmdlets formats the Service Health data from the SoS output JSON so that it can be consume
-        either as a standard powershell object or an HTML based object for reporting purposes. 
+        The Publish-CertificateHealth cmdlet formats the Certificate Health data from the SoS JSON output and publishes
+        it as either a standard PowerShell object or an HTML object. 
 
         .EXAMPLE
-        Publish-ServiceHealth -json <file-name>
-        This example uses the JSON file provided to extracts the Service Health data and formats as a powershell object
+        Publish-CertificateHealth -json <file-name>
+        This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-ServiceHealth -json <file-name> -html
-        This example uses the JSON file provided to extracts the Service Health data and formats as an HTML object
+        Publish-CertificateHealth -json <file-name> -html
+        This example extracts and formats the Certificate Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-CertificateHealth -json <file-name> -failureOnly
+        This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file for
+        only the failed items.
     #>
 
     Param (
@@ -122,35 +126,52 @@ Function Publish-ServiceHealth {
     Try {
         if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        } else {
+        }
+        else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
-        $outputObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.'Services' # Extract Data from the provided SOS JSON
-        foreach ($component in $inputData) {
-            foreach ($element in $component.PsObject.Properties.Value) {
+        # ESXi Certificate Health
+        $jsonInputData = $targetContent.'Certificates'.'Certificate Status'.ESXi # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        }
+        else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
+        }
+        
+        # Certificate Health (Except ESXi)
+        $customObject = New-Object System.Collections.ArrayList
+        $inputData = $targetContent.'Certificates'.'Certificate Status' # Extract Data from the provided SOS JSON
+        $inputData.PSObject.Properties.Remove('ESXI')
+        foreach ($component in $inputData.PsObject.Properties.Value) { 
+            foreach ($element in $component.PsObject.Properties.Value) { 
                 $elementObject = New-Object -TypeName psobject
-                $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
-                $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-                $elementObject | Add-Member -notepropertyname 'Service Name' -notepropertyvalue $element.title.ToUpper()
-                $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-                $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-                if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                    if (($element.status -eq "FAILED")) {
-                        $outputObject += $elementObject
+                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if (($element.status -eq 'FAILED')) {
+                        $customObject += $elementObject
                     }
-                } else {
-                    $outputObject += $elementObject
+                }
+                else {
+                    $customObject += $elementObject
                 }
             }
         }
 
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Service Health Status</h3>" -As Table
+        $outputObject += $customObject # Combined ESXi Certificate Health with Remaining Components
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey('html')) { 
+            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Certificate Health Status</h3>' -As Table
             $outputObject = Convert-AlertClass -htmldata $outputObject
             $outputObject
-        } else {
+        }
+        else {
             $outputObject | Sort-Object Component, Resource 
         }
     }
@@ -158,24 +179,118 @@ Function Publish-ServiceHealth {
         Debug-CatchWriter -object $_
     }
 }
-Export-ModuleMember -Function Publish-ServiceHealth
+Export-ModuleMember -Function Publish-CertificateHealth
+
+Function Publish-ConnectivityHealth {
+    <#
+        .SYNOPSIS
+        Formats the Connectivity Health data from the SoS JSON output.
+
+        .DESCRIPTION
+        The Publish-ConnectivityHealth cmdlet formats the Connectivity Health data from the SoS JSON output and
+        publishes it as either a standard PowerShell object or an HTML object. 
+
+        .EXAMPLE
+        Publish-ConnectivityHealth -json <file-name>
+        This example extracts and formats the Connectivity Health data as a PowerShell object from the JSON file.
+
+        .EXAMPLE
+        Publish-ConnectivityHealth -json <file-name> -html
+        This example extracts and formats the Connectivity Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-ConnectivityHealth -json <file-name> -failureOnly
+        This example extracts and formats the Connectivity Health data as a PowerShell object from the JSON file for
+        only the failed items.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path -Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        }
+        else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        $customObject = New-Object System.Collections.ArrayList
+        # ESXi SSH Status
+        $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi SSH Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        }
+        else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
+        }
+        $customObject += $outputObject # Adding individual component to main customeObject
+
+        # ESXi API Status
+        $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi API Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        }
+        else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
+        }
+        $customObject += $outputObject # Adding individual component to main customeObject
+
+        # Additional Items Status
+        $jsonInputData = $targetContent.Connectivity.'Connectivity Status' # Extract Data from the provided SOS JSON
+        $jsonInputData.PSObject.Properties.Remove('ESXi SSH Status')
+        $jsonInputData.PSObject.Properties.Remove('ESXi API Status')
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        }
+        else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
+        }
+        $customObject += $outputObject # Adding individual component to main customeObject
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey('html')) { 
+            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Connectivity Health Status</h3>' -As Table
+            $customObject = Convert-AlertClass -htmldata $customObject
+            $customObject
+        }
+        else {
+            $customObject | Sort-Object Component, Resource 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-ConnectivityHealth
 
 Function Publish-DnsHealth {
     <#
         .SYNOPSIS
-        Formats DNS Health data from SoS output JSON
+        Formats the DNS Health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-DnsHealth cmdlets formats the DNS Health data from the SoS output JSON so that it can be consume
-        either as a standard powershell object or an HTML based object for reporting purposes. 
+        The Publish-DnsHealth cmdlet formats the DNS Health data from the SoS JSON output and publishes it as
+        either a standard PowerShell object or an HTML object. 
 
         .EXAMPLE
         Publish-DnsHealth -json <file-name>
-        This example uses the JSON file provided to extracts the DNS Health data and formats as a powershell object
+        This example extracts and formats the DNS Health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
         Publish-DnsHealth -json <file-name> -html
-        This example uses the JSON file provided to extracts the DNS Health data and formats as an HTML object
+        This example extracts and formats the DNS Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-DnsHealth -json <file-name> -failureOnly
+        This example extracts and formats the DNS Health data as a PowerShell object from the JSON file for only
+        the failed items.
     #>
 
     Param (
@@ -228,22 +343,291 @@ Function Publish-DnsHealth {
 }
 Export-ModuleMember -Function Publish-DnsHealth
 
+Function Publish-EsxiHealth {
+    <#
+        .SYNOPSIS
+        Formats the ESXi Health data from the SoS JSON output.
+
+        .DESCRIPTION
+        The Publish-EsxiHealth cmdlet formats the ESXi Health data from the SoS JSON output and publishes it as
+        either a standard PowerShell object or an HTML object. 
+
+        .EXAMPLE
+        Publish-EsxiHealth -json <file-name>
+        This example extracts and formats the ESXi Health data as a PowerShell object from the JSON file.
+
+        .EXAMPLE
+        Publish-EsxiHealth -json <file-name> -html
+        This example extracts and formats the ESXi Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-EsxiHealth -json <file-name> -failureOnly
+        This example extracts and formats the ESXi Health data as a PowerShell object from the JSON file for only
+        the failed items.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path -Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        }
+        else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        # ESXi Overall Health Status
+        $allOverallHealthObject = New-Object System.Collections.ArrayList
+        $jsonInputData = $targetContent.Compute.'ESXi Overall Health' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        }
+        else {
+            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData
+        }
+
+        # ESXi Core Dump Status
+        $allCoreDumpObject = New-Object System.Collections.ArrayList
+        $jsonInputData = $targetContent.General.'ESXi Core Dump Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        }
+        else {
+            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData
+        }
+        
+        # ESXi License Status
+        $allLicenseObject = New-Object System.Collections.ArrayList
+        $jsonInputData = $targetContent.Compute.'ESXi License Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $allLicenseObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        }
+        else {
+            $allLicenseObject = Read-JsonElement -inputData $jsonInputData
+        }
+
+        # ESXi Disk Status
+        $allDiskObject = New-Object System.Collections.ArrayList
+        $jsonInputData = $targetContent.Compute.'ESXi Disk Status' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $allDiskObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        }
+        else {
+            $allDiskObject = Read-JsonElement -inputData $jsonInputData
+        }
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey('html')) { 
+            $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi Overall Health Status</h3>' -As Table;
+            $allOverallHealthObject = Convert-AlertClass -htmldata $allOverallHealthObject
+            $allOverallHealthObject
+            $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi Core Dump Health Status</h3>' -As Table
+            $allCoreDumpObject = Convert-AlertClass -htmldata $allCoreDumpObject
+            $allCoreDumpObject
+            $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi License Health Status</h3>' -As Table
+            $allLicenseObject = Convert-AlertClass -htmldata $allLicenseObject
+            $allLicenseObject
+            $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi Disk Health Status</h3>' -As Table
+            $allDiskObject = Convert-AlertClass -htmldata $allDiskObject
+            $allDiskObject
+        }
+        else {
+            $allOverallDumpObject | Sort-Object Component, Resource
+            $allCoreDumpObject | Sort-Object Component, Resource
+            $allLicenseObject | Sort-Object Component, Resource
+            $allDiskObject | Sort-Object Component, Resource
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-EsxiHealth
+
+Function Publish-NsxtHealth {
+    <#
+        .SYNOPSIS
+        Formats the NSX Health data from the SoS JSON output.
+
+        .DESCRIPTION
+        The Publish-NsxtHealth cmdlet formats the NSX Health data from the SoS JSON output and publishes it as
+        either a standard PowerShell object or an HTML object. 
+
+        .EXAMPLE
+        Publish-NsxtHealth -json <file-name>
+        This example extracts and formats the NSX Health data as a PowerShell object from the JSON file.
+
+        .EXAMPLE
+        Publish-NsxtHealth -json <file-name> -html
+        This example extracts and formats the NSX Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-NsxtHealth -json <file-name> -failureOnly
+        This example extracts and formats the NSX Health data as a PowerShell object from the JSON file for only
+        the failed items.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path -Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        }
+        else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        $customObject = New-Object System.Collections.ArrayList
+    
+        # NSX Manager Health
+        $component = 'NSX Manager'
+        $inputData = $targetContent.General.'NSX Health'.'NSX Manager'
+        foreach ($element in $inputData.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                if (($element.status -eq 'FAILED')) {
+                    $customObject += $elementObject
+                }
+            }
+            else {
+                $customObject += $elementObject
+            }
+        }
+
+        # NSX Container Cluster Health Status
+        $component = 'NSX Container Cluster'
+        $inputData = $targetContent.General.'NSX Health'.'NSX Container Cluster Health Status'
+        foreach ($element in $inputData.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                if (($element.status -eq 'FAILED')) {
+                    $customObject += $elementObject
+                }
+            }
+            else {
+                $customObject += $elementObject
+            }
+        }
+        # NSX Cluster Status
+        $component = 'NSX Cluster Status'
+        $inputData = $targetContent.General.'NSX Health'.'NSX Cluster Status'
+        foreach ($resource in $inputData.PsObject.Properties.Value) {
+            foreach ($element in $resource.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if (($element.status -eq 'FAILED')) {
+                        $customObject += $elementObject
+                    }
+                }
+                else {
+                    $customObject += $elementObject
+                }
+            }
+        }
+
+        # NSX Edge Health
+        $component = 'NSX Edge'
+        $inputData = $targetContent.General.'NSX Health'.'NSX Edge'
+        foreach ($resource in $inputData.PsObject.Properties.Value) {
+            foreach ($element in $resource.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if (($element.status -eq 'FAILED')) {
+                        $customObject += $elementObject
+                    }
+                }
+                else {
+                    $customObject += $elementObject
+                }
+            }
+        }
+
+        # NSX Controllers Health
+        $component = 'NSX Controllers'
+        $inputData = $targetContent.General.'NSX Health'.'NSX Controllers'
+        foreach ($resource in $inputData.PsObject.Properties.Value) {
+            foreach ($element in $resource.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if (($element.status -eq 'FAILED')) {
+                        $customObject += $elementObject
+                    }
+                }
+                else {
+                    $customObject += $elementObject
+                }
+            }
+        }
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey('html')) { 
+            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>NSX-T Data Center Health Status</h3>' -As Table
+            $customObject = Convert-AlertClass -htmldata $customObject
+            $customObject
+        }
+        else {
+            $customObject | Sort-Object Component, Resource 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-NsxtHealth
+
 Function Publish-NtpHealth {
     <#
         .SYNOPSIS
-        Formats NTP Health data from SoS output JSON
+        Formats the NTP Health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-NtpHealth cmdlets formats the NTP Health data from the SoS output JSON so that it can be consume
-        either as a standard powershell object or an HTML based object for reporting purposes. 
+        The Publish-NtpHealth cmdlet formats the NTP Health data from the SoS JSON output and publishes it as
+        either a standard PowerShell object or an HTML object. 
 
         .EXAMPLE
         Publish-NtpHealth -json <file-name>
-        This example uses the JSON file provided to extracts the NTP Health data and formats as a powershell object
+        This example extracts and formats the NTP Health data as a PowerShekk object from the JSON file.
 
         .EXAMPLE
         Publish-NtpHealth -json <file-name> -html
-        This example uses the JSON file provided to extracts the NTP Health data and formats as an HTML object
+        This example extracts and formats the NTP Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-NtpHealth -json <file-name> -failureOnly
+        This example extracts and formats the NTP Health data as a PowerShell object from the JSON file for only
+        the failed items.
     #>
 
     Param (
@@ -285,100 +669,27 @@ Function Publish-NtpHealth {
 }
 Export-ModuleMember -Function Publish-NtpHealth
 
-Function Publish-CertificateHealth {
-    <#
-        .SYNOPSIS
-        Formats Certificate Health data from SoS output JSON
-
-        .DESCRIPTION
-        The Publish-CertificateHealth cmdlets formats the Certificate Health data from the SoS output JSON so that it can be consume
-        either as a standard powershell object or an HTML based object for reporting purposes. 
-
-        .EXAMPLE
-        Publish-CertificateHealth -json <file-name>
-        This example uses the JSON file provided to extracts the Certificate Health data and formats as a powershell object
-
-        .EXAMPLE
-        Publish-CertificateHealth -json <file-name> -html
-        This example uses the JSON file provided to extracts the Certificate Health data and formats as an HTML object
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
-    )
-
-    Try {
-        if (!(Test-Path -Path $json)) {
-            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        } else {
-            $targetContent = Get-Content $json | ConvertFrom-Json
-        }
-
-        # ESXi Certificate Health
-        $jsonInputData = $targetContent.'Certificates'.'Certificate Status'.ESXi # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
-        } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
-        }
-        
-        # Certificate Health (Except ESXi)
-        $customObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.'Certificates'.'Certificate Status' # Extract Data from the provided SOS JSON
-        $inputData.PSObject.Properties.Remove('ESXI')
-        foreach ($component in $inputData.PsObject.Properties.Value) { 
-            foreach ($element in $component.PsObject.Properties.Value) { 
-                $elementObject = New-Object -TypeName psobject
-                $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($element.area -Split (":"))[0].Trim()
-                $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-                $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-                $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-                if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                    if (($element.status -eq "FAILED")) {
-                        $customObject += $elementObject
-                    }
-                } else {
-                    $customObject += $elementObject
-                }
-            }
-        }
-
-        $outputObject += $customObject # Combined ESXi Certificate Health with Remaining Components
-
-        # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Certificate Health Status</h3>" -As Table
-            $outputObject = Convert-AlertClass -htmldata $outputObject
-            $outputObject
-        }
-        else {
-            $outputObject | Sort-Object Component, Resource 
-        }
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Publish-CertificateHealth
-
 Function Publish-PasswordHealth {
     <#
         .SYNOPSIS
-        Formats Password Health data from SoS output JSON
+        Formats the Password Health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-PasswordHealth cmdlets formats the Password Health data from the SoS output JSON so that it can be consume
-        either as a standard powershell object or an HTML based object for reporting purposes. 
+        The Publish-PasswordHealth cmdlet formats the Password Health data from the SoS JSON output and publishes it as
+        either a standard PowerShell object or an HTML object. 
 
         .EXAMPLE
         Publish-PasswordHealth -json <file-name>
-        This example uses the JSON file provided to extracts the Password Health data and formats as a powershell object
+        This example extracts and formats the Password Health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
         Publish-PasswordHealth -json <file-name> -html
-        This example uses the JSON file provided to extracts the Password Health data and formats as an HTML object
+        This example extracts and formats the Password Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-PasswordHealth -json <file-name> -failureOnly
+        This example extracts and formats the Password Health data as a PowerShell object from the JSON file for only
+        the failed items.
     #>
 
     Param (
@@ -417,22 +728,27 @@ Function Publish-PasswordHealth {
 }
 Export-ModuleMember -Function Publish-PasswordHealth
 
-Function Publish-EsxiHealth {
+Function Publish-ServiceHealth {
     <#
         .SYNOPSIS
-        Formats ESXi Health data from SoS output JSON
+        Formats the Service Health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-EsxiHealth cmdlets formats the ESXi Health data from the SoS output JSON so that it can be consume
-        either as a standard powershell object or an HTML based object for reporting purposes. 
+        The Publish-ServiceHealth cmdlet formats the Service Health data from the SoS JSON output and publishes it as
+        either a standard PowerShell object or an HTML object. 
 
         .EXAMPLE
-        Publish-EsxiHealth -json <file-name>
-        This example uses the JSON file provided to extracts the ESXi Health data and formats as a powershell object
+        Publish-ServiceHealth -json <file-name>
+        This example extracts and formats the Service Health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-EsxiHealth -json <file-name> -html
-        This example uses the JSON file provided to extracts the ESXi Health data and formats as an HTML object
+        Publish-ServiceHealth -json <file-name> -html
+        This example extracts and formats the Service Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-ServiceHealth -json <file-name> -failureOnly
+        This example extracts and formats the Service Health data as a PowerShell object from the JSON file for only
+        the failed items.
     #>
 
     Param (
@@ -444,89 +760,131 @@ Function Publish-EsxiHealth {
     Try {
         if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        } else {
+        }
+        else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
-        # ESXi Overall Health Status
-        $allOverallHealthObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.Compute.'ESXi Overall Health' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData -failureOnly
-        } else {
-            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData
+        $outputObject = New-Object System.Collections.ArrayList
+        $inputData = $targetContent.'Services' # Extract Data from the provided SOS JSON
+        foreach ($component in $inputData) {
+            foreach ($element in $component.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Service Name' -NotePropertyValue $element.title.ToUpper()
+                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if (($element.status -eq 'FAILED')) {
+                        $outputObject += $elementObject
+                    }
+                }
+                else {
+                    $outputObject += $elementObject
+                }
+            }
         }
 
-        # ESXi Core Dump Status
-        $allCoreDumpObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.General.'ESXi Core Dump Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData -failureOnly
-        } else {
-            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData
+        if ($PsBoundParameters.ContainsKey('html')) { 
+            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Service Health Status</h3>' -As Table
+            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject
         }
-        
-        # ESXi License Status
-        $allLicenseObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.Compute.'ESXi License Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $allLicenseObject = Read-JsonElement -inputData $jsonInputData -failureOnly
-        } else {
-            $allLicenseObject = Read-JsonElement -inputData $jsonInputData
-        }
-
-        # ESXi Disk Status
-        $allDiskObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.Compute.'ESXi Disk Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $allDiskObject = Read-JsonElement -inputData $jsonInputData -failureOnly
-        } else {
-            $allDiskObject = Read-JsonElement -inputData $jsonInputData
-        }
-
-        # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>ESXi Overall Health Status</h3>" -As Table;
-            $allOverallHealthObject = Convert-AlertClass -htmldata $allOverallHealthObject
-            $allOverallHealthObject
-            $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>ESXi Core Dump Health Status</h3>" -As Table
-            $allCoreDumpObject = Convert-AlertClass -htmldata $allCoreDumpObject
-            $allCoreDumpObject
-            $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>ESXi License Health Status</h3>" -As Table
-            $allLicenseObject = Convert-AlertClass -htmldata $allLicenseObject
-            $allLicenseObject
-            $allDiskObject= $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>ESXi Disk Health Status</h3>" -As Table
-            $allDiskObject = Convert-AlertClass -htmldata $allDiskObject
-            $allDiskObject
-        } else {
-            $allOverallDumpObject | Sort-Object Component, Resource
-            $allCoreDumpObject | Sort-Object Component, Resource
-            $allLicenseObject | Sort-Object Component, Resource
-            $allDiskObject | Sort-Object Component, Resource
+        else {
+            $outputObject | Sort-Object Component, Resource 
         }
     }
     Catch {
         Debug-CatchWriter -object $_
     }
 }
-Export-ModuleMember -Function Publish-EsxiHealth
+Export-ModuleMember -Function Publish-ServiceHealth
+
+Function Publish-VcenterHealth {
+    <#
+        .SYNOPSIS
+        Formats the vCenter Server Health data from the SoS JSON output.
+
+        .DESCRIPTION
+        The Publish-VcenterHealth cmdlet formats the vCenter Server Health data from the SoS JSON output and publishes
+        it as either a standard PowerShell object or an HTML object. 
+
+        .EXAMPLE
+        Publish-VcenterHealth -json <file-name>
+        This example extracts and formats the vCenter Server Health data as a PowerShell object from the JSON file.
+
+        .EXAMPLE
+        Publish-VcenterHealth -json <file-name> -html
+        This example extracts and formats the vCenter Server Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-VcenterHealth -json <file-name> -failureOnly
+        This example extracts and formats the vCenter Server Health data as a PowerShell object from the JSON file for
+        only the failed items.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path -Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        }
+        else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        # vCenter Overall Health
+        $jsonInputData = $targetContent.Compute.'vCenter Overall Health' # Extract Data from the provided SOS JSON
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            # Run the extracted data through the Read-JsonElement function to structure the data for report output
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        }
+        else {
+            $outputObject = Read-JsonElement -inputData $jsonInputData
+        }
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey('html')) { 
+            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>vCenter Server Health Status</h3>' -As Table
+            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject
+        }
+        else {
+            $outputObject | Sort-Object Component, Resource 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-VcenterHealth
 
 Function Publish-VsanHealth {
     <#
         .SYNOPSIS
-        Formats VSAN Health data from SoS output JSON
+        ormats the vSAN Health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-VsanHealth cmdlets formats the VSAN Health data from the SoS output JSON so that it can be consume
-        either as a standard powershell object or an HTML based object for reporting purposes. 
+        The Publish-VsanHealth cmdlet formats the vSAN Health data from the SoS JSON output and publishes it as
+        either a standard PowerShell object or an HTML object. 
 
         .EXAMPLE
         Publish-VsanHealth -json <file-name>
-        This example uses the JSON file provided to extracts the VSAN Health data and formats as a powershell object
+        This example extracts and formats the vSAN Health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
         Publish-VsanHealth -json <file-name> -html
-        This example uses the JSON file provided to extracts the VSAN Health data and formats as an HTML object
+        This example extracts and formats the vSAN Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-VsanHealth -json <file-name> -failureOnly
+        This example extracts and formats the vSAN Health data as a PowerShell object from the JSON file for only
+        the failed items.
     #>
 
     Param (
@@ -612,280 +970,6 @@ Function Publish-VsanHealth {
 }
 Export-ModuleMember -Function Publish-VsanHealth
 
-Function Publish-NsxtHealth {
-    <#
-        .SYNOPSIS
-        Formats NSX Health data from SoS output JSON
-
-        .DESCRIPTION
-        The Publish-NsxtHealth cmdlets formats the NSX Health data from the SoS output JSON so that it can be consume
-        either as a standard powershell object or an HTML based object for reporting purposes. 
-
-        .EXAMPLE
-        Publish-NsxtHealth -json <file-name>
-        This example uses the JSON file provided to extracts the NSX Health data and formats as a powershell object
-
-        .EXAMPLE
-        Publish-NsxtHealth -json <file-name> -html
-        This example uses the JSON file provided to extracts the NSX Health data and formats as an HTML object
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
-    )
-
-    Try {
-        if (!(Test-Path -Path $json)) {
-            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        } else {
-            $targetContent = Get-Content $json | ConvertFrom-Json
-        }
-
-        $customObject = New-Object System.Collections.ArrayList
-    
-        # NSX Manager Health
-        $component = "NSX Manager"
-        $inputData = $targetContent.General.'NSX Health'.'NSX Manager'
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $customObject += $elementObject
-                }
-            } else {
-                $customObject += $elementObject
-            }
-        }
-
-        # NSX Container Cluster Health Status
-        $component = "NSX Container Cluster"
-        $inputData = $targetContent.General.'NSX Health'.'NSX Container Cluster Health Status'
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
-            $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                if (($element.status -eq "FAILED")) {
-                    $customObject += $elementObject
-                }
-            } else {
-                $customObject += $elementObject
-            }
-        }
-        # NSX Cluster Status
-        $component = "NSX Cluster Status"
-        $inputData = $targetContent.General.'NSX Health'.'NSX Cluster Status'
-        foreach ($resource in $inputData.PsObject.Properties.Value) {
-            foreach ($element in $resource.PsObject.Properties.Value) {
-                $elementObject = New-Object -TypeName psobject
-                $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
-                $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-                $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-                $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-                if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                    if (($element.status -eq "FAILED")) {
-                        $customObject += $elementObject
-                    }
-                } else {
-                    $customObject += $elementObject
-                }
-            }
-        }
-
-        # NSX Edge Health
-        $component = "NSX Edge"
-        $inputData = $targetContent.General.'NSX Health'.'NSX Edge'
-        foreach ($resource in $inputData.PsObject.Properties.Value) {
-            foreach ($element in $resource.PsObject.Properties.Value) {
-                $elementObject = New-Object -TypeName psobject
-                $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
-                $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-                $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-                $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-                if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                    if (($element.status -eq "FAILED")) {
-                        $customObject += $elementObject
-                    }
-                } else {
-                    $customObject += $elementObject
-                }
-            }
-        }
-
-        # NSX Controllers Health
-        $component = "NSX Controllers"
-        $inputData = $targetContent.General.'NSX Health'.'NSX Controllers'
-        foreach ($resource in $inputData.PsObject.Properties.Value) {
-            foreach ($element in $resource.PsObject.Properties.Value) {
-                $elementObject = New-Object -TypeName psobject
-                $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
-                $elementObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue ($element.area -Split (":"))[-1].Trim()
-                $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $element.alert
-                $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $element.message
-                if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                    if (($element.status -eq "FAILED")) {
-                        $customObject += $elementObject
-                    }
-                } else {
-                    $customObject += $elementObject
-                }
-            }
-        }
-
-        # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>NSX-T Data Center Health Status</h3>" -As Table
-            $customObject = Convert-AlertClass -htmldata $customObject
-            $customObject
-        } else {
-            $customObject | Sort-Object Component, Resource 
-        }
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Publish-NsxtHealth
-
-Function Publish-VcenterHealth {
-    <#
-        .SYNOPSIS
-        Formats vCenter Server Health data from SoS output JSON
-
-        .DESCRIPTION
-        The Publish-VcenterHealth cmdlets formats the vCenter Server Health data from the SoS output JSON so that it can be consume
-        either as a standard powershell object or an HTML based object for reporting purposes. 
-
-        .EXAMPLE
-        Publish-VcenterHealth -json <file-name>
-        This example uses the JSON file provided to extracts the vCenter Server Health data and formats as a powershell object
-
-        .EXAMPLE
-        Publish-VcenterHealth -json <file-name> -html
-        This example uses the JSON file provided to extracts the vCenter Server Health data and formats as an HTML object
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
-    )
-
-    Try {
-        if (!(Test-Path -Path $json)) {
-            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        } else {
-            $targetContent = Get-Content $json | ConvertFrom-Json
-        }
-
-        # vCenter Overall Health
-        $jsonInputData = $targetContent.Compute.'vCenter Overall Health' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
-        } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
-        }
-
-        # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>vCenter Server Health Status</h3>" -As Table
-            $outputObject = Convert-AlertClass -htmldata $outputObject
-            $outputObject
-        } else {
-            $outputObject | Sort-Object Component, Resource 
-        }
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Publish-VcenterHealth
-
-Function Publish-ConnectivityHealth {
-    <#
-        .SYNOPSIS
-        Formats Connectivity Health data from SoS output JSON
-
-        .DESCRIPTION
-        The Publish-ConnectivityHealth cmdlets formats the Connectivity Health data from the SoS output JSON so that it can be consume
-        either as a standard powershell object or an HTML based object for reporting purposes. 
-
-        .EXAMPLE
-        Publish-ConnectivityHealth -json <file-name>
-        This example uses the JSON file provided to extracts the Connectivity Health data and formats as a powershell object
-
-        .EXAMPLE
-        Publish-ConnectivityHealth -json <file-name> -html
-        This example uses the JSON file provided to extracts the Connectivity Health data and formats as an HTML object
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
-    )
-
-    Try {
-        if (!(Test-Path -Path $json)) {
-            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        } else {
-            $targetContent = Get-Content $json | ConvertFrom-Json
-        }
-
-        $customObject = New-Object System.Collections.ArrayList
-        # ESXi SSH Status
-        $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi SSH Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
-        } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
-        }
-        $customObject += $outputObject # Adding individual component to main customeObject
-
-        # ESXi API Status
-        $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi API Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
-        } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
-        }
-        $customObject += $outputObject # Adding individual component to main customeObject
-
-        # Additional Items Status
-        $jsonInputData = $targetContent.Connectivity.'Connectivity Status' # Extract Data from the provided SOS JSON
-        $jsonInputData.PSObject.Properties.Remove('ESXi SSH Status')
-        $jsonInputData.PSObject.Properties.Remove('ESXi API Status')
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
-        } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
-        }
-        $customObject += $outputObject # Adding individual component to main customeObject
-
-        # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Connectivity Health Status</h3>" -As Table
-            $customObject = Convert-AlertClass -htmldata $customObject
-            $customObject
-        } else {
-            $customObject | Sort-Object Component, Resource 
-        }
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Publish-ConnectivityHealth
-
-
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
 
@@ -896,18 +980,17 @@ Export-ModuleMember -Function Publish-ConnectivityHealth
 Function Export-SystemPassword {
     <#
 		.SYNOPSIS
-        Generates a system password report 
+        Generates a system password report for an SDDC Manager instance.
 
         .DESCRIPTION
         The Export-SystemPassword cmdlets generates a system password report from SDDC Manager. The cmdlet connects to
         SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
-        - Generates a system password report from SDDC Manager and outputs to an HTML format
+        - Generates a system password report from SDDC Manager and outputs to the console or HTML.
 
         .EXAMPLE
         Export-SystemPassword -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
-        Export-SystemPassword -server ldn-vcf01.ldn.cloudy.io -user administrator@vsphere.local -pass VMw@re1!
-        This example generates a system password report from SDDC Manager
+        This example generates a system password report from SDDC Manager instance `sfo-vcf01.sfo.rainpole.io`.
     #>
 
     Param (
@@ -933,19 +1016,18 @@ Export-ModuleMember -Function Export-SystemPassword
 Function Export-EsxiCoreDumpConfig {
     <#
 		.SYNOPSIS
-        Generates a storage capacity report
+        Generates an ESXi core dump configuration report for a workload domain.
 
         .DESCRIPTION
-        The Export-EsxiCoreDumpConfig cmdlets generates a storage capacity report for a Workload Domain. The cmdlet
+        The Export-EsxiCoreDumpConfig cmdlet generates an ESXi core dump report for a workload domain. The cmdlet
         connects to SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
-        - Generates a storage capacity report for all clusters of the Workload Domain
+        - Generates an ESXi core dump report for all ESXi hosts in a workload domain
 
         .EXAMPLE
-        Export-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcDomain sfo-m01
-        Export-EsxiCoreDumpConfig -server ldn-vcf01.ldn.cloudy.io -user administrator@vsphere.local -pass VMw@re1! -sddcDomain ldn-m01
-        This example generates a storage capacity report for the Workload Domain named 'sfo-m01'
+        Export-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcDomain sfo-w01
+        This example generates an ESXi core dump report for all ESXi hosts in a workload domain named `sfo-w01`.
     #>
 
     Param (
@@ -991,19 +1073,18 @@ Export-ModuleMember -Function Export-EsxiCoreDumpConfig
 Function Export-StorageCapacity {
     <#
 		.SYNOPSIS
-        Generates a storage capacity report
+        Generates a storage capacity report for all clusters in a workload domain.
 
         .DESCRIPTION
-        The Export-StorageCapacity cmdlets generates a storage capacity report for a Workload Domain. The cmdlet
+        The Export-StorageCapacity cmdlet generates a storage capacity report for a workload domain. The cmdlet
         connects to SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
-        - Generates a storage capacity report for all clusters of the Workload Domain
+        - Generates a storage capacity report for all clusters in a workload domain
 
         .EXAMPLE
-        Export-StorageCapacity -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcDomain sfo-m01
-        Export-StorageCapacity -server ldn-vcf01.ldn.cloudy.io -user administrator@vsphere.local -pass VMw@re1! -sddcDomain ldn-m01
-        This example generates a storage capacity report for the Workload Domain named 'sfo-m01'
+        Export-StorageCapacity -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcDomain sfo-w01
+        This example generates a storage capacity report for all clusters in a workload domain named 'sfo-w01'.
     #>
 
     Param (
@@ -1045,18 +1126,19 @@ Export-ModuleMember -Function Export-StorageCapacity
 Function Request-SddcManagerUserExpiry {
     <#
 		.SYNOPSIS
-        Checks user expiry
+        Checks the expiry for additional local OS users in an SDDC Manager appliance.
 
         .DESCRIPTION
-        The Request-SddcManagerUserExpiry cmdlets checks additional user expiry details across a VMWare Cloud Foundation instance
-        where the SoS Health Check does not. The cmdlet connects to SDDC Manager using the -server, -user, and
-        -password values:
+        The Request-SddcManagerUserExpiry cmdlet checks the expiry for additional local users in the SDDC Manager
+        appliance not reported in the SoS Health Check. The cmdlet connects to SDDC Manager using the -server, -user,
+        and password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
-        - Performs checks on the user and outputs the results
+        - Performs checks on the local OS users and outputs the results
 
         .EXAMPLE
         Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1!
+        This example checks the expiry for additional local OS users in the SDDC Manager appliance.
     #>
 
     Param (
@@ -1097,11 +1179,10 @@ Function Request-SddcManagerUserExpiry {
 }
 Export-ModuleMember -Function Request-SddcManagerUserExpiry
 
-
 Function Request-vCenterUserExpiry {
     <#
 		.SYNOPSIS
-        Checks vCenter Server local user expiry
+        Checks the local OS user expiry in a vCenter Server instance.
 
         .DESCRIPTION
         The Request-vCenterUserExpiry cmdlets checks the expiry date of local accounts on vCenter Server. The cmdlet 
@@ -1109,11 +1190,13 @@ Function Request-vCenterUserExpiry {
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the details for each vCenter Server
-        - Collects information for the local root account
+        - Collects information for the local OS 'root' account
         - Checks when the password will expire and outputs the results
 
         .EXAMPLE
         Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+        This example will check the expiry date of the local OS 'root' account on a vCenter Server instance managed by
+        SDDC Manager.
     #>
 
     Param (
@@ -1156,19 +1239,21 @@ Export-ModuleMember -Function Request-vCenterUserExpiry
 Function Request-vRslcmUserExpiry {
     <#
 		.SYNOPSIS
-        Checks vRealize Suite Lifecycle Manager local user expiry
+        Checks the local OS user expiry in the vRealize Suite Lifecycle Manager instance.
 
         .DESCRIPTION
-        The Request-vRslcmUserExpiry cmdlets checks the expiry date of local accounts on vRealize Suite
+        The Request-vRslcmUserExpiry cmdlets checks the expiry date of local OS user accounts on vRealize Suite
         Lifecycle Manager. The cmdlet connects to SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the details for vRealize Suite Lifecycle Manager
-        - Collects information for the local root account
+        - Collects information for the local OS 'root' account
         - Checks when the password will expire and outputs the results
 
         .EXAMPLE
         Request-vRslcmUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+        This example will check the expiry date of the local OS 'root' account on the vRealize Suite Lifecycle Manager
+        instance deployed by SDDC Manager.
     #>
 
     Param (
@@ -1227,18 +1312,18 @@ Export-ModuleMember -Function Start-CreateReportDirectory
 Function Invoke-SddcCommand {
     <#
 		.SYNOPSIS
-        Execute a command on SDDC Manager
+        Run a command on SDDC Manager.
 
         .DESCRIPTION
-        The Invoke-SddcCommand cmdlets executes a command within the SDDC Manager appliance. The cmdlet connects to SDDC
+        The Invoke-SddcCommand cmdlet runs a command within the SDDC Manager appliance. The cmdlet connects to SDDC
         Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the Management Domain vCenter Server instance
-        - Executes the command provided within the SDDC Manager appliance
+        - Runs the command provided within the SDDC Manager appliance
 
         .EXAMPLE
         Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -command "chage -l backup"
-        This example executes the command provided on the SDDC Manager appliance
+        This example runs the command provided on the SDDC Manager appliance.
     #>
 
     Param (
@@ -1355,15 +1440,15 @@ Export-ModuleMember -Function Convert-AlertClass
 Function Request-LocalUserExpiry {
     <#
         .SYNOPSIS
-        Check the expiry of a local linux user
+        Check the expiry of a local OS user on the Linux-based appliance.
 
         .DESCRIPTION
-        The Request-LocalUserExpiry cmdlets checks the expiry details of a local user on a linux operating system and
-        outputs the data.
+        The Request-LocalUserExpiry cmdlet checks the expiry details of a local OS user on Linux-based appliance and
+        outputs the results.
 
         .EXAMPLE
         Request-LocalUserExpiry -vmName sfo-vcf01.sfo.rainpole.io -rootPass VMw@re1! -component SDDC -checkUser backup
-        This example executes the command to check the expiration status of the backup user 
+        This example runs the command to check the expiration status of the local OS user named 'backup'.
     #>
 
     Param (
