@@ -1787,5 +1787,72 @@ Function Get-NsxtBackupHistory {
 }
 Export-ModuleMember -Function Get-NsxtBackupHistory
 
+Function Get-VcenterBackupJobs {
+    <#
+	.SYNOPSIS
+    Returns a list of all backup jobs performed on a vCenter Server instance.
+
+    .DESCRIPTION
+    The Get-VcenterBackupJobs cmdlet returns a list of all performed on a vCenter Server instance.
+
+    .EXAMPLE
+    Get-VcenterBackupJobs -fqdn sfo-m01-vc01.sfo.rainpole.io
+    This example returns a list of all backup jobs performed on the vCenter Server instance sfo-m01-vc01.sfo.rainpole.io.
+
+    .EXAMPLE
+    Get-VcenterBackupJobs -fqdn sfo-m01-vc01.sfo.rainpole.io -latest
+    This example returns the latest backup job performed on the vCenter Server instance sfo-m01-vc01.sfo.rainpole.io.
+
+    .EXAMPLE
+    Get-VcenterBackupJobs | Select -First 1 | Get-VCSABackupStatus
+    This example demonstrates piping the results of this function into the Get-VcenterBackupStatus function..
+    
+    #>
+
+    Param (
+        [Parameter(Mandatory = $false)] [switch]$latest
+    )
+    
+    $backupJobAPI = Get-CisService 'com.vmware.appliance.recovery.backup.job' # Get the backup job API from the vSphere Automation API
+
+    Try {
+        if ($PsBoundParameters.ContainsKey('latest')) {
+            $results = $backupJobAPI.list()
+            $results[0] # Return the latest backup job
+        }
+        else {
+            $backupJobAPI.list() # Return all backup jobs
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Get-VcenterBackupJobs
+
+Function Get-VcenterBackupStatus {
+    <#
+    .SYNOPSIS
+    Returns the status of a backup job(s).
+
+    .DESCRIPTION
+    The Get-VcenterBackupStatus cmdlet returns the status of a backup job(s).
+
+    .EXAMPLE
+    Get-VcenterBackupStatus -jobId "YYYYMMDD-hhmmss-buildnumber"
+    This example returns the status of the backup job with the jobId "YYYYMMDD-hhmmss-buildnumber".
+    #>
+
+    Param (
+        [Parameter(Mandatory = $false, ValueFromPipeline = $True)][string[]]$jobId
+    )
+
+    $backupJobAPI = Get-CisService 'com.vmware.appliance.recovery.backup.job' # Get the backup job API from the vSphere Automation API
+    foreach ($id in $jobID) {
+        $backupJobAPI.get("$id") | Select-Object id, progress, state, start_time, end_time, messages
+    }
+}
+Export-ModuleMember -Function Get-VcenterBackupStatus
+
 ##############################  End Supporting Functions ###############################
 ########################################################################################
