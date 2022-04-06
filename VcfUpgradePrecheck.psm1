@@ -1359,19 +1359,19 @@ Export-ModuleMember -Function Request-vRslcmUserExpiry
 Function Request-SddcManagerBackupStatus {
     <#
         .SYNOPSIS
-        Returns the status of the latest backup task in an SDDC Manager instance.
+        Returns the status of the file-level latest backup task in an SDDC Manager instance.
 
         .DESCRIPTION
-        The Request-SddcManagerBackupStatus cmdlet returns the status of the latest backup task in an SDDC Manager
-        instance. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The Request-SddcManagerBackupStatus cmdlet returns the status of the latest file-level backup task in an SDDC
+        Manager instance. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the details for the SDDC Manager
-        - Collects the backup status details
+        - Collects the latest file-level backup status details
 
         .EXAMPLE
         Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
-        This example will return the status of the latest backup task in an SDDC Manager instance.
+        This example will return the status of the latest file-level backup task in an SDDC Manager instance.
     #>
 
     # TO DO: Add support changing status based on age of backup.
@@ -1387,13 +1387,14 @@ Function Request-SddcManagerBackupStatus {
         if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
             $backupTasks = Get-VCFTask | Where-Object { $_.type -eq 'SDDCMANAGER_BACKUP' } | Select-Object -First 1
             foreach ($backupTask in $backupTasks) {
+                $component = 'SDDC Manager'
                 $date = [DateTime]::ParseExact($backupTask.creationTimestamp, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture)
-
                 $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ','
+                $resource = $backupTask.name + ": " + $server
 
                 $customObject = New-Object -TypeName psobject
-                $customObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "SDDC Manager" # Set the component name
-                $customObject | Add-Member -NotePropertyName 'Name' -NotePropertyValue $backupTask.name # Set the name
+                $customObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                $customObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the name
                 $customObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
                 $customObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $date # Set the timestamp
 
@@ -1430,7 +1431,7 @@ Export-ModuleMember -Function Request-SddcManagerBackupStatus
 Function Request-NsxtManagerBackupStatus {
     <#
         .SYNOPSIS
-        Returns the status of the latest backup of an NSX Manager cluster.
+        Returns the status of the latest file-level backup of an NSX Manager cluster.
 
         .DESCRIPTION
         The Request-NsxtManagerBackupStatus cmdlet returns the status of the latest backup of an NSX Manager cluster.
@@ -1438,12 +1439,12 @@ Function Request-NsxtManagerBackupStatus {
         - Validates that network connectivity is available to the NSX-T Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the details for the NSX Manager cluster
-        - Collects the backup status details
+        - Collects the file-level backup status details
 
         .EXAMPLE
         Request-NsxtManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
-        This example will return the status of the latest backup of an NSX Manager cluster managed by SDDC Manager
-        for a workload domain.
+        This example will return the status of the latest file-level backup of an NSX Manager cluster managed by SDDC
+        Manager for a workload domain.
     #>
 
     # TO DO: Add support changing status based on age of backup.
@@ -1465,9 +1466,9 @@ Function Request-NsxtManagerBackupStatus {
 
                         $customObject = New-Object System.Collections.ArrayList
 
-                        # NSX Cluster Backup
+                        # NSX Node Backup
                         $component = 'NSX Manager'
-                        $resource = 'Node'
+                        $resource = 'Node: ' + $vcfNsxDetails.fqdn
                         foreach ($element in $backupTask.node_backup_statuses) {
                             $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.node_backup_statuses.end_time).DateTime
 
@@ -1490,7 +1491,7 @@ Function Request-NsxtManagerBackupStatus {
                         
                         # NSX Cluster Backup
                         $component = 'NSX Manager'
-                        $resource = "Cluster"
+                        $resource = 'Cluster: ' + $vcfNsxDetails.fqdn
                         foreach ($element in $backupTask.cluster_backup_statuses) {
                             $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.cluster_backup_statuses.end_time).DateTime
 
@@ -1513,7 +1514,7 @@ Function Request-NsxtManagerBackupStatus {
 
                         # NSX Cluster Backup
                         $component = 'NSX Manager'
-                        $resource = 'Inventory'
+                        $resource = 'Inventory: ' + $vcfNsxDetails.fqdn
                         foreach ($element in $backupTask.cluster_backup_statuses) {
                             $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.cluster_backup_statuses.end_time).DateTime
 
@@ -1550,6 +1551,89 @@ Function Request-NsxtManagerBackupStatus {
     }
 }
 Export-ModuleMember -Function Request-NsxtManagerBackupStatus
+
+Function Request-VcenterBackupStatus {
+    <#
+        .SYNOPSIS
+        Returns the status of the file-level latest backup of a vCenter Server instance.
+
+        .DESCRIPTION
+        The Request-VcenterBackupStatus cmdlet returns the status of the latest backup of a vCenter Server instance.
+        The cmdlet connects to the NSX Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the NSX-T Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the details for the vCenter Server instance.
+        - Collects the file-level backup status details
+
+        .EXAMPLE
+        Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
+        This example will return the status of the latest file-level backup of a vCenter Server instance managed by
+        SDDC Manager for a workload domain.
+    #>
+
+    # TO DO: Add support changing status based on age of backup.
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+
+    if (Test-VCFConnection -server $server) {
+        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+            if (($vcfVcenterDetails = Get-VcenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                if (Test-VsphereConnection -server $vcfVcenterDetails.fqdn) {
+                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                        Connect-CisServer -server $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
+                        $backupTask = Get-VcenterBackupJobs | select -First 1 | Get-VcenterBackupStatus
+
+                        $component = 'vCenter Server' # Set the component name
+                        $date = $backupTask.end_time # Set the end timestamp
+                        $resource = 'vCenter Server: ' + $vcfVcenterDetails.fqdn # Set the name of the resource
+
+                        $customObject = New-Object -TypeName psobject
+                        $customObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                        $customObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                        $customObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
+                        $customObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $date # Set the timestamp
+
+                        # Set the status for the backup task
+                        if ($backupTask.state -eq 'SUCCEEDED') {                              
+                            $customObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'GREEN' # Ok; success
+                        }
+                        elseif ($backupTask.state -eq 'IN PROGRESS') {                              
+                            $customObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'YELLOW' # Warning; in progress
+                        }
+                        else {
+                            $customObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'RED' # Critical; failure
+                        }
+
+                        # Set the message for the backup task
+                        if ([string]::IsNullOrEmpty($messages)) {
+                            $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup completed without errors.'
+                        }
+                        else {
+                            $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.'
+                        }
+                        
+                        # Return the structured data to the console or format using HTML CSS Styles
+                        if ($PsBoundParameters.ContainsKey('html')) { 
+                            $customObject = $customObject | Sort-Object creationTimestamp, status | ConvertTo-Html -Fragment -PreContent '<h2>Backup Status</h2>' -As Table
+                            $customObject
+                        }
+                        else {
+                            $customObject | Sort-Object creationTimestamp
+                        }
+                        Disconnect-CisServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }
+                }
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Request-VcenterBackupStatus
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
