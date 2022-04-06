@@ -1134,7 +1134,7 @@ Function Request-SddcManagerUserExpiry {
         and password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
-        - Performs checks on the local OS users and outputs the results
+        - Performs checks on the local OS users in an SDDC Manager instance and outputs the results
 
         .EXAMPLE
         Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1!
@@ -1179,6 +1179,70 @@ Function Request-SddcManagerUserExpiry {
 }
 Export-ModuleMember -Function Request-SddcManagerUserExpiry
 
+Function Request-NsxtManagerUserExpiry {
+    <#
+        .SYNOPSIS
+        Checks the expiry for local OS users in an NSX Manager appliance.
+
+        .DESCRIPTION
+        The Request-NsxtManagerUserExpiry cmdlet checks the expiry for additional local OS users in the NSX Manager
+        cluster appliance. The cmdlet connects to SDDC Manager using the -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Performs checks on the local OS users for NSX Manager appliances and outputs the results
+
+        .EXAMPLE
+        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
+        This example checks the expiry for local OS users for the NSX Manager appliances managed by SDDC Manager
+        for a workload domain.
+    #>
+
+    # TO DO: Address issues with connection to NSX Manager via VM-Script.
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+
+    if (Test-VCFConnection -server $server) {
+        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                        if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
+                            if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {    
+                                $customObject = New-Object System.Collections.ArrayList
+                                foreach ($nsxtManagerNode in $vcfNsxDetails.nodes) {
+                                    $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password
+                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser admin
+                                    $customObject += $elementObject
+                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser audit
+                                    $customObject += $elementObject
+                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser root
+                                    $customObject += $elementObject
+
+                                    # Return the structured data to the console or format using HTML CSS Styles
+                                    if ($PsBoundParameters.ContainsKey("html")) { 
+                                        $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
+                                        $customObject = Convert-AlertClass -htmldata $customObject
+                                        $customObject
+                                    } else {
+                                        $customObject | Sort-Object Component, Resource 
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                }    
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Request-NsxtManagerUserExpiry
 Function Request-vCenterUserExpiry {
     <#
 		.SYNOPSIS
@@ -1195,8 +1259,8 @@ Function Request-vCenterUserExpiry {
 
         .EXAMPLE
         Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
-        This example will check the expiry date of the local OS 'root' account on a vCenter Server instance managed by
-        SDDC Manager.
+        This example will check the expiry date of the local OS 'root' account for all vCenter Server instances managed
+        by SDDC Manager.
     #>
 
     Param (
@@ -1291,6 +1355,201 @@ Function Request-vRslcmUserExpiry {
     }
 }
 Export-ModuleMember -Function Request-vRslcmUserExpiry
+
+Function Request-SddcManagerBackupStatus {
+    <#
+        .SYNOPSIS
+        Returns the status of the latest backup task in an SDDC Manager instance.
+
+        .DESCRIPTION
+        The Request-SddcManagerBackupStatus cmdlet returns the status of the latest backup task in an SDDC Manager
+        instance. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the details for the SDDC Manager
+        - Collects the backup status details
+
+        .EXAMPLE
+        Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+        This example will return the status of the latest backup task in an SDDC Manager instance.
+    #>
+
+    # TO DO: Add support changing status based on age of backup.
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+
+    if (Test-VCFConnection -server $server) {
+        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+            $backupTasks = Get-VCFTask | Where-Object { $_.type -eq 'SDDCMANAGER_BACKUP' } | Select-Object -First 1
+            foreach ($backupTask in $backupTasks) {
+                $date = [DateTime]::ParseExact($backupTask.creationTimestamp, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture)
+
+                $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ','
+
+                $customObject = New-Object -TypeName psobject
+                $customObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "SDDC Manager" # Set the component name
+                $customObject | Add-Member -NotePropertyName 'Name' -NotePropertyValue $backupTask.name # Set the name
+                $customObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
+                $customObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $date # Set the timestamp
+
+                # Set the status for the backup task
+                if ($backupTask.status -eq 'Successful') {                              
+                    $customObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'GREEN' # Ok; success
+                }
+                else {
+                    $customObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'RED' # Critical; failure
+                }
+
+                # Set the message for the backup task
+                if ([string]::IsNullOrEmpty($errors)) {
+                    $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "The backup completed without errors."
+                }
+                else {
+                    $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.'
+                }
+            }
+
+            # Return the structured data to the console or format using HTML CSS Styles
+            if ($PsBoundParameters.ContainsKey("html")) { 
+                $customObject = $customObject | Sort-Object creationTimestamp, status | ConvertTo-Html -Fragment -PreContent '<h2>Backup Status</h2>' -As Table
+                $customObject
+            }
+            else {
+                $customObject | Sort-Object creationTimestamp
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Request-SddcManagerBackupStatus
+
+Function Request-NsxtManagerBackupStatus {
+    <#
+        .SYNOPSIS
+        Returns the status of the latest backup of an NSX Manager cluster.
+
+        .DESCRIPTION
+        The Request-NsxtManagerBackupStatus cmdlet returns the status of the latest backup of an NSX Manager cluster.
+        The cmdlet connects to the NSX-T Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the NSX-T Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the details for the NSX Manager cluster
+        - Collects the backup status details
+
+        .EXAMPLE
+        Request-NsxtManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
+        This example will return the status of the latest backup of an NSX Manager cluster managed by SDDC Manager
+        for a workload domain.
+    #>
+
+    # TO DO: Add support changing status based on age of backup.
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+
+    if (Test-VCFConnection -server $server) {
+        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+            if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
+                    if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                        $backupTask = Get-NsxtBackupHistory -fqdn $vcfNsxDetails.fqdn
+
+                        $customObject = New-Object System.Collections.ArrayList
+
+                        # NSX Cluster Backup
+                        $component = 'NSX Manager'
+                        $resource = 'Node'
+                        foreach ($element in $backupTask.node_backup_statuses) {
+                            $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.node_backup_statuses.end_time).DateTime
+
+                            $elementObject = New-Object -TypeName psobject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
+                            $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
+                            if ($backupTask.node_backup_statuses.success -eq $true) {                              
+                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'GREEN' # Ok; success
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup completed without errors.' # Set the backup status message
+                            }
+                            else {
+                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'RED' # Critical; failure
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.' # Set the backup status message
+                            }
+                        }
+
+                        $customObject += $elementObject
+                        
+                        # NSX Cluster Backup
+                        $component = 'NSX Manager'
+                        $resource = "Cluster"
+                        foreach ($element in $backupTask.cluster_backup_statuses) {
+                            $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.cluster_backup_statuses.end_time).DateTime
+
+                            $elementObject = New-Object -TypeName psobject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
+                            $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
+                            if ($backupTask.node_backup_statuses.success -eq $true) {                              
+                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'GREEN' # Ok; success
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup completed without errors.' # Set the backup status message
+                            }
+                            else {
+                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'RED' # Critical; failure
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.' # Set the backup status message
+                            }
+                        }
+
+                        $customObject += $elementObject
+
+                        # NSX Cluster Backup
+                        $component = 'NSX Manager'
+                        $resource = 'Inventory'
+                        foreach ($element in $backupTask.cluster_backup_statuses) {
+                            $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.cluster_backup_statuses.end_time).DateTime
+
+                            $elementObject = New-Object -TypeName psobject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
+                            $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
+                            if ($backupTask.node_backup_statuses.success -eq $true) {                              
+                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'GREEN' # Ok; success
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup completed without errors.' # Set the backup status message
+                            }
+                            else {
+                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'RED' # Critical; failure
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.' # Set the backup status message
+                            }
+                        }
+
+                        $customObject += $elementObject
+
+                        # Return the structured data to the console or format using HTML CSS Styles
+                        if ($PsBoundParameters.ContainsKey('html')) { 
+                            $customObject = $customObject | Sort-Object component, domain, resource, status | ConvertTo-Html -Fragment -PreContent '<h2>Backup Status</h2>' -As Table
+                            $customObject
+                        }
+                        else {
+                            $customObject | Sort-Object component, domain, resource, status
+                        }
+                        
+                    }
+                }
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Request-NsxtManagerBackupStatus
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
@@ -1447,7 +1706,7 @@ Function Request-LocalUserExpiry {
         outputs the results.
 
         .EXAMPLE
-        Request-LocalUserExpiry -vmName sfo-vcf01.sfo.rainpole.io -rootPass VMw@re1! -component SDDC -checkUser backup
+        Request-LocalUserExpiry -fqdn sfo-vcf01.sfo.rainpole.io -rootPass VMw@re1! -component SDDC -checkUser backup
         This example runs the command to check the expiration status of the local OS user named 'backup'.
     #>
 
@@ -1455,7 +1714,7 @@ Function Request-LocalUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$checkUser,
-        [Parameter (Mandatory = $true)] [ValidateSet("SDDC","vCenter","vRSLCM")] [String]$component
+        [Parameter (Mandatory = $true)] [ValidateSet("SDDC","vCenter","NSX Manager", "NSX Edge", "vRSLCM")] [String]$component
     )
 
     Try {
@@ -1470,17 +1729,17 @@ Function Request-LocalUserExpiry {
             $endDate = ($formatOutput[1] -Split (':'))[1].Trim()
             $expiryDays = [math]::Ceiling((([DateTime]$endDate) - (Get-Date)).TotalDays)
 
-            # Set the status of the local user account based on the expiry date
+            # Set the alet for the local user account based on the expiry date
             if ($expiryDays -le 15) {
                 $alert = 'YELLOW'  # Warning: <= 15 days
-                $message = "Password will expire in 15 or lese days. Verfied using $command"
+                $message = "Password will expire in 15 or less days. Verfied using $command."
             }
             if ($expiryDays -le 5) {
                 $alert = 'RED'     # Critical: <= 5 days
-                $message = "Password will expiration in less than 5 days or has already expired. Verfied using $command"
+                $message = "Password will expire in less than 5 days or has already expired. Verfied using $command."
             } else {
                 $alert = 'GREEN'   # OK: > 15 days
-                $message = "Password will not expire within the next 15 days. Verfied using $command"
+                $message = "Password will not expire within the next 15 days. Verfied using $command."
             }
 
             $userObject = New-Object -TypeName psobject
@@ -1491,7 +1750,7 @@ Function Request-LocalUserExpiry {
             $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
             $userObject
         } else {
-            Write-Error "Unable to locate Virtual Machine ($($server.Split(".")[0])) in the vCenter Server inventory, check details"
+            Write-Error "Unable to locate virtual machine ($($server.Split(".")[0])) in the vCenter Server inventory, check details"
         }
 
     }
@@ -1500,6 +1759,33 @@ Function Request-LocalUserExpiry {
     }
 }
 Export-ModuleMember -Function Request-LocalUserExpiry
+
+Function Get-NsxtBackupHistory {
+    <#
+    SYNOPSIS:
+    Return the backup history for an NSX Manager cluster.
+
+    DESCRIPTION:
+    The Get-NsxtBackupHistory cmdlet returns the backup history for an NSX Manager cluster
+
+    EXAMPLE:
+    Get-NsxtBackupHistory -fqdn sfo-w01-nsx01.sfo.rainpole.io
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn
+    )
+
+    Try {
+        $uri = "https://$nsxtManager/api/v1/cluster/backups/history"
+        $response = Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $nsxtHeaders
+        $response
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Get-NsxtBackupHistory
 
 ##############################  End Supporting Functions ###############################
 ########################################################################################
