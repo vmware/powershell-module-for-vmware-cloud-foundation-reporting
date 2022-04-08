@@ -1802,9 +1802,9 @@ Function Request-LocalUserExpiry {
     )
 
     Try {
-        if (Get-VM -Name ($server.Split(".")[0])) {
+        if (Get-VM -Name ($fqdn.Split(".")[0])) {
             $command = 'chage -l ' + $checkUser
-            $output = Invoke-VMScript -VM ($server.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass
+            $output = Invoke-VMScript -VM ($fqdn.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass
             $formatOutput = ($output.ScriptOutput -split '\r?\n').Trim()
             $formatOutput = $formatOutput -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
 
@@ -1834,7 +1834,7 @@ Function Request-LocalUserExpiry {
             $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
             $userObject
         } else {
-            Write-Error "Unable to locate virtual machine ($($server.Split(".")[0])) in the vCenter Server inventory, check details"
+            Write-Error "Unable to locate virtual machine ($($fqdn.Split(".")[0])) in the vCenter Server inventory, check details"
         }
 
     }
