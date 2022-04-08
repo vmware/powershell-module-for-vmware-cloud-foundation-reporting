@@ -1938,5 +1938,122 @@ Function Get-VcenterBackupStatus {
 }
 Export-ModuleMember -Function Get-VcenterBackupStatus
 
+Function Get-SnapshotStatus {
+    <#
+    .SYNOPSIS
+    Returns the status of a virtual machine's snapshots.
+
+    .DESCRIPTION
+    The Get-SnapshotStatus cmdlet returns the status of a virtual machine's snapshots.
+
+    .EXAMPLE
+    Get-SnapshotStatus -vm "foo"
+    This example returns the status of the snapshots for the virtual machine named "foo".
+    #>
+
+    Param (
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
+    )
+
+    Try {
+        if (Get-VM -Name $vm) {
+            $snapshot = Get-VM $vm | Get-Snapshot | Select-Object -Property Name, Created, isCurrent # Get the snapshot details
+            # Return the snapshot details
+            foreach ($snapshot in $snapshot) {
+                $snapshotDays = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshot.Created)).TotalDays) # Calculate the number of days since the snapshot was created
+                
+                # Set the alert color based on the age of the snapshot
+                if ($snapshotDays -ge 3) {
+                    $alert = 'RED' # Critical: >= 3 days
+                    $message = "The snapshot is greater than or equal to 3 days old."
+                }
+                if ($snapshotDays -gt 1) {
+                    $alert = 'YELLOW' # Warning: > 1 days
+                    $message = "The snapshot is greater than 1 day old."
+                }
+                else {
+                    $alert = 'GREEN' # OK: <= 1 days
+                    $message = "The snapshot is less than 1 day old."
+                }
+                # Create a new PSObject to hold the results
+                $snapshotObject = New-Object -TypeName psobject
+                # Add the snapshot details to the PSObject
+                $snapshotObject = New-Object -TypeName psobject
+                $snapshotObject | Add-Member -NotePropertyName 'Virtual Machine' -NotePropertyValue $name
+                $snapshotObject | Add-Member -NotePropertyName 'Snapshot Name' -NotePropertyValue $snapshot.Name
+                $snapshotObject | Add-Member -NotePropertyName 'Created' -NotePropertyValue $snapshot.Created
+                $snapshotObject | Add-Member -NotePropertyName 'Current' -NotePropertyValue $snapshot.isCurrent
+                $snapshotObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                $snapshotObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                $snapshotObject | Sort-Object Created, isCurrent
+            }
+        }
+        else {
+            Write-Error "Unable to locate virtual machine ($name) in the vCenter Server inventory."
+        }
+
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+
+}
+Export-ModuleMember -Function Get-SnapshotStatus
+
+Function Get-SnapshotConsolidation {
+    <#
+    .SYNOPSIS
+    Returns the status of a virtual machine's need for snapshot consolidation.
+
+    .DESCRIPTION
+    The Get-SnapshotConsolidation cmdlet returns the status of a virtual machine's need for snapshot consolidation.
+
+    .EXAMPLE
+    Get-SnapshotConsolidation -vm "foo"
+    This example returns the status of the snapshot consolidation for the virtual machine named "foo".
+    #>
+
+    Param (
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
+    )
+
+    Try {
+        if (Get-VM -Name $vm) {
+            $snapshotConsolidation = (Get-View -ViewType VirtualMachine -Filter @{'Name' = $vm }).Runtime.ConsolidationNeeded # Get the consolidation status
+            $snapshotCount = (Get-VM $vm | Get-Snapshot).Count # Get the number of snapshots
+            # Set the alert and message based on the consolidation status
+            if ($consolidation -eq $true) {
+                $alert = 'RED' # Critical: Consolidation needed
+                $message = "Consolidation is required."
+            }
+            else {
+                $alert = 'GREEN' # OK: Consolidation not needed
+                $message = "Consolidation is not required."
+            }
+
+            if ($snapshotCount -gt 1) {
+                $messageAppend = "Use 'Get-SnapshotStatus -vm $vm' to review the status of each snapshot."
+            }
+
+            # Create a new PSObject to hold the results
+            $outputObject = New-Object -TypeName psobject
+            # Add the snapshot details to the PSObject
+            $outputObject = New-Object -TypeName psobject
+            $outputObject | Add-Member -NotePropertyName 'Virtual Machine' -NotePropertyValue $name
+            $outputObject | Add-Member -NotePropertyName 'Snapshots' -NotePropertyValue $snapshotCount
+            $outputObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+            $outputObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend"
+            $outputObject
+        }
+        else {
+            Write-Error "Unable to locate virtual machine ($name) in the vCenter Server inventory."
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Get-SnapshotConsolidation
+
 ##############################  End Supporting Functions ###############################
 ########################################################################################
