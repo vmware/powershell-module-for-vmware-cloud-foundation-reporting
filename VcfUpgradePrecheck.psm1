@@ -168,7 +168,7 @@ Function Publish-CertificateHealth {
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) { 
             $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Certificate Health Status</h3>' -As Table
-            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         }
         else {
@@ -257,7 +257,7 @@ Function Publish-ConnectivityHealth {
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) { 
             $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Connectivity Health Status</h3>' -As Table
-            $customObject = Convert-AlertClass -htmldata $customObject
+            $customObject = Convert-CssClass -htmldata $customObject
             $customObject
         }
         else {
@@ -327,10 +327,10 @@ Function Publish-DnsHealth {
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
             $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Forward Lookup Health Status</h3>" -As Table
-            $allForwardLookupObject = Convert-AlertClass -htmldata $allForwardLookupObject
+            $allForwardLookupObject = Convert-CssClass -htmldata $allForwardLookupObject
             $allForwardLookupObject
             $allReverseLookupObject =$allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Reverse Lookup Health Status</h3>" -As Table
-            $allReverseLookupObject = Convert-AlertClass -htmldata $allReverseLookupObject
+            $allReverseLookupObject = Convert-CssClass -htmldata $allReverseLookupObject
             $allReverseLookupObject
         } else {
             $allForwardLookupObject | Sort-Object Component, Resource
@@ -427,16 +427,16 @@ Function Publish-EsxiHealth {
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) { 
             $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi Overall Health Status</h3>' -As Table;
-            $allOverallHealthObject = Convert-AlertClass -htmldata $allOverallHealthObject
+            $allOverallHealthObject = Convert-CssClass -htmldata $allOverallHealthObject
             $allOverallHealthObject
             $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi Core Dump Health Status</h3>' -As Table
-            $allCoreDumpObject = Convert-AlertClass -htmldata $allCoreDumpObject
+            $allCoreDumpObject = Convert-CssClass -htmldata $allCoreDumpObject
             $allCoreDumpObject
             $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi License Health Status</h3>' -As Table
-            $allLicenseObject = Convert-AlertClass -htmldata $allLicenseObject
+            $allLicenseObject = Convert-CssClass -htmldata $allLicenseObject
             $allLicenseObject
             $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi Disk Health Status</h3>' -As Table
-            $allDiskObject = Convert-AlertClass -htmldata $allDiskObject
+            $allDiskObject = Convert-CssClass -htmldata $allDiskObject
             $allDiskObject
         }
         else {
@@ -594,7 +594,7 @@ Function Publish-NsxtHealth {
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) { 
             $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>NSX-T Data Center Health Status</h3>' -As Table
-            $customObject = Convert-AlertClass -htmldata $customObject
+            $customObject = Convert-CssClass -htmldata $customObject
             $customObject
         }
         else {
@@ -657,7 +657,7 @@ Function Publish-NtpHealth {
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
             $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>NTP Health Status</h3>" -As Table
-            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         } else {
             $outputObject | Sort-Object Component, Resource 
@@ -716,7 +716,7 @@ Function Publish-PasswordHealth {
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
             $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Password Expiry Health Status</h3>" -As Table
-            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         } else {
             $outputObject | Sort-Object Component, Resource 
@@ -788,7 +788,7 @@ Function Publish-ServiceHealth {
 
         if ($PsBoundParameters.ContainsKey('html')) { 
             $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Service Health Status</h3>' -As Table
-            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         }
         else {
@@ -851,7 +851,7 @@ Function Publish-VcenterHealth {
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) { 
             $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>vCenter Server Health Status</h3>' -As Table
-            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         }
         else {
@@ -962,7 +962,7 @@ Function Publish-VsanHealth {
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
             $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>VSAN Health Status</h3>" -As Table
-            $customObject = Convert-AlertClass -htmldata $customObject
+            $customObject = Convert-CssClass -htmldata $customObject
             $customObject
         } else {
             $customObject | Sort-Object Component, Resource 
@@ -1045,7 +1045,7 @@ Function Publish-VsanStoragePolicy {
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
             $outputObject = $outputObject | Sort-Object Component, 'vCenter Server', Resource | ConvertTo-Html -Fragment -PreContent "<h3>VSAN Storage Policy Health Status</h3>" -As Table
-            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         } else {
 <<<<<<< HEAD
@@ -1350,7 +1350,7 @@ Function Request-SddcManagerUserExpiry {
                         # Return the structured data to the console or format using HTML CSS Styles
                         if ($PsBoundParameters.ContainsKey("html")) { 
                             $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
-                            $customObject = Convert-AlertClass -htmldata $customObject
+                            $customObject = Convert-CssClass -htmldata $customObject
                             $customObject
                         } else {
                             $customObject | Sort-Object Component, Resource 
@@ -1382,8 +1382,6 @@ Function Request-NsxtManagerUserExpiry {
         for a workload domain.
     #>
 
-    # TO DO: Address issues with connection to NSX Manager via VM-Script.
-
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
@@ -1408,15 +1406,15 @@ Function Request-NsxtManagerUserExpiry {
                                     $customObject += $elementObject
                                     $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser root
                                     $customObject += $elementObject
+                                }
 
-                                    # Return the structured data to the console or format using HTML CSS Styles
-                                    if ($PsBoundParameters.ContainsKey("html")) { 
-                                        $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
-                                        $customObject = Convert-AlertClass -htmldata $customObject
-                                        $customObject
-                                    } else {
-                                        $customObject | Sort-Object Component, Resource 
-                                    }
+                                # Return the structured data to the console or format using HTML CSS Styles
+                                if ($PsBoundParameters.ContainsKey("html")) { 
+                                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
+                                    $customObject = Convert-CssClass -htmldata $customObject
+                                    $customObject
+                                } else {
+                                    $customObject | Sort-Object Component, Resource 
                                 }
                             }
                         }
@@ -1428,6 +1426,7 @@ Function Request-NsxtManagerUserExpiry {
     }
 }
 Export-ModuleMember -Function Request-NsxtManagerUserExpiry
+
 Function Request-vCenterUserExpiry {
     <#
 		.SYNOPSIS
@@ -1443,15 +1442,20 @@ Function Request-vCenterUserExpiry {
         - Checks when the password will expire and outputs the results
 
         .EXAMPLE
-        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
-        This example will check the expiry date of the local OS 'root' account for all vCenter Server instances managed
-        by SDDC Manager.
+        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains
+        This example will check the expiry date of the local OS 'root' account for all vCenter Server instances managed by SDDC Manager.
+
+        .EXAMPLE
+        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -workloadDomain sfo-w01
+        This example will check the expiry date of the local OS 'root' account for a single workload domain
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
     )
 
@@ -1461,17 +1465,25 @@ Function Request-vCenterUserExpiry {
                 if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                         $customObject = New-Object System.Collections.ArrayList
-                        $allVcenters = Get-VCFvCenter
-                        foreach ($vcenter in $allVcenters) {
-                            $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn}).password
-                            $elementObject = Request-LocalUserExpiry -fqdn $vcenter.fqdn -component vCenter -rootPass $rootPass -checkUser root
+                        if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                            $allVcenters = Get-VCFvCenter
+                            foreach ($vcenter in $allVcenters) {
+                                $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn}).password
+                                $elementObject = Request-LocalUserExpiry -fqdn $vcenter.fqdn -component vCenter -rootPass $rootPass -checkUser root
+                                $customObject += $elementObject
+                            }
+                        }
+                        else {
+                            $vcenter = (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).vcenters.fqdn
+                            $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter}).password
+                            $elementObject = Request-LocalUserExpiry -fqdn $vcenter -component vCenter -rootPass $rootPass -checkUser root
                             $customObject += $elementObject
                         }
 
                         # Return the structured data to the console or format using HTML CSS Styles
                         if ($PsBoundParameters.ContainsKey("html")) { 
                             $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
-                            $customObject = Convert-AlertClass -htmldata $customObject
+                            $customObject = Convert-CssClass -htmldata $customObject
                             $customObject
                         } else {
                             $customObject | Sort-Object Component, Resource 
@@ -1526,7 +1538,7 @@ Function Request-vRslcmUserExpiry {
                             # Return the structured data to the console or format using HTML CSS Styles
                             if ($PsBoundParameters.ContainsKey("html")) { 
                                 $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
-                                $customObject = Convert-AlertClass -htmldata $customObject
+                                $customObject = Convert-CssClass -htmldata $customObject
                                 $customObject
                             } else {
                                 $customObject | Sort-Object Component, Resource 
@@ -1772,7 +1784,7 @@ Function Request-VcenterBackupStatus {
                 if (Test-VsphereConnection -server $vcfVcenterDetails.fqdn) {
                     if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                         Connect-CisServer -server $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
-                        $backupTask = Get-VcenterBackupJobs | select -First 1 | Get-VcenterBackupStatus
+                        $backupTask = Get-VcenterBackupJobs | Select-Object -First 1 | Get-VcenterBackupStatus
 
                         $component = 'vCenter Server' # Set the component name
                         $date = $backupTask.end_time # Set the end timestamp
@@ -1907,7 +1919,7 @@ Function Request-SddcManagerStorageHealth {
     # Return the structured data to the console or format using HTML CSS Styles
     if ($PsBoundParameters.ContainsKey("html")) { 
         $customObject = $customObject | ConvertTo-Html -Fragment -PreContent "<h2>SDDC Manager Disk Health Status</h2>" -As Table
-        $customObject = Convert-AlertClass -htmldata $customObject
+        $customObject = Convert-CssClass -htmldata $customObject
     }
     # Return $customObject in HTML or pain format
     $customObject
@@ -2033,6 +2045,62 @@ $defaultCssStyle
 }
 Export-ModuleMember -Function Get-DefaultHtmlReportStyle
 
+Function Get-ClarityReportHeader {
+# Define the default Cascading Style Sheets (CSS) for the HTML report
+$clarityCssHeader = '
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <link rel="stylesheet" href="https://unpkg.com/@clr/ui/clr-ui.min.css" />
+    <style>
+        .alertOK { color: #78BE20; font-weight: bold}
+        .alertWarning { color: #EC7700; font-weight: bold}
+        .alertCritical { color: #9F2842; font-weight: bold}
+    </style>
+    </head>
+    <body>
+    <div class="clr-example">
+    <div class="main-container">
+        <header class="header-6">
+        <div class="branding">
+            <a href="javascript://">
+            <cds-icon shape="vm-bug">
+                <img src="logo.svg" alt="logo"/>
+            </cds-icon>
+            <span class="title">PowerShell Module for VMware Cloud Foundation</span>
+            </a>
+        </div>
+        <div class="settings">
+            <a href="javascript://" class="nav-link nav-icon">
+            <cds-icon shape="cog"></cds-icon>
+            </a>
+        </div>
+        </header>
+        <nav class="subnav">
+        <ul class="nav">
+            <li class="nav-item">
+            <a class="nav-link active" href="javascript://">Health Check Report</a>
+            </li>
+        </ul>
+        </nav>
+        <div class="content-container">
+        <div class="content-area">'
+    $clarityCssHeader
+}
+Export-ModuleMember -Function Get-ClarityReportHeader
+
+Function Get-ClarityReportFooter {
+    # Define the default Cascading Style Sheets (CSS) for the HTML report
+    $clarityCssFooter = '
+            </div>
+        </div>
+    </div>
+    </body>
+    </html>'
+    $clarityCssFooter
+}
+Export-ModuleMember -Function Get-ClarityReportFooter
+
 Function PercentCalc {
     Param (
         [Parameter (Mandatory = $true)] [Int]$InputNum1,
@@ -2040,7 +2108,7 @@ Function PercentCalc {
         $InputNum1 / $InputNum2*100
 }
 
-Function Convert-AlertClass {
+Function Convert-CssClass {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [PSCustomObject]$htmlData
     )
@@ -2052,13 +2120,16 @@ Function Convert-AlertClass {
     $newAlertCritical = '<td class="alertCritical">RED</td>'
     $oldAlertWarning = '<td>YELLOW</td>'
     $newAlertWarning = '<td class="alertWarning">YELLOW</td>'
+    $oldTable = '<table>'
+    $newTable = '<table class="table">'
 
     $htmlData = $htmlData -replace $oldAlertOK,$newAlertOK
     $htmlData = $htmlData -replace $oldAlertCritical,$newAlertCritical
     $htmlData = $htmlData -replace $oldAlertWarning,$newAlertWarning
+    $htmlData = $htmlData -replace $oldTable,$newTable
     $htmlData
 }
-Export-ModuleMember -Function Convert-AlertClass
+Export-ModuleMember -Function Convert-CssClass
 
 Function Request-LocalUserExpiry {
     <#
