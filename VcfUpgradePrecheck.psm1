@@ -1028,7 +1028,7 @@ Function Publish-VsanStoragePolicy {
         foreach ($element in $jsonInputData.PsObject.Properties.Value) { 
             $elementObject = New-Object -TypeName psobject
             $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "Virtual Machine"
-            $elementObject | Add-Member -NotePropertyName 'vCenter' -NotePropertyValue (($element.area -Split (' : '))[-1] -Split (' VM '))[0].Trim()
+            $elementObject | Add-Member -NotePropertyName 'vCenter Server' -NotePropertyValue (($element.area -Split (' : '))[-1] -Split (' VM '))[0].Trim()
             $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.Message -Split (" "),2)[0].Trim()
             $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
             $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue ($element.Message -Split (" "),2)[-1].Trim()
@@ -1044,10 +1044,11 @@ Function Publish-VsanStoragePolicy {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject = $outputObject | Sort-Object Component, vCenter, Resource | ConvertTo-Html -Fragment -PreContent "<h3>VSAN Storage Policy Health Status</h3>" -As Table
+            $outputObject = $outputObject | Sort-Object Component, 'vCenter Server', Resource | ConvertTo-Html -Fragment -PreContent "<h3>VSAN Storage Policy Health Status</h3>" -As Table
             $outputObject = Convert-AlertClass -htmldata $outputObject
             $outputObject
         } else {
+<<<<<<< HEAD
             $outputObject | Sort-Object Component, vCenter, Resource 
 =======
 Function Request-SddcManagerStorageHealth {
@@ -1126,6 +1127,9 @@ Function Request-SddcManagerStorageHealth {
             $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
             $customObject += $userObject # Creating collection to work with afterwords
 >>>>>>> d82c5c1 (Introduce "Request-SddcManagerStorageHealth")
+=======
+            $outputObject | Sort-Object Component, 'vCenter Server', Resource 
+>>>>>>> 6880eb5 (Updated Publish-VsanStoragePolicy)
         }
     }
     Catch {
