@@ -1073,15 +1073,14 @@ Function Request-SddcManagerStorageHealth {
     
     # Define thresholds Green < Yellow < Red
     $greenThreshold = 10
-    $yellowThreshold = 20
+    $redThreshold = 20
 
     Try {
-        
-        # Ger information from SDDC Manager and format it
+        # Get information from SDDC Manager and format it
         $customObject = New-Object System.Collections.ArrayList
         $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
         $output = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command
-        $formatOutput = ($output.ScriptOutput -split '\r?\n').Trim() | -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
+        $formatOutput = ($output.ScriptOutput -split '\r?\n').Trim() -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
         foreach ($partition in $formatOutput) {
             $usage = $partition.Split(" ")[4]
             # Make sure that only rows with calculated usage will be included
@@ -1097,40 +1096,20 @@ Function Request-SddcManagerStorageHealth {
                     $alert = 'GREEN'
                     $message = "Used space is less than $greenThreshold%. You could continue with the upgrade."
                 }
-                { $_ -lt $yellowThreshold } { # Yellow if $usage is between $greenThreshold and $yellowThreshold
-                    $alert = 'YELLOW'
-                    $message = "Used space is between $greenThreshold% and $yellowThreshold%. Please consider reclaiming some space. "
+                { $_ -ge $redThreshold } { # Red if $usage is equal or above $redThreshold
+                    $alert = 'RED'
+                    $message = "Used space is above $redThreshold%. Please reclaim space on the partition before proceeding further."
                     # TODO Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
                     # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
                     # As an alternative you could run PowerCLI commandlet:
                     # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <administrator@vsphere.local> -pass <administrator@vsphere.local_password> -rootPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
                 }
-                Default { # RED if above are not matched
-                    $alert = 'RED'
-                    $message = "Used space is above $yellowThreshold%. Please reclaim space on the partition before proceeding further."
+                Default { # Yellow if above two are not matched
                     # TODO - same as above - add hints on new lines }
+                    $alert = 'YELLOW'
+                    $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space. "
                 }
             }
-
-            # if ($usage -le $greenThreshold) {
-            #     $alert = 'GREEN'
-            #     $message = "Used space is less than $greenThreshold%. You could continue with the upgrade."
-            # } 
-            # else {
-            #     if ($usage -lt $yellowThreshold) {
-            #         $alert = 'YELLOW'
-            #         $message = "Used space is between $greenThreshold% and $yellowThreshold%. Please consider reclaiming some space. "
-            #         # TODO Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
-            #         # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
-            #         # As an alternative you could run PowerCLI commandlet:
-            #         # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <administrator@vsphere.local> -pass <administrator@vsphere.local_password> -rootPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
-            #     }
-            #     else {
-            #         $alert = 'RED'
-            #         $message = "Used space is above $yellowThreshold%. Please reclaim space on the partition before proceeding further."
-            #         # TODO - same as above - add hints on new lines
-            #     }
-            # }
                                     
             $userObject = New-Object -TypeName psobject
             $userObject | Add-Member -notepropertyname 'Filesystem' -notepropertyvalue $partition.Split(" ")[0]
