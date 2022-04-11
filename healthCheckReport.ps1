@@ -46,9 +46,7 @@ Try {
     Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
     Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn # Setup Report Location and Report File
     Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
-    Write-LogMessage -Type INFO -Message "Preparing the Formatting for the final HTML report"
-    # $reportFormat = Get-DefaultHtmlReportStyle # Get the default CSS style for formatting the HTML report
-    # $reportTitle = "<h1>Health Check Report for SDDC Manager: $sddcManagerFqdn</h1>" # Define the Report Tile
+
     Write-LogMessage -Type INFO -Message "Executing SoS Health Check Collection on VMware Cloud Foundation Instance ($sddcManagerFqdn), process takes time"
     # if ($PsBoundParameters.ContainsKey("allDomains")) { 
     #     $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
@@ -108,27 +106,7 @@ Try {
     $hddUsage = $hddUsage | ConvertTo-Html -Fragment -PreContent "<h3>SDDC Manager Disk Health Status</h3>" -As Table
     $hddUsage = Convert-CssClass -htmldata $hddUsage
 
-    # $datastoreTitle = "<h2>Datastore Capacity for all Workload Domains</h2>"
-    # # Generating Datastore Capacity Report for all Workload Domains
-    # Write-LogMessage -Type INFO -Message "Generating Datastore Capacity Report for all Workload Domains"
-    # $allWorkloadDomain = Get-VCFWorkloadDomain | Select-Object name
-    # foreach ($workloadDomain in $allWorkloadDomain) {   
-    #     $storageCapacityHtml = Export-StorageCapacity -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcDomain $workloadDomain.name -html
-    #     $allStorageCapacityHtml += $storageCapacityHtml
-    # }
-
-    # $coreDumpTitle = "<h2>ESXi Host Core Dump Configuration for all Workload Domains</h2>"
-    # # Generating ESXi Host Core Dump Configuration for all Workload Domains
-    # Write-LogMessage -Type INFO -Message "Generating ESXi Host Core Dump Configuration for all Workload Domains"
-    # $allWorkloadDomain = Get-VCFWorkloadDomain | Select-Object name
-    # foreach ($workloadDomain in $allWorkloadDomain) {
-    #     Write-LogMessage -Type INFO -Message "Gathering ESXi Host Core Dump Configuration for Workload Domain ($($workloadDomain.name))"
-    #     $esxiCoreDumpHtml = Export-EsxiCoreDumpConfig -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcDomain $workloadDomain.name -html
-    #     $allEsxiCoreDumpHtml += $esxiCoreDumpHtml
-    # }
-
     # Combine all information gathered into a single HTML report
-
     $reportData = "$sosHealthHtml $localPasswordHtml $hddUsage"
 
     $reportHeader = Get-ClarityReportHeader

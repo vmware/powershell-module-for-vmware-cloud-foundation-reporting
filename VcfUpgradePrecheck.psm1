@@ -2089,30 +2089,6 @@ Function Convert-TextToHtml {
 }
 Export-ModuleMember -Function Convert-TextToHtml
 
-Function Get-DefaultHtmlReportStyle {
-# Define the default Cascading Style Sheets (CSS) for the HTML report
-$defaultCssStyle = @"
-<style>
-    h1 { font-family: Metropolis, Arial, Helvetica, sans-serif; color: #1A4288; font-size: 30px; }
-    h2 { font-family: Metropolis, Arial, Helvetica, sans-serif; color: #459B36; font-size: 20px; }
-    h3 { ffont-family: Metropolis, Arial, Helvetica, sans-serif; color: #7F35B2; font-size: 16px; }
-    body { font-family: Arial, Helvetica, sans-serif; color: #464547; font-size: 12px; }
-    table { font-size: 12px; border: 0px;  font-family: monospace; } 
-    td { padding: 4px; margin: 0px; border: 0; }
-    th { background: #717074; background: linear-gradient(#464547, #717074); color: #fff; font-size: 11px; text-transform: capitalize; padding: 10px 15px; vertical-align: middle; }
-    tbody tr:nth-child(even) { background: #f0f0f2; }
-    #CreationDate { font-family: Metropolis, Arial, Helvetica, sans-serif; color: #ff3300; font-size: 12px; }
-    .alertOK { color: #78BE20; border: 0px; font-family: Metropolis, Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .alertWarning { color: #EC7700; border: 0px; font-family: Metropolis, Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .alertCritical { color: #9F2842; border: 0px; font-family: Metropolis, Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .statusPass { color: #78BE20; border: 0px; font-family: Metropolis, Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-    .statusFail { color: #9F2842; border: 0px; font-family: Metropolis, Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold}
-</style>
-"@
-$defaultCssStyle
-}
-Export-ModuleMember -Function Get-DefaultHtmlReportStyle
-
 Function Get-ClarityReportHeader {
 # Define the default Cascading Style Sheets (CSS) for the HTML report
 $clarityCssHeader = '
