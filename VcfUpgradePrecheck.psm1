@@ -867,7 +867,7 @@ Export-ModuleMember -Function Publish-VcenterHealth
 Function Publish-VsanHealth {
     <#
         .SYNOPSIS
-        ormats the vSAN Health data from the SoS JSON output.
+        Formats the vSAN Health data from the SoS JSON output.
 
         .DESCRIPTION
         The Publish-VsanHealth cmdlet formats the vSAN Health data from the SoS JSON output and publishes it as
@@ -969,6 +969,87 @@ Function Publish-VsanHealth {
     }
 }
 Export-ModuleMember -Function Publish-VsanHealth
+
+Function Publish-VsanStoragePolicy {
+    <#
+        .SYNOPSIS
+        Formats the vSAN Storage Policy for VM
+
+        .DESCRIPTION
+        The Publish-VsanStoragePolicy cmdlet formats the vSAN Storage Policy data from the SoS JSON output and
+        publishes it as either a standard PowerShell object or an HTML object. 
+
+        .EXAMPLE
+        Publish-VsanHealth -json <file-name>
+        This example extracts and formats the vSAN Storage Policy data as a PowerShell object from the JSON file.
+
+        .EXAMPLE
+        Publish-VsanHealth -json <file-name> -html
+        This example extracts and formats the vSAN Storage Policy data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-VsanHealth -json <file-name> -failureOnly
+        This example extracts and formats the vSAN Storage Policy data as a PowerShell object from the JSON file for
+        only the failed items.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path -Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        } else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        # VSAN Storage Policy
+        $jsonInputData = $targetContent.vSAN # Extract Data from the provided SOS JSON
+        $jsonInputData.PSObject.Properties.Remove('Host vSAN Status')
+        $jsonInputData.PSObject.Properties.Remove('Host Disk Status')
+        $jsonInputData.PSObject.Properties.Remove('vCenter HCL Status')
+        $jsonInputData.PSObject.Properties.Remove('Cluster Data Compression Status')
+        $jsonInputData.PSObject.Properties.Remove('Cluster Data Encryption Status')
+        $jsonInputData.PSObject.Properties.Remove('Cluster Data Deduplication Status')
+        $jsonInputData.PSObject.Properties.Remove('Stretched Cluster Status')
+        $jsonInputData.PSObject.Properties.Remove('Stretched Cluster Health Status')
+        $jsonInputData.PSObject.Properties.Remove('Stretched Cluster Tests')
+
+        $outputObject = New-Object System.Collections.ArrayList
+        foreach ($element in $jsonInputData.PsObject.Properties.Value) { 
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "Virtual Machine"
+            $elementObject | Add-Member -NotePropertyName 'vCenter' -NotePropertyValue (($element.area -Split (' : '))[-1] -Split (' VM '))[0].Trim()
+            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.Message -Split (" "),2)[0].Trim()
+            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue ($element.Message -Split (" "),2)[-1].Trim()
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                if (($element.status -eq 'FAILED')) {
+                    $outputObject += $elementObject
+                }
+            }
+            else {
+                $outputObject += $elementObject
+            }
+        }
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            $outputObject = $outputObject | Sort-Object Component, vCenter, Resource | ConvertTo-Html -Fragment -PreContent "<h3>VSAN Storage Policy Health Status</h3>" -As Table
+            $outputObject = Convert-AlertClass -htmldata $outputObject
+            $outputObject
+        } else {
+            $outputObject | Sort-Object Component, vCenter, Resource 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-VsanStoragePolicy
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################

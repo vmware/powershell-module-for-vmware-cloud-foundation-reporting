@@ -64,6 +64,7 @@ Try {
     #Write-LogMessage -Type INFO -Message "Generating the Password Expiry Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
     Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
     Write-LogMessage -Type INFO -Message "Generating the VSAN Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+    Write-LogMessage -Type INFO -Message "Generating the VSAN Storage Policy Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
     Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
     Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
     Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
@@ -75,6 +76,7 @@ Try {
         #$passwordHtml = Publish-PasswordHealth -json $jsonFilePath -html -failureOnly
         $esxiHtml = Publish-EsxiHealth -json $jsonFilePath -html -failureOnly
         $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html -failureOnly
+        $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html -failureOnly
         $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html -failureOnly
         $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -html -failureOnly
         $connectivityHtml = Publish-ConnectivityHealth -json $jsonFilePath -html -failureOnly
@@ -86,12 +88,13 @@ Try {
         #$passwordHtml = Publish-PasswordHealth -json $jsonFilePath -html
         $esxiHtml = Publish-EsxiHealth -json $jsonFilePath -html
         $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html
+        $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html
         $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html
         $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -html
         $connectivityHtml = Publish-ConnectivityHealth -json $jsonFilePath -html
     }
     # Combine all SoS Health Reports into single variable for consumption when generating the report
-    $sosHealthHtml = "$sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $certificateHtml $passwordHtml $esxiHtml $vsanHtml $vcenterHtml $nsxtHtml $connectivityHtml"
+    $sosHealthHtml = "$sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $certificateHtml $passwordHtml $esxiHtml $vsanHtml $vsanPolicyHtml $vcenterHtml $nsxtHtml $connectivityHtml"
 
     # Generating the Password Expiry Report
     # TO DO: Wrapper Function to be called here
