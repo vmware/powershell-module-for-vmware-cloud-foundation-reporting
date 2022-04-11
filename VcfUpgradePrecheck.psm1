@@ -1308,6 +1308,59 @@ Function Export-StorageCapacity {
 }
 Export-ModuleMember -Function Export-StorageCapacity
 
+Function Publish-LocalUserExpiry {
+    <#
+		.SYNOPSIS
+        Request and publlish Local User Expiry
+
+        .DESCRIPTION
+        The Publish-LocalUserExpiry cmdlet checks the expiry for local users across the VMware Cloud Foundation
+        instance and prepares the data to be published to an HTML report. The cmdlet connects to SDDC Manager using the
+        -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Performs checks on the local OS users and outputs the results
+
+        .EXAMPLE
+        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcRootPass VMw@re1! -allDomains
+        This example checks the expiry for local OS users in the SDDC Manager appliance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcRootPass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+
+    Try {
+
+        $allPasswordExpiryObject = New-Object System.Collections.ArrayList
+        $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass; $allPasswordExpiryObject += $sddcPasswordExpiry
+        $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass; $allPasswordExpiryObject += $vrslcmPasswordExpiry
+        if ($PsBoundParameters.ContainsKey("allDomains")) { 
+            $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -alldomains; $allPasswordExpiryObject += $vcenterPasswordExpiry
+            $allWorkloadDomains = Get-VCFWorkloadDomain
+            foreach ($domain in $allWorkloadDomains ) {
+                $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $domain.name; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
+            }
+        }
+        else {
+            $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allPasswordExpiryObject += $vcenterPasswordExpiry
+            $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
+        }
+        
+        $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Password Expiry Health Status</h3>" -As Table
+        $allPasswordExpiryObject = Convert-CssClass -htmldata $allPasswordExpiryObject
+        $allPasswordExpiryObject
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-LocalUserExpiry
+
 Function Request-SddcManagerUserExpiry {
     <#
 		.SYNOPSIS
@@ -1334,32 +1387,37 @@ Function Request-SddcManagerUserExpiry {
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
     )
 
-    if (Test-VCFConnection -server $server) {
-        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
-                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        $customObject = New-Object System.Collections.ArrayList
-                        $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser backup
-                        $customObject += $elementObject
-                        $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser root
-                        $customObject += $elementObject
-                        $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser vcf
-                        $customObject += $elementObject
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            $customObject = New-Object System.Collections.ArrayList
+                            $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser backup
+                            $customObject += $elementObject
+                            $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser root
+                            $customObject += $elementObject
+                            $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser vcf
+                            $customObject += $elementObject
 
-                        # Return the structured data to the console or format using HTML CSS Styles
-                        if ($PsBoundParameters.ContainsKey("html")) { 
-                            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
-                            $customObject = Convert-CssClass -htmldata $customObject
-                            $customObject
-                        } else {
-                            $customObject | Sort-Object Component, Resource 
+                            # Return the structured data to the console or format using HTML CSS Styles
+                            if ($PsBoundParameters.ContainsKey("html")) { 
+                                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
+                                $customObject = Convert-CssClass -htmldata $customObject
+                                $customObject
+                            } else {
+                                $customObject | Sort-Object Component, Resource 
+                            }
                         }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
-                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                 }
             }
         }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
     }
 }
 Export-ModuleMember -Function Request-SddcManagerUserExpiry
@@ -1390,39 +1448,44 @@ Function Request-NsxtManagerUserExpiry {
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
     )
 
-    if (Test-VCFConnection -server $server) {
-        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
-                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
-                            if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {    
-                                $customObject = New-Object System.Collections.ArrayList
-                                foreach ($nsxtManagerNode in $vcfNsxDetails.nodes) {
-                                    $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password
-                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser admin
-                                    $customObject += $elementObject
-                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser audit
-                                    $customObject += $elementObject
-                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser root
-                                    $customObject += $elementObject
-                                }
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
+                                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {    
+                                    $customObject = New-Object System.Collections.ArrayList
+                                    foreach ($nsxtManagerNode in $vcfNsxDetails.nodes) {
+                                        $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password
+                                        $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser admin
+                                        $customObject += $elementObject
+                                        $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser audit
+                                        $customObject += $elementObject
+                                        $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser root
+                                        $customObject += $elementObject
+                                    }
 
-                                # Return the structured data to the console or format using HTML CSS Styles
-                                if ($PsBoundParameters.ContainsKey("html")) { 
-                                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
-                                    $customObject = Convert-CssClass -htmldata $customObject
-                                    $customObject
-                                } else {
-                                    $customObject | Sort-Object Component, Resource 
+                                    # Return the structured data to the console or format using HTML CSS Styles
+                                    if ($PsBoundParameters.ContainsKey("html")) { 
+                                        $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
+                                        $customObject = Convert-CssClass -htmldata $customObject
+                                        $customObject
+                                    } else {
+                                        $customObject | Sort-Object Component, Resource 
+                                    }
                                 }
                             }
                         }
-                    }
-                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                }    
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }    
+                }
             }
         }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
     }
 }
 Export-ModuleMember -Function Request-NsxtManagerUserExpiry
@@ -1459,40 +1522,45 @@ Function Request-vCenterUserExpiry {
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
     )
 
-    if (Test-VCFConnection -server $server) {
-        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
-                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        $customObject = New-Object System.Collections.ArrayList
-                        if ($PsBoundParameters.ContainsKey("allDomains")) { 
-                            $allVcenters = Get-VCFvCenter
-                            foreach ($vcenter in $allVcenters) {
-                                $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn}).password
-                                $elementObject = Request-LocalUserExpiry -fqdn $vcenter.fqdn -component vCenter -rootPass $rootPass -checkUser root
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            $customObject = New-Object System.Collections.ArrayList
+                            if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                                $allVcenters = Get-VCFvCenter
+                                foreach ($vcenter in $allVcenters) {
+                                    $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn}).password
+                                    $elementObject = Request-LocalUserExpiry -fqdn $vcenter.fqdn -component vCenter -rootPass $rootPass -checkUser root
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $vcenter = (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).vcenters.fqdn
+                                $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter}).password
+                                $elementObject = Request-LocalUserExpiry -fqdn $vcenter -component vCenter -rootPass $rootPass -checkUser root
                                 $customObject += $elementObject
                             }
-                        }
-                        else {
-                            $vcenter = (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).vcenters.fqdn
-                            $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter}).password
-                            $elementObject = Request-LocalUserExpiry -fqdn $vcenter -component vCenter -rootPass $rootPass -checkUser root
-                            $customObject += $elementObject
-                        }
 
-                        # Return the structured data to the console or format using HTML CSS Styles
-                        if ($PsBoundParameters.ContainsKey("html")) { 
-                            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
-                            $customObject = Convert-CssClass -htmldata $customObject
-                            $customObject
-                        } else {
-                            $customObject | Sort-Object Component, Resource 
+                            # Return the structured data to the console or format using HTML CSS Styles
+                            if ($PsBoundParameters.ContainsKey("html")) { 
+                                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Password Expiry Health Status</h3>" -As Table
+                                $customObject = Convert-CssClass -htmldata $customObject
+                                $customObject
+                            } else {
+                                $customObject | Sort-Object Component, Resource 
+                            }
                         }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
-                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                 }
             }
         }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
     }
 }
 Export-ModuleMember -Function Request-vCenterUserExpiry
@@ -2100,7 +2168,6 @@ Function Get-ClarityReportFooter {
     $clarityCssFooter
 }
 Export-ModuleMember -Function Get-ClarityReportFooter
-
 Function PercentCalc {
     Param (
         [Parameter (Mandatory = $true)] [Int]$InputNum1,
