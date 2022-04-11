@@ -1585,10 +1585,10 @@ Function Request-SddcManagerBackupStatus {
 
                 # Set the status for the backup task
                 if ($backupTask.status -eq 'Successful') {                              
-                    $customObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'GREEN' # Ok; success
+                    $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'GREEN' # Ok; success
                 }
                 else {
-                    $customObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'RED' # Critical; failure
+                    $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'RED' # Critical; failure
                 }
 
                 # Set the message for the backup task
@@ -1663,11 +1663,11 @@ Function Request-NsxtManagerBackupStatus {
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
                             $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
                             if ($backupTask.node_backup_statuses.success -eq $true) {                              
-                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'GREEN' # Ok; success
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'GREEN' # Ok; success
                                 $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup completed without errors.' # Set the backup status message
                             }
                             else {
-                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'RED' # Critical; failure
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'RED' # Critical; failure
                                 $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.' # Set the backup status message
                             }
                         }
@@ -1686,11 +1686,11 @@ Function Request-NsxtManagerBackupStatus {
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
                             $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
                             if ($backupTask.node_backup_statuses.success -eq $true) {                              
-                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'GREEN' # Ok; success
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'GREEN' # Ok; success
                                 $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup completed without errors.' # Set the backup status message
                             }
                             else {
-                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'RED' # Critical; failure
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'RED' # Critical; failure
                                 $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.' # Set the backup status message
                             }
                         }
@@ -1709,11 +1709,11 @@ Function Request-NsxtManagerBackupStatus {
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
                             $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
                             if ($backupTask.node_backup_statuses.success -eq $true) {                              
-                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'GREEN' # Ok; success
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'GREEN' # Ok; success
                                 $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup completed without errors.' # Set the backup status message
                             }
                             else {
-                                $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'RED' # Critical; failure
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'RED' # Critical; failure
                                 $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.' # Set the backup status message
                             }
                         }
@@ -1786,13 +1786,13 @@ Function Request-VcenterBackupStatus {
 
                         # Set the status for the backup task
                         if ($backupTask.state -eq 'SUCCEEDED') {                              
-                            $customObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'GREEN' # Ok; success
+                            $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'GREEN' # Ok; success
                         }
                         elseif ($backupTask.state -eq 'IN PROGRESS') {                              
-                            $customObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'YELLOW' # Warning; in progress
+                            $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'YELLOW' # Warning; in progress
                         }
                         else {
-                            $customObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue 'RED' # Critical; failure
+                            $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'RED' # Critical; failure
                         }
 
                         # Set the message for the backup task
