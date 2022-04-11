@@ -1422,6 +1422,76 @@ Function Request-SddcManagerUserExpiry {
 }
 Export-ModuleMember -Function Request-SddcManagerUserExpiry
 
+Function Request-NsxtEdgeUserExpiry {
+    <#
+        .SYNOPSIS
+        Checks the expiry for local OS users in an an NSX Edge node appliance.
+
+        .DESCRIPTION
+        The Request-NsxtEdgeUserExpiry cmdlet checks the expiry for additional local OS users for an NSX Edge node.
+        The cmdlet connects to SDDC Manager using the -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Performs checks on the local OS users for NSX Manager appliances and outputs the results
+
+        .EXAMPLE
+        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-m01
+        This example checks the expiry for local OS users for the NSX Edge node appliances for a specific workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
+                                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {   
+                                    if (($vcfNsxEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipFQDN -eq $vcfNsxDetails.fqdn })) {   
+                                        $customObject = New-Object System.Collections.ArrayList
+                                        foreach ($nsxtEdgeNode in $vcfNsxEdgeDetails.edgeNodes) {
+                                            $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password
+                                            $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser admin
+                                            $customObject += $elementObject
+                                            $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser audit
+                                            $customObject += $elementObject
+                                            $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser root
+                                            $customObject += $elementObject
+                                        }
+                                    }
+
+                                    # Return the structured data to the console or format using HTML CSS Styles
+                                    if ($PsBoundParameters.ContainsKey('html')) { 
+                                        $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h2>Password Expiry Health Status</h2>' -As Table
+                                        $customObject = Convert-CssClass -htmldata $customObject
+                                        $customObject
+                                    }
+                                    else {
+                                        $customObject | Sort-Object Component, Resource 
+                                    }
+                                }
+                            }
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }    
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-NsxtEdgeUserExpiry
+
 Function Request-NsxtManagerUserExpiry {
     <#
         .SYNOPSIS
@@ -1435,9 +1505,8 @@ Function Request-NsxtManagerUserExpiry {
         - Performs checks on the local OS users for NSX Manager appliances and outputs the results
 
         .EXAMPLE
-        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
-        This example checks the expiry for local OS users for the NSX Manager appliances managed by SDDC Manager
-        for a workload domain.
+        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-m01
+        This example checks the expiry for local OS users for the NSX Manager appliances for a specific workload domain.
     #>
 
     Param (
