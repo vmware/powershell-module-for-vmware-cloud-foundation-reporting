@@ -2090,7 +2090,7 @@ Function Convert-TextToHtml {
 Export-ModuleMember -Function Convert-TextToHtml
 
 Function Get-ClarityReportHeader {
-# Define the default Cascading Style Sheets (CSS) for the HTML report
+# Define the default Clarity Cascading Style Sheets (CSS) for the HTML report Header
 $clarityCssHeader = '
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
@@ -2134,7 +2134,7 @@ $clarityCssHeader = '
 Export-ModuleMember -Function Get-ClarityReportHeader
 
 Function Get-ClarityReportFooter {
-    # Define the default Cascading Style Sheets (CSS) for the HTML report
+    # Define the default Clarity Cascading Style Sheets (CSS) for the HTML report Footer
     $clarityCssFooter = '
             </div>
         </div>
