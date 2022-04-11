@@ -970,6 +970,7 @@ Function Publish-VsanHealth {
 }
 Export-ModuleMember -Function Publish-VsanHealth
 
+<<<<<<< HEAD
 Function Publish-VsanStoragePolicy {
     <#
         .SYNOPSIS
@@ -1043,13 +1044,126 @@ Function Publish-VsanStoragePolicy {
             $outputObject
         } else {
             $outputObject | Sort-Object Component, vCenter, Resource 
+=======
+Function Request-SddcManagerStorageHealth {
+    <#
+		.SYNOPSIS
+        Checks the storage health (capacity) in an SDDC Manager appliance.
+
+        .DESCRIPTION
+        The Request-SddcManagerStorageHealth cmdlet checks the disk free space in the SDDC Manager
+        appliance not reported in the SoS Health Check. The cmdlet connects to SDDC Manager using the -server, -user,
+        and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the Management Domain vCenter Server instance
+        - Performs checks on the local storage used space and outputs the results
+
+        .EXAMPLE
+        Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1!
+        This example checks the hard disk space in the SDDC Manager appliance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+    
+    # Define thresholds Green < Yellow < Red
+    $greenThreshold = 10
+    $yellowThreshold = 20
+
+    Try {
+        
+        # Ger information from SDDC Manager and format it
+        $customObject = New-Object System.Collections.ArrayList
+        $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
+        $output = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command
+        $formatOutput = ($output.ScriptOutput -split '\r?\n').Trim() | -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
+        foreach ($partition in $formatOutput) {
+            $usage = $partition.Split(" ")[4]
+            # Make sure that only rows with calculated usage will be included
+            if ( !$usage ) { continue }
+
+            # Get the usage percentage as numeric value
+            $usage = $usage.Substring(0, $usage.Length - 1)
+            $usage = [int]$usage
+
+            # Applying thresholds and creating collection from input
+            switch ($usage) {
+                { $_ -le $greenThreshold } { # Green if $usage is up to $greenThreshold
+                    $alert = 'GREEN'
+                    $message = "Used space is less than $greenThreshold%. You could continue with the upgrade."
+                }
+                { $_ -lt $yellowThreshold } { # Yellow if $usage is between $greenThreshold and $yellowThreshold
+                    $alert = 'YELLOW'
+                    $message = "Used space is between $greenThreshold% and $yellowThreshold%. Please consider reclaiming some space. "
+                    # TODO Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
+                    # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
+                    # As an alternative you could run PowerCLI commandlet:
+                    # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <administrator@vsphere.local> -pass <administrator@vsphere.local_password> -rootPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
+                }
+                Default { # RED if above are not matched
+                    $alert = 'RED'
+                    $message = "Used space is above $yellowThreshold%. Please reclaim space on the partition before proceeding further."
+                    # TODO - same as above - add hints on new lines }
+                }
+            }
+
+            # if ($usage -le $greenThreshold) {
+            #     $alert = 'GREEN'
+            #     $message = "Used space is less than $greenThreshold%. You could continue with the upgrade."
+            # } 
+            # else {
+            #     if ($usage -lt $yellowThreshold) {
+            #         $alert = 'YELLOW'
+            #         $message = "Used space is between $greenThreshold% and $yellowThreshold%. Please consider reclaiming some space. "
+            #         # TODO Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
+            #         # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
+            #         # As an alternative you could run PowerCLI commandlet:
+            #         # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <administrator@vsphere.local> -pass <administrator@vsphere.local_password> -rootPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
+            #     }
+            #     else {
+            #         $alert = 'RED'
+            #         $message = "Used space is above $yellowThreshold%. Please reclaim space on the partition before proceeding further."
+            #         # TODO - same as above - add hints on new lines
+            #     }
+            # }
+                                    
+            $userObject = New-Object -TypeName psobject
+            $userObject | Add-Member -notepropertyname 'Filesystem' -notepropertyvalue $partition.Split(" ")[0]
+            $userObject | Add-Member -notepropertyname 'Size' -notepropertyvalue $partition.Split(" ")[1]
+            $userObject | Add-Member -notepropertyname 'Available' -notepropertyvalue $partition.Split(" ")[2]
+            $userObject | Add-Member -notepropertyname 'Used %' -notepropertyvalue $partition.Split(" ")[4]
+            $userObject | Add-Member -notepropertyname 'Mounted on' -notepropertyvalue $partition.Split(" ")[5]
+            $userObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $alert
+            $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
+            $customObject += $userObject # Creating collection to work with afterwords
+>>>>>>> d82c5c1 (Introduce "Request-SddcManagerStorageHealth")
         }
     }
     Catch {
         Debug-CatchWriter -object $_
+<<<<<<< HEAD
     }
 }
 Export-ModuleMember -Function Publish-VsanStoragePolicy
+=======
+    }                        
+                        
+    # Return the structured data to the console or format using HTML CSS Styles
+    if ($PsBoundParameters.ContainsKey("html")) { 
+        $customObject = $customObject | ConvertTo-Html -Fragment -PreContent "<h2>SDDC Manager Disk Health Status</h2>" -As Table
+        $customObject = Convert-AlertClass -htmldata $customObject
+    }
+    # Return $customObject in HTML or pain format
+    $customObject
+    
+}
+Export-ModuleMember -Function Request-SddcManagerStorageHealth
+>>>>>>> d82c5c1 (Introduce "Request-SddcManagerStorageHealth")
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################

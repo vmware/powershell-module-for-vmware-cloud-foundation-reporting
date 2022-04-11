@@ -50,11 +50,11 @@ Try {
     $reportFormat = Get-DefaultHtmlReportStyle # Get the default CSS style for formatting the HTML report
     $reportTitle = "<h1>Health Check Report for SDDC Manager: $sddcManagerFqdn</h1>" # Define the Report Tile
     Write-LogMessage -Type INFO -Message "Executing SoS Health Check Collection on VMware Cloud Foundation Instance ($sddcManagerFqdn), process takes time"
-    # if ($PsBoundParameters.ContainsKey("allDomains")) { 
-    #     $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
-    # } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-    #     $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
-    # }
+    if ($PsBoundParameters.ContainsKey("allDomains")) { 
+        $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
+    } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+        $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
+    }
 
     $sosHealthTitle = "<h2>SoS Health Check Data</h2>" # Define SoS Health Title
     Write-LogMessage -Type INFO -Message "Generating the Service Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
@@ -106,6 +106,12 @@ Try {
     $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
     $allPasswordExpiryObject = Convert-AlertClass -htmldata $allPasswordExpiryObject
 
+    # Generating the SDDC Manager disk usage report
+    Write-LogMessage -Type INFO -Message "Generating the Disk Health Report from SDDC Manager ($sddcManagerFqdn)"
+    $hddUsage = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass
+    $hddUsage = $hddUsage | ConvertTo-Html -Fragment -PreContent "<h2>SDDC Manager Disk Health Status</h2>" -As Table
+    $hddUsage = Convert-AlertClass -htmldata $hddUsage
+
     # $datastoreTitle = "<h2>Datastore Capacity for all Workload Domains</h2>"
     # # Generating Datastore Capacity Report for all Workload Domains
     # Write-LogMessage -Type INFO -Message "Generating Datastore Capacity Report for all Workload Domains"
@@ -126,7 +132,7 @@ Try {
     # }
 
     # Combine all information gathered into a single HTML report
-    $report = ConvertTo-HTML -Body "$reportTitle $allPasswordExpiryObject $sosHealthHtml $backupUserHtml $datastoreTitle $allStorageCapacityHtml $coreDumpTitle $allEsxiCoreDumpHtml" -Title "SDDC Manager Health Check Report" -Head $reportFormat -PostContent "<p>Creation Date: $(Get-Date)<p>"
+    $report = ConvertTo-HTML -Body "$reportTitle $allPasswordExpiryObject $hddUsage $sosHealthHtml $backupUserHtml $datastoreTitle $allStorageCapacityHtml $coreDumpTitle $allEsxiCoreDumpHtml" -Title "SDDC Manager Health Check Report" -Head $reportFormat -PostContent "<p>Creation Date: $(Get-Date)<p>"
 
     # Generate the report to an HTML file and then open it in the default browser
     Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
