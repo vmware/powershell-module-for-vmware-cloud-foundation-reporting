@@ -122,11 +122,11 @@ Try {
     # }
 
     # $coreDumpTitle = "<h2>ESXi Host Core Dump Configuration for all Workload Domains</h2>"
-    # # Generating ESXi Host Core Dump Configuaration for all Workload Domains
-    # Write-LogMessage -Type INFO -Message "Generating ESXi Host Core Dump Configuaration for all Workload Domains"
+    # # Generating ESXi Host Core Dump Configuration for all Workload Domains
+    # Write-LogMessage -Type INFO -Message "Generating ESXi Host Core Dump Configuration for all Workload Domains"
     # $allWorkloadDomain = Get-VCFWorkloadDomain | Select-Object name
     # foreach ($workloadDomain in $allWorkloadDomain) {
-    #     Write-LogMessage -Type INFO -Message "Gathering ESXi Host Core Dump Configuaration for Workload Domain ($($workloadDomain.name))"
+    #     Write-LogMessage -Type INFO -Message "Gathering ESXi Host Core Dump Configuration for Workload Domain ($($workloadDomain.name))"
     #     $esxiCoreDumpHtml = Export-EsxiCoreDumpConfig -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcDomain $workloadDomain.name -html
     #     $allEsxiCoreDumpHtml += $esxiCoreDumpHtml
     # }

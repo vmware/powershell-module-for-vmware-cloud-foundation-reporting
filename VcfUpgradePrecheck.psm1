@@ -228,7 +228,7 @@ Function Publish-ConnectivityHealth {
         else {
             $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $customObject += $outputObject # Adding individual component to main customeObject
+        $customObject += $outputObject # Adding individual component to main customObject
 
         # ESXi API Status
         $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi API Status' # Extract Data from the provided SOS JSON
@@ -239,7 +239,7 @@ Function Publish-ConnectivityHealth {
         else {
             $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $customObject += $outputObject # Adding individual component to main customeObject
+        $customObject += $outputObject # Adding individual component to main customObject
 
         # Additional Items Status
         $jsonInputData = $targetContent.Connectivity.'Connectivity Status' # Extract Data from the provided SOS JSON
@@ -252,7 +252,7 @@ Function Publish-ConnectivityHealth {
         else {
             $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $customObject += $outputObject # Adding individual component to main customeObject
+        $customObject += $outputObject # Adding individual component to main customObject
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) { 
@@ -618,7 +618,7 @@ Function Publish-NtpHealth {
 
         .EXAMPLE
         Publish-NtpHealth -json <file-name>
-        This example extracts and formats the NTP Health data as a PowerShekk object from the JSON file.
+        This example extracts and formats the NTP Health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
         Publish-NtpHealth -json <file-name> -html
@@ -867,7 +867,11 @@ Export-ModuleMember -Function Publish-VcenterHealth
 Function Publish-VsanHealth {
     <#
         .SYNOPSIS
+<<<<<<< HEAD
         Formats the vSAN Health data from the SoS JSON output.
+=======
+        formats the vSAN Health data from the SoS JSON output.
+>>>>>>> 81222ba (Spellcheck)
 
         .DESCRIPTION
         The Publish-VsanHealth cmdlet formats the vSAN Health data from the SoS JSON output and publishes it as
@@ -908,7 +912,7 @@ Function Publish-VsanHealth {
         } else {
             $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $customObject += $outputObject # Adding individual component to main customeObject
+        $customObject += $outputObject # Adding individual component to main customObject
         
         # Cluster Disk Status
         $jsonInputData = $targetContent.VSAN.'Cluster Disk Status' # Extract Data from the provided SOS JSON
@@ -917,7 +921,7 @@ Function Publish-VsanHealth {
         } else {
             $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $customObject += $outputObject # Adding individual component to main customeObject
+        $customObject += $outputObject # Adding individual component to main customObject
 
         # Cluster Data Compression Status
         $jsonInputData = $targetContent.VSAN.'Cluster Data Compression Status' # Extract Data from the provided SOS JSON
@@ -926,7 +930,7 @@ Function Publish-VsanHealth {
         } else {
             $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $customObject += $outputObject # Adding individual component to main customeObject
+        $customObject += $outputObject # Adding individual component to main customObject
 
         # Cluster Data Encryption Status
         $jsonInputData = $targetContent.VSAN.'Cluster Data Encryption Status' # Extract Data from the provided SOS JSON
@@ -935,7 +939,7 @@ Function Publish-VsanHealth {
         } else {
             $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $customObject += $outputObject # Adding individual component to main customeObject
+        $customObject += $outputObject # Adding individual component to main customObject
 
         # Cluster Data Deduplication Status
         $jsonInputData = $targetContent.VSAN.'Cluster Data Deduplication Status' # Extract Data from the provided SOS JSON
@@ -944,7 +948,7 @@ Function Publish-VsanHealth {
         } else {
             $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $customObject += $outputObject # Adding individual component to main customeObject
+        $customObject += $outputObject # Adding individual component to main customObject
 
         # Stretched Cluster Status
         $jsonInputData = $targetContent.VSAN.'Stretched Cluster Status' # Extract Data from the provided SOS JSON
@@ -953,7 +957,7 @@ Function Publish-VsanHealth {
         } else {
             $outputObject = Read-JsonElement -inputData $jsonInputData
         }
-        $customObject += $outputObject # Adding individual component to main customeObject
+        $customObject += $outputObject # Adding individual component to main customObject
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
@@ -1230,7 +1234,7 @@ Function Export-EsxiCoreDumpConfig {
                             $allHostObject += $coreDumpObject
                         }
                         if ($PsBoundParameters.ContainsKey("html")) {
-                            $allHostObject | ConvertTo-Html -Fragment -PreContent "<h3>ESXi Core Dump Configurtion for Workload Domain $sddcDomain</h3>" -As Table
+                            $allHostObject | ConvertTo-Html -Fragment -PreContent "<h3>ESXi Core Dump Configuration for Workload Domain $sddcDomain</h3>" -As Table
                         }
                         else {
                             $allHostObject
@@ -1990,14 +1994,14 @@ Function Request-LocalUserExpiry {
             # Set the alet for the local user account based on the expiry date
             if ($expiryDays -le 15) {
                 $alert = 'YELLOW'  # Warning: <= 15 days
-                $message = "Password will expire in 15 or less days. Verfied using $command."
+                $message = "Password will expire in 15 or less days. Verified using $command."
             }
             if ($expiryDays -le 5) {
                 $alert = 'RED'     # Critical: <= 5 days
-                $message = "Password will expire in less than 5 days or has already expired. Verfied using $command."
+                $message = "Password will expire in less than 5 days or has already expired. Verified using $command."
             } else {
                 $alert = 'GREEN'   # OK: > 15 days
-                $message = "Password will not expire within the next 15 days. Verfied using $command."
+                $message = "Password will not expire within the next 15 days. Verified using $command."
             }
 
             $userObject = New-Object -TypeName psobject
