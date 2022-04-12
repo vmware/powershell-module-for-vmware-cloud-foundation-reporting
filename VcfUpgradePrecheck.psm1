@@ -50,8 +50,7 @@ Function Request-SoSHealthJson {
 
         .EXAMPLE
         Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -reportPath F:\Precheck\HealthReports -allDomains
-        This example runs an SoS Health collection on all domains on the SDDC and saves the JSON output to the local
-        file system.
+        This example runs an SoS Health collection on all domains on the SDDC and saves the JSON output to the local file system.
     #>
 
     Param (
@@ -113,8 +112,7 @@ Function Publish-CertificateHealth {
 
         .EXAMPLE
         Publish-CertificateHealth -json <file-name> -failureOnly
-        This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file for
-        only the failed items.
+        This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -200,8 +198,7 @@ Function Publish-ConnectivityHealth {
 
         .EXAMPLE
         Publish-ConnectivityHealth -json <file-name> -failureOnly
-        This example extracts and formats the Connectivity Health data as a PowerShell object from the JSON file for
-        only the failed items.
+        This example extracts and formats the Connectivity Health data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -289,8 +286,7 @@ Function Publish-DnsHealth {
 
         .EXAMPLE
         Publish-DnsHealth -json <file-name> -failureOnly
-        This example extracts and formats the DNS Health data as a PowerShell object from the JSON file for only
-        the failed items.
+        This example extracts and formats the DNS Health data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -362,8 +358,7 @@ Function Publish-EsxiHealth {
 
         .EXAMPLE
         Publish-EsxiHealth -json <file-name> -failureOnly
-        This example extracts and formats the ESXi Health data as a PowerShell object from the JSON file for only
-        the failed items.
+        This example extracts and formats the ESXi Health data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -471,8 +466,7 @@ Function Publish-NsxtHealth {
 
         .EXAMPLE
         Publish-NsxtHealth -json <file-name> -failureOnly
-        This example extracts and formats the NSX Health data as a PowerShell object from the JSON file for only
-        the failed items.
+        This example extracts and formats the NSX Health data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -626,8 +620,7 @@ Function Publish-NtpHealth {
 
         .EXAMPLE
         Publish-NtpHealth -json <file-name> -failureOnly
-        This example extracts and formats the NTP Health data as a PowerShell object from the JSON file for only
-        the failed items.
+        This example extracts and formats the NTP Health data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -688,8 +681,7 @@ Function Publish-PasswordHealth {
 
         .EXAMPLE
         Publish-PasswordHealth -json <file-name> -failureOnly
-        This example extracts and formats the Password Health data as a PowerShell object from the JSON file for only
-        the failed items.
+        This example extracts and formats the Password Health data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -747,8 +739,7 @@ Function Publish-ServiceHealth {
 
         .EXAMPLE
         Publish-ServiceHealth -json <file-name> -failureOnly
-        This example extracts and formats the Service Health data as a PowerShell object from the JSON file for only
-        the failed items.
+        This example extracts and formats the Service Health data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -820,8 +811,7 @@ Function Publish-VcenterHealth {
 
         .EXAMPLE
         Publish-VcenterHealth -json <file-name> -failureOnly
-        This example extracts and formats the vCenter Server Health data as a PowerShell object from the JSON file for
-        only the failed items.
+        This example extracts and formats the vCenter Server Health data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -887,8 +877,7 @@ Function Publish-VsanHealth {
 
         .EXAMPLE
         Publish-VsanHealth -json <file-name> -failureOnly
-        This example extracts and formats the vSAN Health data as a PowerShell object from the JSON file for only
-        the failed items.
+        This example extracts and formats the vSAN Health data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -995,8 +984,7 @@ Function Publish-VsanStoragePolicy {
 
         .EXAMPLE
         Publish-VsanHealth -json <file-name> -failureOnly
-        This example extracts and formats the vSAN Storage Policy data as a PowerShell object from the JSON file for
-        only the failed items.
+        This example extracts and formats the vSAN Storage Policy data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -1652,8 +1640,7 @@ Function Request-vRslcmUserExpiry {
 
         .EXAMPLE
         Request-vRslcmUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
-        This example will check the expiry date of the local OS 'root' account on the vRealize Suite Lifecycle Manager
-        instance deployed by SDDC Manager.
+        This example will check the expiry date of the local OS 'root' account on the vRealize Suite Lifecycle Manager instance deployed by SDDC Manager.
     #>
 
     Param (
@@ -1779,8 +1766,7 @@ Function Request-NsxtManagerBackupStatus {
 
         .EXAMPLE
         Request-NsxtManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
-        This example will return the status of the latest file-level backup of an NSX Manager cluster managed by SDDC
-        Manager for a workload domain.
+        This example will return the status of the latest file-level backup of an NSX Manager cluster managed by SDDC Manager for a workload domain.
     #>
 
     # TO DO: Add support changing status based on age of backup.
@@ -1903,8 +1889,7 @@ Function Request-VcenterBackupStatus {
 
         .EXAMPLE
         Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
-        This example will return the status of the latest file-level backup of a vCenter Server instance managed by
-        SDDC Manager for a workload domain.
+        This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain.
     #>
 
     # TO DO: Add support changing status based on age of backup.
