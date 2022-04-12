@@ -1361,7 +1361,15 @@ Function Publish-LocalUserExpiry {
 
         .EXAMPLE
         Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcRootPass VMw@re1! -allDomains
-        This example checks the expiry for local OS users in the SDDC Manager appliance.
+        This example checks the expiry for local OS users for all Workload Domains across the VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcRootPass VMw@re1! -workloadDomain sfo-w01
+        This example checks the expiry for local OS users for a single Workload Domain in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcRootPass VMw@re1! -allDomains -failureOnly
+        This example checks the expiry for local OS users for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
     #>
 
     Param (
@@ -1370,28 +1378,57 @@ Function Publish-LocalUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcRootPass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     Try {
-
         $allPasswordExpiryObject = New-Object System.Collections.ArrayList
-        $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass; $allPasswordExpiryObject += $sddcPasswordExpiry
-        $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass; $allPasswordExpiryObject += $vrslcmPasswordExpiry
-        if ($PsBoundParameters.ContainsKey("allDomains")) { 
-            $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -alldomains; $allPasswordExpiryObject += $vcenterPasswordExpiry
-            $allWorkloadDomains = Get-VCFWorkloadDomain
-            foreach ($domain in $allWorkloadDomains ) {
-                $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $domain.name; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
-                $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $domain.name; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
+        $allWorkloadDomains = Get-VCFWorkloadDomain
+        $singleWorkloadDomain = Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            if ($PsBoundParameters.ContainsKey("allDomains")) {
+                $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass -failureOnly; $allPasswordExpiryObject += $sddcPasswordExpiry
+                $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass -failureOnly; $allPasswordExpiryObject += $vrslcmPasswordExpiry
+                $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -alldomains -failureOnly; $allPasswordExpiryObject += $vcenterPasswordExpiry
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                foreach ($domain in $allWorkloadDomains ) {
+                    $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
+                    $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
+                }
+            }
+            else {
+                if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
+                    $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass -failureOnly; $allPasswordExpiryObject += $sddcPasswordExpiry
+                    $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass -failureOnly; $allPasswordExpiryObject += $vrslcmPasswordExpiry
+                }
+                $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allPasswordExpiryObject += $vcenterPasswordExpiry
+                $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
+                $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
             }
         }
         else {
-            $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allPasswordExpiryObject += $vcenterPasswordExpiry
-            $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
-            $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
+            if ($PsBoundParameters.ContainsKey("allDomains")) {
+                $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass; $allPasswordExpiryObject += $sddcPasswordExpiry
+                $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass; $allPasswordExpiryObject += $vrslcmPasswordExpiry
+                $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -alldomains; $allPasswordExpiryObject += $vcenterPasswordExpiry
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                foreach ($domain in $allWorkloadDomains ) {
+                    $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $domain.name; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
+                    $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $domain.name; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
+                }
+            }
+            else {
+                if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
+                    $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass; $allPasswordExpiryObject += $sddcPasswordExpiry
+                    $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass; $allPasswordExpiryObject += $vrslcmPasswordExpiry
+                }
+                $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allPasswordExpiryObject += $vcenterPasswordExpiry
+                $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
+                $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
+            }
         }
-        
+
         $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Password Expiry Health Status</h3>" -As Table
         $allPasswordExpiryObject = Convert-CssClass -htmldata $allPasswordExpiryObject
         $allPasswordExpiryObject
@@ -1417,7 +1454,15 @@ Function Request-SddcManagerUserExpiry {
 
         .EXAMPLE
         Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1!
-        This example checks the expiry for additional local OS users in the SDDC Manager appliance.
+        This example checks the expiry for all local OS users in the SDDC Manager appliance.
+
+        .EXAMPLE
+        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -html
+        This example checks the expiry for all local OS users in the SDDC Manager appliance and outputs in HTML format.
+
+        .EXAMPLE
+        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -failureOnly
+        This example checks the expiry for all local OS users in the SDDC Manager appliance but only reports issues.
     #>
 
     Param (
@@ -1438,7 +1483,7 @@ Function Request-SddcManagerUserExpiry {
                             $customObject = New-Object System.Collections.ArrayList
                             $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser backup
                             if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                if ($elementObject.status -eq 'FAILED') {
+                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
                                 }
                             }
@@ -1447,7 +1492,7 @@ Function Request-SddcManagerUserExpiry {
                             }
                             $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser root
                             if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                if ($elementObject.status -eq 'FAILED') {
+                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
                                 }
                             }
@@ -1456,7 +1501,7 @@ Function Request-SddcManagerUserExpiry {
                             }
                             $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser vcf
                             if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                if ($elementObject.status -eq 'FAILED') {
+                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
                                 }
                             }
@@ -1500,6 +1545,10 @@ Function Request-NsxtEdgeUserExpiry {
         .EXAMPLE
         Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-m01
         This example checks the expiry for local OS users for the NSX Edge node appliances for a specific workload domain.
+
+        .EXAMPLE
+        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-m01 -failureOnly
+        This example checks the expiry for local OS users for the NSX Edge node appliances for a specific workload domain but only reports issues.
     #>
 
     Param (
@@ -1507,13 +1556,14 @@ Function Request-NsxtEdgeUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
                     if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
@@ -1523,11 +1573,32 @@ Function Request-NsxtEdgeUserExpiry {
                                         foreach ($nsxtEdgeNode in $vcfNsxEdgeDetails.edgeNodes) {
                                             $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password
                                             $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser admin
-                                            $customObject += $elementObject
+                                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                                    $customObject += $elementObject
+                                                }
+                                            }
+                                            else {
+                                                $customObject += $elementObject
+                                            }
                                             $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser audit
-                                            $customObject += $elementObject
+                                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                                    $customObject += $elementObject
+                                                }
+                                            }
+                                            else {
+                                                $customObject += $elementObject
+                                            }
                                             $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser root
-                                            $customObject += $elementObject
+                                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                                    $customObject += $elementObject
+                                                }
+                                            }
+                                            else {
+                                                $customObject += $elementObject
+                                            }
                                         }
                                     }
 
@@ -1570,6 +1641,10 @@ Function Request-NsxtManagerUserExpiry {
         .EXAMPLE
         Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-m01
         This example checks the expiry for local OS users for the NSX Manager appliances for a specific workload domain.
+
+        .EXAMPLE
+        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-m01 -failureOnly
+        This example checks the expiry for local OS users for the NSX Manager appliances for a specific workload domain but only reports issues.
     #>
 
     Param (
@@ -1577,7 +1652,8 @@ Function Request-NsxtManagerUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     Try {
@@ -1592,11 +1668,32 @@ Function Request-NsxtManagerUserExpiry {
                                     foreach ($nsxtManagerNode in $vcfNsxDetails.nodes) {
                                         $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password
                                         $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser admin
-                                        $customObject += $elementObject
+                                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                            if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                                $customObject += $elementObject
+                                            }
+                                        }
+                                        else {
+                                            $customObject += $elementObject
+                                        }
                                         $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser audit
-                                        $customObject += $elementObject
+                                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                            if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                                $customObject += $elementObject
+                                            }
+                                        }
+                                        else {
+                                            $customObject += $elementObject
+                                        }
                                         $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser root
-                                        $customObject += $elementObject
+                                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                            if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                                $customObject += $elementObject
+                                            }
+                                        }
+                                        else {
+                                            $customObject += $elementObject
+                                        }
                                     }
 
                                     # Return the structured data to the console or format using HTML CSS Styles
@@ -1651,7 +1748,8 @@ Function Request-vCenterUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     Try {
@@ -1666,14 +1764,28 @@ Function Request-vCenterUserExpiry {
                                 foreach ($vcenter in $allVcenters) {
                                     $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn}).password
                                     $elementObject = Request-LocalUserExpiry -fqdn $vcenter.fqdn -component vCenter -rootPass $rootPass -checkUser root
-                                    $customObject += $elementObject
+                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                            $customObject += $elementObject
+                                        }
+                                    }
+                                    else {
+                                        $customObject += $elementObject
+                                    }
                                 }
                             }
                             else {
                                 $vcenter = (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).vcenters.fqdn
                                 $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter}).password
                                 $elementObject = Request-LocalUserExpiry -fqdn $vcenter -component vCenter -rootPass $rootPass -checkUser root
-                                $customObject += $elementObject
+                                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                    if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                        $customObject += $elementObject
+                                    }
+                                }
+                                else {
+                                    $customObject += $elementObject
+                                }
                             }
 
                             # Return the structured data to the console or format using HTML CSS Styles
@@ -1720,7 +1832,8 @@ Function Request-vRslcmUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     if (Test-VCFConnection -server $server) {
@@ -1732,7 +1845,15 @@ Function Request-vRslcmUserExpiry {
                             $customObject = New-Object System.Collections.ArrayList
                             $vrslcm = Get-VCFvRSLCM
                             $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vrslcm.fqdn}).password
-                            $customObject = Request-LocalUserExpiry -fqdn $vrslcm.fqdn -component vRSLCM -rootPass $rootPass -checkUser root
+                            $elementObject = Request-LocalUserExpiry -fqdn $vrslcm.fqdn -component vRSLCM -rootPass $rootPass -checkUser root
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }
 
                             # Return the structured data to the console or format using HTML CSS Styles
                             if ($PsBoundParameters.ContainsKey("html")) { 

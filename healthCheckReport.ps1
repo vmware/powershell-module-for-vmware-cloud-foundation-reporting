@@ -54,7 +54,7 @@ Try {
     #     $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
     # }
 
-    $sosHealthTitle = "<h2>SoS Health Check Data</h2>" # Define SoS Health Title
+    # Generating all SoS Health Data
     Write-LogMessage -Type INFO -Message "Generating the Service Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
     Write-LogMessage -Type INFO -Message "Generating the DNS Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
     Write-LogMessage -Type INFO -Message "Generating the NTP Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
@@ -89,15 +89,25 @@ Try {
         $connectivityHtml = Publish-ConnectivityHealth -json $jsonFilePath -html
     }
     # Combine all SoS Health Reports into single variable for consumption when generating the report
-    $sosHealthHtml = "$sosHealthTitle $serviceHtml $dnsHtml $ntpHtml $certificateHtml $passwordHtml $esxiHtml $vsanHtml $vsanPolicyHtml $vcenterHtml $nsxtHtml $connectivityHtml"
+    $sosHealthHtml = "$serviceHtml $dnsHtml $ntpHtml $certificateHtml $esxiHtml $vsanHtml $vsanPolicyHtml $vcenterHtml $nsxtHtml $connectivityHtml"
 
-    # Generating the Password Expiry Report
+    # Generating the Password Expiry Health Data
     Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report from SDDC Manager ($sddcManagerFqdn)"
     if ($PsBoundParameters.ContainsKey("allDomains")) { 
-        $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains -failureOnly
+        }
+        else { 
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
+        }
     }
     else {
-        $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { 
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
+        }
+        else {
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
+        }
     }
 
     # Generating the SDDC Manager disk usage report
@@ -107,7 +117,7 @@ Try {
     $hddUsage = Convert-CssClass -htmldata $hddUsage
 
     # Combine all information gathered into a single HTML report
-    $reportData = "$sosHealthHtml $localPasswordHtml $hddUsage"
+    $reportData = "$localPasswordHtml $sosHealthHtml $hddUsage"
 
     $reportHeader = Get-ClarityReportHeader
     $reportFooter = Get-ClarityReportFooter
