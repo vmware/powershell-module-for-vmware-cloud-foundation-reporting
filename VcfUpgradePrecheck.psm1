@@ -217,7 +217,7 @@ Function Request-SoSHealthJson {
         JSON file to the local file system.
 
         .EXAMPLE
-        Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -reportPath F:\Precheck\HealthReports -allDomains
+        Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -reportPath F:\Precheck\HealthReports -allDomains
         This example runs an SoS Health collection on all domains on the SDDC and saves the JSON output to the local file system.
     #>
 
@@ -1498,7 +1498,7 @@ Function Export-SystemPassword {
         - Generates a system password report from SDDC Manager and outputs to the console or HTML.
 
         .EXAMPLE
-        Export-SystemPassword -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+        Export-SystemPassword -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example generates a system password report from SDDC Manager instance `sfo-vcf01.sfo.rainpole.io`.
     #>
 
@@ -1535,7 +1535,7 @@ Function Export-EsxiCoreDumpConfig {
         - Generates an ESXi core dump report for all ESXi hosts in a workload domain
 
         .EXAMPLE
-        Export-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcDomain sfo-w01
+        Export-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcDomain sfo-w01
         This example generates an ESXi core dump report for all ESXi hosts in a workload domain named `sfo-w01`.
     #>
 
@@ -1592,7 +1592,7 @@ Function Export-StorageCapacity {
         - Generates a storage capacity report for all clusters in a workload domain
 
         .EXAMPLE
-        Export-StorageCapacity -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcDomain sfo-w01
+        Export-StorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcDomain sfo-w01
         This example generates a storage capacity report for all clusters in a workload domain named 'sfo-w01'.
     #>
 
@@ -1645,7 +1645,7 @@ Function Publish-BackupStatus {
         - Performs checks on the backup status and outputs the results
 
         .EXAMPLE
-        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains
+        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
         This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance.  
     #>
 
@@ -1706,7 +1706,7 @@ Function Publish-SnapshotStatus {
         Snapshots are not recommended for NSX Manager cluster appliances and are disabled by default.
 
         .EXAMPLE
-        Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains
+        Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
         This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.  
     #>
 
@@ -1810,15 +1810,15 @@ Function Publish-LocalUserExpiry {
         - Performs checks on the local OS users and outputs the results
 
         .EXAMPLE
-        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcRootPass VMw@re1! -allDomains
+        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcRootPass VMw@re1! -allDomains
         This example checks the expiry for local OS users for all Workload Domains across the VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcRootPass VMw@re1! -workloadDomain sfo-w01
+        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcRootPass VMw@re1! -workloadDomain sfo-w01
         This example checks the expiry for local OS users for a single Workload Domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -sddcRootPass VMw@re1! -allDomains -failureOnly
+        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcRootPass VMw@re1! -allDomains -failureOnly
         This example checks the expiry for local OS users for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
     #>
 
@@ -1908,15 +1908,15 @@ Function Request-SddcManagerUserExpiry {
         - Performs checks on the local OS users in an SDDC Manager instance and outputs the results
 
         .EXAMPLE
-        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1!
+        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1!
         This example checks the expiry for all local OS users in the SDDC Manager appliance.
 
         .EXAMPLE
-        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -html
+        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -html
         This example checks the expiry for all local OS users in the SDDC Manager appliance and outputs in HTML format.
 
         .EXAMPLE
-        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -failureOnly
+        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -failureOnly
         This example checks the expiry for all local OS users in the SDDC Manager appliance but only reports issues.
     #>
 
@@ -1998,11 +1998,11 @@ Function Request-NsxtEdgeUserExpiry {
         - Performs checks on the local OS users for NSX Manager appliances and outputs the results
 
         .EXAMPLE
-        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-m01
+        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
         This example checks the expiry for local OS users for the NSX Edge node appliances for a specific workload domain.
 
         .EXAMPLE
-        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-m01 -failureOnly
+        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01 -failureOnly
         This example checks the expiry for local OS users for the NSX Edge node appliances for a specific workload domain but only reports issues.
     #>
 
@@ -2094,11 +2094,11 @@ Function Request-NsxtManagerUserExpiry {
         - Performs checks on the local OS users for NSX Manager appliances and outputs the results
 
         .EXAMPLE
-        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-m01
+        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
         This example checks the expiry for local OS users for the NSX Manager appliances for a specific workload domain.
 
         .EXAMPLE
-        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-m01 -failureOnly
+        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01 -failureOnly
         This example checks the expiry for local OS users for the NSX Manager appliances for a specific workload domain but only reports issues.
     #>
 
@@ -2189,15 +2189,15 @@ Function Request-vCenterUserExpiry {
         - Checks when the password will expire and outputs the results
 
         .EXAMPLE
-        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains
+        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
         This example will check the expiry date of the local OS 'root' account for all vCenter Server instances managed by SDDC Manager.
 
         .EXAMPLE
-        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -workloadDomain sfo-w01
+        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will check the expiry date of the local OS 'root' account for a single workload domain
 
         .EXAMPLE
-        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains -failureOnly
+        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will check the expiry date of the local OS 'root' account for all vCenter Server instances but only reports issues.
     #>
 
@@ -2283,7 +2283,7 @@ Function Request-vRslcmUserExpiry {
         - Checks when the password will expire and outputs the results
 
         .EXAMPLE
-        Request-vRslcmUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+        Request-vRslcmUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will check the expiry date of the local OS 'root' account on the vRealize Suite Lifecycle Manager instance deployed by SDDC Manager.
     #>
 
@@ -2346,7 +2346,7 @@ Function Request-SddcManagerBackupStatus {
         - Collects the latest file-level backup status details
 
         .EXAMPLE
-        Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+        Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will return the status of the latest file-level backup task in an SDDC Manager instance.
     #>
 
@@ -2418,7 +2418,7 @@ Function Request-NsxtManagerBackupStatus {
         - Collects the file-level backup status details
 
         .EXAMPLE
-        Request-NsxtManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
+        Request-NsxtManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return the status of the latest file-level backup of an NSX Manager cluster managed by SDDC Manager for a workload domain.
     #>
 
@@ -2541,7 +2541,7 @@ Function Request-VcenterBackupStatus {
         - Collects the file-level backup status details
 
         .EXAMPLE
-        Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
+        Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain.
     #>
 
@@ -2623,7 +2623,7 @@ Function Request-DatastoreStorageCapacity {
         - Collects information about datastore usage
         
         .EXAMPLE
-        Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+        Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will check datastore on all vCenter servers that are know to SDDC Manager "sfo-vcf01.sfo.rainpole.io".
     #>
 
@@ -2724,7 +2724,7 @@ Function Request-SddcManagerStorageHealth {
         - Performs checks on the local storage used space and outputs the results
 
         .EXAMPLE
-        Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1!
+        Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1!
         This example checks the hard disk space in the SDDC Manager appliance.
     #>
 
@@ -2821,15 +2821,15 @@ Function Publish-ComponentConnectivityHealth {
         - Performs checks on the local OS users and outputs the results
 
         .EXAMPLE
-        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -json <json-file> -allDomains
+        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains
         This example checks the component connectivity for all Workload Domains across the VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -json <json-file> -workloadDomain sfo-w01
+        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -workloadDomain sfo-w01
         This example checks the component connectivity for a single Workload Domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -json <json-file> -allDomains -failureOnly
+        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains -failureOnly
         This example checks the component connectivity for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
     #>
 
@@ -2895,15 +2895,15 @@ Function Request-VcenterAuthentication {
         - Validates that network connectivity is available to the vCenter Server instance
 
         .EXAMPLE
-        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains
+        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
         This example will check authenication to vCenter Server API for all vCenter Server instances managed by SDDC Manager.
 
         .EXAMPLE
-        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -workloadDomain sfo-w01
+        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will check authenication to vCenter Server API for a single workload domain
 
         .EXAMPLE
-        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains -failureOnly
+        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will check authenication to vCenter Server API for all vCenter Server instances but only reports issues.
     #>
 
@@ -3004,15 +3004,15 @@ Function Request-NsxtAuthentication {
         - Validates that network connectivity is available to the NSX Manager instance
 
         .EXAMPLE
-        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains
+        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
         This example will check authenication to NSX Manager API for all NSX Manager instances managed by SDDC Manager.
 
         .EXAMPLE
-        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -workloadDomain sfo-w01
+        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will check authenication to NSX Manager API for a single workload domain
 
         .EXAMPLE
-        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains -failureOnly
+        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will check authenication to NSX Manager API for all NSX Manager instances but only reports issues.
     #>
 
@@ -3136,7 +3136,7 @@ Function Invoke-SddcCommand {
         - Runs the command provided within the SDDC Manager appliance
 
         .EXAMPLE
-        Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -rootPass VMw@re1! -command "chage -l backup"
+        Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -command "chage -l backup"
         This example runs the command provided on the SDDC Manager appliance.
     #>
 
