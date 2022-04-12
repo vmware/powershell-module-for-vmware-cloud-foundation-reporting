@@ -545,22 +545,24 @@ Function Publish-NsxtHealth {
 
         # NSX Edge Health
         $component = 'NSX Edge'
+        $nsxtClusters = Get-VCFNsxtCluster
         $inputData = $targetContent.General.'NSX Health'.'NSX Edge'
-        foreach ($resource in $inputData.PsObject.Properties.Value) {
-            foreach ($element in $resource.PsObject.Properties.Value) {
-                $elementObject = New-Object -TypeName psobject
-                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
-                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
-                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
-                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
-                if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                    if (($element.status -eq 'FAILED')) {
-                        $customObject += $elementObject
-                    }
-                }
-                else {
+        foreach ($nsxtVip in $nsxtClusters.vipFqdn) {
+            $inputData.PSObject.Properties.Remove($nsxtVip)
+        }
+        foreach ($element in $inputData.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                if (($element.status -eq 'FAILED')) {
                     $customObject += $elementObject
                 }
+            }
+            else {
+                $customObject += $elementObject
             }
         }
 
