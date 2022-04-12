@@ -1740,6 +1740,10 @@ Function Request-vCenterUserExpiry {
         .EXAMPLE
         Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -workloadDomain sfo-w01
         This example will check the expiry date of the local OS 'root' account for a single workload domain
+
+        .EXAMPLE
+        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains -failureOnly
+        This example will check the expiry date of the local OS 'root' account for all vCenter Server instances but only reports issues.
     #>
 
     Param (
@@ -2359,9 +2363,9 @@ $clarityCssHeader = '
         <div class="branding">
             <a href="javascript://">
             <cds-icon shape="vm-bug">
-                <img src="icon.svg" alt="VMware Cloud Foundation"/>
+                <img src="logo.svg" alt="VMware Cloud Foundation"/>
             </cds-icon>
-            <span class="title">PowerShell Module for VMware Cloud Foundation</span>
+            <span class="title">VMware Cloud Foundation</span>
             </a>
         </div>
         <div class="settings">
@@ -2394,6 +2398,7 @@ Function Get-ClarityReportFooter {
     $clarityCssFooter
 }
 Export-ModuleMember -Function Get-ClarityReportFooter
+
 Function PercentCalc {
     Param (
         [Parameter (Mandatory = $true)] [Int]$InputNum1,
