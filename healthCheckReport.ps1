@@ -91,6 +91,25 @@ Try {
     # Combine all SoS Health Reports into single variable for consumption when generating the report
     $sosHealthHtml = "$serviceHtml $dnsHtml $ntpHtml $certificateHtml $esxiHtml $vsanHtml $vsanPolicyHtml $vcenterHtml $nsxtHtml $connectivityHtml"
 
+    # Generating the Backup Status Health Data
+    Write-LogMessage -Type INFO -Message "Generating the Backup Status Report from SDDC Manager ($sddcManagerFqdn)"
+    if ($PsBoundParameters.ContainsKey("allDomains")) { 
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+        }
+        else { 
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+        }
+    }
+    else {
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { 
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        }
+        else {
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+        }
+    }
+
     # Generating the Password Expiry Health Data
     Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report from SDDC Manager ($sddcManagerFqdn)"
     if ($PsBoundParameters.ContainsKey("allDomains")) { 
@@ -117,7 +136,7 @@ Try {
     $hddUsage = Convert-CssClass -htmldata $hddUsage
 
     # Combine all information gathered into a single HTML report
-    $reportData = "$localPasswordHtml $sosHealthHtml $hddUsage"
+    $reportData = "$backupStatusHtml $localPasswordHtml $sosHealthHtml $hddUsage"
 
     $reportHeader = Get-ClarityReportHeader
     $reportFooter = Get-ClarityReportFooter
