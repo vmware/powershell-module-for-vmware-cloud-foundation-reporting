@@ -1688,6 +1688,113 @@ Function Publish-BackupStatus {
 }
 Export-ModuleMember -Function Publish-BackupStatus
 
+Function Publish-SnapshotStatus {
+    <#
+		.SYNOPSIS
+        Request and publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes
+        managed by SDDC Manager.
+
+        .DESCRIPTION
+        The Publish-SnapshotStatus cmdlet checks the snapshot status for SDDC Manager, vCenter Server instances,
+        and NSX Edge nodes in a VMware Cloud Foundation instance and prepares the data to be published
+        to an HTML report. The cmdlet connects to SDDC Manager using the -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Performs checks on the snaphort status and outputs the results
+
+        .NOTES
+        The cmdlet will not publish the snapshot status for NSX Local Manager cluster appliances managed by SDDC Manager.
+        Snapshots are not recommended for NSX Manager cluster appliances and are disabled by default.
+
+        .EXAMPLE
+        Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains
+        This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.  
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+
+    Try {
+
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {  
+                            
+                            $allSnapshotStatusObject = New-Object System.Collections.ArrayList
+                            if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                                # Get the snapshot status for the SDDC Manager
+                                $sddcManagerSnapshotStatus = Get-SnapshotStatus -vm ($server.Split('.')[0]); $allSnapshotStatusObject += $sddcManagerSnapshotStatus
+                                
+                                # Get the snapshot status for all vCenter Server instances in all workload domains
+                                $allVcenters = Get-VCFvCenter
+                                foreach ($vcenter in $allVcenters) {
+                                    $vcenterSnapshotStatus = Get-SnapshotStatus -vm ($vcenter.fqdn.Split('.')[0]); $allSnapshotStatusObject += $vcenterSnapshotStatus
+                                }
+                                
+                                # Get the snapshot status for all NSX Edge nodes in all workload domains
+                                $allNsxtManagers = Get-VCFNsxtCluster
+                                foreach ($nsxtManager in $allNsxtManagers) {
+                                    if (($vcfNsxEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipFQDN -eq $nsxtManager.vipFQDN })) {   
+                                        foreach ($nsxtEdgeNode in $vcfNsxEdgeDetails.edgeNodes) {
+                                            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $nsxtManager.domains.name)) {
+                                                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                                                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) { 
+                                                        $nsxtEdgeSnapshotStatus = Get-SnapshotStatus -vm ($nsxtEdgeNode.hostName.Split('.')[0]); $allSnapshotStatusObject += $nsxtEdgeSnapshotStatus 
+                                                    }
+                                                }
+                                            }     
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                # Get the snapshot status for the vCenter Server instance for the specific workload domain
+                                $vcenter = Get-VCFWorkloadDomain | Where-Object { $_.name -eq $workloadDomain }
+                                $vcenterSnapshotStatus = Get-SnapshotStatus -vm ($vcenter.vcenters.fqdn.Split('.')[0]); $allSnapshotStatusObject += $vcenterSnapshotStatus
+
+                                # Get the snapshot status for the NSX Edge nodes for the specific workload domain
+                                $nsxtManager = Get-VCFNsxtCluster | Where-Object { $_.domains.name -eq $workloadDomain }
+                                if ($nsxtEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipfqdn -eq $nsxtManager.vipFqdn }) {   
+                                    foreach ($nsxtEdgeNode in $nsxtEdgeDetails.edgeNodes) {
+                                        if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $nsxtManager.domains.name)) {
+                                            if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                                                if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) { 
+                                                    $nsxtEdgeSnapshotStatus = Get-SnapshotStatus -vm ($nsxtEdgeNode.hostName.Split('.')[0]); $allSnapshotStatusObject += $nsxtEdgeSnapshotStatus 
+                                                }
+                                            }
+                                        }    
+                                    }
+                                }
+                            }
+                            # Return the structured data to the console or format using HTML CSS Styles
+                            if ($PsBoundParameters.ContainsKey("html")) { 
+                                $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object 'Virtual Machine', 'Created' | ConvertTo-Html -Fragment -PreContent '<h3>Snapshot Status</h3><p>By default, snapshots for NSX Local Manager cluster appliances are disabled and are not recommended.</p>' -As Table
+                                $allSnapshotStatusObject = Convert-CssClass -htmldata $allSnapshotStatusObject
+                                $allSnapshotStatusObject
+                            } else {
+                                $allSnapshotStatusObject | Sort-Object Component, 'Virtual Machine', 'Created'
+                            }
+
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }    
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-SnapshotStatus
+
 Function Publish-LocalUserExpiry {
     <#
 		.SYNOPSIS
@@ -3474,8 +3581,7 @@ Function Get-SnapshotStatus {
                 # Create a new PSObject to hold the results
                 $snapshotObject = New-Object -TypeName psobject
                 # Add the snapshot details to the PSObject
-                $snapshotObject = New-Object -TypeName psobject
-                $snapshotObject | Add-Member -NotePropertyName 'Virtual Machine' -NotePropertyValue $name
+                $snapshotObject | Add-Member -NotePropertyName 'Virtual Machine' -NotePropertyValue $vm
                 $snapshotObject | Add-Member -NotePropertyName 'Snapshot Name' -NotePropertyValue $snapshot.Name
                 $snapshotObject | Add-Member -NotePropertyName 'Created' -NotePropertyValue $snapshot.Created
                 $snapshotObject | Add-Member -NotePropertyName 'Current' -NotePropertyValue $snapshot.isCurrent
