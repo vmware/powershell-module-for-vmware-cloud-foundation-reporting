@@ -2165,7 +2165,7 @@ $clarityCssHeader = '
         <div class="branding">
             <a href="javascript://">
             <cds-icon shape="vm-bug">
-                <img src="logo.svg" alt="logo"/>
+                <img src="icon.svg" alt="VMware Cloud Foundation"/>
             </cds-icon>
             <span class="title">PowerShell Module for VMware Cloud Foundation</span>
             </a>
