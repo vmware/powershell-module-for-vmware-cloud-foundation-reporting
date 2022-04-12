@@ -1691,7 +1691,7 @@ Export-ModuleMember -Function Publish-BackupStatus
 Function Publish-LocalUserExpiry {
     <#
 		.SYNOPSIS
-        Request and publlish Local User Expiry
+        Request and publish Local User Expiry
 
         .DESCRIPTION
         The Publish-LocalUserExpiry cmdlet checks the expiry for local users across the VMware Cloud Foundation
@@ -2499,6 +2499,107 @@ Function Request-VcenterBackupStatus {
     }
 }
 Export-ModuleMember -Function Request-VcenterBackupStatus
+
+Function Request-DatastoreStorageCapacity {
+    <#
+		.SYNOPSIS
+        Checks the datastore usage in all vCenter Server instances.
+
+        .DESCRIPTION
+        The Request-DatastoreStorageCapacity cmdlet checks the datastore usage in all vCenters. The cmdlet 
+        connects to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the details for each vCenter Server
+        - Collects information about datastore usage
+        
+        .EXAMPLE
+        Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+        This example will check datastore on all vCenter servers that are know to SDDC Manager "sfo-vcf01.sfo.rainpole.io".
+    #>
+
+    
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+        
+    # Define thresholds Green < Yellow < Red
+    $greenThreshold = 80
+    $redThreshold = 90
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $customObject = New-Object System.Collections.ArrayList
+                $allVcenters = Get-VCFvCenter
+                $vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT
+                foreach ($vcenter in $allVcenters) {
+                    if (Test-VsphereConnection -server $($vcenter.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            Connect-VIServer -Server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass | Out-Null
+                            $datastores = Get-Datastore
+                            foreach ($datastore in $datastores) {
+                                # Calculate datastore usage and capacity
+                                $usage = [math]::Round((($datastore.CapacityGB - $datastore.FreeSpaceGB) / $datastore.CapacityGB * 100))
+                                $usage = [int]$usage
+                                $capacity = [int]$datastore.CapacityGB.to
+
+                                # Applying thresholds and creating collection from input
+                                switch ($usage) {
+                                    { $_ -le $greenThreshold } {
+                                        # Green if $usage is up to $greenThreshold
+                                        $alert = 'GREEN'
+                                        $message = "Used space is less than $greenThreshold%. You could continue with the upgrade."
+                                    }
+                                    { $_ -ge $redThreshold } {
+                                        # Red if $usage is equal or above $redThreshold
+                                        $alert = 'RED'
+                                        $message = "Used space is above $redThreshold%. Please reclaim space on the partition before proceeding further."
+                                    }
+                                    Default {
+                                        # Yellow if above two are not matched
+                                        $alert = 'YELLOW'
+                                        $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space. "
+                                    }
+                                }
+                                # Populate data into the object
+                                $userObject = New-Object -TypeName psobject
+                                $userObject | Add-Member -notepropertyname 'vCenter FQDN' -notepropertyvalue $vcenter.fqdn
+                                $userObject | Add-Member -notepropertyname 'Datastore Name' -notepropertyvalue $datastore.Name
+                                $userObject | Add-Member -notepropertyname 'Datastore Type' -notepropertyvalue $datastore.Type.ToUpper()
+                                $userObject | Add-Member -notepropertyname 'Size (GB)' -notepropertyvalue $capacity
+                                $userObject | Add-Member -notepropertyname 'Used %' -notepropertyvalue $usage
+                                $userObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $alert
+                                $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
+                                $customObject += $userObject # Creating collection to work with afterwords
+                            }
+                            # Disconnect from the vCenter server
+                            Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                        }
+                    }
+                }
+
+                # Sort the output FQDN then Datastore Name
+                $customObject = $customObject | Sort-Object 'vCenter FQDN', 'Datastore Name'
+
+                # Return the structured data to the console or format using HTML CSS Styles
+                if ($PsBoundParameters.ContainsKey("html")) { 
+                    $customObject = $customObject | ConvertTo-Html -Fragment -PreContent "<h3>Datastore Space Usage Report</h3>" -As Table
+                    $customObject = Convert-CssClass -htmldata $customObject
+                }
+                # Return $customObject in HTML or plain format
+                $customObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    } 
+    
+}
+Export-ModuleMember -Function Request-DatastoreStorageCapacity
 
 Function Request-SddcManagerStorageHealth {
     <#

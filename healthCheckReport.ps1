@@ -48,11 +48,11 @@ Try {
     Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
 
     Write-LogMessage -Type INFO -Message "Executing SoS Health Check Collection on VMware Cloud Foundation Instance ($sddcManagerFqdn), process takes time"
-    if ($PsBoundParameters.ContainsKey("allDomains")) { 
-        $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
-    } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-        $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
-    }
+    # if ($PsBoundParameters.ContainsKey("allDomains")) { 
+    #     $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
+    # } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+    #     $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
+    # }
 
     # Generating all SoS Health Data
     Write-LogMessage -Type INFO -Message "Generating the Service Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
@@ -153,8 +153,14 @@ Try {
     $hddUsage = $hddUsage | ConvertTo-Html -Fragment -PreContent "<h3>SDDC Manager Disk Health Status</h3>" -As Table
     $hddUsage = Convert-CssClass -htmldata $hddUsage
 
+    # Generating the Datastore disk usage report
+    Write-LogMessage -Type INFO -Message "Generating the Datastore Usage Report from all vCenter Servers"
+    $datastoreUsage = Request-DatastoreStorageCapacity -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
+    $datastoreUsage = $datastoreUsage | Sort-Object 'vCenter FQDN', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent "<h3>Datastore Space Usage Report</h3>" -As Table
+    $datastoreUsage = Convert-CssClass -htmldata $datastoreUsage
+
     # Combine all information gathered into a single HTML report
-    $reportData = "$backupStatusHtml $localPasswordHtml $sosHealthHtml $componentConnectivityHtml $hddUsage"
+    $reportData = "$backupStatusHtml $localPasswordHtml $sosHealthHtml $componentConnectivityHtml $hddUsage $datastoreUsage"
 
     $reportHeader = Get-ClarityReportHeader
     $reportFooter = Get-ClarityReportFooter
