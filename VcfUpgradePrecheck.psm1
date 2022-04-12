@@ -1425,7 +1425,8 @@ Function Request-SddcManagerUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     Try {
@@ -1436,11 +1437,32 @@ Function Request-SddcManagerUserExpiry {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             $customObject = New-Object System.Collections.ArrayList
                             $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser backup
-                            $customObject += $elementObject
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if ($elementObject.status -eq 'FAILED') {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }
                             $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser root
-                            $customObject += $elementObject
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if ($elementObject.status -eq 'FAILED') {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }
                             $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser vcf
-                            $customObject += $elementObject
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if ($elementObject.status -eq 'FAILED') {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }
 
                             # Return the structured data to the console or format using HTML CSS Styles
                             if ($PsBoundParameters.ContainsKey("html")) { 
