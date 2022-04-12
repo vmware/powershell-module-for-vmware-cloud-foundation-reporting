@@ -64,7 +64,6 @@ Try {
     Write-LogMessage -Type INFO -Message "Generating the VSAN Storage Policy Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
     Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
     Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-    Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
     if ($PsBoundParameters.ContainsKey("failureOnly")) {
         $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html -failureOnly
         $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html -failureOnly
@@ -75,7 +74,6 @@ Try {
         $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html -failureOnly
         $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html -failureOnly
         $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -html -failureOnly
-        $connectivityHtml = Publish-ConnectivityHealth -json $jsonFilePath -html -failureOnly
     } else {
         $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html
         $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html
@@ -86,57 +84,75 @@ Try {
         $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html
         $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html
         $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -html
-        $connectivityHtml = Publish-ConnectivityHealth -json $jsonFilePath -html
     }
     # Combine all SoS Health Reports into single variable for consumption when generating the report
-    $sosHealthHtml = "$serviceHtml $dnsHtml $ntpHtml $certificateHtml $esxiHtml $vsanHtml $vsanPolicyHtml $vcenterHtml $nsxtHtml $connectivityHtml"
+    $sosHealthHtml = "$serviceHtml $dnsHtml $ntpHtml $certificateHtml $esxiHtml $vsanHtml $vsanPolicyHtml $vcenterHtml $nsxtHtml"
 
-    # Generating the Backup Status Health Data
-    Write-LogMessage -Type INFO -Message "Generating the Backup Status Report from SDDC Manager ($sddcManagerFqdn)"
+    # Generating the Connectivity Health Data
+    Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
     if ($PsBoundParameters.ContainsKey("allDomains")) { 
         if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
         }
-        else { 
-            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+        else {
+            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
         }
     }
     else {
         if ($PsBoundParameters.ContainsKey("failureOnly")) { 
-            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
         }
         else {
-            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
         }
     }
 
-    # Generating the Password Expiry Health Data
-    Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report from SDDC Manager ($sddcManagerFqdn)"
-    if ($PsBoundParameters.ContainsKey("allDomains")) { 
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains -failureOnly
-        }
-        else { 
-            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
-        }
-    }
-    else {
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { 
-            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
-        }
-        else {
-            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
-        }
-    }
+    # # Generating the Backup Status Health Data
+    # Write-LogMessage -Type INFO -Message "Generating the Backup Status Report from SDDC Manager ($sddcManagerFqdn)"
+    # if ($PsBoundParameters.ContainsKey("allDomains")) { 
+    #     if ($PsBoundParameters.ContainsKey("failureOnly")) {
+    #         $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+    #     }
+    #     else { 
+    #         $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+    #     }
+    # }
+    # else {
+    #     if ($PsBoundParameters.ContainsKey("failureOnly")) { 
+    #         $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+    #     }
+    #     else {
+    #         $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+    #     }
+    # }
 
-    # Generating the SDDC Manager disk usage report
-    Write-LogMessage -Type INFO -Message "Generating the Disk Health Report from SDDC Manager ($sddcManagerFqdn)"
-    $hddUsage = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass
-    $hddUsage = $hddUsage | ConvertTo-Html -Fragment -PreContent "<h3>SDDC Manager Disk Health Status</h3>" -As Table
-    $hddUsage = Convert-CssClass -htmldata $hddUsage
+    # # Generating the Password Expiry Health Data
+    # Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report from SDDC Manager ($sddcManagerFqdn)"
+    # if ($PsBoundParameters.ContainsKey("allDomains")) { 
+    #     if ($PsBoundParameters.ContainsKey("failureOnly")) {
+    #         $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains -failureOnly
+    #     }
+    #     else { 
+    #         $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
+    #     }
+    # }
+    # else {
+    #     if ($PsBoundParameters.ContainsKey("failureOnly")) { 
+    #         $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
+    #     }
+    #     else {
+    #         $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
+    #     }
+    # }
+
+    # # Generating the SDDC Manager disk usage report
+    # Write-LogMessage -Type INFO -Message "Generating the Disk Health Report from SDDC Manager ($sddcManagerFqdn)"
+    # $hddUsage = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass
+    # $hddUsage = $hddUsage | ConvertTo-Html -Fragment -PreContent "<h3>SDDC Manager Disk Health Status</h3>" -As Table
+    # $hddUsage = Convert-CssClass -htmldata $hddUsage
 
     # Combine all information gathered into a single HTML report
-    $reportData = "$backupStatusHtml $localPasswordHtml $sosHealthHtml $hddUsage"
+    $reportData = "$backupStatusHtml $localPasswordHtml $sosHealthHtml $componentConnectivityHtml $hddUsage"
 
     $reportHeader = Get-ClarityReportHeader
     $reportFooter = Get-ClarityReportFooter

@@ -1337,7 +1337,7 @@ Function Publish-BackupStatus {
             $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $nsxtManagerBackupStatus
         }
         
-        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Backup Status</h3>' -As Table
+        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Domain, Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Backup Health Status</h3>' -As Table
         $allBackupStatusObject = Convert-CssClass -htmldata $allBackupStatusObject
         $allBackupStatusObject
     }
@@ -2248,6 +2248,299 @@ Function Request-SddcManagerStorageHealth {
     
 }
 Export-ModuleMember -Function Request-SddcManagerStorageHealth
+
+Function Publish-ComponentConnectivityHealth {
+    <#
+		.SYNOPSIS
+        Request and publlish Component Connectivity Health
+
+        .DESCRIPTION
+        The Publish-ComponentConnectivityHealth cmdlet checks component connectivity across the VMware Cloud Foundation
+        instance and prepares the data to be published to an HTML report. The cmdlet connects to SDDC Manager using the
+        -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Performs checks on the local OS users and outputs the results
+
+        .EXAMPLE
+        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -json <json-file> -allDomains
+        This example checks the component connectivity for all Workload Domains across the VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -json <json-file> -workloadDomain sfo-w01
+        This example checks the component connectivity for a single Workload Domain in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -json <json-file> -allDomains -failureOnly
+        This example checks the component connectivity for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        $allConnectivityObject = New-Object System.Collections.ArrayList
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            if ($PsBoundParameters.ContainsKey("allDomains")) {
+                $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -alldomains -failureOnly; $allConnectivityObject += $vcenterConnectivity
+                $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -alldomains -failureOnly; $allConnectivityObject += $NsxtConnectivity
+            }
+            else {
+                $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allConnectivityObject += $vcenterConnectivity
+                $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allConnectivityObject += $NsxtConnectivity
+            }
+            $connectivityRaw = Publish-ConnectivityHealth -json $json -failureOnly
+        }
+        else {
+            if ($PsBoundParameters.ContainsKey("allDomains")) {
+                $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -alldomains; $allConnectivityObject += $vcenterConnectivity
+                $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -alldomains; $allConnectivityObject += $NsxtConnectivity
+            }
+            else {
+                $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allConnectivityObject += $vcenterConnectivity
+                $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allConnectivityObject += $NsxtConnectivity
+            }
+            $connectivityRaw = Publish-ConnectivityHealth -json $json
+        }
+        $allConnectivityObject += $connectivityRaw
+        $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -As Table
+        $allConnectivityObject = Convert-CssClass -htmldata $allConnectivityObject
+        $allConnectivityObject
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-ComponentConnectivityHealth
+
+Function Request-VcenterAuthentication {
+    <#
+		.SYNOPSIS
+        Checks API authenication to vCenter Server instance.
+
+        .DESCRIPTION
+        The Request-VcenterAuthentication cmdlets checks the authenication to vCenter Server instance. The cmdlet 
+        connects to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+
+        .EXAMPLE
+        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains
+        This example will check authenication to vCenter Server API for all vCenter Server instances managed by SDDC Manager.
+
+        .EXAMPLE
+        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -workloadDomain sfo-w01
+        This example will check authenication to vCenter Server API for a single workload domain
+
+        .EXAMPLE
+        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains -failureOnly
+        This example will check authenication to vCenter Server API for all vCenter Server instances but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $account = (Get-VCFCredential | Where-Object {$_.accountType -eq "SYSTEM" -and $_.resource.resourceType -eq "PSC"})
+                $customObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                    $allWorkloadDomains = Get-VCFWorkloadDomain
+                    foreach ($domain in $allWorkloadDomains) {
+                        if (Test-vSphereApiAuthentication -server $domain.vcenters.fqdn -user $account.username -pass $account.password) {
+                            $alert = "GREEN"
+                            $message = "API Connection check successful!"
+                        }
+                        else {
+                            $alert = "RED"
+                            $message = "API Connection check failed!"
+                        }
+                        $elementObject = New-Object System.Collections.ArrayList
+                        $elementObject = New-Object -TypeName psobject
+                        $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "vCenter"
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $domain.vcenters.fqdn
+                        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                        $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                            if (($elementObject.alert -eq 'RED')) {
+                                $customObject += $elementObject
+                            }
+                        }
+                        else {
+                            $customObject += $elementObject
+                        }
+                    }
+                }
+                else {
+                    $vcenter = (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).vcenters.fqdn
+                    if (Test-vSphereApiAuthentication -server $vcenter -user $account.username -pass $account.password) {
+                        $alert = "GREEN"
+                        $message = "API Connection check successful!"
+                    }
+                    else {
+                        $alert = "RED"
+                        $message = "API Connection check failed!"
+                    }
+                    $elementObject = New-Object System.Collections.ArrayList
+                    $elementObject = New-Object -TypeName psobject
+                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "vCenter"
+                    $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcenter
+                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                        if (($elementObject.alert -eq 'RED')) {
+                            $customObject += $elementObject
+                        }
+                    }
+                    else {
+                        $customObject += $elementObject
+                    }
+                }
+
+                # Return the structured data to the console or format using HTML CSS Styles
+                if ($PsBoundParameters.ContainsKey("html")) { 
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>vCenter Server Connectivity Health Status</h3>" -As Table
+                    $customObject = Convert-CssClass -htmldata $customObject
+                    $customObject
+                } else {
+                    $customObject | Sort-Object Component, Resource 
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-VcenterAuthentication
+
+Function Request-NsxtAuthentication {
+    <#
+		.SYNOPSIS
+        Checks API authenication to NSX Manager instance.
+
+        .DESCRIPTION
+        The Request-NsxtAuthentication cmdlets checks the authenication to NSX Manager instance. The cmdlet 
+        connects to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the NSX Manager instance
+
+        .EXAMPLE
+        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains
+        This example will check authenication to NSX Manager API for all NSX Manager instances managed by SDDC Manager.
+
+        .EXAMPLE
+        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -workloadDomain sfo-w01
+        This example will check authenication to NSX Manager API for a single workload domain
+
+        .EXAMPLE
+        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains -failureOnly
+        This example will check authenication to NSX Manager API for all NSX Manager instances but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $customObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                    $allWorkloadDomains = Get-VCFWorkloadDomain
+                    foreach ($domain in $allWorkloadDomains) {
+                        $vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain.name -listNodes
+                        foreach ($node in $vcfNsxDetails.nodes) {
+                            if (Test-NsxtAuthentication -server $node.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                                $alert = "GREEN"
+                                $message = "API Connection check successful!"
+                            }
+                            else {
+                                $alert = "RED"
+                                $message = "API Connection check failed!"
+                            }
+                            $elementObject = New-Object System.Collections.ArrayList
+                            $elementObject = New-Object -TypeName psobject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "NSX"
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $node.fqdn
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if (($elementObject.alert -eq 'RED')) {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }
+                        }
+                    }
+                }
+                else {
+                    $vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $workloadDomain -listNodes
+                    foreach ($node in $vcfNsxDetails.nodes) {
+                        if (Test-NsxtAuthentication -server $node.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                            $alert = "GREEN"
+                            $message = "API Connection check successful!"
+                        }
+                        else {
+                            $alert = "RED"
+                            $message = "API Connection check failed!"
+                        }
+                        $elementObject = New-Object System.Collections.ArrayList
+                        $elementObject = New-Object -TypeName psobject
+                        $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "NSX"
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $node.fqdn
+                        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                        $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                            if (($elementObject.alert -eq 'RED')) {
+                                $customObject += $elementObject
+                            }
+                        }
+                        else {
+                            $customObject += $elementObject
+                        }
+                    }  
+                }
+
+                # Return the structured data to the console or format using HTML CSS Styles
+                if ($PsBoundParameters.ContainsKey("html")) { 
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>NSX Manager Connectivity Health Status</h3>" -As Table
+                    $customObject = Convert-CssClass -htmldata $customObject
+                    $customObject
+                } else {
+                    $customObject | Sort-Object Component, Resource 
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-NsxtAuthentication
+
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
