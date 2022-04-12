@@ -1296,6 +1296,57 @@ Function Export-StorageCapacity {
 }
 Export-ModuleMember -Function Export-StorageCapacity
 
+Function Publish-BackupStatus {
+    <#
+		.SYNOPSIS
+        Request and publish the backup status.
+
+        .DESCRIPTION
+        The Publish-BackupStatus cmdlet checks the backup status for SDDC Manager, vCenter Server instances,
+        and NSX Local Manager clustets in a VMware Cloud Foundation instance and prepares the data to be published
+        to an HTML report. The cmdlet connects to SDDC Manager using the -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Performs checks on the backup status and outputs the results
+
+        .EXAMPLE
+        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -allDomains
+        This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance.  
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+
+    Try {
+
+        $allBackupStatusObject = New-Object System.Collections.ArrayList
+        $sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass; $allBackupStatusObject += $sddcManagerBackupStatus
+        if ($PsBoundParameters.ContainsKey("allDomains")) { 
+            $allWorkloadDomains = Get-VCFWorkloadDomain
+            foreach ($domain in $allWorkloadDomains ) {
+                $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $domain.name; $allBackupStatusObject += $vcenterBackupStatus
+                $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $domain.name; $allBackupStatusObject += $nsxtManagerBackupStatus
+            }
+        }
+        else {
+            $vcenterBackupStatus = Request-VcenterBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $vcenterBackupStatus
+            $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $nsxtManagerBackupStatus
+        }
+        
+        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Backup Status</h3>' -As Table
+        $allBackupStatusObject = Convert-CssClass -htmldata $allBackupStatusObject
+        $allBackupStatusObject
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-BackupStatus
+
 Function Publish-LocalUserExpiry {
     <#
 		.SYNOPSIS
