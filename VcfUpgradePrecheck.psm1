@@ -1719,6 +1719,8 @@ Function Publish-SnapshotStatus {
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
 
+    #TODO: Add support for -failureOnly switch.
+
     Try {
 
         if (Test-VCFConnection -server $server) {
@@ -2348,7 +2350,7 @@ Function Request-SddcManagerBackupStatus {
         This example will return the status of the latest file-level backup task in an SDDC Manager instance.
     #>
 
-    # TO DO: Add support changing status based on age of backup.
+    #TODO: Add support changing status based on age of backup.
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -2420,7 +2422,7 @@ Function Request-NsxtManagerBackupStatus {
         This example will return the status of the latest file-level backup of an NSX Manager cluster managed by SDDC Manager for a workload domain.
     #>
 
-    # TO DO: Add support changing status based on age of backup.
+    #TODO: Add support changing status based on age of backup.
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -3557,6 +3559,8 @@ Function Get-SnapshotStatus {
     Param (
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
     )
+
+    #TODO: Add support for -failureOnly switch.
 
     Try {
         if (Get-VM -Name $vm) {
