@@ -48,11 +48,11 @@ Try {
     Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
 
     Write-LogMessage -Type INFO -Message "Executing SoS Health Check Collection on VMware Cloud Foundation Instance ($sddcManagerFqdn), process takes time"
-    # if ($PsBoundParameters.ContainsKey("allDomains")) { 
-    #     $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
-    # } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-    #     $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
-    # }
+    if ($PsBoundParameters.ContainsKey("allDomains")) { 
+        $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
+    } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+        $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
+    }
 
     # Generating all SoS Health Data
     Write-LogMessage -Type INFO -Message "Generating the Service Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
@@ -107,49 +107,49 @@ Try {
         }
     }
 
-    # # Generating the Backup Status Health Data
-    # Write-LogMessage -Type INFO -Message "Generating the Backup Status Report from SDDC Manager ($sddcManagerFqdn)"
-    # if ($PsBoundParameters.ContainsKey("allDomains")) { 
-    #     if ($PsBoundParameters.ContainsKey("failureOnly")) {
-    #         $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-    #     }
-    #     else { 
-    #         $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-    #     }
-    # }
-    # else {
-    #     if ($PsBoundParameters.ContainsKey("failureOnly")) { 
-    #         $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-    #     }
-    #     else {
-    #         $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-    #     }
-    # }
+    # Generating the Backup Status Health Data
+    Write-LogMessage -Type INFO -Message "Generating the Backup Status Report from SDDC Manager ($sddcManagerFqdn)"
+    if ($PsBoundParameters.ContainsKey("allDomains")) { 
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+        }
+        else { 
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+        }
+    }
+    else {
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { 
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        }
+        else {
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+        }
+    }
 
-    # # Generating the Password Expiry Health Data
-    # Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report from SDDC Manager ($sddcManagerFqdn)"
-    # if ($PsBoundParameters.ContainsKey("allDomains")) { 
-    #     if ($PsBoundParameters.ContainsKey("failureOnly")) {
-    #         $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains -failureOnly
-    #     }
-    #     else { 
-    #         $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
-    #     }
-    # }
-    # else {
-    #     if ($PsBoundParameters.ContainsKey("failureOnly")) { 
-    #         $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
-    #     }
-    #     else {
-    #         $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
-    #     }
-    # }
+    # Generating the Password Expiry Health Data
+    Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report from SDDC Manager ($sddcManagerFqdn)"
+    if ($PsBoundParameters.ContainsKey("allDomains")) { 
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains -failureOnly
+        }
+        else { 
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
+        }
+    }
+    else {
+        if ($PsBoundParameters.ContainsKey("failureOnly")) { 
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
+        }
+        else {
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
+        }
+    }
 
-    # # Generating the SDDC Manager disk usage report
-    # Write-LogMessage -Type INFO -Message "Generating the Disk Health Report from SDDC Manager ($sddcManagerFqdn)"
-    # $hddUsage = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass
-    # $hddUsage = $hddUsage | ConvertTo-Html -Fragment -PreContent "<h3>SDDC Manager Disk Health Status</h3>" -As Table
-    # $hddUsage = Convert-CssClass -htmldata $hddUsage
+    # Generating the SDDC Manager disk usage report
+    Write-LogMessage -Type INFO -Message "Generating the Disk Health Report from SDDC Manager ($sddcManagerFqdn)"
+    $hddUsage = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass
+    $hddUsage = $hddUsage | ConvertTo-Html -Fragment -PreContent "<h3>SDDC Manager Disk Health Status</h3>" -As Table
+    $hddUsage = Convert-CssClass -htmldata $hddUsage
 
     # Combine all information gathered into a single HTML report
     $reportData = "$backupStatusHtml $localPasswordHtml $sosHealthHtml $componentConnectivityHtml $hddUsage"
