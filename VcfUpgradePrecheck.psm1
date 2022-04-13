@@ -2350,8 +2350,6 @@ Function Request-SddcManagerBackupStatus {
         This example will return the status of the latest file-level backup task in an SDDC Manager instance.
     #>
 
-    #TODO: Add support changing status based on age of backup.
-
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
@@ -2363,32 +2361,51 @@ Function Request-SddcManagerBackupStatus {
         if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
             $backupTasks = Get-VCFTask | Where-Object { $_.type -eq 'SDDCMANAGER_BACKUP' } | Select-Object -First 1
             foreach ($backupTask in $backupTasks) {
-                $component = 'SDDC Manager'
-                $date = [DateTime]::ParseExact($backupTask.creationTimestamp, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture)
-                $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ','
-                $resource = $backupTask.name + ": " + $server
-
-                $customObject = New-Object -TypeName psobject
-                $customObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                $customObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the name
-                $customObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
-                $customObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $date # Set the timestamp
+                $component = 'SDDC Manager' # Define the component name
+                $date = [DateTime]::ParseExact($backupTask.creationTimestamp, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
+                $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ',' # Define the domain(s)
+                $resource = $backupTask.name # Define the resource name
+                $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$date)).TotalDays) # Calculate the number of days since the backup was created
 
                 # Set the status for the backup task
                 if ($backupTask.status -eq 'Successful') {                              
-                    $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'GREEN' # Ok; success
+                    $alert = "GREEN" # Ok; success
                 }
                 else {
-                    $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'RED' # Critical; failure
+                    $alert = "RED" # Critical; failure
                 }
 
                 # Set the message for the backup task
                 if ([string]::IsNullOrEmpty($errors)) {
-                    $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "The backup completed without errors."
+                    $message = "The backup completed without errors." # Ok; success
                 }
                 else {
-                    $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.'
+                    $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
                 }
+
+                # Set the alert and message for the backup task based on the age of the backup
+                if ($backupAge -ge 3) {
+                    $alert = "RED" # Critical; >= 3 days
+                    $messageAppend = "Backup is more than 3 days old." # Set the alert message
+                }
+                elseif ($backupAge -gt 1) {
+                    $alert = "YELLOW" # Warning; > 1 days
+                    $messageAppend = "Backup is more than 1 days old." # Set the alert message
+                }
+                else {
+                    $alert = "GREEN" # Ok; <= 1 days
+                    $messageAppend = "Backup is less than 1 day old." # Set the alert message
+                }
+
+                $customObject = New-Object -TypeName psobject
+                $customObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                $customObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the name
+                $customObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $server # Set the element name
+                $customObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
+                $customObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $date # Set the timestamp
+                $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+
             }
 
             # Return the structured data to the console or format using HTML CSS Styles
@@ -2442,70 +2459,131 @@ Function Request-NsxtManagerBackupStatus {
                         $customObject = New-Object System.Collections.ArrayList
 
                         # NSX Node Backup
-                        $component = 'NSX Manager'
-                        $resource = 'Node: ' + $vcfNsxDetails.fqdn
+                        $component = 'NSX Manager' # Define the component name
+                        $resource = 'Node Backup Operation' # Define the resource name
+
                         foreach ($element in $backupTask.node_backup_statuses) {
                             $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.node_backup_statuses.end_time).DateTime
+                            $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
+
+                            # Set the alert and message based on the status of the backup
+                            if ($backupTask.node_backup_statuses.success -eq $true) {   
+                                $alert = "GREEN" # Ok; success
+                                $message = 'The backup completed without errors.' # Set the backup status message
+                            }
+                            else {
+                                $alert = "RED" # Critical; failure
+                                $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
+                            }
+
+                            # Set the alert and message update for the backup task based on the age of the backup
+                            if ($backupAge -ge 3) {
+                                $alert = 'RED' # Critical; >= 3 days
+                                $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
+                            }
+                            elseif ($backupAge -gt 1) {
+                                $alert = 'YELLOW' # Warning; > 1 days
+                                $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
+                            }
+                            else {
+                                $alert = 'GREEN' # Ok; <= 1 days
+                                $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
+                            }
 
                             $elementObject = New-Object -TypeName psobject
                             $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                             $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfNsxDetails.fqdn # Set the element name
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
                             $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
-                            if ($backupTask.node_backup_statuses.success -eq $true) {                              
-                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'GREEN' # Ok; success
-                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup completed without errors.' # Set the backup status message
-                            }
-                            else {
-                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'RED' # Critical; failure
-                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.' # Set the backup status message
-                            }
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
                         }
 
                         $customObject += $elementObject
                         
                         # NSX Cluster Backup
-                        $component = 'NSX Manager'
-                        $resource = 'Cluster: ' + $vcfNsxDetails.fqdn
+                        $component = 'NSX Manager' # Define the component name
+                        $resource = 'Cluster Backup Operation' # Define the resource name
                         foreach ($element in $backupTask.cluster_backup_statuses) {
                             $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.cluster_backup_statuses.end_time).DateTime
+                            $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
+
+                            # Set the alert and message based on the status of the backup
+                            if ($backupTask.node_backup_statuses.success -eq $true) {   
+                                $alert = 'GREEN' # Ok; success
+                                $message = 'The backup completed without errors.' # Set the backup status message
+                            }
+                            else {
+                                $alert = 'RED' # Critical; failure
+                                $message = 'The backup failed with errors. Please investigate before proceeding.' # Critical; failure
+                            }
+
+                            # Set the alert and message update for the backup task based on the age of the backup
+                            if ($backupAge -ge 3) {
+                                $alert = 'RED' # Critical; >= 3 days
+                                $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
+                            }
+                            elseif ($backupAge -gt 1) {
+                                $alert = 'YELLOW' # Warning; > 1 days
+                                $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
+                            }
+                            else {
+                                $alert = 'GREEN' # Ok; <= 1 days
+                                $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
+                            }
 
                             $elementObject = New-Object -TypeName psobject
                             $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                             $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfNsxDetails.fqdn # Set the element name
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
                             $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
-                            if ($backupTask.node_backup_statuses.success -eq $true) {                              
-                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'GREEN' # Ok; success
-                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup completed without errors.' # Set the backup status message
-                            }
-                            else {
-                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'RED' # Critical; failure
-                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.' # Set the backup status message
-                            }
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
                         }
 
                         $customObject += $elementObject
 
                         # NSX Cluster Backup
-                        $component = 'NSX Manager'
-                        $resource = 'Inventory: ' + $vcfNsxDetails.fqdn
+                        $component = 'NSX Manager' # Define the component name
+                        $resource = 'Inventory Backup Operation' # Define the resource name
                         foreach ($element in $backupTask.cluster_backup_statuses) {
                             $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.cluster_backup_statuses.end_time).DateTime
+                            $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
+
+                            # Set the alert and message based on the status of the backup
+                            if ($backupTask.node_backup_statuses.success -eq $true) {   
+                                $alert = 'GREEN' # Ok; success
+                                $message = 'The backup completed without errors.' # Set the backup status message
+                            }
+                            else {
+                                $alert = 'RED' # Critical; failure
+                                $message = 'The backup failed with errors. Please investigate before proceeding.' # Critical; failure
+                            }
+
+                            # Set the alert and message update for the backup task based on the age of the backup
+                            if ($backupAge -ge 3) {
+                                $alert = 'RED' # Critical; >= 3 days
+                                $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
+                            }
+                            elseif ($backupAge -gt 1) {
+                                $alert = 'YELLOW' # Warning; > 1 days
+                                $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
+                            }
+                            else {
+                                $alert = 'GREEN' # Ok; <= 1 days
+                                $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
+                            }
 
                             $elementObject = New-Object -TypeName psobject
                             $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                             $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfNsxDetails.fqdn # Set the element name
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
                             $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
-                            if ($backupTask.node_backup_statuses.success -eq $true) {                              
-                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'GREEN' # Ok; success
-                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup completed without errors.' # Set the backup status message
-                            }
-                            else {
-                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'RED' # Critical; failure
-                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.' # Set the backup status message
-                            }
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
                         }
 
                         $customObject += $elementObject
@@ -2563,34 +2641,52 @@ Function Request-VcenterBackupStatus {
                         Connect-CisServer -server $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
                         $backupTask = Get-VcenterBackupJobs | Select-Object -First 1 | Get-VcenterBackupStatus
 
-                        $component = 'vCenter Server' # Set the component name
-                        $date = $backupTask.end_time # Set the end timestamp
-                        $resource = 'vCenter Server: ' + $vcfVcenterDetails.fqdn # Set the name of the resource
-
-                        $customObject = New-Object -TypeName psobject
-                        $customObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                        $customObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
-                        $customObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
-                        $customObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $date # Set the timestamp
+                        $component = 'vCenter Server' # Define the component name
+                        $resource = 'vCenter Server Backup Operation' # Define the resource name
+                        $timestamp = $backupTask.end_time # Define the end timestamp
+                        $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
 
                         # Set the status for the backup task
                         if ($backupTask.state -eq 'SUCCEEDED') {                              
-                            $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'GREEN' # Ok; success
+                            $alert = "Green" # Ok; success
                         }
                         elseif ($backupTask.state -eq 'IN PROGRESS') {                              
-                            $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'YELLOW' # Warning; in progress
+                            $alert = "YELLOW" # Warning; in progress
                         }
                         else {
-                            $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue 'RED' # Critical; failure
+                            $alert = "RED" # Critical; failure
                         }
 
                         # Set the message for the backup task
                         if ([string]::IsNullOrEmpty($messages)) {
-                            $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup completed without errors.'
+                            $Message = "The backup completed without errors." # Ok; success
                         }
                         else {
-                            $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue 'The backup failed with errors. Please investigate before proceeding.'
+                            $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
                         }
+
+                        # Set the alert and message update for the backup task based on the age of the backup
+                        if ($backupAge -ge 3) {
+                            $alert = "RED" # Critical; >= 3 days
+                            $messageAppend = "Backup is more than 3 days old." # Set the alert message
+                        }
+                        elseif ($backupAge -gt 1) {
+                            $alert = "YELLOW" # Warning; > 1 days
+                            $messageAppend = "Backup is more than 1 days old." # Set the alert message
+                        }
+                        else {
+                            $alert = "GREEN" # Ok; <= 1 days
+                            $messageAppend = "Backup is less than 1 day old." # Set the alert message
+                        }
+
+                        $customObject = New-Object -TypeName psobject
+                        $customObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                        $customObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                        $customObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfVcenterDetails.fqdn # Set the element name
+                        $customObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
+                        $customObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the timestamp
+                        $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                        $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
                         
                         # Return the structured data to the console or format using HTML CSS Styles
                         if ($PsBoundParameters.ContainsKey('html')) { 
