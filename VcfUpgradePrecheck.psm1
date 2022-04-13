@@ -1673,11 +1673,11 @@ Function Publish-BackupStatus {
             $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $nsxtManagerBackupStatus
         }
         
-        if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+        if ($allBackupStatusObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>vSAN Storage Policy Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+                $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>vSAN Storage Policy Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
             } else {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>vSAN Storage Policy Health Status</h3>' -As Table
+                $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>vSAN Storage Policy Health Status</h3>' -As Table
             }
         $allBackupStatusObject = Convert-CssClass -htmldata $allBackupStatusObject
         $allBackupStatusObject
@@ -1881,9 +1881,9 @@ Function Publish-LocalUserExpiry {
 
         if ($allPasswordExpiryObject.Count -eq 0) { $addNoIssues = $true }
         if ($addNoIssues) {
-            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Password Expiry Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="security-passwords"/>Password Expiry Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
         } else {
-            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Password Expiry Health Status</h3>' -As Table
+            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="security-passwords"/>Password Expiry Health Status</h3>' -As Table
         }
         $allPasswordExpiryObject = Convert-CssClass -htmldata $allPasswordExpiryObject
         $allPasswordExpiryObject
