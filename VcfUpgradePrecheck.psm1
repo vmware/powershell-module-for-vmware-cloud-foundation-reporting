@@ -3360,24 +3360,24 @@ Function Get-ClarityReportNavigation {
             <nav class="sidenav">
             <section class="sidenav-content">
                 <section class="nav-group collapsible">
-                    <input id="tabexample1" type="checkbox" />
-                    <label for="tabexample1">General</label>
+                    <input id="general" type="checkbox" />
+                    <label for="general">General</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#general-service">Service Health</a></li>
                         <li><a class="nav-link" href="#general-connectivity">Connectivity</a></li>
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
-                    <input id="tabexample2" type="checkbox" />
-                    <label for="tabexample2">Security</label>
+                    <input id="security" type="checkbox" />
+                    <label for="security">Security</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#security-password">Passwords</a></li>
                         <li><a class="nav-link" href="#security-certificate">Certificates</a></li>
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
-                <input id="tabexample5" type="checkbox" />
-                <label for="tabexample5">Infrastructure</label>
+                <input id="infrastructure" type="checkbox" />
+                <label for="infrastructure">Infrastructure</label>
                 <ul class="nav-list">
                     <li><a class="nav-link" href="#infra-backup">Backup</a></li>
                     <li><a class="nav-link" href="#infra-dns-forward">DNS Forward Lookup</a></li>
@@ -3387,8 +3387,8 @@ Function Get-ClarityReportNavigation {
                 </section>
                 <a class="nav-link nav-icon" href="#vcenter-overall">vCenter Server</a>
                 <section class="nav-group collapsible">
-                    <input id="tabexample3" type="checkbox" />
-                    <label for="tabexample3">ESXi Hosts</label>
+                    <input id="esxi" type="checkbox" />
+                    <label for="esxi">ESXi Hosts</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#esxi-overall">Overall Health</a></li>
                         <li><a class="nav-link" href="#esxi-coredump">Core Dump Health</a></li>
@@ -3397,24 +3397,24 @@ Function Get-ClarityReportNavigation {
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
-                    <input id="tabexample4" type="checkbox" />
-                    <label for="tabexample4">vSAN</label>
+                    <input id="vsan" type="checkbox" />
+                    <label for="vsan">vSAN</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#vsan-overall">Overall Health</a></li>
                         <li><a class="nav-link" href="#vsan-spbm">Storage Policy Health</a></li>
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
-                <input id="tabexample6" type="checkbox" />
-                <label for="tabexample6">NSX-T Data Center</label>
+                <input id="nsx" type="checkbox" />
+                <label for="nsx">NSX-T Data Center</label>
                 <ul class="nav-list">
                     <li><a class="nav-link" href="#nsx-local-manager">NSX Manager (Local)</a></li>
                     <li><a class="nav-link" href="#nsx-edge">NSX Edge</a></li>
                 </ul>
                 </section>
                 <section class="nav-group collapsible">
-                    <input id="tabexample7" type="checkbox" />
-                    <label for="tabexample7">Storage</label>
+                    <input id="storage" type="checkbox" />
+                    <label for="storage">Storage</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#storage-sddcmanager">SDDC Manager</a></li>
                         <li><a class="nav-link" href="#storage-vcenter">vCenter Server</a></li>
