@@ -1675,9 +1675,9 @@ Function Publish-BackupStatus {
         
         if ($allBackupStatusObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>vSAN Storage Policy Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+                $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>Backups Status</h3>' -PostContent "<p>No Issues Found</p>" 
             } else {
-                $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>vSAN Storage Policy Health Status</h3>' -As Table
+                $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>Backups Status</h3>' -As Table
             }
         $allBackupStatusObject = Convert-CssClass -htmldata $allBackupStatusObject
         $allBackupStatusObject
@@ -2791,7 +2791,7 @@ Function Request-DatastoreStorageCapacity {
 
                 # Return the structured data to the console or format using HTML CSS Styles
                 if ($PsBoundParameters.ContainsKey("html")) { 
-                    $customObject = $customObject | ConvertTo-Html -Fragment -PreContent "<h3>Datastore Space Usage Report</h3>" -As Table
+                    $customObject = $customObject | ConvertTo-Html -Fragment -PreContent '<h3><a id='storage-datastore"/>Datastore Space Usage Report</h3>" -As Table
                     $customObject = Convert-CssClass -htmldata $customObject
                 }
                 # Return $customObject in HTML or plain format
