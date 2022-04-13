@@ -37,6 +37,174 @@ if ($PSEdition -eq 'Desktop') {
 }
 
 #######################################################################################################################
+#############################  C O M B I N E D   O P E R A T I O N S   F U N C T I O N S   ############################
+
+Function Invoke-VcfHealthReport {
+    <#
+        .SYNOPSIS
+        Perform health checks across and SDDC Manager instance
+
+        .DESCRIPTION
+        The Invoke-VcfHealthReport provides a single cmdlet to perform health checks across an SDDC Manager instance.
+
+        .EXAMPLE
+        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Prechecks -allDomains
+        This example executes a health check across an SDDC Manager instance.
+
+        .EXAMPLE
+        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
+        This example executes a health check for a specific Workload Domain within an SDDC Manager instance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerRootPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        Clear-Host; Write-Host ""
+
+        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+        Write-LogMessage -Type INFO -Message "Starting the Process of Running Health Checks for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn # Setup Report Location and Report File
+        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
+
+        Write-LogMessage -Type INFO -Message "Executing SoS Health Check Collection on VMware Cloud Foundation Instance ($sddcManagerFqdn), process takes time"
+        if ($PsBoundParameters.ContainsKey("allDomains")) { 
+            $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
+        }
+
+        # Generating all SoS Health Data
+        Write-LogMessage -Type INFO -Message "Generating the Service Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the DNS Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the NTP Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the Certificate Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the vSAN Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the vSAN Storage Policy Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html -failureOnly
+            $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html -failureOnly
+            $ntpHtml = Publish-NtpHealth -json $jsonFilePath -html -failureOnly
+            $certificateHtml = Publish-CertificateHealth -json $jsonFilePath -html -failureOnly
+            $esxiHtml = Publish-EsxiHealth -json $jsonFilePath -html -failureOnly
+            $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html -failureOnly
+            $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html -failureOnly
+            $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html -failureOnly
+            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -html -failureOnly
+        } else {
+            $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html
+            $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html
+            $ntpHtml = Publish-NtpHealth -json $jsonFilePath -html
+            $certificateHtml = Publish-CertificateHealth -json $jsonFilePath -html
+            $esxiHtml = Publish-EsxiHealth -json $jsonFilePath -html
+            $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html
+            $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html
+            $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html
+            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -html
+        }
+
+        # Generating the Connectivity Health Data
+        Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        if ($PsBoundParameters.ContainsKey("allDomains")) { 
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
+            }
+            else {
+                $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
+            }
+        }
+        else {
+            if ($PsBoundParameters.ContainsKey("failureOnly")) { 
+                $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
+            }
+            else {
+                $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
+            }
+        }
+
+        # Generating the Backup Status Health Data
+        Write-LogMessage -Type INFO -Message "Generating the Backup Status Report from SDDC Manager ($sddcManagerFqdn)"
+        if ($PsBoundParameters.ContainsKey("allDomains")) { 
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                # TODO: Backup needs to support -failureOnly switch
+                # $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+            }
+            else { 
+                $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+            }
+        }
+        else {
+            if ($PsBoundParameters.ContainsKey("failureOnly")) { 
+                # TODO: Backup needs to support -failureOnly switch
+                # $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+            }
+            else {
+                $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+            }
+        }
+
+        # Generating the Password Expiry Health Data
+        Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report from SDDC Manager ($sddcManagerFqdn)"
+        if ($PsBoundParameters.ContainsKey("allDomains")) { 
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains -failureOnly
+            }
+            else { 
+                $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
+            }
+        }
+        else {
+            if ($PsBoundParameters.ContainsKey("failureOnly")) { 
+                $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
+            }
+            else {
+                $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
+            }
+        }
+
+        # # Generating the Disk Capacity Health Data
+        Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report from SDDC Manager ($sddcManagerFqdn)" 
+        $sddcStorageHtml = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html
+
+        # Combine all information gathered into a single HTML report
+        $reportData = "$serviceHtml $componentConnectivityHtml $localPasswordHtml $certificateHtml $backupStatusHtml $dnsHtml $ntpHtml $vcenterHtml $esxiHtml $vsanHtml $vsanPolicyHtml $nsxtHtml $sddcStorageHtml"
+
+        $reportHeader = Get-ClarityReportHeader
+        $reportNavigation = Get-ClarityReportNavigation -reportType health
+        $reportFooter = Get-ClarityReportFooter
+        $report = $reportHeader
+        $report += $reportNavigation
+        $report += $reportData
+        $report += $reportFooter
+
+        # Generate the report to an HTML file and then open it in the default browser
+        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        $report | Out-File $reportName
+        Invoke-Item $reportName
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Invoke-VcfHealthReport
+
+##########################################  E N D   O F   F U N C T I O N S  ##########################################
+#######################################################################################################################
+
+
+#######################################################################################################################
 #############################  S O S   J S O N   E X T R A C T I O N   F U N C T I O N S   ############################
 
 Function Request-SoSHealthJson {
@@ -130,6 +298,7 @@ Function Publish-CertificateHealth {
         }
 
         # ESXi Certificate Health
+        $outputObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.'Certificates'.'Certificate Status'.ESXi # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey('failureOnly')) {
             # Run the extracted data through the Read-JsonElement function to structure the data for report output
@@ -165,7 +334,12 @@ Function Publish-CertificateHealth {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) { 
-            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Certificate Health Status</h3>' -As Table
+            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="security-certificate"/>Certificate Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="security-certificate"/>Certificate Health Status</h3>' -As Table
+            }
             $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         }
@@ -252,8 +426,13 @@ Function Publish-ConnectivityHealth {
         $customObject += $outputObject # Adding individual component to main customObject
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey('html')) { 
-            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Connectivity Health Status</h3>' -As Table
+        if ($PsBoundParameters.ContainsKey('html')) {
+            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="general-connectivity"/>Connectivity Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="general-connectivity"/>Connectivity Health Status</h3>' -As Table
+            }
             $customObject = Convert-CssClass -htmldata $customObject
             $customObject
         }
@@ -322,10 +501,20 @@ Function Publish-DnsHealth {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Forward Lookup Health Status</h3>" -As Table
+            if ($allForwardLookupObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-dns-forward"/>DNS Forward Lookup Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-dns-forward"/>DNS Forward Lookup Health Status</h3>' -As Table
+            }
             $allForwardLookupObject = Convert-CssClass -htmldata $allForwardLookupObject
             $allForwardLookupObject
-            $allReverseLookupObject =$allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>DNS Reverse Lookup Health Status</h3>" -As Table
+            if ($allReverseLookupObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $allReverseLookupObject = $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-dns-reverse"/>DNS Reverse Lookup Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $allReverseLookupObject = $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-dns-reverse"/>DNS Reverse Lookup Health Status</h3>' -As Table
+            }
             $allReverseLookupObject = Convert-CssClass -htmldata $allReverseLookupObject
             $allReverseLookupObject
         } else {
@@ -420,17 +609,40 @@ Function Publish-EsxiHealth {
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey('html')) { 
-            $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi Overall Health Status</h3>' -As Table;
+        if ($PsBoundParameters.ContainsKey('html')) {
+            if ($allOverallHealthObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="esxi-overall"/>ESXi Overall Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="esxi-overall"/>ESXi Overall Health Status</h3>' -As Table
+            }
             $allOverallHealthObject = Convert-CssClass -htmldata $allOverallHealthObject
             $allOverallHealthObject
-            $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi Core Dump Health Status</h3>' -As Table
+
+            if ($allCoreDumpObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="esxi-coredump"/>ESXi Core Dump Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="esxi-coredump"/>ESXi Core Dump Health Status</h3>' -As Table
+            }
             $allCoreDumpObject = Convert-CssClass -htmldata $allCoreDumpObject
             $allCoreDumpObject
-            $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi License Health Status</h3>' -As Table
+
+            if ($allLicenseObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="esxi-license"/>ESXi License Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="esxi-license"/>ESXi License Health Status</h3>' -As Table
+            }
             $allLicenseObject = Convert-CssClass -htmldata $allLicenseObject
             $allLicenseObject
-            $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>ESXi Disk Health Status</h3>' -As Table
+
+            if ($allDiskObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="esxi-disk"/>ESXi Disk Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="esxi-disk"/>ESXi Disk Health Status</h3>' -As Table
+            }
             $allDiskObject = Convert-CssClass -htmldata $allDiskObject
             $allDiskObject
         }
@@ -543,28 +755,28 @@ Function Publish-NsxtHealth {
             }
         }
 
-        # NSX Edge Health
-        $component = 'NSX Edge'
-        $nsxtClusters = Get-VCFNsxtCluster
-        $inputData = $targetContent.General.'NSX Health'.'NSX Edge'
-        foreach ($nsxtVip in $nsxtClusters.vipFqdn) {
-            $inputData.PSObject.Properties.Remove($nsxtVip)
-        }
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
-            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
-            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
-            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                if (($element.status -eq 'FAILED')) {
-                    $customObject += $elementObject
-                }
-            }
-            else {
-                $customObject += $elementObject
-            }
-        }
+        # # NSX Edge Health
+        # $component = 'NSX Edge'
+        # $nsxtClusters = Get-VCFNsxtCluster
+        # $inputData = $targetContent.General.'NSX Health'.'NSX Edge'
+        # foreach ($nsxtVip in $nsxtClusters.vipFqdn) {
+        #     $inputData.PSObject.Properties.Remove($nsxtVip)
+        # }
+        # foreach ($element in $inputData.PsObject.Properties.Value) {
+        #     $elementObject = New-Object -TypeName psobject
+        #     $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+        #     $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+        #     $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+        #     $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+        #     if ($PsBoundParameters.ContainsKey('failureOnly')) {
+        #         if (($element.status -eq 'FAILED')) {
+        #             $customObject += $elementObject
+        #         }
+        #     }
+        #     else {
+        #         $customObject += $elementObject
+        #     }
+        # }
 
         # NSX Controllers Health
         $component = 'NSX Controllers'
@@ -588,8 +800,13 @@ Function Publish-NsxtHealth {
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey('html')) { 
-            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>NSX-T Data Center Health Status</h3>' -As Table
+        if ($PsBoundParameters.ContainsKey('html')) {
+            if ($customObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="nsx-local-manager"/>NSX Manager Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="nsx-local-manager"/>NSX Manager Health Status</h3>' -As Table
+            }
             $customObject = Convert-CssClass -htmldata $customObject
             $customObject
         }
@@ -602,6 +819,93 @@ Function Publish-NsxtHealth {
     }
 }
 Export-ModuleMember -Function Publish-NsxtHealth
+
+Function Publish-NsxtEdgeHealth {
+    <#
+        .SYNOPSIS
+        Formats the NSX Health data from the SoS JSON output.
+
+        .DESCRIPTION
+        The Publish-NsxtEdgeHealth cmdlet formats the NSX Health data from the SoS JSON output and publishes it as
+        either a standard PowerShell object or an HTML object. 
+
+        .EXAMPLE
+        Publish-NsxtEdgeHealth -json <file-name>
+        This example extracts and formats the NSX Health data as a PowerShell object from the JSON file.
+
+        .EXAMPLE
+        Publish-NsxtEdgeHealth -json <file-name> -html
+        This example extracts and formats the NSX Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-NsxtEdgeHealth -json <file-name> -failureOnly
+        This example extracts and formats the NSX Health data as a PowerShell object from the JSON file for only the failed items.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path -Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        }
+        else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        $customObject = New-Object System.Collections.ArrayList
+
+        # NSX Edge Health
+        $component = 'NSX Edge'
+        $nsxtClusters = Get-VCFNsxtCluster
+        $inputData = $targetContent.General.'NSX Health'.'NSX Edge'
+        foreach ($nsxtVip in $nsxtClusters.vipFqdn) {
+            $inputData.PSObject.Properties.Remove($nsxtVip)
+        }
+        foreach ($element in $inputData.PsObject.Properties.Value) {
+            $element.message
+            foreach ($item in $element.message) {
+                $item
+            }
+        }
+
+        $elementObject = New-Object -TypeName psobject
+        $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+        $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            if (($element.status -eq 'FAILED')) {
+                $customObject += $elementObject
+            }
+        }
+        else {
+            $customObject += $elementObject
+        }
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey('html')) { 
+            if ($customObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="nsx-edge"/>NSX Edge Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="nsx-edge"/>NSX Edge Health Status</h3>' -As Table
+            }
+            $customObject = Convert-CssClass -htmldata $customObject
+            $customObject
+        }
+        else {
+            $customObject | Sort-Object Component, Resource 
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-NsxtEdgeHealth
 
 Function Publish-NtpHealth {
     <#
@@ -651,7 +955,12 @@ Function Publish-NtpHealth {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>NTP Health Status</h3>" -As Table
+            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-ntp"/>NTP Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-ntp"/>NTP Health Status</h3>' -As Table
+            }
             $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         } else {
@@ -709,7 +1018,12 @@ Function Publish-PasswordHealth {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Password Expiry Health Status</h3>" -As Table
+            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="security-password"/>Password Expiry Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="security-password"/>Password Expiry Health Status</h3>' -As Table
+            }
             $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         } else {
@@ -780,7 +1094,12 @@ Function Publish-ServiceHealth {
         }
 
         if ($PsBoundParameters.ContainsKey('html')) { 
-            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Service Health Status</h3>' -As Table
+            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="general-service"/>Service Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="general-service"/>Service Health Status</h3>' -As Table
+            }
             $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         }
@@ -842,7 +1161,12 @@ Function Publish-VcenterHealth {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) { 
-            $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>vCenter Server Health Status</h3>' -As Table
+            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="vcenter-overall"/>vCenter Server Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="vcenter-overall"/>vCenter Server Health Status</h3>' -As Table
+            }
             $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         }
@@ -952,7 +1276,12 @@ Function Publish-VsanHealth {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
-            $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>VSAN Health Status</h3>" -As Table
+            if ($customObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="vsan-overall"/>vSAN Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="vsan-overall"/>vSAN Health Status</h3>' -As Table
+            }
             $customObject = Convert-CssClass -htmldata $customObject
             $customObject
         } else {
@@ -1033,8 +1362,13 @@ Function Publish-VsanStoragePolicy {
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            $outputObject = $outputObject | Sort-Object Component, 'vCenter Server', Resource | ConvertTo-Html -Fragment -PreContent "<h3>VSAN Storage Policy Health Status</h3>" -As Table
+        if ($PsBoundParameters.ContainsKey("html")) {
+            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="vsan-spbm"/>vSAN Storage Policy Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="vsan-spbm"/>vSAN Storage Policy Health Status</h3>' -As Table
+            }
             $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         } else {
@@ -1339,7 +1673,12 @@ Function Publish-BackupStatus {
             $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $nsxtManagerBackupStatus
         }
         
-        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Domain, Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Backup Health Status</h3>' -As Table
+        if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>vSAN Storage Policy Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>vSAN Storage Policy Health Status</h3>' -As Table
+            }
         $allBackupStatusObject = Convert-CssClass -htmldata $allBackupStatusObject
         $allBackupStatusObject
     }
@@ -1431,7 +1770,12 @@ Function Publish-LocalUserExpiry {
             }
         }
 
-        $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Password Expiry Health Status</h3>" -As Table
+        if ($allPasswordExpiryObject.Count -eq 0) { $addNoIssues = $true }
+        if ($addNoIssues) {
+            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Password Expiry Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+        } else {
+            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3>Password Expiry Health Status</h3>' -As Table
+        }
         $allPasswordExpiryObject = Convert-CssClass -htmldata $allPasswordExpiryObject
         $allPasswordExpiryObject
     }
@@ -2235,19 +2579,22 @@ Function Request-SddcManagerStorageHealth {
             $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
             $customObject += $userObject # Creating collection to work with afterwords
         }
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            if ($customObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="storage-sddcmanager"/>SDDC Manager Disk Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            } else {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="storage-sddcmanager"/>SDDC Manager Disk Health Status</h3>' -As Table
+            }
+            $customObject = Convert-CssClass -htmldata $customObject
+        }
+        $customObject # Return $customObject in HTML or pain format
     }
     Catch {
         Debug-CatchWriter -object $_
-    }                        
-                        
-    # Return the structured data to the console or format using HTML CSS Styles
-    if ($PsBoundParameters.ContainsKey("html")) { 
-        $customObject = $customObject | ConvertTo-Html -Fragment -PreContent "<h2>SDDC Manager Disk Health Status</h2>" -As Table
-        $customObject = Convert-CssClass -htmldata $customObject
-    }
-    # Return $customObject in HTML or pain format
-    $customObject
-    
+    } 
 }
 Export-ModuleMember -Function Request-SddcManagerStorageHealth
 
@@ -2311,7 +2658,12 @@ Function Publish-ComponentConnectivityHealth {
             $connectivityRaw = Publish-ConnectivityHealth -json $json
         }
         $allConnectivityObject += $connectivityRaw
-        $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -As Table
+        if ($allConnectivityObject.Count -eq 0) { $addNoIssues = $true }
+        if ($addNoIssues) {
+            $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="general-connectivity"/>Connectivity Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+        } else {
+            $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="general-connectivity"/>Connectivity Health Status</h3>' -As Table
+        }
         $allConnectivityObject = Convert-CssClass -htmldata $allConnectivityObject
         $allConnectivityObject
     }
@@ -2639,55 +2991,152 @@ Function Convert-TextToHtml {
 Export-ModuleMember -Function Convert-TextToHtml
 
 Function Get-ClarityReportHeader {
-# Define the default Clarity Cascading Style Sheets (CSS) for the HTML report Header
-$clarityCssHeader = '
-    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-    <html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <link rel="stylesheet" href="https://unpkg.com/@clr/ui/clr-ui.min.css" />
-    <style>
-        .alertOK { color: #78BE20; font-weight: bold}
-        .alertWarning { color: #EC7700; font-weight: bold}
-        .alertCritical { color: #9F2842; font-weight: bold}
-    </style>
-    </head>
-    <body>
-    <div class="clr-example">
-    <div class="main-container">
-        <header class="header-6">
-        <div class="branding">
-            <a href="javascript://">
-            <cds-icon shape="vm-bug">
-                <img src="logo.svg" alt="VMware Cloud Foundation"/>
-            </cds-icon>
-            <span class="title">VMware Cloud Foundation</span>
-            </a>
-        </div>
-        <div class="settings">
-            <a href="javascript://" class="nav-link nav-icon">
-            <cds-icon shape="cog"></cds-icon>
-            </a>
-        </div>
-        </header>
-        <nav class="subnav">
-        <ul class="nav">
-            <li class="nav-item">
-            <a class="nav-link active" href="javascript://">Health Check Report</a>
-            </li>
-        </ul>
-        </nav>
-        <div class="content-container">
-        <div class="content-area">'
+    # Define the default Clarity Cascading Style Sheets (CSS) for the HTML report Header
+    $clarityCssHeader = '
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        
+        <head>
+            <link rel="stylesheet" href="https://unpkg.com/@clr/ui/clr-ui.min.css" />
+            <style>
+                .alertOK {
+                    color: #78BE20;
+                    font-weight: bold
+                }
+        
+                .alertWarning {
+                    color: #EC7700;
+                    font-weight: bold
+                }
+        
+                .alertCritical {
+                    color: #9F2842;
+                    font-weight: bold
+                }
+            </style>
+        </head>
+        
+        <body>
+            <div class="main-container">
+                <header class="header header-6">
+                    <div class="branding">
+                        <a href="javascript://">
+                            <cds-icon shape="vm-bug">
+                                <img src="logo.svg" alt="logo" />
+                            </cds-icon>
+                            <span class="title">PowerShell Module for VMware Cloud Foundation</span>
+                        </a>
+                    </div>
+                </header>'
     $clarityCssHeader
 }
 Export-ModuleMember -Function Get-ClarityReportHeader
 
+Function Get-ClarityReportNavigation {
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config")] [String]$reportType
+    )
+
+    if ($reportType -eq "health") { # Define the Clarity Cascading Style Sheets (CSS) for a Health Report
+        $clarityCssNavigation = '
+                <nav class="subnav">
+                <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="javascript://">Health Report</a>
+                </li>
+                </ul>
+            </nav>
+            <div class="content-container">
+            <nav class="sidenav">
+            <section class="sidenav-content">
+                <section class="nav-group collapsible">
+                    <input id="tabexample1" type="checkbox" />
+                    <label for="tabexample1">General</label>
+                    <ul class="nav-list">
+                        <li><a class="nav-link" href="#general-service">Service Health</a></li>
+                        <li><a class="nav-link" href="#general-connectivity">Connectivity</a></li>
+                    </ul>
+                </section>
+                <section class="nav-group collapsible">
+                    <input id="tabexample2" type="checkbox" />
+                    <label for="tabexample2">Security</label>
+                    <ul class="nav-list">
+                        <li><a class="nav-link" href="#security-password">Passwords</a></li>
+                        <li><a class="nav-link" href="#security-certificate">Certificates</a></li>
+                    </ul>
+                </section>
+                <section class="nav-group collapsible">
+                <input id="tabexample5" type="checkbox" />
+                <label for="tabexample5">Infrastructure</label>
+                <ul class="nav-list">
+                    <li><a class="nav-link" href="#infra-backup">Backup</a></li>
+                    <li><a class="nav-link" href="#infra-dns-forward">DNS Forward Lookup</a></li>
+                    <li><a class="nav-link" href="#infra-dns-reverse">DNS Reverse Lookup</a></li>
+                    <li><a class="nav-link" href="#infra-ntp">Network Time</a></li>
+                </ul>
+                </section>
+                <a class="nav-link nav-icon" href="#vcenter-overall">vCenter Server</a>
+                <section class="nav-group collapsible">
+                    <input id="tabexample3" type="checkbox" />
+                    <label for="tabexample3">ESXi Hosts</label>
+                    <ul class="nav-list">
+                        <li><a class="nav-link" href="#esxi-overall">Overall Health</a></li>
+                        <li><a class="nav-link" href="#esxi-coredump">Core Dump Health</a></li>
+                        <li><a class="nav-link" href="#esxi-disk">Disk Health</a></li>
+                        <li><a class="nav-link" href="#esxi-license">Licensing Health</a></li>
+                    </ul>
+                </section>
+                <section class="nav-group collapsible">
+                    <input id="tabexample4" type="checkbox" />
+                    <label for="tabexample4">vSAN</label>
+                    <ul class="nav-list">
+                        <li><a class="nav-link" href="#vsan-overall">Overall Health</a></li>
+                        <li><a class="nav-link" href="#vsan-spbm">Storage Policy Health</a></li>
+                    </ul>
+                </section>
+                <section class="nav-group collapsible">
+                <input id="tabexample6" type="checkbox" />
+                <label for="tabexample6">NSX-T Data Center</label>
+                <ul class="nav-list">
+                    <li><a class="nav-link" href="#nsx-local-manager">NSX Manager (Local)</a></li>
+                    <li><a class="nav-link" href="#nsx-edge">NSX Edge</a></li>
+                </ul>
+                </section>
+                <section class="nav-group collapsible">
+                    <input id="tabexample7" type="checkbox" />
+                    <label for="tabexample7">Storage</label>
+                    <ul class="nav-list">
+                        <li><a class="nav-link" href="#storage-sddcmanager">SDDC Manager</a></li>
+                        <li><a class="nav-link" href="#storage-vcenter">vCenter Server</a></li>
+                        <li><a class="nav-link" href="#storage-esxi">ESXi</a></li>
+                        <li><a class="nav-link" href="#storage-datastore">Datastores</a></li>
+                    </ul>
+                </section>
+            </section>
+            </nav>
+                <div class="content-area">
+                    <div class="content-area">'
+        $clarityCssNavigation
+    }
+    if ($reportType -eq "alert") { # Define the Clarity Cascading Style Sheets (CSS) for a System Alert Report
+        $clarityCssNavigation = '
+        '
+        $clarityCssNavigation
+    }
+    if ($reportType -eq "config") { # Define the Clarity Cascading Style Sheets (CSS) for a Configuration Report
+        $clarityCssNavigation = '
+        '
+        $clarityCssNavigation
+    }
+}
+Export-ModuleMember -Function Get-ClarityReportNavigation
+
 Function Get-ClarityReportFooter {
     # Define the default Clarity Cascading Style Sheets (CSS) for the HTML report Footer
     $clarityCssFooter = '
+                </div>
             </div>
         </div>
-    </div>
     </body>
     </html>'
     $clarityCssFooter
@@ -2697,8 +3146,10 @@ Export-ModuleMember -Function Get-ClarityReportFooter
 Function PercentCalc {
     Param (
         [Parameter (Mandatory = $true)] [Int]$InputNum1,
-        [Parameter (Mandatory = $true)] [Int]$InputNum2)
-        $InputNum1 / $InputNum2*100
+        [Parameter (Mandatory = $true)] [Int]$InputNum2
+    )
+    
+    $InputNum1 / $InputNum2*100
 }
 
 Function Convert-CssClass {
