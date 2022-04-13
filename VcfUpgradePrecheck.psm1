@@ -3319,6 +3319,10 @@ Function Get-ClarityReportHeader {
                     color: #9F2842;
                     font-weight: bold
                 }
+                .table th,
+                .table td {
+                text-align: left;
+                }
             </style>
         </head>
         
