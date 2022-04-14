@@ -3286,23 +3286,22 @@ Function Request-NsxtAlert {
     }
 }
 Export-ModuleMember -Function Request-NsxtAlert
-
-Function Publish-SystemAlert {
+Function Request-VcenterAlert {
+    #ToDo
     <#
         .SYNOPSIS
-        Publish system Alarms.
+        Returns Alarms from vCenter Server instance.
 
         .DESCRIPTION
-        The Publish-SystemAlert cmdlet returns all alarms from NSX Manager cluster.
-        The cmdlet connects to the NSX-T Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the NSX-T Manager instance
+        The Request-VcenterAlert cmdlet returns all alarms from vCenter Server managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the details for the NSX Manager cluster
-        - Collects the alerts
+        - Validates the authentication to vCenter Server with credentials from SDDC Manager
+        - Collects the alerts from vCenter Server
 
         .EXAMPLE
-        Publish-SystemAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
-        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain.
+        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user adminr@local -pass VMw@re1! -domain sfo-w01
+        This example will return alarms of an vCenter Server managed by SDDC Manager for a workload domain.
     #>
 
     Param (
@@ -3313,26 +3312,62 @@ Function Publish-SystemAlert {
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
-    #ToDo
-    <#
-    if ($PsBoundParameters.ContainsKey("allDomains")) {
-        $vcfDomains = Get-VCFWorkloadDomain
-    } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-        $vcfDomains = Get-VCFWorkloadDomain -name $workloadDomain
-    }
-    foreach ($domain in $vcfDomains.name) {
-        Write-LogMessage -type INFO -Message "Generating the NSX-T Alarms Report from SDDC Manager ($sddcManagerFqdn) domain ($domain)"
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $nsxtAlarms = Show-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -domain $domain -failureOnly
-        } else {
-            $nsxtAlarms = Show-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -domain $domain
+
+    if (Test-VCFConnection -server $server) {
+        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                        #Get the vCenter alarms
+                        $vcenterAlarms = Get-VcenterTriggeredAlarm -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass
+                        $customObject = New-Object System.Collections.ArrayList
+                        $component = 'vCenter Server'
+                        $resource = 'Instance: ' + $vcfVcenterDetails.fqdn
+                        foreach ($alarm in $vcenterAlarms) {
+                            if ($alarm.Acknowledged -ne "True") {
+                                [String]$alert = $alarm.Status
+                                $alert = $alert.ToUpper()
+                            } else {
+                                $alert = "GREEN"
+                            }
+                            $elementObject = New-Object -TypeName psobject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                            # Alarm properties
+                            $elementObject | Add-Member -NotePropertyName 'Entity Type' -NotePropertyValue $alarm.EntityType
+                            $elementObject | Add-Member -NotePropertyName 'Alarm' -NotePropertyValue $alarm.Alarm
+                            $elementObject | Add-Member -NotePropertyName 'Time' -NotePropertyValue $alarm.Time
+                            $elementObject | Add-Member -NotePropertyName 'Acknowledged' -NotePropertyValue $alarm.Acknowledged 
+                            $elementObject | Add-Member -NotePropertyName 'Acknowledged by' -NotePropertyValue $alarm.AckBy
+                            $elementObject | Add-Member -NotePropertyName 'Acknowledged Time' -NotePropertyValue $alarm.AcknowledgedTime
+                            
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }
+                        }
+                        # Return the structured data to the console or format using HTML CSS Styles
+                        if ($PsBoundParameters.ContainsKey('html')) { 
+                            $customObject = $customObject | Sort-Object component, domain, resource, alert | ConvertTo-Html -Fragment -PreContent '<h2>vCenter Alarms</h2>' -As Table
+                            $customObject
+                        }
+                        else {
+                            $customObject | Sort-Object component, domain, resource, alert
+                        }
+                    }
+                }
+            }
         }
     }
-    $nsxtAlarms = $nsxtAlarms | ConvertTo-Html -Fragment -PreContent "<h3>NSX-T Alarms</h3>" -As Table
-    $nsxtAlarms = Convert-CssClass -htmldata $nsxtAlarms
-    #>
 }
-Export-ModuleMember -Function Publish-SystemAlert
+Export-ModuleMember -Function Request-VcenterAlert
+
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
@@ -3935,7 +3970,40 @@ Function Get-SnapshotConsolidation {
     }
 }
 Export-ModuleMember -Function Get-SnapshotConsolidation
+Function Get-VcenterTriggeredAlarm {
+        <#
+    .SYNOPSIS
+    Returns the vCenter Server triggered alarms.
 
+    .DESCRIPTION
+    The Get-VcenterTriggeredAlarm cmdlet returns all triggered alarms from vCenter Server instance.
+
+    .EXAMPLE
+    Get-VcenterTriggeredAlarm -server sfo-w01-vc01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+    This example returns alarms from a vCenter Server instance named sfo-w01-vc01.sfo.rainpole.io.
+    #>
+    Param (
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+    )
+    $vc = Connect-VIServer -Server $server -User $user -Password $pass
+    $rootFolder = Get-Folder -Server $vc "Datacenters"
+
+    foreach ($triggeredAlarm in $rootFolder.ExtensionData.TriggeredAlarmState) {
+        $alarm = "" | Select-Object EntityType, Alarm, Status, Time, Acknowledged, AckBy, AckTime
+        $alarm.Alarm = (Get-View -Server $vc $triggeredAlarm.Alarm).Info.Name
+        $alarm.EntityType = (Get-View -Server $vc $triggeredAlarm.Entity).GetType().Name
+        $alarm.Status = $triggeredAlarm.OverallStatus
+        $alarm.Time = $triggeredAlarm.Time
+        $alarm.Acknowledged = $triggeredAlarm.Acknowledged
+        $alarm.AckBy = $triggeredAlarm.AcknowledgedByUser
+        $alarm.AckTime = $trigeredAlarm.AcknowledgedTime
+        $alarm
+  	}
+    Disconnect-VIServer -Server $server -Confirm:$false
+}
+Export-ModuleMember -Function Get-VcenterTriggeredAlarm
 Function Get-NsxtAlarm {
     <#
     SYNOPSIS:

@@ -176,8 +176,25 @@ Try {
     $nsxtAlarms = $nsxtAlarms | ConvertTo-Html -Fragment -PreContent "<h3>NSX-T Alarms</h3>" -As Table
     $nsxtAlarms = Convert-CssClass -htmldata $nsxtAlarms
 
+    # Genarating the vCenter Alarms report
+    if ($PsBoundParameters.ContainsKey("allDomains")) {
+        $vcfDomains = Get-VCFWorkloadDomain
+    } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+        $vcfDomains = Get-VCFWorkloadDomain -name $workloadDomain
+    }
+    foreach ($domain in $vcfDomains.name) {
+        Write-LogMessage -type INFO -Message "Generating the vCenter Alarms Report from SDDC Manager ($sddcManagerFqdn) domain ($domain)"
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $vcenterAlarms = Request-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -domain $domain -failureOnly
+        } else {
+            $vcenterAlarms = Request-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -domain $domain
+        }
+    }
+    $vcenterAlarms = $vcenterAlarms | ConvertTo-Html -Fragment -PreContent "<h3>vCenter Alarms</h3>" -As Table
+    $vcenterAlarms = Convert-CssClass -htmldata $vcenterAlarms
+
     # Combine all information gathered into a single HTML report
-    $reportData = "$backupStatusHtml $localPasswordHtml $sosHealthHtml $componentConnectivityHtml $hddUsage $datastoreUsage $nsxtAlarms"
+    $reportData = "$backupStatusHtml $localPasswordHtml $sosHealthHtml $componentConnectivityHtml $hddUsage $datastoreUsage $nsxtAlarms $vcenterAlarms"
 
     $reportHeader = Get-ClarityReportHeader
     $reportFooter = Get-ClarityReportFooter
