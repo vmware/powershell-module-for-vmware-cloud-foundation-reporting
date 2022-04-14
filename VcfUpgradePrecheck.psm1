@@ -139,8 +139,7 @@ Function Invoke-VcfHealthReport {
         Write-LogMessage -Type INFO -Message "Generating the Backup Status Report from SDDC Manager ($sddcManagerFqdn)"
         if ($PsBoundParameters.ContainsKey("allDomains")) { 
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                # TODO: Backup needs to support -failureOnly switch
-                # $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+                $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
             }
             else { 
                 $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
@@ -148,8 +147,7 @@ Function Invoke-VcfHealthReport {
         }
         else {
             if ($PsBoundParameters.ContainsKey("failureOnly")) { 
-                # TODO: Backup needs to support -failureOnly switch
-                # $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
             }
             else {
                 $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
@@ -1746,6 +1744,11 @@ Function Publish-BackupStatus {
         .EXAMPLE
         Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
         This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance.  
+
+        .EXAMPLE
+        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance but only for the failed items.
+ 
     #>
 
     Param (
@@ -1766,17 +1769,17 @@ Function Publish-BackupStatus {
 
                 if ($PsBoundParameters.ContainsKey('failureOnly')) {
                     if ($PsBoundParameters.ContainsKey("allDomains")) {
-                        #$sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass -failureOnly; $allBackupStatusObject += $sddcManagerBackupStatus
+                        $sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass -failureOnly; $allBackupStatusObject += $sddcManagerBackupStatus
                         foreach ($domain in $allWorkloadDomains ) {
-                            # $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $vcenterBackupStatus
-                            # $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $nsxtManagerBackupStatus
+                            $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $vcenterBackupStatus
+                            $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $nsxtManagerBackupStatus
                         }
                     } else {
                         if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
-                            #$sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass -failureOnly; $allBackupStatusObject += $sddcManagerBackupStatus
+                            $sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass -failureOnly; $allBackupStatusObject += $sddcManagerBackupStatus
                         }
-                        # $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $vcenterBackupStatus
-                        # $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $nsxtManagerBackupStatus
+                        $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $vcenterBackupStatus
+                        $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $nsxtManagerBackupStatus
                     }
                 } else {
                     if ($PsBoundParameters.ContainsKey("allDomains")) { 
