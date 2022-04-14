@@ -46,7 +46,7 @@ Try {
     Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
     Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn # Setup Report Location and Report File
     Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
-
+    
     Write-LogMessage -Type INFO -Message "Executing SoS Health Check Collection on VMware Cloud Foundation Instance ($sddcManagerFqdn), process takes time"
     # if ($PsBoundParameters.ContainsKey("allDomains")) { 
     #     $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
@@ -158,9 +158,26 @@ Try {
     $datastoreUsage = Request-DatastoreStorageCapacity -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
     $datastoreUsage = $datastoreUsage | Sort-Object 'vCenter FQDN', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent "<h3>Datastore Space Usage Report</h3>" -As Table
     $datastoreUsage = Convert-CssClass -htmldata $datastoreUsage
+    
+    # Genarating the NSX-T Alarms report
+    if ($PsBoundParameters.ContainsKey("allDomains")) {
+        $vcfDomains = Get-VCFWorkloadDomain
+    } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+        $vcfDomains = Get-VCFWorkloadDomain -name $workloadDomain
+    }
+    foreach ($domain in $vcfDomains.name) {
+        Write-LogMessage -type INFO -Message "Generating the NSX-T Alarms Report from SDDC Manager ($sddcManagerFqdn) domain ($domain)"
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $nsxtAlarms = Request-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -domain $domain -failureOnly
+        } else {
+            $nsxtAlarms = Request-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -domain $domain
+        }
+    }
+    $nsxtAlarms = $nsxtAlarms | ConvertTo-Html -Fragment -PreContent "<h3>NSX-T Alarms</h3>" -As Table
+    $nsxtAlarms = Convert-CssClass -htmldata $nsxtAlarms
 
     # Combine all information gathered into a single HTML report
-    $reportData = "$backupStatusHtml $localPasswordHtml $sosHealthHtml $componentConnectivityHtml $hddUsage $datastoreUsage"
+    $reportData = "$backupStatusHtml $localPasswordHtml $sosHealthHtml $componentConnectivityHtml $hddUsage $datastoreUsage $nsxtAlarms"
 
     $reportHeader = Get-ClarityReportHeader
     $reportFooter = Get-ClarityReportFooter

@@ -3201,6 +3201,137 @@ Function Request-NsxtAuthentication {
 }
 Export-ModuleMember -Function Request-NsxtAuthentication
 
+Function Request-NsxtAlert {
+    <#
+        .SYNOPSIS
+        Returns Alarms of an NSX Manager cluster.
+
+        .DESCRIPTION
+        The Request-NsxtAlert cmdlet returns all alarms from NSX Manager cluster.
+        The cmdlet connects to the NSX-T Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the NSX-T Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the details for the NSX Manager cluster
+        - Collects the alerts
+
+        .EXAMPLE
+        Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
+        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    if (Test-VCFConnection -server $server) {
+        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+            if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
+                    if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                        #Get the NSX-T alarms
+                        $nsxtAlarms = Get-NsxtAlarm -fqdn $vcfNsxDetails.fqdn
+                        $customObject = New-Object System.Collections.ArrayList
+                        $component = 'NSX Manager'
+                        $resource = 'Node: ' + $vcfNsxDetails.fqdn
+                        # ToDo define the YELLOW alert based on Status and Severity
+                        foreach ($alarm in $nsxtAlarms.results) {
+                            if ($alarm.status -eq "RESOLVED") {
+                                $alert = "GREEN"
+                            } else {
+                                $alert = "RED"
+                            }
+                            $elementObject = New-Object -TypeName psobject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                            # Alarm properties
+                            $elementObject | Add-Member -NotePropertyName 'Feature Name' -NotePropertyValue $alarm.feature_name # Set the feature_name
+                            $elementObject | Add-Member -NotePropertyName 'Event Type' -NotePropertyValue $alarm.event_type # Set the event_type
+                            $elementObject | Add-Member -NotePropertyName 'Description' -NotePropertyValue $alarm.description # Set the description
+                            #$elementObject | Add-Member -NotePropertyName 'Last Reported Time' -NotePropertyValue $element.last_reported_time # Set the last_reported_time in [Long]
+                            $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue $alarm.status # Set the status
+                            $elementObject | Add-Member -NotePropertyName 'Severity' -NotePropertyValue $alarm.severity # Set the severity
+                            $elementObject | Add-Member -NotePropertyName 'Node Display Name' -NotePropertyValue $alarm.node_display_name # Set the node_display_name
+                            $elementObject | Add-Member -NotePropertyName 'Node Ip Addresses' -NotePropertyValue "$($alarm.node_ip_addresses)" # Set the node_ip_addresses array converted to sting
+                            
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }
+                        }
+                        # Return the structured data to the console or format using HTML CSS Styles
+                        if ($PsBoundParameters.ContainsKey('html')) { 
+                            $customObject = $customObject | Sort-Object component, domain, resource, status | ConvertTo-Html -Fragment -PreContent '<h2>NSX-T Alarms</h2>' -As Table
+                            $customObject
+                        }
+                        else {
+                            $customObject | Sort-Object component, domain, resource, status
+                        }
+                        
+                    }
+                }
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Request-NsxtAlert
+
+Function Publish-SystemAlert {
+    <#
+        .SYNOPSIS
+        Publish system Alarms.
+
+        .DESCRIPTION
+        The Publish-SystemAlert cmdlet returns all alarms from NSX Manager cluster.
+        The cmdlet connects to the NSX-T Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the NSX-T Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the details for the NSX Manager cluster
+        - Collects the alerts
+
+        .EXAMPLE
+        Publish-SystemAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
+        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+    #ToDo
+    <#
+    if ($PsBoundParameters.ContainsKey("allDomains")) {
+        $vcfDomains = Get-VCFWorkloadDomain
+    } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+        $vcfDomains = Get-VCFWorkloadDomain -name $workloadDomain
+    }
+    foreach ($domain in $vcfDomains.name) {
+        Write-LogMessage -type INFO -Message "Generating the NSX-T Alarms Report from SDDC Manager ($sddcManagerFqdn) domain ($domain)"
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $nsxtAlarms = Show-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -domain $domain -failureOnly
+        } else {
+            $nsxtAlarms = Show-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -domain $domain
+        }
+    }
+    $nsxtAlarms = $nsxtAlarms | ConvertTo-Html -Fragment -PreContent "<h3>NSX-T Alarms</h3>" -As Table
+    $nsxtAlarms = Convert-CssClass -htmldata $nsxtAlarms
+    #>
+}
+Export-ModuleMember -Function Publish-SystemAlert
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
@@ -3761,5 +3892,58 @@ Function Get-SnapshotConsolidation {
 }
 Export-ModuleMember -Function Get-SnapshotConsolidation
 
+Function Get-NsxtAlarm {
+    <#
+    SYNOPSIS:
+    Return the alarms for an NSX Manager cluster.
+
+    DESCRIPTION:
+    The Get-NsxtAlarm cmdlet returns the alarms for an NSX Manager cluster
+
+    EXAMPLE:
+    Get-NsxtAlarm -fqdn sfo-w01-nsx01.sfo.rainpole.io
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn
+    )
+
+    Try {
+        $uri = "https://$nsxtManager/api/v1/alarms"
+        $response = Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $nsxtHeaders
+        $response
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Get-NsxtAlarm
+
+Function Get-NsxtEvent {
+    <#
+    SYNOPSIS:
+    Return the events for an NSX Manager cluster.
+
+    DESCRIPTION:
+    The Get-NsxtEvent cmdlet returns the events for an NSX Manager cluster
+
+    EXAMPLE:
+    Get-NsxtEvent -fqdn sfo-w01-nsx01.sfo.rainpole.io
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn
+    )
+
+    Try {
+        $uri = "https://$nsxtManager/api/v1/events"
+        $response = Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $nsxtHeaders
+        $response
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Get-NsxtEvent
 ##############################  End Supporting Functions ###############################
 ########################################################################################
