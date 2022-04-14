@@ -2370,75 +2370,102 @@ Function Request-SddcManagerBackupStatus {
         .EXAMPLE
         Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will return the status of the latest file-level backup task in an SDDC Manager instance.
+
+        Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+        This example will return the status of the latest file-level backup task in an SDDC Manager instance but only reports issues.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
-    if (Test-VCFConnection -server $server) {
-        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-            $backupTasks = Get-VCFTask | Where-Object { $_.type -eq 'SDDCMANAGER_BACKUP' } | Select-Object -First 1
-            foreach ($backupTask in $backupTasks) {
-                $component = 'SDDC Manager' # Define the component name
-                $date = [DateTime]::ParseExact($backupTask.creationTimestamp, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
-                $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ',' # Define the domain(s)
-                $resource = $backupTask.name # Define the resource name
-                $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$date)).TotalDays) # Calculate the number of days since the backup was created
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $backupTasks = Get-VCFTask | Where-Object { $_.type -eq 'SDDCMANAGER_BACKUP' } | Select-Object -First 1
+                foreach ($backupTask in $backupTasks) {
+                    $component = 'SDDC Manager' # Define the component name
+                    $date = [DateTime]::ParseExact($backupTask.creationTimestamp, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
+                    $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ',' # Define the domain(s)
+                    $resource = $backupTask.name # Define the resource name
+                    $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$date)).TotalDays) # Calculate the number of days since the backup was created
 
-                # Set the status for the backup task
-                if ($backupTask.status -eq 'Successful') {                              
-                    $alert = "GREEN" # Ok; success
+                    $customObject = New-Object System.Collections.ArrayList
+
+                    # Set the status for the backup task
+                    if ($backupTask.status -eq 'Successful') {                              
+                        $alert = "GREEN" # Ok; success
+                    }
+                    else {
+                        $alert = "RED" # Critical; failure
+                    }
+
+                    # Set the message for the backup task
+                    if ([string]::IsNullOrEmpty($errors)) {
+                        $message = "The backup completed without errors." # Ok; success
+                    }
+                    else {
+                        $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
+                    }
+
+                    # Set the alert and message for the backup task based on the age of the backup
+                    if ($backupAge -ge 3) {
+                        $alert = "RED" # Critical; >= 3 days
+                        $messageAppend = "Backup is more than 3 days old." # Set the alert message
+                    }
+                    elseif ($backupAge -gt 1) {
+                        $alert = "YELLOW" # Warning; > 1 days
+                        $messageAppend = "Backup is more than 1 days old." # Set the alert message
+                    }
+                    else {
+                        $alert = "GREEN" # Ok; <= 1 days
+                        $messageAppend = "Backup is less than 1 day old." # Set the alert message
+                    }
+
+                    $elementObject = New-Object -TypeName psobject
+                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                    $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the name
+                    $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $server # Set the element name
+                    $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
+                    $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $date # Set the timestamp
+                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                            $customObject += $elementObject
+                        }
+                    }
+                    else {
+                        $customObject += $elementObject
+                    }  
+                }
+
+                $outputObject += $customObject # Add the custom object to the output object
+
+                # Return the structured data to the console or format using HTML CSS Styles
+                if ($PsBoundParameters.ContainsKey("html")) { 
+                    if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+                    if ($addNoIssues) {
+                        $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backups"/>Backup Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                    }
+                    else {
+                        $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backups"/>Backup Status</h3>' -As Table
+                    }
+                    $outputObject = Convert-CssClass -htmldata $outputObject
+                    $outputObject
                 }
                 else {
-                    $alert = "RED" # Critical; failure
+                    $outputObject | Sort-Object Component, Resource, Element
                 }
-
-                # Set the message for the backup task
-                if ([string]::IsNullOrEmpty($errors)) {
-                    $message = "The backup completed without errors." # Ok; success
-                }
-                else {
-                    $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
-                }
-
-                # Set the alert and message for the backup task based on the age of the backup
-                if ($backupAge -ge 3) {
-                    $alert = "RED" # Critical; >= 3 days
-                    $messageAppend = "Backup is more than 3 days old." # Set the alert message
-                }
-                elseif ($backupAge -gt 1) {
-                    $alert = "YELLOW" # Warning; > 1 days
-                    $messageAppend = "Backup is more than 1 days old." # Set the alert message
-                }
-                else {
-                    $alert = "GREEN" # Ok; <= 1 days
-                    $messageAppend = "Backup is less than 1 day old." # Set the alert message
-                }
-
-                $customObject = New-Object -TypeName psobject
-                $customObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                $customObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the name
-                $customObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $server # Set the element name
-                $customObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
-                $customObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $date # Set the timestamp
-                $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
-
-            }
-
-            # Return the structured data to the console or format using HTML CSS Styles
-            if ($PsBoundParameters.ContainsKey("html")) { 
-                $customObject = $customObject | Sort-Object creationTimestamp, status | ConvertTo-Html -Fragment -PreContent '<h2>Backup Status</h2>' -As Table
-                $customObject
-            }
-            else {
-                $customObject | Sort-Object creationTimestamp
             }
         }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
     }
 }
 Export-ModuleMember -Function Request-SddcManagerBackupStatus
@@ -2641,86 +2668,115 @@ Function Request-VcenterBackupStatus {
         .EXAMPLE
         Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain.
-    #>
 
-    # TO DO: Add support changing status based on age of backup.
+        Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain but only reports issues.
+    #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+
     )
 
-    if (Test-VCFConnection -server $server) {
-        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-            if (($vcfVcenterDetails = Get-VcenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
-                if (Test-VsphereConnection -server $vcfVcenterDetails.fqdn) {
-                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        Connect-CisServer -server $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
-                        $backupTask = Get-VcenterBackupJobs | Select-Object -First 1 | Get-VcenterBackupStatus
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-VcenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                    if (Test-VsphereConnection -server $vcfVcenterDetails.fqdn) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            Connect-CisServer -server $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
+                            $backupTask = Get-VcenterBackupJobs | Select-Object -First 1 | Get-VcenterBackupStatus
 
-                        $component = 'vCenter Server' # Define the component name
-                        $resource = 'vCenter Server Backup Operation' # Define the resource name
-                        $timestamp = $backupTask.end_time # Define the end timestamp
-                        $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
+                            $component = 'vCenter Server' # Define the component name
+                            $resource = 'vCenter Server Backup Operation' # Define the resource name
+                            $timestamp = $backupTask.end_time # Define the end timestamp
+                            $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
 
-                        # Set the status for the backup task
-                        if ($backupTask.state -eq 'SUCCEEDED') {                              
-                            $alert = "Green" # Ok; success
-                        }
-                        elseif ($backupTask.state -eq 'IN PROGRESS') {                              
-                            $alert = "YELLOW" # Warning; in progress
-                        }
-                        else {
-                            $alert = "RED" # Critical; failure
-                        }
+                            $customObject = New-Object System.Collections.ArrayList
 
-                        # Set the message for the backup task
-                        if ([string]::IsNullOrEmpty($messages)) {
-                            $Message = "The backup completed without errors." # Ok; success
-                        }
-                        else {
-                            $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
-                        }
+                            # Set the status for the backup task
+                            if ($backupTask.state -eq 'SUCCEEDED') {                              
+                                $alert = "Green" # Ok; success
+                            }
+                            elseif ($backupTask.state -eq 'IN PROGRESS') {                              
+                                $alert = "YELLOW" # Warning; in progress
+                            }
+                            else {
+                                $alert = "RED" # Critical; failure
+                            }
 
-                        # Set the alert and message update for the backup task based on the age of the backup
-                        if ($backupAge -ge 3) {
-                            $alert = "RED" # Critical; >= 3 days
-                            $messageAppend = "Backup is more than 3 days old." # Set the alert message
-                        }
-                        elseif ($backupAge -gt 1) {
-                            $alert = "YELLOW" # Warning; > 1 days
-                            $messageAppend = "Backup is more than 1 days old." # Set the alert message
-                        }
-                        else {
-                            $alert = "GREEN" # Ok; <= 1 days
-                            $messageAppend = "Backup is less than 1 day old." # Set the alert message
-                        }
+                            # Set the message for the backup task
+                            if ([string]::IsNullOrEmpty($messages)) {
+                                $Message = "The backup completed without errors." # Ok; success
+                            }
+                            else {
+                                $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
+                            }
 
-                        $customObject = New-Object -TypeName psobject
-                        $customObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                        $customObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
-                        $customObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfVcenterDetails.fqdn # Set the element name
-                        $customObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
-                        $customObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the timestamp
-                        $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                        $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
-                        
-                        # Return the structured data to the console or format using HTML CSS Styles
-                        if ($PsBoundParameters.ContainsKey('html')) { 
-                            $customObject = $customObject | Sort-Object creationTimestamp, status | ConvertTo-Html -Fragment -PreContent '<h2>Backup Status</h2>' -As Table
-                            $customObject
+                            # Set the alert and message update for the backup task based on the age of the backup
+                            if ($backupAge -ge 3) {
+                                $alert = "RED" # Critical; >= 3 days
+                                $messageAppend = "Backup is more than 3 days old." # Set the alert message
+                            }
+                            elseif ($backupAge -gt 1) {
+                                $alert = "YELLOW" # Warning; > 1 days
+                                $messageAppend = "Backup is more than 1 days old." # Set the alert message
+                            }
+                            else {
+                                $alert = "GREEN" # Ok; <= 1 days
+                                $messageAppend = "Backup is less than 1 day old." # Set the alert message
+                            }
+
+                            $elementObject = New-Object -TypeName psobject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfVcenterDetails.fqdn # Set the element name
+                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
+                            $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the timestamp
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }  
+
+                            $outputObject += $customObject # Add the custom object to the output object
+
+                            # Return the structured data to the console or format using HTML CSS Styles
+                            if ($PsBoundParameters.ContainsKey('html')) { 
+                                if ($outputObject.Count -eq 0) {
+                                    $addNoIssues = $true 
+                                }
+                                if ($addNoIssues) {
+                                    $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backups"/>Backup Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                                }
+                                else {
+                                    $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backups"/>Backup Status</h3>' -As Table
+                                }
+                                $outputObject = Convert-CssClass -htmldata $outputObject
+                                $outputObject
+                            }
+                            else {
+                                $outputObject | Sort-Object Component, Resource, Element
+                            }
+                            Disconnect-CisServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                         }
-                        else {
-                            $customObject | Sort-Object creationTimestamp
-                        }
-                        Disconnect-CisServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
                 }
             }
         }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
     }
 }
 Export-ModuleMember -Function Request-VcenterBackupStatus
@@ -3704,7 +3760,7 @@ Function Get-ClarityReportHeader {
         <html xmlns="http://www.w3.org/1999/xhtml">
         
         <head>
-            <link rel="stylesheet" href="https://unpkg.com/@clr/ui/clr-ui.min.css" />
+            <link rel="stylesheet" href="https://unpkg.com/@clr/ui/clr-ui.min.css"/>
             <style>
                 .alertOK {
                     color: #78BE20;
@@ -3733,7 +3789,7 @@ Function Get-ClarityReportHeader {
                     <div class="branding">
                         <a href="javascript://">
                             <cds-icon shape="vm-bug">
-                                <img src="logo.svg" alt="logo" />
+                                <img src="icon.svg" alt="VMware Cloud Foundation"/>
                             </cds-icon>
                             <span class="title">VMware Cloud Foundation</span>
                         </a>
@@ -3753,7 +3809,7 @@ Function Get-ClarityReportNavigation {
                 <nav class="subnav">
                 <ul class="nav">
                 <li class="nav-item">
-                    <a class="nav-link active" href="javascript://">Health Report</a>
+                    <a class="nav-link active" href="">Health Report</a>
                 </li>
                 </ul>
             </nav>
@@ -3761,7 +3817,7 @@ Function Get-ClarityReportNavigation {
             <nav class="sidenav">
             <section class="sidenav-content">
                 <section class="nav-group collapsible">
-                    <input id="general" type="checkbox" />
+                    <input id="general" type="checkbox"/>
                     <label for="general">General</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#general-service">Service Health</a></li>
@@ -3769,7 +3825,7 @@ Function Get-ClarityReportNavigation {
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
-                    <input id="security" type="checkbox" />
+                    <input id="security" type="checkbox"/>
                     <label for="security">Security</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#security-password">Passwords</a></li>
@@ -3777,7 +3833,7 @@ Function Get-ClarityReportNavigation {
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
-                <input id="infrastructure" type="checkbox" />
+                <input id="infrastructure" type="checkbox"/>
                 <label for="infrastructure">Infrastructure</label>
                 <ul class="nav-list">
                     <li><a class="nav-link" href="#infra-backup">Backups</a></li>
@@ -3788,7 +3844,7 @@ Function Get-ClarityReportNavigation {
                 </section>
                 <a class="nav-link nav-icon" href="#vcenter-overall">vCenter Server</a>
                 <section class="nav-group collapsible">
-                    <input id="esxi" type="checkbox" />
+                    <input id="esxi" type="checkbox"/>
                     <label for="esxi">ESXi Hosts</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#esxi-overall">Overall Health</a></li>
@@ -3798,7 +3854,7 @@ Function Get-ClarityReportNavigation {
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
-                    <input id="vsan" type="checkbox" />
+                    <input id="vsan" type="checkbox"/>
                     <label for="vsan">vSAN</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#vsan-overall">Overall Health</a></li>
@@ -3806,7 +3862,7 @@ Function Get-ClarityReportNavigation {
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
-                <input id="nsx" type="checkbox" />
+                <input id="nsx" type="checkbox"/>
                 <label for="nsx">NSX-T Data Center</label>
                 <ul class="nav-list">
                     <li><a class="nav-link" href="#nsx-local-manager">NSX Manager (Local)</a></li>
@@ -3814,7 +3870,7 @@ Function Get-ClarityReportNavigation {
                 </ul>
                 </section>
                 <section class="nav-group collapsible">
-                    <input id="storage" type="checkbox" />
+                    <input id="storage" type="checkbox"/>
                     <label for="storage">Storage</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#storage-sddcmanager">SDDC Manager</a></li>
@@ -3835,15 +3891,15 @@ Function Get-ClarityReportNavigation {
                 <nav class="subnav">
                 <ul class="nav">
                 <li class="nav-item">
-                    <a class="nav-link active" href="javascript://">Alert Report</a>
+                    <a class="nav-link active" href="">Alert Report</a>
                 </li>
                 </ul>
             </nav>
             <div class="content-container">
             <nav class="sidenav">
             <section class="sidenav-content">
-                <a class="nav-link nav-icon" href="#aler-vcenter">vCenter Server</a>
-                <a class="nav-link nav-icon" href="#alet-vsan">vSAN</a>
+                <a class="nav-link nav-icon" href="#alert-vcenter">vCenter Server</a>
+                <a class="nav-link nav-icon" href="#alert-vsan">vSAN</a>
                 <a class="nav-link nav-icon" href="#alert-esxi">ESXi</a>
                 <a class="nav-link nav-icon" href="#alert-nsx">NSX Manager</a>
             </section>
@@ -3858,7 +3914,7 @@ Function Get-ClarityReportNavigation {
                 <nav class="subnav">
                 <ul class="nav">
                 <li class="nav-item">
-                    <a class="nav-link active" href="javascript://">Configuration Report</a>
+                    <a class="nav-link active" href="">Configuration Report</a>
                 </li>
                 </ul>
             </nav>
@@ -3868,7 +3924,7 @@ Function Get-ClarityReportNavigation {
                 <a class="nav-link nav-icon" href="#config-vcenter">vCenter Server</a>
                 <a class="nav-link nav-icon" href="#config-vsan">vSAN</a>
                 <section class="nav-group collapsible">
-                    <input id="esxi" type="checkbox" />
+                    <input id="esxi" type="checkbox"/>
                     <label for="esxi">ESXi</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#esxi-coredump">ESXi Core Dump</a></li>
