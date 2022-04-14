@@ -73,7 +73,7 @@ Function Invoke-VcfHealthReport {
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the Process of Running Health Checks for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
-        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn # Setup Report Location and Report File
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
 
         Write-LogMessage -Type INFO -Message "Executing SoS Health Check Collection on VMware Cloud Foundation Instance ($sddcManagerFqdn), process takes time"
@@ -3340,13 +3340,19 @@ Export-ModuleMember -Function Publish-SystemAlert
 #########################################################################################
 #############################  Start Supporting Functions  ##############################
 
-Function Start-CreateReportDirectory ($path, $sddcManagerFqdn) {
+Function Start-CreateReportDirectory {
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$path,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
+        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config")] [String]$reportType
+    )
+
     $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
     $Global:reportFolder = $path + '\HealthReports\'
     if (!(Test-Path -Path $reportFolder)) {
         New-Item -Path $reportFolder -ItemType "directory" | Out-Null
     }
-    $Global:reportName = $reportFolder + $sddcManagerFqdn.Split(".")[0] + "-healthCheck-" + $filetimeStamp + ".htm"
+    $Global:reportName = $reportFolder + $sddcManagerFqdn.Split(".")[0] + "-" + $reportType + "-" + $filetimeStamp + ".htm"
 }
 Export-ModuleMember -Function Start-CreateReportDirectory
 
