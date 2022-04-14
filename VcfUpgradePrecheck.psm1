@@ -72,7 +72,7 @@ Function Invoke-VcfHealthReport {
 
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the Process of Running Health Checks for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Starting the Process of Creating a Health Report for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
@@ -200,6 +200,149 @@ Function Invoke-VcfHealthReport {
     }
 }
 Export-ModuleMember -Function Invoke-VcfHealthReport
+
+Function Invoke-VcfAlertReport {
+    <#
+        .SYNOPSIS
+        Generates the system alert report
+
+        .DESCRIPTION
+        The Invoke-VcfAlertReport provides a single cmdlet to generates the system alert report for a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -allDomains
+        This example generates the system alert report across a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
+        This example generates the system alert report for a specific Workload Domain within a VMware Cloud Foundation instance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        Clear-Host; Write-Host ""
+
+        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+        Write-LogMessage -Type INFO -Message "Starting the Process of Creating a System Alert Report for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType alert # Setup Report Location and Report File
+        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
+
+        Write-LogMessage -Type INFO -Message "Generating the System Alerts from SDDC Manager ($sddcManagerFqdn)"
+        if ($PsBoundParameters.ContainsKey("allDomains")) { 
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $systemAlertHtml = Publish-SystemAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+            }
+            else {
+                $systemAlertHtml = Publish-SystemAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
+            }
+        }
+        else {
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $systemAlertHtml = Publish-SystemAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+            }
+            else {
+                $systemAlertHtml = Publish-SystemAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+            }
+        }
+        
+        # Combine all information gathered into a single HTML report
+        $reportData = "$systemAlertHtml"
+
+        $reportHeader = Get-ClarityReportHeader
+        $reportNavigation = Get-ClarityReportNavigation -reportType alert
+        $reportFooter = Get-ClarityReportFooter
+        $report = $reportHeader
+        $report += $reportNavigation
+        $report += $reportData
+        $report += $reportFooter
+
+        # Generate the report to an HTML file and then open it in the default browser
+        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        $report | Out-File $reportName
+        Invoke-Item $reportName
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Invoke-VcfAlertReport
+
+Function Invoke-VcfConfigReport {
+    <#
+        .SYNOPSIS
+        Generates the configuration report
+
+        .DESCRIPTION
+        The Invoke-VcfConfigReport provides a single cmdlet to generates a configuration report for a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -allDomains
+        This example generates the configuration report across a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
+        This example generates the configuration report for a specific Workload Domain within a VMware Cloud Foundation instance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+
+    Try {
+        Clear-Host; Write-Host ""
+
+        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+        Write-LogMessage -Type INFO -Message "Starting the Process of Creating a System Alert Report for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType config # Setup Report Location and Report File
+        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
+
+        Write-LogMessage -Type INFO -Message "Collecting ESXi Core Dump Configuration from SDDC Manager ($sddcManagerFqdn)"
+        if ($PsBoundParameters.ContainsKey("allDomains")) {
+            $esxiCoreDumpHtml = Publish-EsxiCoreDumpConfig -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -html
+        }
+        else {
+            $esxiCoreDumpHtml = Publish-EsxiCoreDumpConfig -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -html
+        }
+        
+        # Combine all information gathered into a single HTML report
+        $reportData = "$esxiCoreDumpHtml"
+
+        $reportHeader = Get-ClarityReportHeader
+        $reportNavigation = Get-ClarityReportNavigation -reportType config
+        $reportFooter = Get-ClarityReportFooter
+        $report = $reportHeader
+        $report += $reportNavigation
+        $report += $reportData
+        $report += $reportFooter
+
+        # Generate the report to an HTML file and then open it in the default browser
+        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        $report | Out-File $reportName
+        Invoke-Item $reportName
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Invoke-VcfConfigReport
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
@@ -1487,152 +1630,6 @@ Export-ModuleMember -Function Request-SddcManagerStorageHealth
 #######################################################################################################################
 ####################################  H E A L T H   C H E C K   F U N C T I O N S   ###################################
 
-Function Export-SystemPassword {
-    <#
-		.SYNOPSIS
-        Generates a system password report for an SDDC Manager instance.
-
-        .DESCRIPTION
-        The Export-SystemPassword cmdlets generates a system password report from SDDC Manager. The cmdlet connects to
-        SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Generates a system password report from SDDC Manager and outputs to the console or HTML.
-
-        .EXAMPLE
-        Export-SystemPassword -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
-        This example generates a system password report from SDDC Manager instance `sfo-vcf01.sfo.rainpole.io`.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
-    )
-    $htmlPreContent = "<h2>System Passwords from SDDC Manager</h2>"
-    if (Test-VCFConnection -server $server) {
-        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-            if ($PsBoundParameters.ContainsKey("html")) {
-                Get-VCFCredential | Select-Object @{Name="Workload Domain"; Expression={ $_.resource.domainName}}, @{Name="FQDN"; Expression={ $_.resource.resourceName}}, @{Name="IP Address"; Expression={ $_.resource.resourceIp}}, accountType, username, password | Where-Object {$_.accountType -eq "USER" -or $_.accountType -eq "SYSTEM"} | Sort-Object "Domain Name", "FQDN" | ConvertTo-Html -Fragment -PreContent $htmlPreContent -As Table
-            }
-            else {
-                Get-VCFCredential | Select-Object @{Name="Workload Domain"; Expression={ $_.resource.domainName}}, @{Name="FQDN"; Expression={ $_.resource.resourceName}}, @{Name="IP Address"; Expression={ $_.resource.resourceIp}}, accountType, username, password | Where-Object {$_.accountType -eq "USER" -or $_.accountType -eq "SYSTEM"} | Sort-Object "Domain Name", "FQDN"
-            }
-        }
-    }
-}
-Export-ModuleMember -Function Export-SystemPassword
-
-Function Export-EsxiCoreDumpConfig {
-    <#
-		.SYNOPSIS
-        Generates an ESXi core dump configuration report for a workload domain.
-
-        .DESCRIPTION
-        The Export-EsxiCoreDumpConfig cmdlet generates an ESXi core dump report for a workload domain. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Generates an ESXi core dump report for all ESXi hosts in a workload domain
-
-        .EXAMPLE
-        Export-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcDomain sfo-w01
-        This example generates an ESXi core dump report for all ESXi hosts in a workload domain named `sfo-w01`.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
-    )
-
-    if (Test-VCFConnection -server $server) {
-        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $sddcDomain)) {
-                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        $coreDumpObject = New-Object -TypeName psobject
-                        $allHostObject = New-Object System.Collections.ArrayList
-                        $esxiHosts = Get-VMHost 
-                        Foreach ($esxiHost in $esxiHosts) {
-                            $coreDumpObject = New-Object -TypeName psobject
-                            $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
-                            $coreDumpConfig = $esxcli.system.coredump.partition.get.invoke()
-                            $coreDumpObject | Add-Member -notepropertyname 'Host' -notepropertyvalue $esxiHost.Name
-                            $coreDumpObject | Add-Member -notepropertyname 'Active Core Dump' -notepropertyvalue $coreDumpConfig.Active
-                            $coreDumpObject | Add-Member -notepropertyname 'Configured Core Dump' -notepropertyvalue $coreDumpConfig.Configured
-                            $allHostObject += $coreDumpObject
-                        }
-                        if ($PsBoundParameters.ContainsKey("html")) {
-                            $allHostObject | ConvertTo-Html -Fragment -PreContent "<h3>ESXi Core Dump Configuration for Workload Domain $sddcDomain</h3>" -As Table
-                        }
-                        else {
-                            $allHostObject
-                        }
-                    }
-                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                }
-            }
-        }
-    }
-}
-Export-ModuleMember -Function Export-EsxiCoreDumpConfig
-
-Function Export-StorageCapacity {
-    <#
-		.SYNOPSIS
-        Generates a storage capacity report for all clusters in a workload domain.
-
-        .DESCRIPTION
-        The Export-StorageCapacity cmdlet generates a storage capacity report for a workload domain. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Generates a storage capacity report for all clusters in a workload domain
-
-        .EXAMPLE
-        Export-StorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcDomain sfo-w01
-        This example generates a storage capacity report for all clusters in a workload domain named 'sfo-w01'.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
-    )
-
-    if (Test-VCFConnection -server $server) {
-        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $sddcDomain)) {
-                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        $datastores = Get-Datastore | Sort-Object Name
-                        Foreach ($datastore in $datastores) {
-                            if (($datastore.Name -match "Shared") -or ($datastore.Name -match "")) {
-                                $PercentFree = PercentCalc $datastore.FreeSpaceMB $datastore.CapacityMB
-                                $PercentFree = "{0:N2}" -f $PercentFree
-                                $datastore | Add-Member -type NoteProperty -name PercentFree -value $PercentFree
-                            }
-                        }
-                        if ($PsBoundParameters.ContainsKey("html")) {
-                            $datastores | Select-Object Name,@{N="Used Space GB";E={[Math]::Round(($_.ExtensionData.Summary.Capacity - $_.ExtensionData.Summary.FreeSpace)/1GB,0)}},@{N="Total Space GB";E={[Math]::Round(($_.ExtensionData.Summary.Capacity)/1GB,0)}} ,PercentFree | ConvertTo-Html -Fragment -PreContent "<h3>Datastore Storage Capacity for Workload Domain $sddcDomain</h3>" -As Table
-                        }
-                        else {
-                            $datastores | Select-Object Name,@{N="Used Space GB";E={[Math]::Round(($_.ExtensionData.Summary.Capacity - $_.ExtensionData.Summary.FreeSpace)/1GB,0)}},@{N="Total Space GB";E={[Math]::Round(($_.ExtensionData.Summary.Capacity)/1GB,0)}} ,PercentFree
-                        }
-                    }
-                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                }
-            }
-        }
-    }
-}
-Export-ModuleMember -Function Export-StorageCapacity
-
 Function Publish-BackupStatus {
     <#
 		.SYNOPSIS
@@ -1655,33 +1652,57 @@ Function Publish-BackupStatus {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $singleWorkloadDomain = Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}
+                $allBackupStatusObject = New-Object System.Collections.ArrayList
 
-        $allBackupStatusObject = New-Object System.Collections.ArrayList
-        $sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass; $allBackupStatusObject += $sddcManagerBackupStatus
-        if ($PsBoundParameters.ContainsKey("allDomains")) { 
-            $allWorkloadDomains = Get-VCFWorkloadDomain
-            foreach ($domain in $allWorkloadDomains ) {
-                $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $domain.name; $allBackupStatusObject += $vcenterBackupStatus
-                $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $domain.name; $allBackupStatusObject += $nsxtManagerBackupStatus
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if ($PsBoundParameters.ContainsKey("allDomains")) {
+                        #$sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass -failureOnly; $allBackupStatusObject += $sddcManagerBackupStatus
+                        foreach ($domain in $allWorkloadDomains ) {
+                            # $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $vcenterBackupStatus
+                            # $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $nsxtManagerBackupStatus
+                        }
+                    } else {
+                        if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
+                            #$sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass -failureOnly; $allBackupStatusObject += $sddcManagerBackupStatus
+                        }
+                        # $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $vcenterBackupStatus
+                        # $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $nsxtManagerBackupStatus
+                    }
+                } else {
+                    if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                        $sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass; $allBackupStatusObject += $sddcManagerBackupStatus
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $domain.name; $allBackupStatusObject += $vcenterBackupStatus
+                            $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $domain.name; $allBackupStatusObject += $nsxtManagerBackupStatus
+                        }
+                    } else {
+                        if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
+                            $sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass; $allBackupStatusObject += $sddcManagerBackupStatus
+                        }
+                        $vcenterBackupStatus = Request-VcenterBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $vcenterBackupStatus
+                            $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $nsxtManagerBackupStatus
+                    }
+                }
+
+                if ($allBackupStatusObject.Count -eq 0) { $addNoIssues = $true }
+                    if ($addNoIssues) {
+                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>Backups Status</h3>' -PostContent "<p>No Issues Found</p>" 
+                    } else {
+                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>Backups Status</h3>' -As Table
+                    }
+                $allBackupStatusObject = Convert-CssClass -htmldata $allBackupStatusObject
+                $allBackupStatusObject
             }
         }
-        else {
-            $vcenterBackupStatus = Request-VcenterBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $vcenterBackupStatus
-            $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $nsxtManagerBackupStatus
-        }
-        
-        if ($allBackupStatusObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>Backups Status</h3>' -PostContent "<p>No Issues Found</p>" 
-            } else {
-                $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backup"/>Backups Status</h3>' -As Table
-            }
-        $allBackupStatusObject = Convert-CssClass -htmldata $allBackupStatusObject
-        $allBackupStatusObject
     }
     Catch {
         Debug-CatchWriter -object $_
@@ -1882,9 +1903,9 @@ Function Publish-LocalUserExpiry {
 
         if ($allPasswordExpiryObject.Count -eq 0) { $addNoIssues = $true }
         if ($addNoIssues) {
-            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="security-passwords"/>Password Expiry Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="security-password"/>Password Expiry Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
         } else {
-            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="security-passwords"/>Password Expiry Health Status</h3>' -As Table
+            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="security-password"/>Password Expiry Health Status</h3>' -As Table
         }
         $allPasswordExpiryObject = Convert-CssClass -htmldata $allPasswordExpiryObject
         $allPasswordExpiryObject
@@ -2456,9 +2477,7 @@ Function Request-NsxtManagerBackupStatus {
                 if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                     if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
                         $backupTask = Get-NsxtBackupHistory -fqdn $vcfNsxDetails.fqdn
-
                         $customObject = New-Object System.Collections.ArrayList
-
                         # NSX Node Backup
                         $component = 'NSX Manager' # Define the component name
                         $resource = 'Node Backup Operation' # Define the resource name
@@ -3202,6 +3221,84 @@ Function Request-NsxtAuthentication {
 }
 Export-ModuleMember -Function Request-NsxtAuthentication
 
+##########################################  E N D   O F   F U N C T I O N S  ##########################################
+#######################################################################################################################
+
+
+#######################################################################################################################
+###################################  S Y S T E M   A L E R T   F U N C T I O N S   ####################################
+
+Function Publish-SystemAlert {
+    <#
+        .SYNOPSIS
+        Publish system Alarms.
+
+        .DESCRIPTION
+        The Publish-SystemAlert cmdlet returns all alarms from NSX Manager cluster.
+        The cmdlet connects to the NSX-T Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the NSX-T Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the details for the NSX Manager cluster
+        - Collects the alerts
+
+        .EXAMPLE
+        Publish-SystemAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
+        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allAlertObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if ($PsBoundParameters.ContainsKey("allDomains")) {
+                        foreach ($domain in $allWorkloadDomains ) {
+                            # $vcenterSystemAlert = Request-vCenterAlert -server $server -user $user -pass $pass $domain.name -failureOnly; $allAlertObject += $vcenterSystemAlert
+                            $nsxtSystemAlert = Request-NsxtAlert -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allAlertObject += $nsxtSystemAlert
+                        }
+                    } else {
+                        # $vcenterSystemAlert = Request-vCenterAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $vcenterSystemAlert
+                        $nsxtSystemAlert = Request-NsxtAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $nsxtSystemAlert
+                    }
+                } else {
+                    if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                        foreach ($domain in $allWorkloadDomains ) {
+                            # $vcenterSystemAlert = Request-vCenterAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $vcenterSystemAlert
+                            $nsxtSystemAlert = Request-NsxtAlert -server $server -user $user -pass $pass -domain $domain.name; $allAlertObject += $nsxtSystemAlert
+                        }
+                    } else {
+                        # $vcenterSystemAlert = Request-vCenterAlert -server $server -user $user -pass $pass -domain $workloadDomain; $allAlertObject += $vcenterSystemAlert
+                        $nsxtSystemAlert = Request-NsxtAlert -server $server -user $user -pass $pass -domain $workloadDomain; $allAlertObject += $nsxtSystemAlert
+                    }
+                }
+
+                if ($allAlertObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<h3><a id="alert-nsx"/>NSX System Alert</h3>' -PostContent "<p>No Issues Found</p>" 
+                } else {
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<h3><a id="alert-nsx"/>NSX System Alerts</h3>' -As Table
+                }
+                $allAlertObject = Convert-CssClass -htmldata $allAlertObject
+                $allAlertObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-SystemAlert
+
 Function Request-NsxtAlert {
     <#
         .SYNOPSIS
@@ -3286,8 +3383,8 @@ Function Request-NsxtAlert {
     }
 }
 Export-ModuleMember -Function Request-NsxtAlert
+
 Function Request-VcenterAlert {
-    #ToDo
     <#
         .SYNOPSIS
         Returns Alarms from vCenter Server instance.
@@ -3308,9 +3405,9 @@ Function Request-VcenterAlert {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
 
     if (Test-VCFConnection -server $server) {
@@ -3368,6 +3465,102 @@ Function Request-VcenterAlert {
 }
 Export-ModuleMember -Function Request-VcenterAlert
 
+##########################################  E N D   O F   F U N C T I O N S  ##########################################
+#######################################################################################################################
+
+
+#######################################################################################################################
+#################################  C O N F I G U R A T I O N   F U N C T I O N S   ####################################
+
+Function Publish-EsxiCoreDumpConfig {
+    <#
+		.SYNOPSIS
+        Generates an ESXi core dump configuration report for a workload domain.
+
+        .DESCRIPTION
+        The Publish-EsxiCoreDumpConfig cmdlet generates an ESXi core dump report for a workload domain. The cmdlet
+        connects to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Generates an ESXi core dump report for all ESXi hosts in a workload domain
+
+        .EXAMPLE
+        Publish-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -alldomains
+        This example generates an ESXi core dump report for all ESXi hosts acros the SDDC Manager instance
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allHostObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $allWorkloadDomains = Get-VCFWorkloadDomain
+                    $domainHostObject = New-Object System.Collections.ArrayList
+                    foreach ($domain in $allWorkloadDomains) {
+                        if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain.name)) {
+                            if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                                if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                    $coreDumpObject = New-Object -TypeName psobject
+                                    $esxiHosts = Get-VMHost 
+                                    Foreach ($esxiHost in $esxiHosts) {
+                                        $coreDumpObject = New-Object -TypeName psobject
+                                        $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
+                                        $coreDumpConfig = $esxcli.system.coredump.partition.get.invoke()
+                                        $coreDumpObject | Add-Member -notepropertyname 'Domain' -notepropertyvalue $domain.name
+                                        $coreDumpObject | Add-Member -notepropertyname 'Host' -notepropertyvalue $esxiHost.Name
+                                        $coreDumpObject | Add-Member -notepropertyname 'Active Core Dump' -notepropertyvalue $coreDumpConfig.Active
+                                        $coreDumpObject | Add-Member -notepropertyname 'Configured Core Dump' -notepropertyvalue $coreDumpConfig.Configured
+                                        $domainHostObject += $coreDumpObject 
+                                    }
+                                }
+                            }
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }
+                    $allHostObject += $domainHostObject
+                } else {
+                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $workloadDomain)) {
+                        if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                            if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                $coreDumpObject = New-Object -TypeName psobject
+                                $esxiHosts = Get-VMHost 
+                                Foreach ($esxiHost in $esxiHosts) {
+                                    $coreDumpObject = New-Object -TypeName psobject
+                                    $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
+                                    $coreDumpConfig = $esxcli.system.coredump.partition.get.invoke()
+                                    $coreDumpObject | Add-Member -notepropertyname 'Domain' -notepropertyvalue $workloadDomain
+                                    $coreDumpObject | Add-Member -notepropertyname 'Host' -notepropertyvalue $esxiHost.Name
+                                    $coreDumpObject | Add-Member -notepropertyname 'Active Core Dump' -notepropertyvalue $coreDumpConfig.Active
+                                    $coreDumpObject | Add-Member -notepropertyname 'Configured Core Dump' -notepropertyvalue $coreDumpConfig.Configured
+                                    $allHostObject += $coreDumpObject
+                                }
+                            }
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }
+                }
+                if ($PsBoundParameters.ContainsKey("html")) {
+                    $allHostObject = $allHostObject | Sort-Object Domain, Host | ConvertTo-Html -Fragment -PreContent '<h3><a id="esxi-coredmp"/>ESXi Core Dump</h3>' -As Table
+                }
+                $allHostObject = Convert-CssClass -htmldata $allHostObject
+                $allHostObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-EsxiCoreDumpConfig
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
@@ -3587,7 +3780,7 @@ Function Get-ClarityReportNavigation {
                 <input id="infrastructure" type="checkbox" />
                 <label for="infrastructure">Infrastructure</label>
                 <ul class="nav-list">
-                    <li><a class="nav-link" href="#infra-backup">Backup</a></li>
+                    <li><a class="nav-link" href="#infra-backup">Backups</a></li>
                     <li><a class="nav-link" href="#infra-dns-forward">DNS Forward Lookup</a></li>
                     <li><a class="nav-link" href="#infra-dns-reverse">DNS Reverse Lookup</a></li>
                     <li><a class="nav-link" href="#infra-ntp">Network Time</a></li>
@@ -3639,13 +3832,53 @@ Function Get-ClarityReportNavigation {
 
     if ($reportType -eq "alert") { # Define the Clarity Cascading Style Sheets (CSS) for a System Alert Report
         $clarityCssNavigation = '
-        '
+                <nav class="subnav">
+                <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="javascript://">Alert Report</a>
+                </li>
+                </ul>
+            </nav>
+            <div class="content-container">
+            <nav class="sidenav">
+            <section class="sidenav-content">
+                <a class="nav-link nav-icon" href="#aler-vcenter">vCenter Server</a>
+                <a class="nav-link nav-icon" href="#alet-vsan">vSAN</a>
+                <a class="nav-link nav-icon" href="#alert-esxi">ESXi</a>
+                <a class="nav-link nav-icon" href="#alert-nsx">NSX Manager</a>
+            </section>
+            </nav>
+                <div class="content-area">
+                    <div class="content-area">'
         $clarityCssNavigation
     }
 
     if ($reportType -eq "config") { # Define the Clarity Cascading Style Sheets (CSS) for a Configuration Report
         $clarityCssNavigation = '
-        '
+                <nav class="subnav">
+                <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="javascript://">Configuration Report</a>
+                </li>
+                </ul>
+            </nav>
+            <div class="content-container">
+            <nav class="sidenav">
+            <section class="sidenav-content">
+                <a class="nav-link nav-icon" href="#config-vcenter">vCenter Server</a>
+                <a class="nav-link nav-icon" href="#config-vsan">vSAN</a>
+                <section class="nav-group collapsible">
+                    <input id="esxi" type="checkbox" />
+                    <label for="esxi">ESXi</label>
+                    <ul class="nav-list">
+                        <li><a class="nav-link" href="#esxi-coredump">ESXi Core Dump</a></li>
+                    </ul>
+                </section>
+                <a class="nav-link nav-icon" href="#config-nsx">NSX Manager</a>
+            </section>
+            </nav>
+                <div class="content-area">
+                    <div class="content-area">'
         $clarityCssNavigation
     }
 }
