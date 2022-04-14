@@ -70,6 +70,7 @@ Function Invoke-VcfHealthReport {
     Try {
         Clear-Host; Write-Host ""
 
+        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the Process of Running Health Checks for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
@@ -3340,6 +3341,41 @@ Export-ModuleMember -Function Publish-SystemAlert
 #########################################################################################
 #############################  Start Supporting Functions  ##############################
 
+Function Test-VcfHealthPrereq {
+    <#
+		.SYNOPSIS
+        Validate prerequisites for running VcfHealthReport Module
+
+        .DESCRIPTION
+        The Test-VcfHealthPrereq cmdlet checks that all the prerequisites have been met to execute VcfHealthReport
+
+        .EXAMPLE
+        Test-VcfHealthPrereq
+        This example runs the prerequsite validation
+    #>
+
+    Try {
+        $modules = @( 
+            @{ Name=("PowerVCF"); Version=("2.1.7")}
+            @{ Name=("PowerValidatedSolutions"); Version=("1.5.0")}
+            @{ Name=("VMware.PowerCLI"); Version=("12.4.1")}
+            @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.7")}
+        )
+        foreach ($module in $modules ) {
+            if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
+                $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding"
+                $message
+                Break
+            }
+            
+        }
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Test-VcfHealthPrereq
+
 Function Start-CreateReportDirectory {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$path,
@@ -3471,7 +3507,7 @@ Function Get-ClarityReportHeader {
                             <cds-icon shape="vm-bug">
                                 <img src="logo.svg" alt="logo" />
                             </cds-icon>
-                            <span class="title">PowerShell Module for VMware Cloud Foundation</span>
+                            <span class="title">VMware Cloud Foundation</span>
                         </a>
                     </div>
                 </header>'
@@ -3565,11 +3601,13 @@ Function Get-ClarityReportNavigation {
                     <div class="content-area">'
         $clarityCssNavigation
     }
+
     if ($reportType -eq "alert") { # Define the Clarity Cascading Style Sheets (CSS) for a System Alert Report
         $clarityCssNavigation = '
         '
         $clarityCssNavigation
     }
+
     if ($reportType -eq "config") { # Define the Clarity Cascading Style Sheets (CSS) for a Configuration Report
         $clarityCssNavigation = '
         '
@@ -3951,5 +3989,6 @@ Function Get-NsxtEvent {
     }
 }
 Export-ModuleMember -Function Get-NsxtEvent
+
 ##############################  End Supporting Functions ###############################
 ########################################################################################
