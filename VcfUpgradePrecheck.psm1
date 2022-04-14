@@ -1521,9 +1521,9 @@ Function Publish-VsanHealth {
         if ($PsBoundParameters.ContainsKey("html")) { 
             if ($customObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="vsan-overall"/>vSAN Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="vsan-overall"/>vSAN Overall Health Status</h3>' -PostContent "<p>No Issues Found</p>" 
             } else {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="vsan-overall"/>vSAN Health Status</h3>' -As Table
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="vsan-overall"/>vSAN Overall Health Status</h3>' -As Table
             }
             $customObject = Convert-CssClass -htmldata $customObject
             $customObject
@@ -4009,12 +4009,12 @@ Function Get-ClarityReportNavigation {
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
-                <input id="nsx" type="checkbox"/>
-                <label for="nsx">NSX-T Data Center</label>
-                <ul class="nav-list">
-                    <li><a class="nav-link" href="#nsx-local-manager">NSX Manager (Local)</a></li>
-                    <li><a class="nav-link" href="#nsx-edge">NSX Edge</a></li>
-                </ul>
+                    <input id="nsx" type="checkbox"/>
+                    <label for="nsx">NSX-T Data Center</label>
+                    <ul class="nav-list">
+                        <li><a class="nav-link" href="#nsx-local-manager">NSX Manager (Local)</a></li>
+                        <li><a class="nav-link" href="#nsx-edge">NSX Edge</a></li>
+                    </ul>
                 </section>
                 <section class="nav-group collapsible">
                     <input id="storage" type="checkbox"/>
