@@ -42,18 +42,18 @@ if ($PSEdition -eq 'Desktop') {
 Function Invoke-VcfHealthReport {
     <#
         .SYNOPSIS
-        Perform health checks across and SDDC Manager instance
+        Perform health checks
 
         .DESCRIPTION
-        The Invoke-VcfHealthReport provides a single cmdlet to perform health checks across an SDDC Manager instance.
+        The Invoke-VcfHealthReport provides a single cmdlet to perform health checks across a VMware Cloud Foundation instance.
 
         .EXAMPLE
         Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Prechecks -allDomains
-        This example executes a health check across an SDDC Manager instance.
+        This example executes a health check across a VMware Cloud Foundation instance.
 
         .EXAMPLE
         Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
-        This example executes a health check for a specific Workload Domain within an SDDC Manager instance.
+        This example executes a health check for a specific Workload Domain within a VMware Cloud Foundation instance.
     #>
 
     Param (
@@ -343,6 +343,107 @@ Function Invoke-VcfConfigReport {
     }
 }
 Export-ModuleMember -Function Invoke-VcfConfigReport
+
+Function Invoke-VcfUpgradePrecheck {
+    <#
+        .SYNOPSIS
+        Perform upgrade precheck
+
+        .DESCRIPTION
+        The Invoke-VcfUpgradePrecheck executes an upgrade precheck for a Workload Domain
+
+        .EXAMPLE
+        Invoke-VcfUpgradePrecheck -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
+        This example executes a health check for a specific Workload Domain within an SDDC Manager instance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+
+        Clear-Host; Write-Host ""
+
+        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+        Write-LogMessage -Type INFO -Message "Starting the Process of Running an Upgrade Prechech Workload Domain ($workloadDomain)" -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType upgrade # Setup Report Location and Report File
+        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
+
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $jsonSpec = '{ "resources" : [ { "resourceId" : "'+ (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).id+'", "type" : "DOMAIN" } ] }'
+                $task = Start-VCFSystemPrecheck -json $jsonSpec
+                Write-LogMessage -Type INFO -Message "Waiting for Upgrade Precheck Task ($($task.name)) with Id ($($task.id)) to Complete"
+                Do { $status = Get-VCFSystemPrecheckTask -id $task.id } While ($status.status -eq "IN_PROGRESS")
+                Write-LogMessage -Type INFO -Message "Task ($($task.name)) with Task Id ($($task.id)) completed with status ($($status.status))"
+                $allChecksObject = New-Object System.Collections.ArrayList
+                foreach ($subTask in $status.subTasks) {
+                    $elementObject = New-Object -TypeName psobject
+                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $subTask.resources.type
+                    if ($subTask.resources.type -eq "ESX") {
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFHost -id $subTask.resources.resourceId).fqdn
+                    }
+                    elseif ($subTask.resources.type -eq "VCENTER") {
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvCenter -id $subTask.resources.resourceId).fqdn
+                    }
+                    elseif ($subTask.resources.type -eq "CLUSTER") {
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFCluster -id $subTask.resources.resourceId).name
+                    }
+                    elseif ($subTask.resources.type -eq "VSAN") {
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFCluster -id $subTask.resources.resourceId).primaryDatastoreName
+                    }
+                    elseif ($subTask.resources.type -eq "DEPLOYMENT_CONFIGURATION") {
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFManager -id $subTask.resources.resourceId).fqdn
+                    }
+                    elseif ($subTask.resources.type -eq "VRSLCM") {
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRSLCM -id $subTask.resources.resourceId).fqdn
+                    }
+                    elseif ($subTask.resources.type -eq "VROPS") {
+                        $id = $subTask.resources.resourceId + ":vrops"
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvROPS | Where-Object {$_.id -eq $id}).loadBalancerFqdn
+                    }
+                    elseif ($subTask.resources.type -eq "VRLI") {
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRLI -id $subTask.resources.resourceId).loadBalancerFqdn
+                    }
+                    elseif ($subTask.resources.type -eq "VRA") {
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRA -id $subTask.resources.resourceId).loadBalancerFqdn
+                    }
+                    else {
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $subTask.resources.resourceId
+                    }
+                    $elementObject | Add-Member -NotePropertyName 'Precheck Task' -NotePropertyValue $subTask.name
+                    $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue $subTask.status
+                    $allChecksObject += $elementObject
+                }
+                $allChecksObject = $allChecksObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h3><a id="upgrade-precheck"/>Upgrade Precheck</h3>' -As Table
+                $allChecksObject = Convert-CssClass -htmldata $allChecksObject
+            }
+        }
+
+        $reportHeader = Get-ClarityReportHeader
+        $reportFooter = Get-ClarityReportFooter
+        $report = $reportHeader
+        $report += $allChecksObject
+        $report += $reportFooter
+
+        # Generate the report to an HTML file and then open it in the default browser
+        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        $report | Out-File $reportName
+        Invoke-Item $reportName
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Invoke-VcfUpgradePrecheck
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
@@ -3707,7 +3808,7 @@ Function Start-CreateReportDirectory {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$path,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
-        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config")] [String]$reportType
+        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade")] [String]$reportType
     )
 
     $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
