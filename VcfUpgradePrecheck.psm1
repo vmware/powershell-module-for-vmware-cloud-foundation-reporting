@@ -2371,6 +2371,7 @@ Function Request-SddcManagerBackupStatus {
         Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will return the status of the latest file-level backup task in an SDDC Manager instance.
 
+        .EXAMPLE
         Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
         This example will return the status of the latest file-level backup task in an SDDC Manager instance but only reports issues.
     #>
@@ -2486,168 +2487,209 @@ Function Request-NsxtManagerBackupStatus {
         .EXAMPLE
         Request-NsxtManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return the status of the latest file-level backup of an NSX Manager cluster managed by SDDC Manager for a workload domain.
-    #>
 
-    #TODO: Add support changing status based on age of backup.
+        .EXAMPLE
+        Request-NsxtManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+        This example will return the status of the latest file-level backup of an NSX Manager cluster managed by SDDC Manager for a workload domain but only reports issues.
+    #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
-    if (Test-VCFConnection -server $server) {
-        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-            if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
-                if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
-                    if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
-                        $backupTask = Get-NsxtBackupHistory -fqdn $vcfNsxDetails.fqdn
-                        $customObject = New-Object System.Collections.ArrayList
-                        # NSX Node Backup
-                        $component = 'NSX Manager' # Define the component name
-                        $resource = 'Node Backup Operation' # Define the resource name
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                    if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                            $backupTask = Get-NsxtBackupHistory -fqdn $vcfNsxDetails.fqdn
+                            $customObject = New-Object System.Collections.ArrayList
 
-                        foreach ($element in $backupTask.node_backup_statuses) {
-                            $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.node_backup_statuses.end_time).DateTime
-                            $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
+                            # NSX Node Backup
+                            $component = 'NSX Manager' # Define the component name
+                            $resource = 'Node Backup Operation' # Define the resource name
 
-                            # Set the alert and message based on the status of the backup
-                            if ($backupTask.node_backup_statuses.success -eq $true) {   
-                                $alert = "GREEN" # Ok; success
-                                $message = 'The backup completed without errors.' # Set the backup status message
+                            foreach ($element in $backupTask.node_backup_statuses) {
+                                $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.node_backup_statuses.end_time).DateTime
+                                $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
+
+                                # Set the alert and message based on the status of the backup
+                                if ($backupTask.node_backup_statuses.success -eq $true) {   
+                                    $alert = "GREEN" # Ok; success
+                                    $message = 'The backup completed without errors.' # Set the backup status message
+                                }
+                                else {
+                                    $alert = "RED" # Critical; failure
+                                    $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
+                                }
+
+                                # Set the alert and message update for the backup task based on the age of the backup
+                                if ($backupAge -ge 3) {
+                                    $alert = 'RED' # Critical; >= 3 days
+                                    $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
+                                }
+                                elseif ($backupAge -gt 1) {
+                                    $alert = 'YELLOW' # Warning; > 1 days
+                                    $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
+                                }
+                                else {
+                                    $alert = 'GREEN' # Ok; <= 1 days
+                                    $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
+                                }
+
+                                $elementObject = New-Object -TypeName psobject
+                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                                $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfNsxDetails.fqdn # Set the element name
+                                $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
+                                $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+                                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                    if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                        $customObject += $elementObject
+                                    }
+                                }
+                                else {
+                                    $customObject += $elementObject
+                                }  
+                            }
+
+                            $outputObject += $customObject # Add the custom object to the output object
+                            
+                            # NSX Cluster Backup
+                            $component = 'NSX Manager' # Define the component name
+                            $resource = 'Cluster Backup Operation' # Define the resource name
+                            foreach ($element in $backupTask.cluster_backup_statuses) {
+                                $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.cluster_backup_statuses.end_time).DateTime
+                                $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
+
+                                # Set the alert and message based on the status of the backup
+                                if ($backupTask.node_backup_statuses.success -eq $true) {   
+                                    $alert = 'GREEN' # Ok; success
+                                    $message = 'The backup completed without errors.' # Set the backup status message
+                                }
+                                else {
+                                    $alert = 'RED' # Critical; failure
+                                    $message = 'The backup failed with errors. Please investigate before proceeding.' # Critical; failure
+                                }
+
+                                # Set the alert and message update for the backup task based on the age of the backup
+                                if ($backupAge -ge 3) {
+                                    $alert = 'RED' # Critical; >= 3 days
+                                    $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
+                                }
+                                elseif ($backupAge -gt 1) {
+                                    $alert = 'YELLOW' # Warning; > 1 days
+                                    $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
+                                }
+                                else {
+                                    $alert = 'GREEN' # Ok; <= 1 days
+                                    $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
+                                }
+
+                                $elementObject = New-Object -TypeName psobject
+                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                                $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfNsxDetails.fqdn # Set the element name
+                                $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
+                                $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+                                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                    if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                        $customObject += $elementObject
+                                    }
+                                }
+                                else {
+                                    $customObject += $elementObject
+                                }  
+                            }
+
+                            $outputObject += $customObject # Add the custom object to the output object
+
+                            # NSX Cluster Backup
+                            $component = 'NSX Manager' # Define the component name
+                            $resource = 'Inventory Backup Operation' # Define the resource name
+                            foreach ($element in $backupTask.cluster_backup_statuses) {
+                                $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.cluster_backup_statuses.end_time).DateTime
+                                $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
+
+                                # Set the alert and message based on the status of the backup
+                                if ($backupTask.node_backup_statuses.success -eq $true) {   
+                                    $alert = 'GREEN' # Ok; success
+                                    $message = 'The backup completed without errors.' # Set the backup status message
+                                }
+                                else {
+                                    $alert = 'RED' # Critical; failure
+                                    $message = 'The backup failed with errors. Please investigate before proceeding.' # Critical; failure
+                                }
+
+                                # Set the alert and message update for the backup task based on the age of the backup
+                                if ($backupAge -ge 3) {
+                                    $alert = 'RED' # Critical; >= 3 days
+                                    $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
+                                }
+                                elseif ($backupAge -gt 1) {
+                                    $alert = 'YELLOW' # Warning; > 1 days
+                                    $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
+                                }
+                                else {
+                                    $alert = 'GREEN' # Ok; <= 1 days
+                                    $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
+                                }
+
+                                $elementObject = New-Object -TypeName psobject
+                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                                $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfNsxDetails.fqdn # Set the element name
+                                $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
+                                $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+                                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                    if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                        $customObject += $elementObject
+                                    }
+                                }
+                                else {
+                                    $customObject += $elementObject
+                                }  
+                            }
+
+                            $outputObject += $customObject # Add the custom object to the output object
+
+                            # Return the structured data to the console or format using HTML CSS Styles
+                            if ($PsBoundParameters.ContainsKey('html')) { 
+                                if ($outputObject.Count -eq 0) {
+                                    $addNoIssues = $true 
+                                }
+                                if ($addNoIssues) {
+                                    $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backups"/>Backup Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                                }
+                                else {
+                                    $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<h3><a id="infra-backups"/>Backup Status</h3>' -As Table
+                                }
+                                $outputObject = Convert-CssClass -htmldata $outputObject
+                                $outputObject
                             }
                             else {
-                                $alert = "RED" # Critical; failure
-                                $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
-                            }
-
-                            # Set the alert and message update for the backup task based on the age of the backup
-                            if ($backupAge -ge 3) {
-                                $alert = 'RED' # Critical; >= 3 days
-                                $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
-                            }
-                            elseif ($backupAge -gt 1) {
-                                $alert = 'YELLOW' # Warning; > 1 days
-                                $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
-                            }
-                            else {
-                                $alert = 'GREEN' # Ok; <= 1 days
-                                $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
-                            }
-
-                            $elementObject = New-Object -TypeName psobject
-                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
-                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfNsxDetails.fqdn # Set the element name
-                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
-                            $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
-                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+                                $outputObject | Sort-Object Component, Resource, Element
+                            }                    
                         }
-
-                        $customObject += $elementObject
-                        
-                        # NSX Cluster Backup
-                        $component = 'NSX Manager' # Define the component name
-                        $resource = 'Cluster Backup Operation' # Define the resource name
-                        foreach ($element in $backupTask.cluster_backup_statuses) {
-                            $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.cluster_backup_statuses.end_time).DateTime
-                            $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
-
-                            # Set the alert and message based on the status of the backup
-                            if ($backupTask.node_backup_statuses.success -eq $true) {   
-                                $alert = 'GREEN' # Ok; success
-                                $message = 'The backup completed without errors.' # Set the backup status message
-                            }
-                            else {
-                                $alert = 'RED' # Critical; failure
-                                $message = 'The backup failed with errors. Please investigate before proceeding.' # Critical; failure
-                            }
-
-                            # Set the alert and message update for the backup task based on the age of the backup
-                            if ($backupAge -ge 3) {
-                                $alert = 'RED' # Critical; >= 3 days
-                                $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
-                            }
-                            elseif ($backupAge -gt 1) {
-                                $alert = 'YELLOW' # Warning; > 1 days
-                                $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
-                            }
-                            else {
-                                $alert = 'GREEN' # Ok; <= 1 days
-                                $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
-                            }
-
-                            $elementObject = New-Object -TypeName psobject
-                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
-                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfNsxDetails.fqdn # Set the element name
-                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
-                            $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
-                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
-                        }
-
-                        $customObject += $elementObject
-
-                        # NSX Cluster Backup
-                        $component = 'NSX Manager' # Define the component name
-                        $resource = 'Inventory Backup Operation' # Define the resource name
-                        foreach ($element in $backupTask.cluster_backup_statuses) {
-                            $timestamp = [DateTimeOffset]::FromUnixTimeMilliseconds($backupTask.cluster_backup_statuses.end_time).DateTime
-                            $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
-
-                            # Set the alert and message based on the status of the backup
-                            if ($backupTask.node_backup_statuses.success -eq $true) {   
-                                $alert = 'GREEN' # Ok; success
-                                $message = 'The backup completed without errors.' # Set the backup status message
-                            }
-                            else {
-                                $alert = 'RED' # Critical; failure
-                                $message = 'The backup failed with errors. Please investigate before proceeding.' # Critical; failure
-                            }
-
-                            # Set the alert and message update for the backup task based on the age of the backup
-                            if ($backupAge -ge 3) {
-                                $alert = 'RED' # Critical; >= 3 days
-                                $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
-                            }
-                            elseif ($backupAge -gt 1) {
-                                $alert = 'YELLOW' # Warning; > 1 days
-                                $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
-                            }
-                            else {
-                                $alert = 'GREEN' # Ok; <= 1 days
-                                $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
-                            }
-
-                            $elementObject = New-Object -TypeName psobject
-                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
-                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfNsxDetails.fqdn # Set the element name
-                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
-                            $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
-                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
-                        }
-
-                        $customObject += $elementObject
-
-                        # Return the structured data to the console or format using HTML CSS Styles
-                        if ($PsBoundParameters.ContainsKey('html')) { 
-                            $customObject = $customObject | Sort-Object component, domain, resource, status | ConvertTo-Html -Fragment -PreContent '<h2>Backup Status</h2>' -As Table
-                            $customObject
-                        }
-                        else {
-                            $customObject | Sort-Object component, domain, resource, status
-                        }
-                        
                     }
                 }
             }
         }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
     }
 }
 Export-ModuleMember -Function Request-NsxtManagerBackupStatus
@@ -2669,6 +2711,7 @@ Function Request-VcenterBackupStatus {
         Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain.
 
+        .EXAMPLE
         Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain but only reports issues.
     #>
