@@ -18,7 +18,7 @@ if ($PSEdition -eq 'Core') {
 }
 
 if ($PSEdition -eq 'Desktop') {
-    # Allow communication with self-signed certificates when using Windows Powershell
+    # Allow communication with self-signed certificates when using Windows PowerShell
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
 
     if ("TrustAllCertificatePolicy" -as [type]) {} else {
@@ -3092,24 +3092,24 @@ Function Request-VcenterStorageHealth {
                 if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
                     if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                            # Define DF command for VC
+                            # Define DF command for vCenter Server
                             $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
 
                             if ($PsBoundParameters.ContainsKey("allDomains")) { 
                                 $allVcenters = Get-VCFvCenter
                                 foreach ($vcenter in $allVcenters) {
                                     # Compose needed variables
-                                    $reportTitle = "'<h3><a id=`"storage-vcenter`"/>vCenter Disk Health Status for $($vcenter.fqdn)</h3>'"
+                                    $reportTitle = "<a id=`"storage-vcenter-$($vcenter.fqdn.Split('.')[0])`"></a><h4>vCenter Server Disk Health Status for $($vcenter.fqdn)</h4>"
                                     $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn }).password
 
-                                    # Get information from VC
+                                    # Get information from vCenter Server
                                     $dfOutput = Invoke-VMScript -VM ($vcenter.fqdn.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass -Server $vcfVcenterDetails.fqdn
 
                                     # Check if we got the information for disk usage and return error if not
                                     if (!$dfOutput) {
-                                        Write-LogMessage -Type ERROR -Message "Something went wrong while executing command $command on $server. Please check the powershell console for more details." -Colour RED
+                                        Write-LogMessage -Type ERROR -Message "Something went wrong while executing command $command on $server. Please check the PowerShell console for more details." -Colour RED
                                         if ($PsBoundParameters.ContainsKey("html")) {
-                                            $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while executing command $command on $server. Please check the powershell console for more details.</p>"
+                                            $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on $server. Please check the PowerShell console for more details.</p>"
                                         }
                                         return $returnValue
                                     }
@@ -3134,7 +3134,7 @@ Function Request-VcenterStorageHealth {
                                 # Compose needed variables
                                 $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $workloadDomain }).vcenters
                                 $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn }).password
-                                $reportTitle = "'<h3><a id=`"storage-vcenter`"/>vCenter Disk Health Status for $($vcenter.fqdn)</h3>'"
+                                $reportTitle = "<a id=`"storage-vcenter-$($vcenter.fqdn.Split('.')[0])`"></a><h4>vCenter Server Disk Health Status for $($vcenter.fqdn)</h4>"
 
 
                                 # Get information from VC
@@ -3142,9 +3142,9 @@ Function Request-VcenterStorageHealth {
 
                                 # Check if we got the information for disk usage and return error if not
                                 if (!$dfOutput) {
-                                    Write-LogMessage -Type ERROR -Message "Something went wrong while executing command $command on $server. Please check the powershell console for more details." -Colour RED
+                                    Write-LogMessage -Type ERROR -Message "Something went wrong while running the  command '$command' on $server. Please check the PowerShell console for more details." -Colour RED
                                     if ($PsBoundParameters.ContainsKey("html")) {
-                                        $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while executing command $command on $server. Please check the powershell console for more details.</p>"
+                                        $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on $server. Please check the PowerShell console for more details.</p>"
                                     }
                                     return $returnValue
                                 }
@@ -3205,7 +3205,7 @@ Function Request-SddcManagerStorageHealth {
     
     Try {
         # Define some variables
-        $reportTitle = "'<h3><a id=`"storage-sddcmanager`"/>SDDC Manager Disk Health Status for $server</h3>'"
+        $reportTitle = "<a id=`"storage-sddcmanager`"></a><h4>SDDC Manager Disk Health Status for $server</h4>"
         $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
 
         # Get information from SDDC Manager and format it
@@ -3213,9 +3213,9 @@ Function Request-SddcManagerStorageHealth {
 
         # Check if we got the information for disk usage and return error if not
         if (!$dfOutput) {
-            Write-LogMessage -Type ERROR -Message "Something went wrong while executing command $command on $server. Please check the powershell console for more details." -Colour RED
+            Write-LogMessage -Type ERROR -Message "Something went wrong while running the command: '$command' on $server. Please check the PowerShell console for more details." -Colour RED
             if ($PsBoundParameters.ContainsKey("html")) {
-                $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while executing command $command on $server. Please check the powershell console for more details.</p>"
+                $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command: '$command' on $server. Please check the PowerShell console for more details.</p>"
             }
             return $returnValue
         }
