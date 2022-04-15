@@ -4696,16 +4696,15 @@ Export-ModuleMember -Function Get-SnapshotConsolidation
 Function Get-EsxiAlert {
     <#
     .SYNOPSIS
-    Returns the ESXi host triggered alarms.
+    Returns the triggered alarms for an ESXi host.
 
     .DESCRIPTION
-    The Get-EsxiAlert cmdlet returns all triggered alarms from ESXi host.
+    The Get-EsxiAlert cmdlet returns all triggered alarms for ESXi host.
 
     .EXAMPLE
-    Get-EsxiAlert -server lax01-w01-esx01.lax.rainpole.io -user root -pass VMw@re1!
-    This example returns alarms from a vCenter Server instance named sfo-w01-vc01.sfo.rainpole.io.
+    Get-EsxiAlert -server sfo-w01-esx01.sfo.rainpole.io -user root -pass VMw@re1!
+    This example returns all triggered alarms for and ESXi host named sfo-w01-esx01.sfo.rainpole.io.
     #>
-
 
     Param (
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -4731,17 +4730,18 @@ Function Get-EsxiAlert {
     Disconnect-VIServer -Server $server -Confirm:$false
 }
 Export-ModuleMember -Function Get-EsxiAlert
+
 Function Get-VcenterTriggeredAlarm {
         <#
     .SYNOPSIS
-    Returns the vCenter Server triggered alarms.
+    Returns the triggered alarms for a vCenter Server instance.
 
     .DESCRIPTION
     The Get-VcenterTriggeredAlarm cmdlet returns all triggered alarms from vCenter Server instance.
 
     .EXAMPLE
     Get-VcenterTriggeredAlarm -server sfo-w01-vc01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
-    This example returns alarms from a vCenter Server instance named sfo-w01-vc01.sfo.rainpole.io.
+    This example returns all triggered alarms for a vCenter Server instance named sfo-w01-vc01.sfo.rainpole.io.
     #>
     Param (
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -4768,14 +4768,15 @@ Export-ModuleMember -Function Get-VcenterTriggeredAlarm
 
 Function Get-NsxtAlarm {
     <#
-    SYNOPSIS:
-    Return the alarms for an NSX Manager cluster.
+    .SYNOPSIS
+    Return the trigged alarms for an NSX Manager cluster.
 
-    DESCRIPTION:
-    The Get-NsxtAlarm cmdlet returns the alarms for an NSX Manager cluster
+    .DESCRIPTION
+    The Get-NsxtAlarm cmdlet returns all triggered alarms for an NSX Manager cluster.
 
-    EXAMPLE:
+    .EXAMPLE
     Get-NsxtAlarm -fqdn sfo-w01-nsx01.sfo.rainpole.io
+    This example returns all triggered alarms for an NSX Manager cluster named sfo-w01-nsx01.sfo.rainpole.io.
     #>
 
     Param (
@@ -4795,14 +4796,15 @@ Export-ModuleMember -Function Get-NsxtAlarm
 
 Function Get-NsxtEvent {
     <#
-    SYNOPSIS:
+    .SYNOPSIS
     Return the events for an NSX Manager cluster.
 
-    DESCRIPTION:
-    The Get-NsxtEvent cmdlet returns the events for an NSX Manager cluster
+    .DESCRIPTION
+    The Get-NsxtEvent cmdlet returns the events for an NSX Manager cluster.
 
-    EXAMPLE:
+    .EXAMPLE
     Get-NsxtEvent -fqdn sfo-w01-nsx01.sfo.rainpole.io
+    This example returns events for an NSX Manager cluster named sfo-w01-nsx01.sfo.rainpole.io.
     #>
 
     Param (
