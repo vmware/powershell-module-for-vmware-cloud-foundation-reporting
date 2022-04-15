@@ -196,8 +196,12 @@ Function Invoke-VcfHealthReport {
         }
 
         # # Generating the Disk Capacity Health Data
-        Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report from SDDC Manager ($sddcManagerFqdn)" 
-        $sddcStorageHtml = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html
+        Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report from SDDC Manager ($sddcManagerFqdn)"
+        $sddcManagerStorageHtml = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html
+        Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report for all VCs managed by ($sddcManagerFqdn)"
+        $vcStorageHtml = Request-VcenterStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -html -allDomains 
+        $sddcStorageHtml += $sddcManagerStorageHtml
+        $sddcStorageHtml += $vcStorageHtml
 
         # Combine all information gathered into a single HTML report
         $reportData = "$serviceHtml $componentConnectivityHtml $localPasswordHtml $certificateHtml $backupStatusHtml $snapshotStatusHtml $dnsHtml $ntpHtml $vcenterHtml $esxiHtml $vsanHtml $vsanPolicyHtml $nsxtHtml $sddcStorageHtml"
@@ -3045,6 +3049,133 @@ Function Request-DatastoreStorageCapacity {
 }
 Export-ModuleMember -Function Request-DatastoreStorageCapacity
 
+Function Request-VcenterStorageHealth {
+    <#
+		.SYNOPSIS
+        Checks the disk usage in a vCenter Server instance.
+
+        .DESCRIPTION
+        The Request-VcenterStorageHealth cmdlets checks the disk space usage on vCenter Server. The cmdlet 
+        connects to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the details for each vCenter Server
+        - Collects information for the disk usage
+        - Checks disk usage against thresholds and outputs the results
+
+        .EXAMPLE
+        Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will check the disk usage for all vCenter Server instances managed by SDDC Manager.
+
+        .EXAMPLE
+        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will check disk usage for a single workload domain
+
+        .EXAMPLE
+        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will check the disk usage for all vCenter Server instances but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            # Define DF command for VC
+                            $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
+
+                            if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                                $allVcenters = Get-VCFvCenter
+                                foreach ($vcenter in $allVcenters) {
+                                    # Compose needed variables
+                                    $reportTitle = "'<h3><a id=`"storage-vcenter`"/>vCenter Disk Health Status for $($vcenter.fqdn)</h3>'"
+                                    $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn }).password
+
+                                    # Get information from VC
+                                    $dfOutput = Invoke-VMScript -VM ($vcenter.fqdn.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass -Server $vcfVcenterDetails.fqdn
+
+                                    # Check if we got the information for disk usage and return error if not
+                                    if (!$dfOutput) {
+                                        Write-LogMessage -Type ERROR -Message "Something went wrong while executing command $command on $server. Please check the powershell console for more details." -Colour RED
+                                        if ($PsBoundParameters.ContainsKey("html")) {
+                                            $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while executing command $command on $server. Please check the powershell console for more details.</p>"
+                                        }
+                                        return $returnValue
+                                    }
+
+                                    # Compose command for Format-DfStorageHealth function
+                                    if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
+                                        Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html -failureOnly
+                                    }
+                                    elseif ($PsBoundParameters.ContainsKey("html")) {
+                                        Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html
+                                    }
+                                    elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
+                                        Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -failureOnly
+                                    }
+                                    else {
+                                        Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput
+                                    }
+                                }
+                            }
+                            else {
+                                
+                                # Compose needed variables
+                                $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $workloadDomain }).vcenters
+                                $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn }).password
+                                $reportTitle = "'<h3><a id=`"storage-vcenter`"/>vCenter Disk Health Status for $($vcenter.fqdn)</h3>'"
+
+
+                                # Get information from VC
+                                $dfOutput = Invoke-VMScript -VM ($vcenter.fqdn.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass -Server $vcfVcenterDetails.fqdn
+
+                                # Check if we got the information for disk usage and return error if not
+                                if (!$dfOutput) {
+                                    Write-LogMessage -Type ERROR -Message "Something went wrong while executing command $command on $server. Please check the powershell console for more details." -Colour RED
+                                    if ($PsBoundParameters.ContainsKey("html")) {
+                                        $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while executing command $command on $server. Please check the powershell console for more details.</p>"
+                                    }
+                                    return $returnValue
+                                }
+
+                                # Compose command for Format-DfStorageHealth function
+                                if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
+                                    Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html -failureOnly
+                                }
+                                elseif ($PsBoundParameters.ContainsKey("html")) {
+                                    Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html
+                                }
+                                elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
+                                    Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -failureOnly
+                                }
+                                else {
+                                    Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput
+                                }
+                            }
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-vCenterUserExpiry
+
 Function Request-SddcManagerStorageHealth {
     <#
 		.SYNOPSIS
@@ -3068,74 +3199,39 @@ Function Request-SddcManagerStorageHealth {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
     
-    # Define thresholds Green < Yellow < Red
-    $greenThreshold = 70
-    $redThreshold = 85
-
     Try {
-        # Get information from SDDC Manager and format it
-        $customObject = New-Object System.Collections.ArrayList
+        # Define some variables
+        $reportTitle = "'<h3><a id=`"storage-sddcmanager`"/>SDDC Manager Disk Health Status for $server</h3>'"
         $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
-        $output = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command
-        $formatOutput = ($output.ScriptOutput -split '\r?\n').Trim() -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
-        foreach ($partition in $formatOutput) {
-            $usage = $partition.Split(" ")[4]
-            # Make sure that only rows with calculated usage will be included
-            if ( !$usage ) { continue }
 
-            # Get the usage percentage as numeric value
-            $usage = $usage.Substring(0, $usage.Length - 1)
-            $usage = [int]$usage
+        # Get information from SDDC Manager and format it
+        $dfOutput = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command
 
-            # Applying thresholds and creating collection from input
-            switch ($usage) {
-                { $_ -le $greenThreshold } {
-                    # Green if $usage is up to $greenThreshold
-                    $alert = 'GREEN'
-                    $message = "Used space is less than $greenThreshold%. You could continue with the upgrade."
-                }
-                { $_ -ge $redThreshold } {
-                    # Red if $usage is equal or above $redThreshold
-                    $alert = 'RED'
-                    $message = "Used space is above $redThreshold%. Please reclaim space on the partition before proceeding further."
-                    # TODO Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
-                    # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
-                    # As an alternative you could run PowerCLI commandlet:
-                    # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <administrator@vsphere.local> -pass <administrator@vsphere.local_password> -rootPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
-                }
-                Default {
-                    # Yellow if above two are not matched
-                    # TODO - same as above - add hints on new lines }
-                    $alert = 'YELLOW'
-                    $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space. "
-                }
+        # Check if we got the information for disk usage and return error if not
+        if (!$dfOutput) {
+            Write-LogMessage -Type ERROR -Message "Something went wrong while executing command $command on $server. Please check the powershell console for more details." -Colour RED
+            if ($PsBoundParameters.ContainsKey("html")) {
+                $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while executing command $command on $server. Please check the powershell console for more details.</p>"
             }
-                                    
-            $userObject = New-Object -TypeName psobject
-            $userObject | Add-Member -notepropertyname 'Filesystem' -notepropertyvalue $partition.Split(" ")[0]
-            $userObject | Add-Member -notepropertyname 'Size' -notepropertyvalue $partition.Split(" ")[1]
-            $userObject | Add-Member -notepropertyname 'Available' -notepropertyvalue $partition.Split(" ")[2]
-            $userObject | Add-Member -notepropertyname 'Used %' -notepropertyvalue $partition.Split(" ")[4]
-            $userObject | Add-Member -notepropertyname 'Mounted on' -notepropertyvalue $partition.Split(" ")[5]
-            $userObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $alert
-            $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
-            $customObject += $userObject # Creating collection to work with afterwords
+            return $returnValue
         }
 
-        # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey('html')) { 
-            if ($customObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
-            } else {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -As Table
-            }
-            $customObject = Convert-CssClass -htmldata $customObject
+        # Compose command for Format-DfStorageHealth function
+        if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
+            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html -failureOnly
         }
-        $customObject # Return $customObject in HTML or pain format
+        elseif ($PsBoundParameters.ContainsKey("html")) {
+            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html
+        }
+        elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
+            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -failureOnly
+        } else {
+            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput
+        }
     }
     Catch {
         Debug-CatchWriter -object $_
@@ -4201,6 +4297,99 @@ Function PercentCalc {
     
     $InputNum1 / $InputNum2*100
 }
+
+Function Format-DfStorageHealth {
+    <#
+		.SYNOPSIS
+        Formats output from 'fd -h' command and set alerts based on thresholds.
+
+        .DESCRIPTION
+        The Format-DfStorageHealth cmdlet formats and returns output from 'df -h' in html or plain text
+
+        .EXAMPLE
+        Format-DfStorageHealth -reportTitle '<h3>SDDC Manager Disk Health Status</h3>' -dfOutput $dfOutput -html -failureOnly -greenThreshold 20 -redThreshold 40
+        This example returns only failures (Alert is not GREEN), produces html report with title '<h3>SDDC Manager Disk Health Status</h3>' and overwrites the default thresholds
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportTitle,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$dfOutput,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateRange(1, 100)] [int]$greenThreshold = 70, # Define default value for "Green" threshold
+        [Parameter (Mandatory = $false)] [ValidateRange(1, 100)] [int]$redThreshold = 85   # Define default value for "Red" threshold
+    )
+
+    Try {
+        # Define object that will be returned and format input
+        $customObject = New-Object System.Collections.ArrayList
+        $formatOutput = ($dfOutput -split '\r?\n').Trim() -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
+
+        # Set Alarms for each partition
+        foreach ($partition in $formatOutput) {
+            $usage = $partition.Split(" ")[4]
+            # Make sure that only rows with calculated usage will be included
+            if ( !$usage ) { continue }
+
+            # Get the usage percentage as numeric value
+            $usage = $usage.Substring(0, $usage.Length - 1)
+            $usage = [int]$usage
+
+            # Applying thresholds and creating collection from input
+            switch ($usage) {
+                { $_ -le $greenThreshold } {
+                    # Green if $usage is up to $greenThreshold
+                    $alert = 'GREEN'
+                    $message = "Used space is less than $greenThreshold%. You could continue with the upgrade."
+                }
+                { $_ -ge $redThreshold } {
+                    # Red if $usage is equal or above $redThreshold
+                    $alert = 'RED'
+                    $message = "Used space is above $redThreshold%. Please reclaim space on the partition before proceeding further."
+                    # TODO Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
+                    # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
+                    # As an alternative you could run PowerCLI commandlet:
+                    # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <administrator@vsphere.local> -pass <administrator@vsphere.local_password> -rootPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
+                }
+                Default {
+                    # Yellow if above two are not matched
+                    # TODO - same as above - add hints on new lines }
+                    $alert = 'YELLOW'
+                    $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space. "
+                }
+            }
+            
+            # Skip population of object if "failureOnly" is selected and alert is "GREEN"
+            if (($PsBoundParameters.ContainsKey("failureOnly")) -and ($alert -eq 'GREEN')) { continue }
+            
+            $userObject = New-Object -TypeName psobject
+            $userObject | Add-Member -notepropertyname 'Filesystem' -notepropertyvalue $partition.Split(" ")[0]
+            $userObject | Add-Member -notepropertyname 'Size' -notepropertyvalue $partition.Split(" ")[1]
+            $userObject | Add-Member -notepropertyname 'Available' -notepropertyvalue $partition.Split(" ")[2]
+            $userObject | Add-Member -notepropertyname 'Used %' -notepropertyvalue $partition.Split(" ")[4]
+            $userObject | Add-Member -notepropertyname 'Mounted on' -notepropertyvalue $partition.Split(" ")[5]
+            $userObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $alert
+            $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
+            $customObject += $userObject # Creating collection to work with afterwords
+        }
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            if ($customObject.Count -eq 0) {
+                $customObject = $customObject | ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>No Issues Found</p>" 
+            }
+            else {
+                $customObject = $customObject | ConvertTo-Html -Fragment -PreContent $reportTitle -As Table
+            }
+            $customObject = Convert-CssClass -htmldata $customObject
+        }
+        $customObject # Return $customObject in HTML or pain format
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    } 
+}
+Export-ModuleMember -Function Format-DfStorageHealth
 
 Function Convert-CssClass {
     Param (
