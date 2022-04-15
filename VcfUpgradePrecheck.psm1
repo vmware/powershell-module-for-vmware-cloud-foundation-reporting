@@ -3109,8 +3109,9 @@ Function Request-VcenterStorageHealth {
                                     if (!$dfOutput) {
                                         Write-LogMessage -Type ERROR -Message "Something went wrong while running the command '$command' on $server. Please check the PowerShell console for more details." -Colour RED
                                         if ($PsBoundParameters.ContainsKey("html")) {
-                                            $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on $server. Please check the PowerShell console for more details.</p>"
+                                            $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on $($vcenter.fqdn). Please check the PowerShell console for more details.</p>"
                                         }
+                                        # TODO Fix this to not exit foreach if there is error only for one vCenter Server
                                         return $returnValue
                                     }
 
@@ -3144,7 +3145,7 @@ Function Request-VcenterStorageHealth {
                                 if (!$dfOutput) {
                                     Write-LogMessage -Type ERROR -Message "Something went wrong while running the  command '$command' on $server. Please check the PowerShell console for more details." -Colour RED
                                     if ($PsBoundParameters.ContainsKey("html")) {
-                                        $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on $server. Please check the PowerShell console for more details.</p>"
+                                        $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on $($vcenter.fqdn). Please check the PowerShell console for more details.</p>"
                                     }
                                     return $returnValue
                                 }
