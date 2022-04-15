@@ -153,6 +153,26 @@ Function Invoke-VcfHealthReport {
                 $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
             }
         }
+        
+        # Generating the Snapshot Status Health Data
+        # TODO: Snapshot to be re-implemented to allow for -failureOnly.
+        Write-LogMessage -type INFO -Message "Generating the Snapshots Report from SDDC Manager ($sddcManagerFqdn)"
+        if ($PsBoundParameters.ContainsKey('allDomains')) { 
+            # if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            #     $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+            # }
+            # else { 
+            $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+            # }
+        }
+        else {
+            # if ($PsBoundParameters.ContainsKey('failureOnly')) { 
+            #     $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+            # }
+            # else {
+            $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+            # }
+        }
 
         # Generating the Password Expiry Health Data
         Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report from SDDC Manager ($sddcManagerFqdn)"
@@ -178,7 +198,7 @@ Function Invoke-VcfHealthReport {
         $sddcStorageHtml = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html
 
         # Combine all information gathered into a single HTML report
-        $reportData = "$serviceHtml $componentConnectivityHtml $localPasswordHtml $certificateHtml $backupStatusHtml $dnsHtml $ntpHtml $vcenterHtml $esxiHtml $vsanHtml $vsanPolicyHtml $nsxtHtml $sddcStorageHtml"
+        $reportData = "$serviceHtml $componentConnectivityHtml $localPasswordHtml $certificateHtml $backupStatusHtml $snapshotStatusHtml $dnsHtml $ntpHtml $vcenterHtml $esxiHtml $vsanHtml $vsanPolicyHtml $nsxtHtml $sddcStorageHtml"
 
         $reportHeader = Get-ClarityReportHeader
         $reportNavigation = Get-ClarityReportNavigation -reportType health
@@ -1840,8 +1860,6 @@ Function Publish-SnapshotStatus {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
@@ -1902,14 +1920,9 @@ Function Publish-SnapshotStatus {
                             }
 
                             # Return the structured data to the console or format using HTML CSS Styles
-                            if ($PsBoundParameters.ContainsKey("html")) { 
-                                $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object 'Virtual Machine', 'Created' | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshots"></a><h3>Snapshot Status</h3><p>By default, snapshots for NSX Local Manager cluster appliances are disabled and are not recommended.</p>' -As Table
-                                $allSnapshotStatusObject = Convert-CssClass -htmldata $allSnapshotStatusObject
-                                $allSnapshotStatusObject
-                            } else {
-                                $allSnapshotStatusObject | Sort-Object Component, 'Virtual Machine', 'Created'
-                            }
-
+                            $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object 'Virtual Machine', 'Created' | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3><p>By default, snapshots for NSX Local Manager cluster appliances are disabled and are not recommended.</p>' -As Table
+                            $allSnapshotStatusObject = Convert-CssClass -htmldata $allSnapshotStatusObject
+                            $allSnapshotStatusObject
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }    
@@ -3984,6 +3997,7 @@ Function Get-ClarityReportNavigation {
                 <label for="infrastructure">Infrastructure</label>
                 <ul class="nav-list">
                     <li><a class="nav-link" href="#infra-backup">Backups</a></li>
+                    <li><a class="nav-link" href="#infra-snapshot">Snapshots</a></li>
                     <li><a class="nav-link" href="#infra-dns-forward">DNS Forward Lookup</a></li>
                     <li><a class="nav-link" href="#infra-dns-reverse">DNS Reverse Lookup</a></li>
                     <li><a class="nav-link" href="#infra-ntp">Network Time</a></li>
