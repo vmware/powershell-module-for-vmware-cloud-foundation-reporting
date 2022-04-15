@@ -1,10 +1,12 @@
+# Copyright 2022 VMware, Inc.
+
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-### Note
-# This PowerShell module should be considered entirely experimental. It is still in development & not tested beyond lab
+# Note:
+# This PowerShell module should be considered entirely experimental. It is still in development and not tested beyond lab
 # scenarios. It is recommended you don't use it for any production environment without testing extensively!
 
 # Allow communication with self-signed certificates when using Powershell Core. If you require all communications to be
@@ -49,11 +51,11 @@ Function Invoke-VcfHealthReport {
 
         .EXAMPLE
         Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Prechecks -allDomains
-        This example executes a health check across a VMware Cloud Foundation instance.
+        This example runs a health check across a VMware Cloud Foundation instance.
 
         .EXAMPLE
         Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
-        This example executes a health check for a specific Workload Domain within a VMware Cloud Foundation instance.
+        This example runs a health check for a specific Workload Domain within a VMware Cloud Foundation instance.
     #>
 
     Param (
@@ -77,7 +79,7 @@ Function Invoke-VcfHealthReport {
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
 
-        Write-LogMessage -Type INFO -Message "Executing SoS Health Check Collection on VMware Cloud Foundation Instance ($sddcManagerFqdn), process takes time"
+        Write-LogMessage -Type INFO -Message "Running an SoS Health Check Collection on VMware Cloud Foundation Instance ($sddcManagerFqdn), process takes time"
         if ($PsBoundParameters.ContainsKey("allDomains")) { 
             $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
         } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
@@ -368,11 +370,11 @@ Function Invoke-VcfUpgradePrecheck {
         Perform upgrade precheck
 
         .DESCRIPTION
-        The Invoke-VcfUpgradePrecheck executes an upgrade precheck for a Workload Domain
+        The Invoke-VcfUpgradePrecheck runs an upgrade precheck for a Workload Domain
 
         .EXAMPLE
         Invoke-VcfUpgradePrecheck -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
-        This example executes a health check for a specific Workload Domain within an SDDC Manager instance.
+        This example runs a health check for a specific Workload Domain within an SDDC Manager instance.
     #>
 
     Param (
@@ -1562,7 +1564,7 @@ Export-ModuleMember -Function Publish-VsanHealth
 Function Publish-VsanStoragePolicy {
     <#
         .SYNOPSIS
-        Formats the vSAN Storage Policy for VM
+        Formats the vSAN Storage Policy for virtual machines from the SoS JSON output.
 
         .DESCRIPTION
         The Publish-VsanStoragePolicy cmdlet formats the vSAN Storage Policy data from the SoS JSON output and
@@ -1768,7 +1770,6 @@ Function Publish-BackupStatus {
         .EXAMPLE
         Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance but only for the failed items.
- 
     #>
 
     Param (
@@ -1855,6 +1856,8 @@ Function Publish-SnapshotStatus {
         Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
         This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.  
     #>
+
+    # TODO: Snapshots status to be re-implemented with simple helper functions and mid-tier request functions.
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -2956,7 +2959,7 @@ Function Request-DatastoreStorageCapacity {
         
         .EXAMPLE
         Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
-        This example will check datastore on all vCenter servers that are know to SDDC Manager "sfo-vcf01.sfo.rainpole.io".
+        This example will check datastore on all vCenter Servers managed by SDDC Manager instance sfo-vcf01.sfo.rainpole.io.
     #>
 
     
@@ -3143,7 +3146,7 @@ Export-ModuleMember -Function Request-SddcManagerStorageHealth
 Function Publish-ComponentConnectivityHealth {
     <#
 		.SYNOPSIS
-        Request and publlish Component Connectivity Health
+        Request and publlish Component Connectivity Health.
 
         .DESCRIPTION
         The Publish-ComponentConnectivityHealth cmdlet checks component connectivity across the VMware Cloud Foundation
@@ -3447,7 +3450,7 @@ Export-ModuleMember -Function Request-NsxtAuthentication
 Function Publish-SystemAlert {
     <#
         .SYNOPSIS
-        Publish system Alarms.
+        Publish system alerts/alarms.
 
         .DESCRIPTION
         The Publish-SystemAlert cmdlet returns all alarms from NSX Manager cluster.
@@ -3459,7 +3462,7 @@ Function Publish-SystemAlert {
 
         .EXAMPLE
         Publish-SystemAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
-        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain.
+        This example will return alerts/alarms for an NSX Manager cluster managed by SDDC Manager for a workload domain.
     #>
 
     Param (
@@ -3518,7 +3521,7 @@ Export-ModuleMember -Function Publish-SystemAlert
 Function Request-NsxtAlert {
     <#
         .SYNOPSIS
-        Returns Alarms of an NSX Manager cluster.
+        Returns alarms from an NSX Manager cluster.
 
         .DESCRIPTION
         The Request-NsxtAlert cmdlet returns all alarms from NSX Manager cluster.
@@ -3603,7 +3606,7 @@ Export-ModuleMember -Function Request-NsxtAlert
 Function Request-VcenterAlert {
     <#
         .SYNOPSIS
-        Returns Alarms from vCenter Server instance.
+        Returns alarms from a vCenter Server instance.
 
         .DESCRIPTION
         The Request-VcenterAlert cmdlet returns all alarms from vCenter Server managed by SDDC Manager.
@@ -3614,7 +3617,7 @@ Function Request-VcenterAlert {
 
         .EXAMPLE
         Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user adminr@local -pass VMw@re1! -domain sfo-w01
-        This example will return alarms of an vCenter Server managed by SDDC Manager for a workload domain.
+        This example will return alarms of a vCenter Server managed by SDDC Manager for a workload domain.
     #>
 
     Param (
@@ -3691,7 +3694,7 @@ Export-ModuleMember -Function Request-VcenterAlert
 Function Publish-EsxiCoreDumpConfig {
     <#
 		.SYNOPSIS
-        Generates an ESXi core dump configuration report for a workload domain.
+        Generates an ESXi core dump configuration report.
 
         .DESCRIPTION
         The Publish-EsxiCoreDumpConfig cmdlet generates an ESXi core dump report for a workload domain. The cmdlet
@@ -3702,7 +3705,7 @@ Function Publish-EsxiCoreDumpConfig {
 
         .EXAMPLE
         Publish-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -alldomains
-        This example generates an ESXi core dump report for all ESXi hosts acros the SDDC Manager instance
+        This example generates an ESXi core dump report for all ESXi hosts across the VMware Cloud Foundation instance.
     #>
 
     Param (
@@ -3788,14 +3791,14 @@ Export-ModuleMember -Function Publish-EsxiCoreDumpConfig
 Function Test-VcfHealthPrereq {
     <#
 		.SYNOPSIS
-        Validate prerequisites for running VcfHealthReport Module
+        Validate prerequisites to run thie PowerShell module.
 
         .DESCRIPTION
-        The Test-VcfHealthPrereq cmdlet checks that all the prerequisites have been met to execute VcfHealthReport
+        The Test-VcfHealthPrereq cmdlet checks that all the prerequisites have been met to run thie PowerShell module.
 
         .EXAMPLE
         Test-VcfHealthPrereq
-        This example runs the prerequsite validation
+        This example runs the prerequsite validation.
     #>
 
     Try {
@@ -4006,7 +4009,7 @@ Function Get-ClarityReportNavigation {
                 <a class="nav-link nav-icon" href="#vcenter-overall">vCenter Server</a>
                 <section class="nav-group collapsible">
                     <input id="esxi" type="checkbox"/>
-                    <label for="esxi">ESXi Hosts</label>
+                    <label for="esxi">ESXi</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#esxi-overall">Overall Health</a></li>
                         <li><a class="nav-link" href="#esxi-coredump">Core Dump Health</a></li>
@@ -4418,6 +4421,7 @@ Function Get-SnapshotConsolidation {
     }
 }
 Export-ModuleMember -Function Get-SnapshotConsolidation
+
 Function Get-VcenterTriggeredAlarm {
         <#
     .SYNOPSIS
@@ -4452,6 +4456,7 @@ Function Get-VcenterTriggeredAlarm {
     Disconnect-VIServer -Server $server -Confirm:$false
 }
 Export-ModuleMember -Function Get-VcenterTriggeredAlarm
+
 Function Get-NsxtAlarm {
     <#
     SYNOPSIS:
