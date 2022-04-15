@@ -3107,7 +3107,7 @@ Function Request-VcenterStorageHealth {
 
                                     # Check if we got the information for disk usage and return error if not
                                     if (!$dfOutput) {
-                                        Write-LogMessage -Type ERROR -Message "Something went wrong while executing command $command on $server. Please check the PowerShell console for more details." -Colour RED
+                                        Write-LogMessage -Type ERROR -Message "Something went wrong while running the command '$command' on $server. Please check the PowerShell console for more details." -Colour RED
                                         if ($PsBoundParameters.ContainsKey("html")) {
                                             $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on $server. Please check the PowerShell console for more details.</p>"
                                         }
