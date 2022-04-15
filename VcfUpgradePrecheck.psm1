@@ -3068,11 +3068,11 @@ Function Request-VcenterStorageHealth {
         This example will check the disk usage for all vCenter Server instances managed by SDDC Manager.
 
         .EXAMPLE
-        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will check disk usage for a single workload domain
 
         .EXAMPLE
-        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will check the disk usage for all vCenter Server instances but only reports issues.
     #>
 
@@ -3174,7 +3174,7 @@ Function Request-VcenterStorageHealth {
         Debug-CatchWriter -object $_
     }
 }
-Export-ModuleMember -Function Request-vCenterUserExpiry
+Export-ModuleMember -Function Request-VcenterStorageHealth
 
 Function Request-SddcManagerStorageHealth {
     <#
