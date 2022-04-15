@@ -200,7 +200,9 @@ Function Invoke-VcfHealthReport {
         $sddcManagerStorageHtml = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html
         Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report for all VCs managed by ($sddcManagerFqdn)"
         $vcStorageHtml = Request-VcenterStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -html -allDomains 
+        $sddcStorageHtml += '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' # Hack: Adding the SDDC Manager Disk Health Status header for report navigation.
         $sddcStorageHtml += $sddcManagerStorageHtml
+        $sddcStorageHtml += '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health Status</h3>' # Hack: Adding the vCenter Server Disk Health Status header for report navigation.
         $sddcStorageHtml += $vcStorageHtml
 
         # Combine all information gathered into a single HTML report
@@ -3076,6 +3078,8 @@ Function Request-VcenterStorageHealth {
         This example will check the disk usage for all vCenter Server instances but only reports issues.
     #>
 
+    # TODO: Add "no issues found" message if no issues are found in the -failureOnly mode.
+
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
@@ -3099,7 +3103,7 @@ Function Request-VcenterStorageHealth {
                                 $allVcenters = Get-VCFvCenter
                                 foreach ($vcenter in $allVcenters) {
                                     # Compose needed variables
-                                    $reportTitle = "<a id=`"storage-vcenter-$($vcenter.fqdn.Split('.')[0])`"></a><h4>vCenter Server Disk Health Status for $($vcenter.fqdn)</h4>"
+                                    $reportTitle = "<a id=`"storage-vcenter-$($vcenter.fqdn.Split('.')[0])`"></a><h4>Disk Health for vCenter Server: $($vcenter.fqdn)</h4>"
                                     $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn }).password
 
                                     # Get information from vCenter Server
@@ -3111,7 +3115,7 @@ Function Request-VcenterStorageHealth {
                                         if ($PsBoundParameters.ContainsKey("html")) {
                                             $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on $($vcenter.fqdn). Please check the PowerShell console for more details.</p>"
                                         }
-                                        # TODO Fix this to not exit foreach if there is error only for one vCenter Server
+                                        # TODO: Fix this to not exit foreach if there is error only for one vCenter Server
                                         return $returnValue
                                     }
 
@@ -3206,7 +3210,7 @@ Function Request-SddcManagerStorageHealth {
     
     Try {
         # Define some variables
-        $reportTitle = "<a id=`"storage-sddcmanager`"></a><h4>SDDC Manager Disk Health Status for $server</h4>"
+        $reportTitle = "<h4>Disk Health for SDDC Manager: $server</h4>"
         $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
 
         # Get information from SDDC Manager and format it
@@ -3243,7 +3247,7 @@ Export-ModuleMember -Function Request-SddcManagerStorageHealth
 Function Publish-ComponentConnectivityHealth {
     <#
 		.SYNOPSIS
-        Request and publlish Component Connectivity Health.
+        Request and publish Component Connectivity Health.
 
         .DESCRIPTION
         The Publish-ComponentConnectivityHealth cmdlet checks component connectivity across the VMware Cloud Foundation
@@ -3652,7 +3656,7 @@ Function Request-NsxtAlert {
                         $customObject = New-Object System.Collections.ArrayList
                         $component = 'NSX Manager'
                         $resource = 'Node: ' + $vcfNsxDetails.fqdn
-                        # ToDo define the YELLOW alert based on Status and Severity
+                        # TODO: Define the YELLOW alert based on Status and Severity
                         foreach ($alarm in $nsxtAlarms.results) {
                             if ($alarm.status -eq "RESOLVED") {
                                 $alert = "GREEN"
@@ -4347,14 +4351,14 @@ Function Format-DfStorageHealth {
                     # Red if $usage is equal or above $redThreshold
                     $alert = 'RED'
                     $message = "Used space is above $redThreshold%. Please reclaim space on the partition before proceeding further."
-                    # TODO Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
+                    # TODO: Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
                     # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
                     # As an alternative you could run PowerCLI commandlet:
                     # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <administrator@vsphere.local> -pass <administrator@vsphere.local_password> -rootPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
                 }
                 Default {
                     # Yellow if above two are not matched
-                    # TODO - same as above - add hints on new lines }
+                    # TODO: Same as above - add hints on new lines }
                     $alert = 'YELLOW'
                     $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space. "
                 }
