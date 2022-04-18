@@ -195,7 +195,26 @@ Function Invoke-VcfHealthReport {
             }
         }
 
-        # # Generating the Disk Capacity Health Data
+        # Generating the NSX Tier-0 Gateway BGP Health Data
+        Write-LogMessage -type INFO -Message "Generating the NSX Tier-0 Gateway BGP Report from SDDC Manager ($sddcManagerFqdn)"
+        if ($PsBoundParameters.ContainsKey('allDomains')) { 
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+            }
+            else { 
+                $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+            }
+        }
+        else {
+            if ($PsBoundParameters.ContainsKey('failureOnly')) { 
+                $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+            }
+            else {
+                $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+            }
+        }
+
+        # Generating the Disk Capacity Health Data
         Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report from SDDC Manager ($sddcManagerFqdn)"
         $sddcManagerStorageHtml = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html
         Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report for all VCs managed by ($sddcManagerFqdn)"
@@ -206,7 +225,7 @@ Function Invoke-VcfHealthReport {
         $sddcStorageHtml += $vcStorageHtml
 
         # Combine all information gathered into a single HTML report
-        $reportData = "$serviceHtml $componentConnectivityHtml $localPasswordHtml $certificateHtml $backupStatusHtml $snapshotStatusHtml $dnsHtml $ntpHtml $vcenterHtml $esxiHtml $vsanHtml $vsanPolicyHtml $nsxtHtml $sddcStorageHtml"
+        $reportData = "$serviceHtml $componentConnectivityHtml $localPasswordHtml $certificateHtml $backupStatusHtml $snapshotStatusHtml $dnsHtml $ntpHtml $vcenterHtml $esxiHtml $vsanHtml $vsanPolicyHtml $nsxtHtml $nsxTier0BgpHtml $sddcStorageHtml"
 
         $reportHeader = Get-ClarityReportHeader
         $reportNavigation = Get-ClarityReportNavigation -reportType health
@@ -1764,7 +1783,7 @@ Function Publish-BackupStatus {
 
         .DESCRIPTION
         The Publish-BackupStatus cmdlet checks the backup status for SDDC Manager, vCenter Server instances,
-        and NSX Local Manager clustets in a VMware Cloud Foundation instance and prepares the data to be published
+        and NSX Local Manager clusters in a VMware Cloud Foundation instance and prepares the data to be published
         to an HTML report. The cmdlet connects to SDDC Manager using the -server, -user, and password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Performs checks on the backup status and outputs the results
@@ -1840,6 +1859,87 @@ Function Publish-BackupStatus {
     }
 }
 Export-ModuleMember -Function Publish-BackupStatus
+
+Function Publish-NsxtTier0BgpStatus {
+    <#
+		.SYNOPSIS
+        Request and publish the BGP status for the NSX Tier-0 gateways.
+
+        .DESCRIPTION
+        The Publish-NsxtTier0BgpStatus cmdlet checks the BGP status ffor the NSX Tier-0 gateways in a
+        VMware Cloud Foundation instance and prepares the data to be published to an HTML report. 
+        The cmdlet connects to SDDC Manager using the -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Performs checks on the BGP status and outputs the results
+
+        .EXAMPLE
+        Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will publish the BGP status for all NSX Tier-0 gateways in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will publish the BGP status for all NSX Tier-0 gateways in a VMware Cloud Foundation instance but only for the failed items.
+
+        .EXAMPLE
+        Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will publish the BGP status for the NSX Tier-0 gateways in a VMware Cloud Foundation instance for a workload domain names sfo-w01.
+    #>
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $singleWorkloadDomain = Get-VCFWorkloadDomain | Where-Object { $_.name -eq $workloadDomain }
+                $allNsxtTier0BgpStatusObject = New-Object System.Collections.ArrayList
+
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $nsxtTier0BgpStatus = Request-NsxtTier0BgpStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTier0BgpStatusObject += $nsxtTier0BgpStatus
+                        }
+                    }
+                    else {
+                        $nsxtTier0BgpStatus = Request-NsxtTier0BgpStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTier0BgpStatusObject += $nsxtTier0BgpStatus
+                    }
+                }
+                else {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $nsxtTier0BgpStatus = Request-NsxtTier0BgpStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtTier0BgpStatusObject += $nsxtTier0BgpStatus
+                        }
+                    }
+                    else {
+                        $nsxtTier0BgpStatus = Request-NsxtTier0BgpStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtTier0BgpStatusObject += $nsxtTier0BgpStatus
+                    }
+                }
+
+                if ($allNsxtTier0BgpStatusObject.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                }
+                else {
+                    $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
+                }
+                $allNsxtTier0BgpStatusObject = Convert-CssClass -htmldata $allNsxtTier0BgpStatusObject
+                $allNsxtTier0BgpStatusObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-NsxtTier0BgpStatus
 
 Function Publish-SnapshotStatus {
     <#
@@ -3011,12 +3111,12 @@ Function Request-DatastoreStorageCapacity {
                                     Default {
                                         # Yellow if above two are not matched
                                         $alert = 'YELLOW'
-                                        $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space. "
+                                        $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space."
                                     }
                                 }
                                 # Populate data into the object
                                 $userObject = New-Object -TypeName psobject
-                                $userObject | Add-Member -notepropertyname 'vCenter FQDN' -notepropertyvalue $vcenter.fqdn
+                                $userObject | Add-Member -notepropertyname 'vCenter Server' -notepropertyvalue $vcenter.fqdn
                                 $userObject | Add-Member -notepropertyname 'Datastore Name' -notepropertyvalue $datastore.Name
                                 $userObject | Add-Member -notepropertyname 'Datastore Type' -notepropertyvalue $datastore.Type.ToUpper()
                                 $userObject | Add-Member -notepropertyname 'Size (GB)' -notepropertyvalue $capacity
@@ -3032,7 +3132,7 @@ Function Request-DatastoreStorageCapacity {
                 }
 
                 # Sort the output FQDN then Datastore Name
-                $customObject = $customObject | Sort-Object 'vCenter FQDN', 'Datastore Name'
+                $customObject = $customObject | Sort-Object 'vCenter Server', 'Datastore Name'
 
                 # Return the structured data to the console or format using HTML CSS Styles
                 if ($PsBoundParameters.ContainsKey('html')) { 
@@ -3540,6 +3640,131 @@ Function Request-NsxtAuthentication {
     }
 }
 Export-ModuleMember -Function Request-NsxtAuthentication
+
+Function Request-NsxtTier0BgpStatus {
+    <#
+        .SYNOPSIS
+        Returns the BGP status for all Tier-0 gateways managed by the NSX Manager cluster.
+
+        .DESCRIPTION
+        The Request-NsxtTier0BgpStatus cmdlet returns the BGP status for all Tier-0 gateways managed by the NSX Manager
+        cluster. The cmdlet connects to the NSX-T Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the NSX-T Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the details for the NSX Manager cluster
+        - Collects the BGP status for all Tier-0s managed by the NSX Manager cluster
+
+        .EXAMPLE
+        Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the BGP status for all Tier-0 gateways managed by the NSX Manager cluster that is managed by SDDC Manager for a workload domain.
+
+        .EXAMPLE
+        Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+        This example will return the BGP status for all Tier-0 gateways managed by the NSX Manager cluster that is managed by SDDC Manager for a workload domain but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                    if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                            $customObject = New-Object System.Collections.ArrayList
+
+                            $component = "BGP"
+                            
+                            $tier0s = Get-NsxtTier0 -fqdn $vcfNsxDetails.fqdn
+
+                            foreach ($tier0 in $tier0s) {
+
+                                $bgpStatus = Get-NsxtTier0BgpStatus -id $tier0.id
+
+                                foreach ($element in $bgpStatus) {
+
+                                    if ($element.connection_state -eq 'ESTABLISHED') {  
+                                        $alert = "GREEN"
+                                        $message = "BGP is established."
+                                    }
+                                    else {
+                                        $alert = "RED"
+                                        $message = "BGP is not established. Please check the configuration."
+                                    }
+
+                                    # TODO: Add warnings based on length of established time (e.g., flapping) or low prefix counts which may indicate a problem.
+                                    # TODO: Another option is to use Get-NsxtAlert to get the status for BGP and then use that to determine the alert state and message versus the current logic.
+
+                                    $elementObject = New-Object -TypeName psobject
+                                    # NSX Tier-0 BGP Status Properties
+
+                                    # TODO: Capture the local ASN alongside the remote ASN. 
+
+                                    $elementObject | Add-Member -NotePropertyName 'NSX Manager' -NotePropertyValue $vcfNsxDetails.fqdn
+                                    $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
+                                    $elementObject | Add-Member -NotePropertyName 'Tier-0 ID' -NotePropertyValue $tier0.id
+                                    $elementObject | Add-Member -NotePropertyName 'Type' -NotePropertyValue $element.type
+                                    $elementObject | Add-Member -NotePropertyName 'Connection' -NotePropertyValue $element.connection_state
+                                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                                    $elementObject | Add-Member -NotePropertyName 'Source Address' -NotePropertyValue $element.source_address
+                                    $elementObject | Add-Member -NotePropertyName 'Neighbor Address' -NotePropertyValue $element.neighbor_address
+                                    $elementObject | Add-Member -NotePropertyName 'Remote ASN' -NotePropertyValue $element.remote_as_number
+                                    $elementObject | Add-Member -NotePropertyName 'Hold' -NotePropertyValue $element.hold_time
+                                    $elementObject | Add-Member -NotePropertyName 'Keep Alive ' -NotePropertyValue $element.keep_alive_interval
+                                    $elementObject | Add-Member -NotePropertyName 'Estabished Time (sec)' -NotePropertyValue $element.time_since_established
+                                    $elementObject | Add-Member -NotePropertyName 'Total In Prefix' -NotePropertyValue $element.total_in_prefix_count
+                                    $elementObject | Add-Member -NotePropertyName 'Total Out Prefix' -NotePropertyValue $element.total_out_prefix_count
+                                    
+                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                        if ($element.connection_state -ne 'ESTABLISHED') {
+                                            $customObject += $elementObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address'
+                                        }
+                                    }
+                                    else {
+                                        $customObject += $elementObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address'
+                                    }  
+                                }
+                            }
+
+                            $outputObject += $customObject # Add the custom object to the output object
+
+                            # Return the structured data to the console or format using HTML CSS Styles
+                            if ($PsBoundParameters.ContainsKey('html')) { 
+                                if ($outputObject.Count -eq 0) {
+                                    $addNoIssues = $true 
+                                }
+                                if ($addNoIssues) {
+                                    $outputObject = $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                                }
+                                else {
+                                    $outputObject = $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
+                                }
+                                $outputObject = Convert-CssClass -htmldata $outputObject
+                                $outputObject
+                            }
+                            else {
+                                $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address'
+                            }                    
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+    Export-ModuleMember -Function Request-NsxtTier0BgpStatus
+
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
@@ -4208,7 +4433,7 @@ Function Get-ClarityReportNavigation {
                     <label for="nsx">NSX-T Data Center</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#nsx-local-manager">NSX Manager (Local)</a></li>
-                        <li><a class="nav-link" href="#nsx-edge">NSX Edge</a></li>
+                        <li><a class="nav-link" href="#nsx-t0-bgp">NSX Tier-0 Gateway BGP</a></li>
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
@@ -4821,6 +5046,64 @@ Function Get-NsxtEvent {
     }
 }
 Export-ModuleMember -Function Get-NsxtEvent
+
+Function Get-NsxtTier0 {
+    <#
+        .SYNOPSIS
+        Returns the details of all NSX Tier-0 gateways from an NSX Manager.
+
+        .DESCRIPTION
+        The Get-NsxtTier0 cmdlet returns the details of all NSX Tier-0 gateways from an NSX Manager.
+
+        .EXAMPLE
+        Get-NsxtTier0 -fqdn sfo-w01-nsx01.sfo.rainpole.io
+        This example returns the details of all NSX Tier-0 gateways from an NSX Manager named sfo-w01-nsx01.sfo.rainpole.io.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn
+    )
+
+    Try {
+
+        $uri = "https://$nsxtManager/policy/api/v1/infra/tier-0s"
+        $response = Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $nsxtHeaders
+        $response.results
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Get-NsxtTier0
+
+Function Get-NsxtTier0BgpStatus {
+    <#
+        .SYNOPSIS
+        Returns the status of the BGP routing for NSX Tier-0 gateways.
+
+        .DESCRIPTION
+        The Get-NsxtTier0BgpStatus cmdlet returns the status of the BGP routing for NSX Tier-0 gateways.
+
+        .EXAMPLE
+        Get-NsxtTier0BgpStatus -id sfo-w01-nsx01.sfo.rainpole.io
+        This example returns the status of the BGP routing for NSX Tier-0 gateway.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$id
+    )
+
+    Try {
+
+        $uri = "https://$nsxtManager/policy/api/v1/infra/tier-0s/$id/locale-services/default/bgp/neighbors/status"
+        $response = Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $nsxtHeaders
+        $response.results
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Get-NsxtTier0BgpStatus
 
 ##############################  End Supporting Functions ###############################
 ########################################################################################
