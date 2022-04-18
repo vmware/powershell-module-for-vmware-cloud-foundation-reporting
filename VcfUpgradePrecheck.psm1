@@ -217,12 +217,16 @@ Function Invoke-VcfHealthReport {
         # Generating the Disk Capacity Health Data
         Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report from SDDC Manager ($sddcManagerFqdn)"
         $sddcManagerStorageHtml = Request-SddcManagerStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html
-        Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report for all VCs managed by ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report for all vCenter Servers managed by ($sddcManagerFqdn)"
         $vcStorageHtml = Request-VcenterStorageHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -html -allDomains 
+        Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report for all ESXi Hosts managed by ($sddcManagerFqdn)"
+        $esxiHtml = Request-EsxiStorageCapacity -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -html -allDomains
         $sddcStorageHtml += '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' # Hack: Adding the SDDC Manager Disk Health Status header for report navigation.
         $sddcStorageHtml += $sddcManagerStorageHtml
         $sddcStorageHtml += '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health Status</h3>' # Hack: Adding the vCenter Server Disk Health Status header for report navigation.
         $sddcStorageHtml += $vcStorageHtml
+        $sddcStorageHtml += '<a id="storage-esxi"></a><h3>ESXi Disk Health Status</h3>' # Hack: Adding the ESXi Disk Health Status header for report navigation.
+        $sddcStorageHtml += $esxiHtml
 
         # Combine all information gathered into a single HTML report
         $reportData = "$serviceHtml $componentConnectivityHtml $localPasswordHtml $certificateHtml $backupStatusHtml $snapshotStatusHtml $dnsHtml $ntpHtml $vcenterHtml $esxiHtml $vsanHtml $vsanPolicyHtml $nsxtHtml $nsxTier0BgpHtml $sddcStorageHtml"
@@ -3198,6 +3202,8 @@ Function Request-VcenterStorageHealth {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             # Define DF command for vCenter Server
                             $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
+                            # Check if logFile is already created. Create new if there is no $logFile defined
+                            if (!$logFile) { Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name }
 
                             if ($PsBoundParameters.ContainsKey("allDomains")) { 
                                 $allVcenters = Get-VCFvCenter
@@ -3211,12 +3217,14 @@ Function Request-VcenterStorageHealth {
 
                                     # Check if we got the information for disk usage and return error if not
                                     if (!$dfOutput) {
-                                        Write-LogMessage -Type ERROR -Message "Something went wrong while running the command '$command' on $server. Please check the PowerShell console for more details." -Colour RED
+                                        Write-LogMessage -Type ERROR -Message "Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details." -Colour RED
                                         if ($PsBoundParameters.ContainsKey("html")) {
-                                            $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on $($vcenter.fqdn). Please check the PowerShell console for more details.</p>"
+                                            ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details.</p>"
                                         }
-                                        # TODO: Fix this to not exit foreach if there is error only for one vCenter Server
-                                        return $returnValue
+                                        else {
+                                            Write-Output "Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details."
+                                        }
+                                        continue
                                     }
 
                                     # Compose command for Format-DfStorageHealth function
@@ -3239,7 +3247,7 @@ Function Request-VcenterStorageHealth {
                                 # Compose needed variables
                                 $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $workloadDomain }).vcenters
                                 $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn }).password
-                                $reportTitle = "<a id=`"storage-vcenter-$($vcenter.fqdn.Split('.')[0])`"></a><h4>vCenter Server Disk Health Status for $($vcenter.fqdn)</h4>"
+                                $reportTitle = "<a id=`"storage-vcenter-$($vcenter.fqdn.Split('.')[0])`"></a><h4>Disk Health for vCenter Server: $($vcenter.fqdn)</h4>"
 
 
                                 # Get information from VC
@@ -3247,11 +3255,14 @@ Function Request-VcenterStorageHealth {
 
                                 # Check if we got the information for disk usage and return error if not
                                 if (!$dfOutput) {
-                                    Write-LogMessage -Type ERROR -Message "Something went wrong while running the  command '$command' on $server. Please check the PowerShell console for more details." -Colour RED
+                                    Write-LogMessage -Type ERROR -Message "Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details." -Colour RED
                                     if ($PsBoundParameters.ContainsKey("html")) {
-                                        $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on $($vcenter.fqdn). Please check the PowerShell console for more details.</p>"
+                                        ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details.</p>"
                                     }
-                                    return $returnValue
+                                    else {
+                                        Write-Output "Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details."
+                                    }
+                                    continue
                                 }
 
                                 # Compose command for Format-DfStorageHealth function
@@ -3312,6 +3323,8 @@ Function Request-SddcManagerStorageHealth {
         # Define some variables
         $reportTitle = "<h4>Disk Health for SDDC Manager: $server</h4>"
         $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
+        # Check if logFile is already created. Create new if there is no $logFile defined
+        if (!$logFile) { Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name }
 
         # Get information from SDDC Manager and format it
         $dfOutput = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command
@@ -3343,6 +3356,144 @@ Function Request-SddcManagerStorageHealth {
     } 
 }
 Export-ModuleMember -Function Request-SddcManagerStorageHealth
+
+Function Request-EsxiStorageCapacity {
+    <#
+		.SYNOPSIS
+        Checks the disk usage for ESXi hosts.
+
+        .DESCRIPTION
+        The Request-EsxiStorageCapacity cmdlets checks the disk space usage on ESXi hosts. The cmdlet 
+        connects to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Gathers the details for each ESXi host
+        - Collects information for the disk usage
+        - Checks disk usage against thresholds and outputs the results
+
+        .EXAMPLE
+        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will check the disk usage for all ESXi hosts managed by SDDC Manager.
+
+        .EXAMPLE
+        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will check disk usage for ESXi hosts managed by SDDC Manager for a single workload domain.
+
+        .EXAMPLE
+        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will check the disk usage for all ESXi hosts managed by SDDC Manager but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        # Define DF command for ESXi
+        $command = 'df -h | grep -e "^VMFS-L\|^vfat"'
+        # Check if logFile is already created. Create new if there is no $logFile defined
+        if (!$logFile) { Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name }
+
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                            
+                if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                    $allESXis = Get-VCFHost
+                    foreach ($esxi in $allESXis) {
+                        # Compose needed variables
+                        $workloadDomain = (Get-VCFWorkloadDomain -id ((Get-VCFHost -fqdn $esxi.fqdn).domain.id)).name 
+                        $reportTitle = "<a id=`"storage-esxi-$workloadDomain`"></a><h4>Disk Health for ESXi Host '$($esxi.fqdn)'. Workload Domain: $workloadDomain</h4>"
+                        $esxiUser = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.accountType -eq "USER" -and $_.resource.resourceName -eq $esxi.fqdn }).username
+                        $esxiUserPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.accountType -eq "USER" -and $_.resource.resourceName -eq $esxi.fqdn }).password
+                        $password = ConvertTo-SecureString $esxiUserPass -AsPlainText -Force
+                        $credential = New-Object System.Management.Automation.PSCredential ($esxiUser, $password)
+                        # TODO: Explore the posibilty to get this information from API and remove Posh-SSH and SSH enabled on ESXi dependencies.
+                        $session = New-SSHSession -ComputerName $esxi.fqdn -Credential $credential -Force -WarningAction SilentlyContinue
+                        if ($session) { 
+                            $commandOutput = Invoke-SSHCommand -Index $session.SessionId -Command $command
+                            # Remove session once command is run
+                            Remove-SSHSession -Index $session.SessionId | Out-Null
+                        }
+                        else {
+                            # Print error message if connection was not successful and continue to the next ESXi host.
+                            Write-LogMessage -Type ERROR -Message "Could not open SSH connection to ESXi host '$($esxi.fqdn)'. Please check the PowerShell console for more details." -Colour RED
+                            ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Could not open SSH connection to ESXi host '$($esxi.fqdn)'. Please check the PowerShell console for more details.</p>"
+                            continue
+                        }
+                                    
+                        # Format output to be suitable for next function - Format-DfStorageHealth
+                        $dfOutput = ($commandOutput.Output -split ', ').Trim()
+
+                        # Compose command for Format-DfStorageHealth function
+                        if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
+                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html -failureOnly
+                        }
+                        elseif ($PsBoundParameters.ContainsKey("html")) {
+                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html
+                        }
+                        elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
+                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -failureOnly
+                        }
+                        else {
+                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput
+                        }
+                    }
+                }
+                else {
+                    $domainId = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $workloadDomain }).id
+                    $domainESXis = (Get-VCFHost | Where-Object { $_.domain.id -eq $domainId })
+                    foreach ($esxi in $domainESXis) {
+                        # Compose needed variables
+                        $workloadDomain = (Get-VCFWorkloadDomain -id ((Get-VCFHost -fqdn $esxi.fqdn).domain.id)).name 
+                        $reportTitle = "<a id=`"storage-esxi-$workloadDomain`"></a><h4>Disk Health for ESXi Host '$($esxi.fqdn)'. Workload Domain: $workloadDomain</h4>"
+                        $esxiUser = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.accountType -eq "USER" -and $_.resource.resourceName -eq $esxi.fqdn }).username
+                        $esxiUserPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.accountType -eq "USER" -and $_.resource.resourceName -eq $esxi.fqdn }).password
+                        $password = ConvertTo-SecureString $esxiUserPass -AsPlainText -Force
+                        $credential = New-Object System.Management.Automation.PSCredential ($esxiUser, $password)
+                        $session = New-SSHSession -ComputerName $esxi.fqdn -Credential $credential -Force -WarningAction SilentlyContinue
+                        if ($session) { 
+                            $commandOutput = Invoke-SSHCommand -Index $session.SessionId -Command $command
+                            # Remove session once command is run
+                            Remove-SSHSession -Index $session.SessionId | Out-Null
+                        }
+                        else {
+                            # Print error message if connection was not successful and continue to the next ESXi host.
+                            Write-LogMessage -Type ERROR -Message "Could not open SSH connection to ESXi host '$($esxi.fqdn)'. Please check the PowerShell console for more details." -Colour RED
+                            ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Could not open SSH connection to ESXi host '$($esxi.fqdn)'. Please check the PowerShell console for more details.</p>"
+                            continue
+                        }
+                                    
+                        # Format output to be suitable for next function - Format-DfStorageHealth
+                        $dfOutput = ($commandOutput.Output -split ', ').Trim()
+
+                        # Compose command for Format-DfStorageHealth function
+                        if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
+                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html -failureOnly
+                        }
+                        elseif ($PsBoundParameters.ContainsKey("html")) {
+                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html
+                        }
+                        elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
+                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -failureOnly
+                        }
+                        else {
+                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-EsxiStorageCapacity
 
 Function Publish-ComponentConnectivityHealth {
     <#
@@ -4210,6 +4361,7 @@ Function Test-VcfHealthPrereq {
             @{ Name=("PowerValidatedSolutions"); Version=("1.5.0")}
             @{ Name=("VMware.PowerCLI"); Version=("12.4.1")}
             @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.7")}
+            @{ Name=("Posh-SSH"); Version=("3.0.1")}
         )
         foreach ($module in $modules ) {
             if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
@@ -4543,7 +4695,7 @@ Function Format-DfStorageHealth {
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportTitle,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$dfOutput,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] $dfOutput,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateRange(1, 100)] [int]$greenThreshold = 70, # Define default value for "Green" threshold
@@ -4570,12 +4722,12 @@ Function Format-DfStorageHealth {
                 { $_ -le $greenThreshold } {
                     # Green if $usage is up to $greenThreshold
                     $alert = 'GREEN'
-                    $message = "Used space is less than $greenThreshold%. You could continue with the upgrade."
+                    $message = "Used space is less than $greenThreshold%."
                 }
                 { $_ -ge $redThreshold } {
                     # Red if $usage is equal or above $redThreshold
                     $alert = 'RED'
-                    $message = "Used space is above $redThreshold%. Please reclaim space on the partition before proceeding further."
+                    $message = "Used space is above $redThreshold%. Please reclaim space on the partition."
                     # TODO: Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
                     # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
                     # As an alternative you could run PowerCLI commandlet:
@@ -4585,7 +4737,7 @@ Function Format-DfStorageHealth {
                     # Yellow if above two are not matched
                     # TODO: Same as above - add hints on new lines }
                     $alert = 'YELLOW'
-                    $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space. "
+                    $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the partition"
                 }
             }
             
@@ -4752,9 +4904,8 @@ Function Get-VcenterBackupJobs {
     This example returns the latest backup job performed on the vCenter Server instance sfo-m01-vc01.sfo.rainpole.io.
 
     .EXAMPLE
-    Get-VcenterBackupJobs | Select -First 1 | Get-VCSABackupStatus
-    This example demonstrates piping the results of this function into the Get-VcenterBackupStatus function..
-    
+    Get-VcenterBackupJobs | Select -First 1 | Get-VcenterBackupStatus
+    This example demonstrates piping the results of this function into the Get-VcenterBackupStatus function.
     #>
 
     Param (
