@@ -5421,8 +5421,27 @@ Function Get-VsanHealthTest {
     Disconnect-VIServer -Server $server -Confirm:$false
 }
 Export-ModuleMember -Function Get-EsxiAlert
+<<<<<<< HEAD
 
 =======
+=======
+Function Get-VsanHealthTest {
+    <#
+    .SYNOPSIS
+    Returns the VSAN healthcheck tests from a VSAN cluster in vCenter Server.
+
+    .DESCRIPTION
+    The Get-VsanHealthTest cmdlet returns all VSAN healthcheck tests from a VSAN cluster in vCenter Server.
+
+    .EXAMPLE
+    Get-VsanHealthTest -server sfo-w01-vc01.sfo.rainpole.io -user root -pass VMw@re1! -cluster sfo-m01-c01
+    This example returns all VSAN healthcheck tests from cluster sfo-m01-c01 in vVenter sfo-w01-vc01.sfo.rainpole.io.
+    #>
+    Param (
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+>>>>>>> 5a04e62 (Get-VsanHealthTest)
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$cluster
     )
     $vc = Connect-VIServer -Server $server -User $user -Password $pass
