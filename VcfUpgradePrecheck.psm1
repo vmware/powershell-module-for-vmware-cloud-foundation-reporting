@@ -87,15 +87,15 @@ Function Invoke-VcfHealthReport {
         }
 
         # Generating all SoS Health Data
-        Write-LogMessage -Type INFO -Message "Generating the Service Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-        Write-LogMessage -Type INFO -Message "Generating the DNS Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-        Write-LogMessage -Type INFO -Message "Generating the NTP Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-        Write-LogMessage -Type INFO -Message "Generating the Certificate Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-        Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-        Write-LogMessage -Type INFO -Message "Generating the vSAN Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-        Write-LogMessage -Type INFO -Message "Generating the vSAN Storage Policy Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-        Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
-        Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the Service Health Report using the SoS output from SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the DNS Health Report using the SoS output from SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the NTP Health Report using the SoS output from SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the Certificate Health Report using the SoS output from SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report using the SoS output from SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the vSAN Health Report using the SoS output from SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the vSAN Storage Policy Health Report using the SoS output from SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report using the SoS output from SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report using the SoS output from SDDC Manager ($sddcManagerFqdn)"
         if ($PsBoundParameters.ContainsKey("failureOnly")) {
             $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html -failureOnly
             $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html -failureOnly
@@ -119,7 +119,7 @@ Function Invoke-VcfHealthReport {
         }
 
         # Generating the Connectivity Health Data
-        Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report from SoS Output on SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report using the SoS output from SDDC Manager ($sddcManagerFqdn)"
         if ($PsBoundParameters.ContainsKey("allDomains")) { 
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
