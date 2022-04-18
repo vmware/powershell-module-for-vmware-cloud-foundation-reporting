@@ -4258,6 +4258,80 @@ Function Request-NsxtAlert {
 }
 Export-ModuleMember -Function Request-NsxtAlert
 
+Function Request-VsanAlert {
+    <#
+        .SYNOPSIS
+        Returns VSAN Healthcheck alarms from a vCenter Server instance.
+
+        .DESCRIPTION
+        The Request-VsanAlert cmdlet returns VSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates the authentication to vCenter Server with credentials from SDDC Manager
+        - Collects the VSAN Healthcheck alarms from vCenter Server
+
+        .EXAMPLE
+        Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user adminr@local -pass VMw@re1! -domain sfo-w01
+        This example will return VSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+
+    if (Test-VCFConnection -server $server) {
+        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                        foreach ($cluster in Get-Cluster) {
+                            $vsanAlarms = Get-VsanHealthTest -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass -cluster $cluster
+                            $customObject = New-Object System.Collections.ArrayList
+                            $component = 'VSAN'
+                            $resource = 'Instance: ' + $vcfVcenterDetails.fqdn
+                            foreach ($vsanAlarm in $vsanAlarms) {
+                                $elementObject = New-Object -TypeName psobject
+                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource
+                                $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
+                                $elementObject | Add-Member -NotePropertyName 'Cluster' -NotePropertyValue $cluster
+                                # Alarm properties
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $vsanAlarm.TestHealth
+                                $elementObject | Add-Member -NotePropertyName 'GroupName' -NotePropertyValue $vsanAlarm.GroupName
+                                $elementObject | Add-Member -NotePropertyName 'TestName' -NotePropertyValue $vsanAlarm.TestName
+                                
+                                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                    if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                        $customObject += $elementObject
+                                    }
+                                }
+                                else {
+                                    $customObject += $elementObject
+                                }
+                            }
+                        }
+                        
+                        # Return the structured data to the console or format using HTML CSS Styles
+                        if ($PsBoundParameters.ContainsKey('html')) { 
+                            $customObject = $customObject | Sort-Object component, domain, resource, cluster, alert | ConvertTo-Html -Fragment -PreContent '<h2>vCenter Alarms</h2>' -As Table
+                            $customObject
+                        }
+                        else {
+                            $customObject | Sort-Object component, domain, resource, cluster, alert
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Request-VsanAlert
+
 Function Request-VcenterAlert {
     <#
         .SYNOPSIS
@@ -4330,7 +4404,7 @@ Function Request-VcenterAlert {
                                     break
                                 }
                                 "vsanOnly" {
-                                    if (($elementObject.Alarm -like "*vsan*")) {
+                                    if (($elementObject.EntityType -eq "ClusterComputeResource") -and ($elementObject.Alarm -like "vsan*")) {
                                         $addToCustomObject = $true
                                     }
                                     break
@@ -5304,6 +5378,7 @@ Function Get-SnapshotConsolidation {
 }
 Export-ModuleMember -Function Get-SnapshotConsolidation
 
+<<<<<<< HEAD
 Function Get-EsxiAlert {
     <#
     .SYNOPSIS
@@ -5317,10 +5392,15 @@ Function Get-EsxiAlert {
     This example returns all triggered alarms for and ESXi host named sfo-w01-esx01.sfo.rainpole.io.
     #>
 
+=======
+Function Get-VsanHealthTest {
+    <# ToDo#>
+>>>>>>> 2f66ad5 (Request-VsanAlert)
     Param (
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+<<<<<<< HEAD
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$host
     )
 
@@ -5342,6 +5422,32 @@ Function Get-EsxiAlert {
 }
 Export-ModuleMember -Function Get-EsxiAlert
 
+=======
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$cluster
+    )
+    $vc = Connect-VIServer -Server $server -User $user -Password $pass
+    $vsanClusterHealthSystem = Get-VSANView -Id "VsanVcClusterHealthSystem-vsan-cluster-health-system"
+    $clusterView = (Get-Cluster -Name $cluster).ExtensionData.MoRef
+    $results = $vsanClusterHealthSystem.VsanQueryVcClusterHealthSummary($clusterView,$null,$null,$true,$null,$null,'defaultView')
+    $healthCheckGroups = $results.groups
+    
+    $healthTests = New-Object System.Collections.ArrayList
+    
+    foreach ($healthCheckGroup in $healthCheckGroups) {
+        foreach ($test in $healthCheckGroup.GroupTests) {
+            $testResult = [pscustomobject] @{
+                GroupName = $healthCheckGroup.GroupName
+                TestName = $test.TestName
+                TestHealth = $test.TestHealth.ToUpper()
+            }
+           $healthTests += $testResult
+        }
+    }
+    $healthTests 
+    Disconnect-VIServer -Server $server -Confirm:$false
+}
+Export-ModuleMember -Function Get-VsanHealthTest
+>>>>>>> 2f66ad5 (Request-VsanAlert)
 Function Get-VcenterTriggeredAlarm {
         <#
     .SYNOPSIS
