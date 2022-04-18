@@ -3383,6 +3383,8 @@ Function Request-EsxiStorageCapacity {
         This example will check the disk usage for all ESXi hosts managed by SDDC Manager but only reports issues.
     #>
 
+    # TODO: Refactor to Request-EsxiStorageCapacity to remove Posh-SSH dependency.
+
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
@@ -3412,7 +3414,6 @@ Function Request-EsxiStorageCapacity {
                         $esxiUserPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.accountType -eq "USER" -and $_.resource.resourceName -eq $esxi.fqdn }).password
                         $password = ConvertTo-SecureString $esxiUserPass -AsPlainText -Force
                         $credential = New-Object System.Management.Automation.PSCredential ($esxiUser, $password)
-                        # TODO: Explore the posibilty to get this information from API and remove Posh-SSH and SSH enabled on ESXi dependencies.
                         $session = New-SSHSession -ComputerName $esxi.fqdn -Credential $credential -Force -WarningAction SilentlyContinue
                         if ($session) { 
                             $commandOutput = Invoke-SSHCommand -Index $session.SessionId -Command $command
@@ -4360,7 +4361,7 @@ Function Test-VcfHealthPrereq {
             @{ Name=("PowerValidatedSolutions"); Version=("1.5.0")}
             @{ Name=("VMware.PowerCLI"); Version=("12.4.1")}
             @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.7")}
-            @{ Name=("Posh-SSH"); Version=("3.0.1")}
+            @{ Name=("Posh-SSH"); Version=("3.0.1")} # TODO: Refactor to Request-EsxiStorageCapacity to remove Posh-SSH dependency.
         )
         foreach ($module in $modules ) {
             if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
