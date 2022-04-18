@@ -1929,10 +1929,10 @@ Function Publish-NsxtTier0BgpStatus {
                     $addNoIssues = $true 
                 }
                 if ($addNoIssues) {
-                    $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                    $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No Issues Found</p>' 
                 }
                 else {
-                    $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
+                    $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
                 }
                 $allNsxtTier0BgpStatusObject = Convert-CssClass -htmldata $allNsxtTier0BgpStatusObject
                 $allNsxtTier0BgpStatusObject
@@ -3837,7 +3837,7 @@ Function Request-NsxtTier0BgpStatus {
 
                             foreach ($tier0 in $tier0s) {
 
-                                $bgpStatus = Get-NsxtTier0BgpStatus -id $tier0.id
+                                $bgpStatus = Get-NsxtTier0BgpStatus -id $tier0.id | Where-Object {$_.type -eq 'USER'}
 
                                 foreach ($element in $bgpStatus) {
 
@@ -3861,7 +3861,6 @@ Function Request-NsxtTier0BgpStatus {
                                     $elementObject | Add-Member -NotePropertyName 'NSX Manager' -NotePropertyValue $vcfNsxDetails.fqdn
                                     $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
                                     $elementObject | Add-Member -NotePropertyName 'Tier-0 ID' -NotePropertyValue $tier0.id
-                                    $elementObject | Add-Member -NotePropertyName 'Type' -NotePropertyValue $element.type
                                     $elementObject | Add-Member -NotePropertyName 'Connection' -NotePropertyValue $element.connection_state
                                     $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
                                     $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
@@ -3876,11 +3875,11 @@ Function Request-NsxtTier0BgpStatus {
                                     
                                     if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                         if ($element.connection_state -ne 'ESTABLISHED') {
-                                            $customObject += $elementObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address'
+                                            $customObject += $elementObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address'
                                         }
                                     }
                                     else {
-                                        $customObject += $elementObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address'
+                                        $customObject += $elementObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address'
                                     }  
                                 }
                             }
@@ -3893,16 +3892,16 @@ Function Request-NsxtTier0BgpStatus {
                                     $addNoIssues = $true 
                                 }
                                 if ($addNoIssues) {
-                                    $outputObject = $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                                    $outputObject = $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No Issues Found</p>' 
                                 }
                                 else {
-                                    $outputObject = $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
+                                    $outputObject = $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
                                 }
                                 $outputObject = Convert-CssClass -htmldata $outputObject
                                 $outputObject
                             }
                             else {
-                                $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Type', 'Source Address'
+                                $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address'
                             }                    
                         }
                     }
