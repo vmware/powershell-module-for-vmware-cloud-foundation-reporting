@@ -4280,8 +4280,14 @@ Function Request-VcenterAlert {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+<<<<<<< HEAD
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+=======
+        [Parameter (Mandatory = $false)] [ValidateSet("hostOnly","vsanOnly")][ValidateNotNullOrEmpty()] [String]$filterOut,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+>>>>>>> 5ee7fec (Enchace Request-VcenterAlert)
     )
 
     if (Test-VCFConnection -server $server) {
@@ -4303,21 +4309,48 @@ Function Request-VcenterAlert {
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
                             $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
                             # Alarm properties
-                            $elementObject | Add-Member -NotePropertyName 'Entity Type' -NotePropertyValue $alarm.EntityType
+                            $elementObject | Add-Member -NotePropertyName 'EntityType' -NotePropertyValue $alarm.EntityType
                             $elementObject | Add-Member -NotePropertyName 'Alarm' -NotePropertyValue $alarm.Alarm
                             $elementObject | Add-Member -NotePropertyName 'Time' -NotePropertyValue $alarm.Time
                             $elementObject | Add-Member -NotePropertyName 'Acknowledged' -NotePropertyValue $alarm.Acknowledged 
-                            $elementObject | Add-Member -NotePropertyName 'Acknowledged by' -NotePropertyValue $alarm.AckBy
-                            $elementObject | Add-Member -NotePropertyName 'Acknowledged Time' -NotePropertyValue $alarm.AcknowledgedTime
+                            $elementObject | Add-Member -NotePropertyName 'AcknowledgedBy' -NotePropertyValue $alarm.AckBy
+                            $elementObject | Add-Member -NotePropertyName 'AcknowledgedTime' -NotePropertyValue $alarm.AcknowledgedTime
                             
+<<<<<<< HEAD
                             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                 if ((($elementObject.alert -eq 'RED') -or ($elementObject.Alert -eq 'YELLOW')) -and !($elementObject.Acknowledged)) {
+=======
+                            $addToCustomObject = $false
+
+                            switch ($filterOut) {
+                                "hostOnly" {
+                                    if ($elementObject.EntityType -eq "HostSystem") {
+                                        $addToCustomObject = $true
+                                    }
+                                    break
+                                }
+                                "vsanOnly" {
+                                    if (($elementObject.Alarm -like "*vsan*")) {
+                                        $addToCustomObject = $true
+                                    }
+                                    break
+                                }
+                                default {
+                                    $addToCustomObject = $true
+                                }
+                            }
+                            if ($addToCustomObject){
+                                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                    if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                        $customObject += $elementObject
+                                    }
+                                }
+                                else {
+>>>>>>> 5ee7fec (Enchace Request-VcenterAlert)
                                     $customObject += $elementObject
                                 }
                             }
-                            else {
-                                $customObject += $elementObject
-                            }
+                            
                         }
                         # Return the structured data to the console or format using HTML CSS Styles
                         if ($PsBoundParameters.ContainsKey('html')) { 
