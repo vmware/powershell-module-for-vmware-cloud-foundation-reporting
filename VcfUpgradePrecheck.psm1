@@ -4810,7 +4810,7 @@ Function Get-ClarityReportHeader {
             <div class="main-container">
                 <header class="header header-6">
                     <div class="branding">
-                        <a href="javascript://">
+                        <a href="">
                             <cds-icon shape="vm-bug">
                                 <img src="icon.svg" alt="VMware Cloud Foundation"/>
                             </cds-icon>
@@ -4974,7 +4974,7 @@ Function Get-ClarityReportNavigation {
             <nav class="subnav">
             <ul class="nav">
                 <li class="nav-item">
-                <a class="nav-link active" href="javascript://">Upgrade Precheck Report</a>
+                <a class="nav-link active" href="">Upgrade Precheck Report</a>
                 </li>
             </ul>
             </nav>
