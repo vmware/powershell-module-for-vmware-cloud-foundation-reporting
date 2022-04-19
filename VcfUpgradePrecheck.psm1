@@ -106,6 +106,8 @@ Function Invoke-VcfHealthReport {
             $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html -failureOnly
             $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html -failureOnly
             $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -html -failureOnly
+            $nsxtEdgeClusterHtml = Publish-NsxtEdgeClusterHealth -json $jsonFilePath -html -failureOnly
+            $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html -failureOnly
         } else {
             $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html
             $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html
@@ -116,6 +118,8 @@ Function Invoke-VcfHealthReport {
             $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html
             $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html
             $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -html
+            $nsxtEdgeClusterHtml = Publish-NsxtEdgeClusterHealth -json $jsonFilePath -html
+            $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html
         }
 
         # Generating the Connectivity Health Data
@@ -234,7 +238,7 @@ Function Invoke-VcfHealthReport {
         }
 
         # Combine all information gathered into a single HTML report
-        $reportData = "$serviceHtml $componentConnectivityHtml $localPasswordHtml $certificateHtml $backupStatusHtml $snapshotStatusHtml $dnsHtml $ntpHtml $vcenterHtml $esxiHtml $vsanHtml $vsanPolicyHtml $nsxtHtml $nsxTier0BgpHtml $storageCapacityHealthHtml"
+        $reportData = "$serviceHtml $componentConnectivityHtml $localPasswordHtml $certificateHtml $backupStatusHtml $snapshotStatusHtml $dnsHtml $ntpHtml $vcenterHtml $esxiHtml $vsanHtml $vsanPolicyHtml $nsxtHtml $nsxtEdgeClusterHtml $nsxtEdgeNodeHtml $nsxTier0BgpHtml $storageCapacityHealthHtml"
 
         $reportHeader = Get-ClarityReportHeader
         $reportNavigation = Get-ClarityReportNavigation -reportType health
@@ -1120,26 +1124,26 @@ Function Publish-NsxtHealth {
 }
 Export-ModuleMember -Function Publish-NsxtHealth
 
-Function Publish-NsxtEdgeHealth {
+Function Publish-NsxtEdgeNodeHealth {
     <#
         .SYNOPSIS
-        Formats the NSX Health data from the SoS JSON output.
+        Formats the NSX Edge Node Health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-NsxtEdgeHealth cmdlet formats the NSX Health data from the SoS JSON output and publishes it as
-        either a standard PowerShell object or an HTML object. 
+        The Publish-NsxtEdgeNodeHealth cmdlet formats the NSX Edge Node Health data from the SoS JSON output and
+        publishes it as either a standard PowerShell object or an HTML object. 
 
         .EXAMPLE
-        Publish-NsxtEdgeHealth -json <file-name>
-        This example extracts and formats the NSX Health data as a PowerShell object from the JSON file.
+        Publish-NsxtEdgeNodeHealth -json <file-name>
+        This example extracts and formats the NSX Edge Node Health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-NsxtEdgeHealth -json <file-name> -html
-        This example extracts and formats the NSX Health data as an HTML object from the JSON file.
+        Publish-NsxtEdgeNodeHealth -json <file-name> -html
+        This example extracts and formats the NSX Edge Node Health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-NsxtEdgeHealth -json <file-name> -failureOnly
-        This example extracts and formats the NSX Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-NsxtEdgeNodeHealth -json <file-name> -failureOnly
+        This example extracts and formats the NSX Edge Node Health data as a PowerShell object from the JSON file for only the failed items.
     #>
 
     Param (
@@ -1156,56 +1160,127 @@ Function Publish-NsxtEdgeHealth {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
+        # NSX Edge Node Health
         $customObject = New-Object System.Collections.ArrayList
-
-        # NSX Edge Health
-        $component = 'NSX Edge'
+        $jsonInputData = $targetContent.General.'NSX Health'.'NSX Edge'
         $nsxtClusters = Get-VCFNsxtCluster
-        $inputData = $targetContent.General.'NSX Health'.'NSX Edge'
         foreach ($nsxtVip in $nsxtClusters.vipFqdn) {
-            $inputData.PSObject.Properties.Remove($nsxtVip)
+            $jsonInputData.PSObject.Properties.Remove($nsxtVip)
         }
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $element.message
-            foreach ($item in $element.message) {
-                $item
-            }
-        }
-
-        $elementObject = New-Object -TypeName psobject
-        $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
-        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
-        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
-        $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
-        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            if (($element.status -eq 'FAILED')) {
+        foreach ($element in $jsonInputData.PsObject.Properties.Value) {
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'NSX Edge'
+            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue ($element.message -Split ('Following are the individual health stats'))[0]
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                if (($element.status -eq 'FAILED')) {
+                    $customObject += $elementObject
+                }
+            } else {
                 $customObject += $elementObject
             }
-        }
-        else {
-            $customObject += $elementObject
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) { 
             if ($customObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
             } else {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Health Status</h3>' -As Table
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -As Table
             }
             $customObject = Convert-CssClass -htmldata $customObject
             $customObject
-        }
-        else {
-            $customObject | Sort-Object Component, Resource 
+        } else {
+            $customObject | Sort-Object Component, Resource
         }
     }
     Catch {
         Debug-CatchWriter -object $_
     }
 }
-Export-ModuleMember -Function Publish-NsxtEdgeHealth
+Export-ModuleMember -Function Publish-NsxtEdgeNodeHealth
+
+Function Publish-NsxtEdgeClusterHealth {
+    <#
+        .SYNOPSIS
+        Formats the NSX Edge Cluster Health data from the SoS JSON output.
+
+        .DESCRIPTION
+        The Publish-NsxtEdgeClusterHealth cmdlet formats the NSX Edge Cluster Health data from the SoS JSON output and
+        publishes it as either a standard PowerShell object or an HTML object. 
+
+        .EXAMPLE
+        Publish-NsxtEdgeClusterHealth -json <file-name>
+        This example extracts and formats the NSX Edge Cluster Health data as a PowerShell object from the JSON file.
+
+        .EXAMPLE
+        Publish-NsxtEdgeClusterHealth -json <file-name> -html
+        This example extracts and formats the NSX Edge Cluster Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-NsxtEdgeClusterHealth -json <file-name> -failureOnly
+        This example extracts and formats the NSX Edge Cluster Health data as a PowerShell object from the JSON file for only the failed items.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path -Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        }
+        else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }        
+
+        # NSX Edge Cluster Health
+        $customObject = New-Object System.Collections.ArrayList
+        $jsonInputData = $targetContent.General.'NSX Health'.'NSX Edge'
+        $nsxtEdgeClusters = Get-VCFEdgeCluster
+        foreach ($nsxtEdgeNodes in $nsxtEdgeClusters.edgeNodes.hostname) {
+            $jsonInputData.PSObject.Properties.Remove($nsxtEdgeNodes)
+        }
+        foreach ($element in $jsonInputData.PsObject.Properties.Value) {
+            foreach ($cluster in $element.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'NSX Edge Cluster'
+                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($cluster.area -Split (':'))[-1].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $cluster.alert
+                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $cluster.message
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if (($element.status -eq 'FAILED')) {
+                        $customObject += $elementObject
+                    }
+                } else {
+                    $customObject += $elementObject
+                }
+            }
+        }
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey('html')) { 
+            if ($customObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+            } else {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -As Table
+            }
+            $customObject = Convert-CssClass -htmldata $customObject
+            $customObject
+        } else {
+            $customObject | Sort-Object Component, Resource
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-NsxtEdgeClusterHealth
 
 Function Publish-NtpHealth {
     <#
@@ -4012,7 +4087,7 @@ Function Request-NsxtTier0BgpStatus {
 
                             $component = "BGP"
                             
-                            $tier0s = Get-NsxtTier0 -fqdn $vcfNsxDetails.fqdn
+                            $tier0s = Get-NsxtTier0Gateway
 
                             foreach ($tier0 in $tier0s) {
 
@@ -4868,7 +4943,7 @@ Function Get-ClarityReportNavigation {
                 </section>
                 <section class="nav-group collapsible">
                     <input id="vcenter" type="checkbox"/>
-                    <label for="vccenter">vCenter Server</label>
+                    <label for="vcenter">vCenter Server</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#vcenter-overall">Overall Health</a></li>
                         <li><a class="nav-link" href="#vcenter-ring">Single Sign-On Health</a></li>
@@ -4896,7 +4971,9 @@ Function Get-ClarityReportNavigation {
                     <input id="nsx" type="checkbox"/>
                     <label for="nsx">NSX-T Data Center</label>
                     <ul class="nav-list">
-                        <li><a class="nav-link" href="#nsx-local-manager">NSX Manager (Local)</a></li>
+                        <li><a class="nav-link" href="#nsx-local-manager">NSX Managers (Local)</a></li>
+                        <li><a class="nav-link" href="#nsx-edge-cluster">NSX Edge Cluster</a></li>
+                        <li><a class="nav-link" href="#nsx-edge">NSX Edge Nodes</a></li>
                         <li><a class="nav-link" href="#nsx-t0-bgp">NSX Tier-0 Gateway BGP</a></li>
                     </ul>
                 </section>
@@ -5579,35 +5656,6 @@ Function Get-NsxtEvent {
     }
 }
 Export-ModuleMember -Function Get-NsxtEvent
-
-Function Get-NsxtTier0 {
-    <#
-        .SYNOPSIS
-        Returns the details of all NSX Tier-0 gateways from an NSX Manager.
-
-        .DESCRIPTION
-        The Get-NsxtTier0 cmdlet returns the details of all NSX Tier-0 gateways from an NSX Manager.
-
-        .EXAMPLE
-        Get-NsxtTier0 -fqdn sfo-w01-nsx01.sfo.rainpole.io
-        This example returns the details of all NSX Tier-0 gateways from an NSX Manager named sfo-w01-nsx01.sfo.rainpole.io.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn
-    )
-
-    Try {
-
-        $uri = "https://$nsxtManager/policy/api/v1/infra/tier-0s"
-        $response = Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $nsxtHeaders
-        $response.results
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Get-NsxtTier0
 
 Function Get-NsxtTier0BgpStatus {
     <#
