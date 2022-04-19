@@ -4189,6 +4189,10 @@ Function Request-NsxtAlert {
         .EXAMPLE
         Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
         This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain.
+        
+        .EXAMPLE
+        Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01 -failureOnly
+        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain but only for the failed items
     #>
 
     Param (
@@ -4271,8 +4275,12 @@ Function Request-VsanAlert {
         - Collects the vSAN Healthcheck alarms from vCenter Server
 
         .EXAMPLE
-        Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user adminr@local -pass VMw@re1! -domain sfo-w01
+        Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain.
+
+        .EXAMPLE
+        Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+        This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
     #>
 
     Param (
@@ -4292,7 +4300,7 @@ Function Request-VsanAlert {
                         foreach ($cluster in Get-Cluster) {
                             $vsanAlarms = Get-VsanHealthTest -cluster $cluster
                             $customObject = New-Object System.Collections.ArrayList
-                            $component = 'VSAN'
+                            $component = 'vSAN'
                             $resource = 'Instance: ' + $vcfVcenterDetails.fqdn
                             foreach ($vsanAlarm in $vsanAlarms) {
                                 $elementObject = New-Object -TypeName psobject
@@ -4345,16 +4353,16 @@ Function Request-VcenterAlert {
         - Collects the alerts from vCenter Server
 
         .EXAMPLE
-        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1! -domain sfo-w01
+        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01
         This example will return alarms of a vCenter Server managed by SDDC Manager for a workload domain.
         
         .EXAMPLE
-        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user adminr@local -pass VMw@re1! -domain sfo-w01 -filterOut hostOnly
+        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01 -filterOut hostOnly
         This example will return alarms from ESXi hosts of a vCenter Server managed by SDDC Manager for a workload domain.
 
         .EXAMPLE
-        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user adminr@local -pass VMw@re1! -domain sfo-w01 -filterOut vsanOnly -failyreOnly
-        This example will return red and yellow alarms from vSAN clusters of a vCenter Server managed by SDDC Manager for a workload domain.
+        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01 -filterOut vsanOnly -failureOnly
+        This example will return alarms from vSAN clusters of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
     #>
 
     Param (
@@ -4436,7 +4444,7 @@ Function Request-VcenterAlert {
                         }
                         # Return the structured data to the console or format using HTML CSS Styles
                         if ($PsBoundParameters.ContainsKey('html')) { 
-                            $customObject = $customObject | Sort-Object component, domain, resource, alert | ConvertTo-Html -Fragment -PreContent '<h2>vCenter Alarms</h2>' -As Table
+                            $customObject = $customObject | Sort-Object component, domain, resource, alert | ConvertTo-Html -Fragment -PreContent '<h2>vCenter Server Alarms</h2>' -As Table
                             $customObject
                         }
                         else {
@@ -4463,8 +4471,12 @@ Function Request-EsxiAlert {
         - Collects the alerts from all ESXi hosts in vCenter Server instance
 
         .EXAMPLE
-        Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1! -domain sfo-w01
-        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain.
+        Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01.
+
+        .EXAMPLE
+        Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01 but only for the failed items.
     #>
 
     Param (
@@ -5444,7 +5456,7 @@ Function Get-VsanHealthTest {
 
     .EXAMPLE
     Get-VsanHealthTest -cluster sfo-m01-c01
-    This example returns all vSAN healthcheck tests from cluster sfo-m01-c01 in vVenter sfo-w01-vc01.sfo.rainpole.io.
+    This example returns all vSAN healthcheck tests from vSAN cluster sfo-m01-c01 in connected vCenter Server.
     #>
     Param (
 <<<<<<< HEAD
