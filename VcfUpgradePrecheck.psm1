@@ -3225,8 +3225,6 @@ Function Request-VcenterStorageHealth {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             # Define DF command for vCenter Server
                             $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
-                            # Check if logFile is already created. Create new if there is no $logFile defined
-                            if (!$logFile) { Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name }
 
                             if ($PsBoundParameters.ContainsKey("allDomains")) { 
                                 $allVcenters = Get-VCFvCenter
@@ -3240,7 +3238,6 @@ Function Request-VcenterStorageHealth {
 
                                     # Check if we got the information for disk usage and return error if not
                                     if (!$dfOutput) {
-                                        Write-LogMessage -Type ERROR -Message "Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details." -Colour RED
                                         if ($PsBoundParameters.ContainsKey("html")) {
                                             ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details.</p>"
                                         }
@@ -3278,7 +3275,6 @@ Function Request-VcenterStorageHealth {
 
                                 # Check if we got the information for disk usage and return error if not
                                 if (!$dfOutput) {
-                                    Write-LogMessage -Type ERROR -Message "Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details." -Colour RED
                                     if ($PsBoundParameters.ContainsKey("html")) {
                                         ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details.</p>"
                                     }
@@ -3346,15 +3342,12 @@ Function Request-SddcManagerStorageHealth {
         # Define some variables
         $reportTitle = "<h4>Disk Health for SDDC Manager: $server</h4>"
         $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
-        # Check if logFile is already created. Create new if there is no $logFile defined
-        if (!$logFile) { Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name }
 
         # Get information from SDDC Manager and format it
         $dfOutput = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command
 
         # Check if we got the information for disk usage and return error if not
         if (!$dfOutput) {
-            Write-LogMessage -Type ERROR -Message "Something went wrong while running the command: '$command' on $server. Please check the PowerShell console for more details." -Colour RED
             if ($PsBoundParameters.ContainsKey("html")) {
                 $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command: '$command' on $server. Please check the PowerShell console for more details.</p>"
             }
@@ -3421,8 +3414,6 @@ Function Request-EsxiStorageCapacity {
     Try {
         # Define DF command for ESXi
         $command = 'df -h | grep -e "^VMFS-L\|^vfat"'
-        # Check if logFile is already created. Create new if there is no $logFile defined
-        if (!$logFile) { Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name }
 
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -3445,7 +3436,6 @@ Function Request-EsxiStorageCapacity {
                         }
                         else {
                             # Print error message if connection was not successful and continue to the next ESXi host.
-                            Write-LogMessage -Type ERROR -Message "Could not open SSH connection to ESXi host '$($esxi.fqdn)'. Please check the PowerShell console for more details." -Colour RED
                             ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Could not open SSH connection to ESXi host '$($esxi.fqdn)'. Please check the PowerShell console for more details.</p>"
                             continue
                         }
@@ -3487,7 +3477,6 @@ Function Request-EsxiStorageCapacity {
                         }
                         else {
                             # Print error message if connection was not successful and continue to the next ESXi host.
-                            Write-LogMessage -Type ERROR -Message "Could not open SSH connection to ESXi host '$($esxi.fqdn)'. Please check the PowerShell console for more details." -Colour RED
                             ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Could not open SSH connection to ESXi host '$($esxi.fqdn)'. Please check the PowerShell console for more details.</p>"
                             continue
                         }
