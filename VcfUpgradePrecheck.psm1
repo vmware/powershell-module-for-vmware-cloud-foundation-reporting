@@ -3199,7 +3199,6 @@ Function Request-DatastoreStorageCapacity {
         Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will check datastore on all vCenter Servers managed by SDDC Manager instance sfo-vcf01.sfo.rainpole.io.
     #>
-
     
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -3254,7 +3253,7 @@ Function Request-DatastoreStorageCapacity {
                                     # Skip population of object if "failureOnly" is selected and alert is "GREEN"
                                     if (($PsBoundParameters.ContainsKey("failureOnly")) -and ($alert -eq 'GREEN')) { continue }
                                     $userObject = New-Object -TypeName psobject
-                                    $userObject | Add-Member -notepropertyname 'vCenter FQDN' -notepropertyvalue $vcenter.fqdn
+                                    $userObject | Add-Member -notepropertyname 'vCenter Server' -notepropertyvalue $vcenter.fqdn
                                     $userObject | Add-Member -notepropertyname 'Datastore Name' -notepropertyvalue $datastore.Name
                                     $userObject | Add-Member -notepropertyname 'Datastore Type' -notepropertyvalue $datastore.Type.ToUpper()
                                     $userObject | Add-Member -notepropertyname 'Size (GB)' -notepropertyvalue $capacity
@@ -3321,7 +3320,7 @@ Function Request-DatastoreStorageCapacity {
                     #}
                 }
                 # Sort the output FQDN then Datastore Name
-                $customObject = $customObject | Sort-Object 'vCenter Server', 'Datastore Name'
+                $customObject = $customObject | Sort-Object 'vCenter Server', 'Datastore Type', 'Datastore Name'
 
                 # Return the structured data to the console or format using HTML CSS Styles
                 if ($PsBoundParameters.ContainsKey('html')) { 
@@ -3333,7 +3332,7 @@ Function Request-DatastoreStorageCapacity {
                     $customObject = Convert-CssClass -htmldata $customObject
                 }
                 # Return $customObject in HTML or plain format
-                $customObject
+                $customObject | Sort-Object 'vCenter Server', 'Datastore Type', 'Datastore Name'
             }
         }
     }
