@@ -4261,18 +4261,18 @@ Export-ModuleMember -Function Request-NsxtAlert
 Function Request-VsanAlert {
     <#
         .SYNOPSIS
-        Returns VSAN Healthcheck alarms from a vCenter Server instance.
+        Returns vSAN Healthcheck alarms from a vCenter Server instance.
 
         .DESCRIPTION
-        The Request-VsanAlert cmdlet returns VSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
+        The Request-VsanAlert cmdlet returns vSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Collects the VSAN Healthcheck alarms from vCenter Server
+        - Collects the vSAN Healthcheck alarms from vCenter Server
 
         .EXAMPLE
         Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user adminr@local -pass VMw@re1! -domain sfo-w01
-        This example will return VSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain.
+        This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain.
     #>
 
     Param (
@@ -4347,6 +4347,14 @@ Function Request-VcenterAlert {
         .EXAMPLE
         Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1! -domain sfo-w01
         This example will return alarms of a vCenter Server managed by SDDC Manager for a workload domain.
+        
+        .EXAMPLE
+        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user adminr@local -pass VMw@re1! -domain sfo-w01 -filterOut hostOnly
+        This example will return alarms from ESXi hosts of a vCenter Server managed by SDDC Manager for a workload domain.
+
+        .EXAMPLE
+        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user adminr@local -pass VMw@re1! -domain sfo-w01 -filterOut vsanOnly -failyreOnly
+        This example will return red and yellow alarms from vSAN clusters of a vCenter Server managed by SDDC Manager for a workload domain.
     #>
 
     Param (
@@ -5428,14 +5436,14 @@ Export-ModuleMember -Function Get-EsxiAlert
 Function Get-VsanHealthTest {
     <#
     .SYNOPSIS
-    Returns the VSAN healthcheck tests from a VSAN cluster in vCenter Server.
+    Returns the vSAN healthcheck tests from a vSAN cluster in vCenter Server.
 
     .DESCRIPTION
-    The Get-VsanHealthTest cmdlet returns all VSAN healthcheck tests from a VSAN cluster in vCenter Server.
+    The Get-VsanHealthTest cmdlet returns all vSAN healthcheck tests from a VSAN cluster in vCenter Server.
 
     .EXAMPLE
     Get-VsanHealthTest -server sfo-w01-vc01.sfo.rainpole.io -user root -pass VMw@re1! -cluster sfo-m01-c01
-    This example returns all VSAN healthcheck tests from cluster sfo-m01-c01 in vVenter sfo-w01-vc01.sfo.rainpole.io.
+    This example returns all vSAN healthcheck tests from cluster sfo-m01-c01 in vVenter sfo-w01-vc01.sfo.rainpole.io.
     #>
     Param (
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
