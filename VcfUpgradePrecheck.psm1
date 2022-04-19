@@ -411,8 +411,7 @@ Function Invoke-VcfUpgradePrecheck {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
-        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
 
     Try {
@@ -421,7 +420,7 @@ Function Invoke-VcfUpgradePrecheck {
 
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the Process of Running an Upgrade Prechech Workload Domain ($workloadDomain)" -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Starting the Process of Running an Upgrade Precheck Workload Domain ($workloadDomain)" -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType upgrade # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
@@ -478,9 +477,11 @@ Function Invoke-VcfUpgradePrecheck {
         }
 
         $reportHeader = Get-ClarityReportHeader
+        $reportNavigation = Get-ClarityReportNavigation -reportType upgrade
         $reportFooter = Get-ClarityReportFooter
         $report = $reportHeader
-        $report += $allChecksObject
+        $report += $reportNavigation
+        $report += $reportData
         $report += $reportFooter
 
         # Generate the report to an HTML file and then open it in the default browser
@@ -1438,8 +1439,7 @@ Function Publish-VcenterHealth {
     Try {
         if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -1447,25 +1447,48 @@ Function Publish-VcenterHealth {
         $jsonInputData = $targetContent.Compute.'vCenter Overall Health' # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey('failureOnly')) {
             # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+            $vcenterOverall = Read-JsonElement -inputData $jsonInputData -failureOnly
+        } else {
+            $vcenterOverall = Read-JsonElement -inputData $jsonInputData
         }
-        else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+
+        # Ring Topology Health
+        $ringTopologyHealth = New-Object System.Collections.ArrayList
+        $jsonInputData = $targetContent.General.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SOS JSON
+        $elementObject = New-Object -TypeName psobject
+        $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($jsonInputData.area -SPlit  ("SDDC:"))[-1].Trim()
+        $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $jsonInputData.alert
+        $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $jsonInputData.message
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            if (($jsonInputData.status -eq "FAILED")) {
+                $ringTopologyHealth += $elementObject
+            }
+        } else {
+            $ringTopologyHealth += $elementObject
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey('html')) { 
-            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+        if ($PsBoundParameters.ContainsKey("html")) { 
+            if ($vcenterOverall.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $vcenterOverall = $vcenterOverall | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Overall Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
             } else {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Health Status</h3>' -As Table
+                $vcenterOverall = $vcenterOverall | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Overall Health Status</h3>' -As Table
             }
-            $outputObject = Convert-CssClass -htmldata $outputObject
-            $outputObject
-        }
-        else {
-            $outputObject | Sort-Object Component, Resource 
+            $vcenterOverall = Convert-CssClass -htmldata $vcenterOverall
+            $vcenterOverall
+
+            if ($ringTopologyHealth.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring"></a><h3>vCenter Single Sign-On Ring Topology Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+            } else {
+                $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring"></a><h3>vCenter Single Sign-On Ring Topology Health Status</h3>' -As Table
+            }
+            $ringTopologyHealth = Convert-CssClass -htmldata $ringTopologyHealth
+            $ringTopologyHealth
+        } else {
+            $vcenterOverall | Sort-Object Component, Resource
+            $ringTopologyHealth | Sort-Object Component, Resource
         }
     }
     Catch {
@@ -4519,7 +4542,7 @@ Export-ModuleMember -Function Get-ClarityReportHeader
 
 Function Get-ClarityReportNavigation {
     Param (
-        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config")] [String]$reportType
+        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade")] [String]$reportType
     )
 
     if ($reportType -eq "health") { # Define the Clarity Cascading Style Sheets (CSS) for a Health Report
@@ -4561,7 +4584,14 @@ Function Get-ClarityReportNavigation {
                     <li><a class="nav-link" href="#infra-ntp">Network Time</a></li>
                 </ul>
                 </section>
-                <a class="nav-link nav-icon" href="#vcenter-overall">vCenter Server</a>
+                <section class="nav-group collapsible">
+                    <input id="vcenter" type="checkbox"/>
+                    <label for="vccenter">vCenter Server</label>
+                    <ul class="nav-list">
+                        <li><a class="nav-link" href="#vcenter-overall">Overall Health</a></li>
+                        <li><a class="nav-link" href="#vcenter-ring">Single Sign-On Health</a></li>
+                    </ul>
+                </section>
                 <section class="nav-group collapsible">
                     <input id="esxi" type="checkbox"/>
                     <label for="esxi">ESXi</label>
@@ -4654,6 +4684,20 @@ Function Get-ClarityReportNavigation {
             </nav>
                 <div class="content-area">
                     <div class="content-area">'
+        $clarityCssNavigation
+    }
+
+    if ($reportType -eq "upgrade") { # Define the Clarity Cascading Style Sheets (CSS) for a Upgrade Report
+        $clarityCssNavigation = '
+            <nav class="subnav">
+            <ul class="nav">
+                <li class="nav-item">
+                <a class="nav-link active" href="javascript://">Upgrade Precheck Report</a>
+                </li>
+            </ul>
+            </nav>
+            <div class="content-container">
+            <div class="content-area">'
         $clarityCssNavigation
     }
 }
