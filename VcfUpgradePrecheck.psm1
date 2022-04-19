@@ -4290,7 +4290,7 @@ Function Request-VsanAlert {
                 if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                         foreach ($cluster in Get-Cluster) {
-                            $vsanAlarms = Get-VsanHealthTest -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass -cluster $cluster
+                            $vsanAlarms = Get-VsanHealthTest -cluster $cluster
                             $customObject = New-Object System.Collections.ArrayList
                             $component = 'VSAN'
                             $resource = 'Instance: ' + $vcfVcenterDetails.fqdn
@@ -4335,7 +4335,7 @@ Export-ModuleMember -Function Request-VsanAlert
 Function Request-VcenterAlert {
     <#
         .SYNOPSIS
-        Returns alarms from a vCenter Server instance.
+        Returns alarms from vCenter Server managed by SDDC Manager.
 
         .DESCRIPTION
         The Request-VcenterAlert cmdlet returns all alarms from vCenter Server managed by SDDC Manager.
@@ -4378,7 +4378,7 @@ Function Request-VcenterAlert {
                 if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                         #Get the vCenter alarms
-                        $vcenterAlarms = Get-VcenterTriggeredAlarm -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass
+                        $vcenterAlarms = Get-VcenterTriggeredAlarm
                         $customObject = New-Object System.Collections.ArrayList
                         $component = 'vCenter Server'
                         $resource = 'Instance: ' + $vcfVcenterDetails.fqdn
@@ -4485,7 +4485,7 @@ Function Request-EsxiAlert {
                         #Get the ESXi alarms
                         $customObject = New-Object System.Collections.ArrayList
                         foreach ($host in Get-VMHost){
-                            $esxiAlarms = Get-EsxiAlert -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass -host $host
+                            $esxiAlarms = Get-EsxiAlert  -host $host
                             $component = 'ESXi Host'
                             $resource = 'Instance: ' + $vcfVcenterDetails.fqdn
                             foreach ($alarm in $esxiAlarms) {
@@ -5396,7 +5396,7 @@ Function Get-EsxiAlert {
     The Get-EsxiAlert cmdlet returns all triggered alarms for ESXi host.
 
     .EXAMPLE
-    Get-EsxiAlert -server sfo-w01-esx01.sfo.rainpole.io -user root -pass VMw@re1!
+    Get-EsxiAlert -host sfo-w01-esx01.sfo.rainpole.io
     This example returns all triggered alarms for and ESXi host named sfo-w01-esx01.sfo.rainpole.io.
     #>
 
@@ -5405,14 +5405,16 @@ Function Get-VsanHealthTest {
     <# ToDo#>
 >>>>>>> 2f66ad5 (Request-VsanAlert)
     Param (
+<<<<<<< HEAD
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
 <<<<<<< HEAD
+=======
+
+>>>>>>> b2bffce (remove connect-viserver from support functions)
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$host
     )
-
-    $vc = Connect-VIServer -Server $server -User $user -Password $pass
     $vmhosts = Get-VMHost
     $vmhost = $vmhosts | Where-Object {$_.name -eq $host}
     foreach ($triggeredAlarm in $vmhost.ExtensionData.TriggeredAlarmState) {
@@ -5426,7 +5428,6 @@ Function Get-VsanHealthTest {
         $alarm.AckTime = $triggeredAlarm.AcknowledgedTime
         $alarm
     }
-    Disconnect-VIServer -Server $server -Confirm:$false
 }
 Export-ModuleMember -Function Get-EsxiAlert
 <<<<<<< HEAD
@@ -5442,17 +5443,19 @@ Function Get-VsanHealthTest {
     The Get-VsanHealthTest cmdlet returns all vSAN healthcheck tests from a VSAN cluster in vCenter Server.
 
     .EXAMPLE
-    Get-VsanHealthTest -server sfo-w01-vc01.sfo.rainpole.io -user root -pass VMw@re1! -cluster sfo-m01-c01
+    Get-VsanHealthTest -cluster sfo-m01-c01
     This example returns all vSAN healthcheck tests from cluster sfo-m01-c01 in vVenter sfo-w01-vc01.sfo.rainpole.io.
     #>
     Param (
+<<<<<<< HEAD
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
 >>>>>>> 5a04e62 (Get-VsanHealthTest)
+=======
+>>>>>>> b2bffce (remove connect-viserver from support functions)
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$cluster
     )
-    $vc = Connect-VIServer -Server $server -User $user -Password $pass
     $vsanClusterHealthSystem = Get-VSANView -Id "VsanVcClusterHealthSystem-vsan-cluster-health-system"
     $clusterView = (Get-Cluster -Name $cluster).ExtensionData.MoRef
     $results = $vsanClusterHealthSystem.VsanQueryVcClusterHealthSummary($clusterView,$null,$null,$true,$null,$null,'defaultView')
@@ -5471,7 +5474,6 @@ Function Get-VsanHealthTest {
         }
     }
     $healthTests 
-    Disconnect-VIServer -Server $server -Confirm:$false
 }
 Export-ModuleMember -Function Get-VsanHealthTest
 >>>>>>> 2f66ad5 (Request-VsanAlert)
@@ -5484,15 +5486,11 @@ Function Get-VcenterTriggeredAlarm {
     The Get-VcenterTriggeredAlarm cmdlet returns all triggered alarms from vCenter Server instance.
 
     .EXAMPLE
-    Get-VcenterTriggeredAlarm -server sfo-w01-vc01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1!
+    Get-VcenterTriggeredAlarm
     This example returns all triggered alarms for a vCenter Server instance named sfo-w01-vc01.sfo.rainpole.io.
     #>
-    Param (
-        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
-    )
-    $vc = Connect-VIServer -Server $server -User $user -Password $pass
+
+    $vc = $global:defaultviserver
     $rootFolder = Get-Folder -Server $vc "Datacenters"
 
     foreach ($triggeredAlarm in $rootFolder.ExtensionData.TriggeredAlarmState) {
@@ -5505,8 +5503,12 @@ Function Get-VcenterTriggeredAlarm {
         $alarm.AckBy = $triggeredAlarm.AcknowledgedByUser
         $alarm.AckTime = $triggeredAlarm.AcknowledgedTime
         $alarm
+<<<<<<< HEAD
     }
     Disconnect-VIServer -Server $server -Confirm:$false
+=======
+  	}
+>>>>>>> b2bffce (remove connect-viserver from support functions)
 }
 Export-ModuleMember -Function Get-VcenterTriggeredAlarm
 
