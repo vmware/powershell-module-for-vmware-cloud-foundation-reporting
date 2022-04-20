@@ -3117,6 +3117,15 @@ Function Request-NsxtManagerBackupStatus {
 
                                 $message += $messageBackupAge # Combine the alert message
 
+                                # Set the alert and message if the backup is located on the SDDC Manager.
+                                $backupServer = (Get-NsxtBackupConfiguration -fqdn $vcfNsxDetails.fqdn).remote_file_server.server # Get the backup server
+
+                                if ($backupServer -eq $server) {
+                                    $alert = 'RED' # Critical; backup server is located on the SDDC Manager.
+                                    $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
+                                    $message = $messageBackupServer # Override the message
+                                }
+
                                 $elementObject = New-Object -TypeName psobject
                                 $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
@@ -3170,6 +3179,15 @@ Function Request-NsxtManagerBackupStatus {
 
                                 $message += $messageBackupAge # Combine the alert message
 
+                                # Set the alert and message if the backup is located on the SDDC Manager.
+                                $backupServer = (Get-NsxtBackupConfiguration -fqdn $vcfNsxDetails.fqdn).remote_file_server.server # Get the backup server
+
+                                if ($backupServer -eq $server) {
+                                    $alert = 'RED' # Critical; backup server is located on the SDDC Manager.
+                                    $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
+                                    $message = $messageBackupServer # Override the message
+                                }
+
                                 $elementObject = New-Object -TypeName psobject
                                 $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
@@ -3222,6 +3240,15 @@ Function Request-NsxtManagerBackupStatus {
                                 }
 
                                 $message += $messageBackupAge # Combine the alert message
+
+                                # Set the alert and message if the backup is located on the SDDC Manager.
+                                $backupServer = (Get-NsxtBackupConfiguration -fqdn $vcfNsxDetails.fqdn).remote_file_server.server # Get the backup server
+
+                                if ($backupServer -eq $server) {
+                                    $alert = 'RED' # Critical; backup server is located on the SDDC Manager.
+                                    $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
+                                    $message = $messageBackupServer # Override the message
+                                }
 
                                 $elementObject = New-Object -TypeName psobject
                                 $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
@@ -5830,16 +5857,46 @@ Function Request-LocalUserExpiry {
 }
 Export-ModuleMember -Function Request-LocalUserExpiry
 
+Function Get-NsxtBackupConfiguration {
+    <#
+        .SYNOPSIS
+        Return the backup configuration for an NSX Manager cluster.
+
+        .DESCRIPTION
+        The Get-NsxtBackupConfiguration cmdlet returns the backup configuration for an NSX Manager cluster
+
+        .EXAMPLE
+        Get-NsxtBackupConfiguration -fqdn sfo-w01-nsx01.sfo.rainpole.io
+        This example returns the backup configuration for the NSX Manager cluster named 'sfo-w01-nsx01.sfo.rainpole.io'.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn
+    )
+
+    Try {
+        $uri = "https://$fqdn/api/v1/cluster/backups/config"
+        # Note: NSX-T v3.2.0 and later use `/policy/api/v1/cluster/backups/config` or `/api/v1/cluster/backups/config`
+        $response = Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $nsxtHeaders
+        $response
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Get-NsxtBackupConfiguration
+
 Function Get-NsxtBackupHistory {
     <#
-    SYNOPSIS:
-    Return the backup history for an NSX Manager cluster.
+        .SYNOPSIS
+        Return the backup history for an NSX Manager cluster.
 
-    DESCRIPTION:
-    The Get-NsxtBackupHistory cmdlet returns the backup history for an NSX Manager cluster
+        .DESCRIPTION
+        The Get-NsxtBackupHistory cmdlet returns the backup history for an NSX Manager cluster
 
-    EXAMPLE:
-    Get-NsxtBackupHistory -fqdn sfo-w01-nsx01.sfo.rainpole.io
+        .EXAMPLE
+        Get-NsxtBackupHistory -fqdn sfo-w01-nsx01.sfo.rainpole.io
+        This example returns the backup history for the NSX Manager cluster named 'sfo-w01-nsx01.sfo.rainpole.io'.
     #>
 
     Param (
@@ -5859,23 +5916,23 @@ Export-ModuleMember -Function Get-NsxtBackupHistory
 
 Function Get-VcenterBackupJobs {
     <#
-	.SYNOPSIS
-    Returns a list of all backup jobs performed on a vCenter Server instance.
+        .SYNOPSIS
+        Returns a list of all backup jobs performed on a vCenter Server instance.
 
-    .DESCRIPTION
-    The Get-VcenterBackupJobs cmdlet returns a list of all performed on a vCenter Server instance.
+        .DESCRIPTION
+        The Get-VcenterBackupJobs cmdlet returns a list of all performed on a vCenter Server instance.
 
-    .EXAMPLE
-    Get-VcenterBackupJobs -fqdn sfo-m01-vc01.sfo.rainpole.io
-    This example returns a list of all backup jobs performed on the vCenter Server instance sfo-m01-vc01.sfo.rainpole.io.
+        .EXAMPLE
+        Get-VcenterBackupJobs -fqdn sfo-m01-vc01.sfo.rainpole.io
+        This example returns a list of all backup jobs performed on the vCenter Server instance sfo-m01-vc01.sfo.rainpole.io.
 
-    .EXAMPLE
-    Get-VcenterBackupJobs -fqdn sfo-m01-vc01.sfo.rainpole.io -latest
-    This example returns the latest backup job performed on the vCenter Server instance sfo-m01-vc01.sfo.rainpole.io.
+        .EXAMPLE
+        Get-VcenterBackupJobs -fqdn sfo-m01-vc01.sfo.rainpole.io -latest
+        This example returns the latest backup job performed on the vCenter Server instance sfo-m01-vc01.sfo.rainpole.io.
 
-    .EXAMPLE
-    Get-VcenterBackupJobs | Select -First 1 | Get-VcenterBackupStatus
-    This example demonstrates piping the results of this function into the Get-VcenterBackupStatus function.
+        .EXAMPLE
+        Get-VcenterBackupJobs | Select -First 1 | Get-VcenterBackupStatus
+        This example demonstrates piping the results of this function into the Get-VcenterBackupStatus function.
     #>
 
     Param (
@@ -5901,15 +5958,15 @@ Export-ModuleMember -Function Get-VcenterBackupJobs
 
 Function Get-VcenterBackupStatus {
     <#
-    .SYNOPSIS
-    Returns the status of a backup job(s).
+        .SYNOPSIS
+        Returns the status of a backup job(s).
 
-    .DESCRIPTION
-    The Get-VcenterBackupStatus cmdlet returns the status of a backup job(s).
+        .DESCRIPTION
+        The Get-VcenterBackupStatus cmdlet returns the status of a backup job(s).
 
-    .EXAMPLE
-    Get-VcenterBackupStatus -jobId "YYYYMMDD-hhmmss-buildnumber"
-    This example returns the status of the backup job with the jobId "YYYYMMDD-hhmmss-buildnumber".
+        .EXAMPLE
+        Get-VcenterBackupStatus -jobId "YYYYMMDD-hhmmss-buildnumber"
+        This example returns the status of the backup job with the jobId "YYYYMMDD-hhmmss-buildnumber".
     #>
 
     Param (
@@ -5925,15 +5982,15 @@ Export-ModuleMember -Function Get-VcenterBackupStatus
 
 Function Get-SnapshotStatus {
     <#
-    .SYNOPSIS
-    Returns the status of a virtual machine's snapshots.
+        .SYNOPSIS
+        Returns the status of a virtual machine's snapshots.
 
-    .DESCRIPTION
-    The Get-SnapshotStatus cmdlet returns the status of a virtual machine's snapshots.
+        .DESCRIPTION
+        The Get-SnapshotStatus cmdlet returns the status of a virtual machine's snapshots.
 
-    .EXAMPLE
-    Get-SnapshotStatus -vm "foo"
-    This example returns the status of the snapshots for the virtual machine named "foo".
+        .EXAMPLE
+        Get-SnapshotStatus -vm "foo"
+        This example returns the status of the snapshots for the virtual machine named "foo".
     #>
 
     Param (
@@ -5986,15 +6043,15 @@ Export-ModuleMember -Function Get-SnapshotStatus
 
 Function Get-SnapshotConsolidation {
     <#
-    .SYNOPSIS
-    Returns the status of a virtual machine's need for snapshot consolidation.
+        .SYNOPSIS
+        Returns the status of a virtual machine's need for snapshot consolidation.
 
-    .DESCRIPTION
-    The Get-SnapshotConsolidation cmdlet returns the status of a virtual machine's need for snapshot consolidation.
+        .DESCRIPTION
+        The Get-SnapshotConsolidation cmdlet returns the status of a virtual machine's need for snapshot consolidation.
 
-    .EXAMPLE
-    Get-SnapshotConsolidation -vm "foo"
-    This example returns the status of the snapshot consolidation for the virtual machine named "foo".
+        .EXAMPLE
+        Get-SnapshotConsolidation -vm "foo"
+        This example returns the status of the snapshot consolidation for the virtual machine named "foo".
     #>
 
     Param (
@@ -6044,15 +6101,15 @@ Export-ModuleMember -Function Get-SnapshotConsolidation
 <<<<<<< HEAD
 Function Get-EsxiAlert {
     <#
-    .SYNOPSIS
-    Returns the triggered alarms for an ESXi host.
+        .SYNOPSIS
+        Returns the triggered alarms for an ESXi host.
 
-    .DESCRIPTION
-    The Get-EsxiAlert cmdlet returns all triggered alarms for ESXi host.
+        .DESCRIPTION
+        The Get-EsxiAlert cmdlet returns all triggered alarms for ESXi host.
 
-    .EXAMPLE
-    Get-EsxiAlert -host sfo-w01-esx01.sfo.rainpole.io
-    This example returns all triggered alarms for and ESXi host named sfo-w01-esx01.sfo.rainpole.io.
+        .EXAMPLE
+        Get-EsxiAlert -host sfo-w01-esx01.sfo.rainpole.io
+        This example returns all triggered alarms for and ESXi host named sfo-w01-esx01.sfo.rainpole.io.
     #>
 
 =======
@@ -6091,15 +6148,15 @@ Export-ModuleMember -Function Get-EsxiAlert
 =======
 Function Get-VsanHealthTest {
     <#
-    .SYNOPSIS
-    Returns the vSAN healthcheck tests from a vSAN cluster in vCenter Server.
+        .SYNOPSIS
+        Returns the vSAN healthcheck tests from a vSAN cluster in vCenter Server.
 
-    .DESCRIPTION
-    The Get-VsanHealthTest cmdlet returns all vSAN healthcheck tests from a VSAN cluster in vCenter Server.
+        .DESCRIPTION
+        The Get-VsanHealthTest cmdlet returns all vSAN healthcheck tests from a VSAN cluster in vCenter Server.
 
-    .EXAMPLE
-    Get-VsanHealthTest -cluster sfo-m01-c01
-    This example returns all vSAN healthcheck tests from vSAN cluster sfo-m01-c01 in connected vCenter Server.
+        .EXAMPLE
+        Get-VsanHealthTest -cluster sfo-m01-c01
+        This example returns all vSAN healthcheck tests from vSAN cluster sfo-m01-c01 in connected vCenter Server.
     #>
     Param (
 <<<<<<< HEAD
@@ -6133,16 +6190,16 @@ Function Get-VsanHealthTest {
 Export-ModuleMember -Function Get-VsanHealthTest
 >>>>>>> 2f66ad5 (Request-VsanAlert)
 Function Get-VcenterTriggeredAlarm {
-        <#
-    .SYNOPSIS
-    Returns the triggered alarms for a vCenter Server instance.
+    <#
+        .SYNOPSIS
+        Returns the triggered alarms for a vCenter Server instance.
 
-    .DESCRIPTION
-    The Get-VcenterTriggeredAlarm cmdlet returns all triggered alarms from vCenter Server instance.
+        .DESCRIPTION
+        The Get-VcenterTriggeredAlarm cmdlet returns all triggered alarms from vCenter Server instance.
 
-    .EXAMPLE
-    Get-VcenterTriggeredAlarm
-    This example returns all triggered alarms for a vCenter Server instance named sfo-w01-vc01.sfo.rainpole.io.
+        .EXAMPLE
+        Get-VcenterTriggeredAlarm
+        This example returns all triggered alarms for a vCenter Server instance named sfo-w01-vc01.sfo.rainpole.io.
     #>
 
     $vc = $global:defaultviserver
@@ -6169,15 +6226,15 @@ Export-ModuleMember -Function Get-VcenterTriggeredAlarm
 
 Function Get-NsxtAlarm {
     <#
-    .SYNOPSIS
-    Return the triggered alarms for an NSX Manager cluster.
+        .SYNOPSIS
+        Return the triggered alarms for an NSX Manager cluster.
 
-    .DESCRIPTION
-    The Get-NsxtAlarm cmdlet returns all triggered alarms for an NSX Manager cluster.
+        .DESCRIPTION
+        The Get-NsxtAlarm cmdlet returns all triggered alarms for an NSX Manager cluster.
 
-    .EXAMPLE
-    Get-NsxtAlarm -fqdn sfo-w01-nsx01.sfo.rainpole.io
-    This example returns all triggered alarms for an NSX Manager cluster named sfo-w01-nsx01.sfo.rainpole.io.
+        .EXAMPLE
+        Get-NsxtAlarm -fqdn sfo-w01-nsx01.sfo.rainpole.io
+        This example returns all triggered alarms for an NSX Manager cluster named sfo-w01-nsx01.sfo.rainpole.io.
     #>
 
     Param (
@@ -6197,15 +6254,15 @@ Export-ModuleMember -Function Get-NsxtAlarm
 
 Function Get-NsxtEvent {
     <#
-    .SYNOPSIS
-    Return the events for an NSX Manager cluster.
+        .SYNOPSIS
+        Return the events for an NSX Manager cluster.
 
-    .DESCRIPTION
-    The Get-NsxtEvent cmdlet returns the events for an NSX Manager cluster.
+        .DESCRIPTION
+        The Get-NsxtEvent cmdlet returns the events for an NSX Manager cluster.
 
-    .EXAMPLE
-    Get-NsxtEvent -fqdn sfo-w01-nsx01.sfo.rainpole.io
-    This example returns events for an NSX Manager cluster named sfo-w01-nsx01.sfo.rainpole.io.
+        .EXAMPLE
+        Get-NsxtEvent -fqdn sfo-w01-nsx01.sfo.rainpole.io
+        This example returns events for an NSX Manager cluster named sfo-w01-nsx01.sfo.rainpole.io.
     #>
 
     Param (
