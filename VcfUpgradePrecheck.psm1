@@ -74,7 +74,7 @@ Function Invoke-VcfHealthReport {
 
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the Process of Creating a Health Report for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Starting the process of creating a Health Report for a VMware Cloud Foundation instance ($sddcManagerFqdn)" -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
@@ -249,7 +249,7 @@ Function Invoke-VcfHealthReport {
         $report += $reportFooter
 
         # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        Write-LogMessage -Type INFO -Message "Generating the rinal report and saving to ($reportName)."
         $report | Out-File $reportName
         Invoke-Item $reportName
     }
@@ -262,18 +262,26 @@ Export-ModuleMember -Function Invoke-VcfHealthReport
 Function Invoke-VcfAlertReport {
     <#
         .SYNOPSIS
-        Generates the system alert report
+        Generates the alert report for a VMware Cloud Foundation instance.
 
         .DESCRIPTION
-        The Invoke-VcfAlertReport provides a single cmdlet to generates the system alert report for a VMware Cloud Foundation instance.
+        The Invoke-VcfAlertReport provides a single cmdlet to generates the alert report for a VMware Cloud Foundation instance.
 
         .EXAMPLE
         Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -allDomains
-        This example generates the system alert report across a VMware Cloud Foundation instance.
+        This example generates the alert report across a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -allDomains -failureOnly
+        This example generates the alert report across a VMware Cloud Foundation instance but for only failed items.
 
         .EXAMPLE
         Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
-        This example generates the system alert report for a specific Workload Domain within a VMware Cloud Foundation instance.
+        This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01 -failureOnly
+        This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance but for only failed items.
     #>
 
     Param (
@@ -291,31 +299,88 @@ Function Invoke-VcfAlertReport {
 
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the Process of Creating a System Alert Report for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
-        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
+        Write-LogMessage -Type INFO -Message "Starting the process of creating an Alert Report for a VMware Cloud Foundation instance from ($sddcManagerFqdn)." -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType alert # Setup Report Location and Report File
-        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
+        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."  
 
-        Write-LogMessage -Type INFO -Message "Generating the System Alerts from SDDC Manager ($sddcManagerFqdn)"
+        Write-LogMessage -Type INFO -Message "Generating the vCenter Server alerts in a VMware Cloud Foundation from SDDC Manager ($sddcManagerFqdn)."
         if ($PsBoundParameters.ContainsKey("allDomains")) { 
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $systemAlertHtml = Publish-SystemAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+                $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
             }
             else {
-                $systemAlertHtml = Publish-SystemAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
+                $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
             }
         }
         else {
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $systemAlertHtml = Publish-SystemAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
             }
             else {
-                $systemAlertHtml = Publish-SystemAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+            }
+        }
+
+        Write-LogMessage -type INFO -Message "Generating the ESXi host alerts in a VMware Cloud Foundation from SDDC Manager ($sddcManagerFqdn)."
+        if ($PsBoundParameters.ContainsKey('allDomains')) { 
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+            }
+            else {
+                $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
+            }
+        }
+        else {
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+            }
+            else {
+                $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+            }
+        }
+
+        Write-LogMessage -type INFO -Message "Generating the vSAN alerts in a VMware Cloud Foundation from SDDC Manager ($sddcManagerFqdn)."
+        if ($PsBoundParameters.ContainsKey('allDomains')) { 
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+            }
+            else {
+                $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
+            }
+        }
+        else {
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+            }
+            else {
+                $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+            }
+        }
+
+        Write-LogMessage -type INFO -Message "Generating the NSX-T Data Center alerts in a VMware Cloud Foundation from SDDC Manager ($sddcManagerFqdn)."
+        if ($PsBoundParameters.ContainsKey('allDomains')) { 
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+            }
+            else {
+                $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
+            }
+        }
+        else {
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+            }
+            else {
+                $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
             }
         }
         
         # Combine all information gathered into a single HTML report
-        $reportData = "$systemAlertHtml"
+        $reportData = "$vCenterAlertHtml"
+        $reportData += "$esxiAlertHtml"
+        $reportData += "$vsanAlertHtml"
+        $reportData += "$nsxtAlertHtml"
 
         $reportHeader = Get-ClarityReportHeader
         $reportNavigation = Get-ClarityReportNavigation -reportType alert
@@ -326,7 +391,7 @@ Function Invoke-VcfAlertReport {
         $report += $reportFooter
 
         # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        Write-LogMessage -Type INFO -Message "Generating the final report and saving to ($reportName)."
         $report | Out-File $reportName
         Invoke-Item $reportName
     }
@@ -4177,22 +4242,110 @@ Function Request-NsxtTier0BgpStatus {
 #######################################################################################################################
 ###################################  S Y S T E M   A L E R T   F U N C T I O N S   ####################################
 
-Function Publish-SystemAlert {
+Function Publish-EsxiAlert {
     <#
         .SYNOPSIS
-        Publish system alerts/alarms.
+        Publish system alerts/alarms from ESXi hosts in a vCenter Server instance managed by SDDC Manager.
 
         .DESCRIPTION
-        The Publish-SystemAlert cmdlet returns all alarms from NSX Manager cluster.
-        The cmdlet connects to the NSX-T Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the NSX-T Manager instance
+        The Publish-EsxiAlert cmdlet returns all alarms from ESXi hosts managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates the authentication to vCenter Server with credentials from SDDC Manager
+        - Collects the alerts from all ESXi hosts in vCenter Server instance
+
+        .EXAMPLE
+        Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a all workload domains.
+
+        .EXAMPLE
+        Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a all workload domains but only for the failed items.
+ 
+        .EXAMPLE
+        Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allAlertObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass $domain.name -failureOnly; $allAlertObject += $esxiSystemAlert
+                        }
+                    }
+                    else {
+                        $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $esxiSystemAlert
+                    }
+                }
+                else {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $esxiSystemAlert
+                        }
+                    }
+                    else {
+                        $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass -domain $workloadDomain; $allAlertObject += $esxiSystemAlert
+                    }
+                }
+
+                if ($allAlertObject.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alert</h3>' -PostContent '<p>No Issues Found</p>' 
+                }
+                else {
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alerts</h3>' -As Table
+                }
+                $allAlertObject = Convert-CssClass -htmldata $allAlertObject
+                $allAlertObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-EsxiAlert
+
+Function Publish-NsxtAlert {
+    <#
+        .SYNOPSIS
+        Publish system alerts/alarms from a NSX Manager cluster managed by SDDC Manager.
+
+        .DESCRIPTION
+        The Publish-NsxtAlert cmdlet returns all alarms from NSX Manager cluster.
+        The cmdlet connects to the NSX Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the NSX Manager cluster
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the details for the NSX Manager cluster
         - Collects the alerts
 
         .EXAMPLE
-        Publish-SystemAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
-        This example will return alerts/alarms for an NSX Manager cluster managed by SDDC Manager for a workload domain.
+        Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will return alarms from all NSX Manager clusters managed by SDDC Manager for a all workload domains.
+
+        .EXAMPLE
+        Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will return alarms from all NSX Manager clusters managed by SDDC Manager for a all workload domains but only for the failed items.
+ 
+        .EXAMPLE
+        Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will return alarms from the NSX Manager cluster managed by SDDC Manager for a workload domain named sfo-w01.
     #>
 
     Param (
@@ -4212,30 +4365,26 @@ Function Publish-SystemAlert {
                 if ($PsBoundParameters.ContainsKey('failureOnly')) {
                     if ($PsBoundParameters.ContainsKey("allDomains")) {
                         foreach ($domain in $allWorkloadDomains ) {
-                            # $vcenterSystemAlert = Request-vCenterAlert -server $server -user $user -pass $pass $domain.name -failureOnly; $allAlertObject += $vcenterSystemAlert
                             $nsxtSystemAlert = Request-NsxtAlert -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allAlertObject += $nsxtSystemAlert
                         }
                     } else {
-                        # $vcenterSystemAlert = Request-vCenterAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $vcenterSystemAlert
                         $nsxtSystemAlert = Request-NsxtAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $nsxtSystemAlert
                     }
                 } else {
                     if ($PsBoundParameters.ContainsKey("allDomains")) { 
                         foreach ($domain in $allWorkloadDomains ) {
-                            # $vcenterSystemAlert = Request-vCenterAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $vcenterSystemAlert
                             $nsxtSystemAlert = Request-NsxtAlert -server $server -user $user -pass $pass -domain $domain.name; $allAlertObject += $nsxtSystemAlert
                         }
                     } else {
-                        # $vcenterSystemAlert = Request-vCenterAlert -server $server -user $user -pass $pass -domain $workloadDomain; $allAlertObject += $vcenterSystemAlert
                         $nsxtSystemAlert = Request-NsxtAlert -server $server -user $user -pass $pass -domain $workloadDomain; $allAlertObject += $nsxtSystemAlert
                     }
                 }
 
                 if ($allAlertObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX System Alert</h3>' -PostContent '<p>No Issues Found</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alert</h3>' -PostContent '<p>No Issues Found</p>' 
                 } else {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX System Alerts</h3>' -As Table
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alerts</h3>' -As Table
                 }
                 $allAlertObject = Convert-CssClass -htmldata $allAlertObject
                 $allAlertObject
@@ -4246,7 +4395,167 @@ Function Publish-SystemAlert {
         Debug-CatchWriter -object $_
     }
 }
-Export-ModuleMember -Function Publish-SystemAlert
+Export-ModuleMember -Function Publish-NsxtAlert
+
+Function Publish-VcenterAlert {
+    <#
+        .SYNOPSIS
+        Returns alarms from vCenter Server managed by SDDC Manager.
+
+        .DESCRIPTION
+        The Publish-VcenterAlert cmdlet returns all alarms from vCenter Server managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates the authentication to vCenter Server with credentials from SDDC Manager
+        - Collects the alerts from vCenter Server
+
+        .EXAMPLE
+        Publish-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will return alarms from a vCenter Server managed by SDDC Manager for all workload domains.
+     
+        .EXAMPLE
+        Publish-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will return alarms from a vCenter Server managed by SDDC Manager for all workload domains but only for the failed items.
+
+        .EXAMPLE
+        Publish-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return alarms from a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allAlertObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $vcenterSystemAlert = Request-VcenterAlert -server $server -user $user -pass $pass $domain.name -failureOnly; $allAlertObject += $vcenterSystemAlert
+                        }
+                    }
+                    else {
+                        $vcenterSystemAlert = Request-VcenterAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $vcenterSystemAlert
+                    }
+                }
+                else {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $vcenterSystemAlert = Request-VcenterAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $vcenterSystemAlert
+                        }
+                    }
+                    else {
+                        $vcenterSystemAlert = Request-VcenterAlert -server $server -user $user -pass $pass -domain $workloadDomain; $allAlertObject += $vcenterSystemAlert
+                    }
+                }
+
+                if ($allAlertObject.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alert</h3>' -PostContent '<p>No Issues Found</p>' 
+                }
+                else {
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alerts</h3>' -As Table
+                }
+                $allAlertObject = Convert-CssClass -htmldata $allAlertObject
+                $allAlertObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-VcenterAlert
+
+Function Publish-VsanAlert {
+    <#
+        .SYNOPSIS
+        RPublish the vSAN Healthcheck alarms from a vCenter Server instance.
+
+        .DESCRIPTION
+        The Publish-VsanAlert cmdlet returns vSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates the authentication to vCenter Server with credentials from SDDC Manager
+        - Collects the vSAN Healthcheck alarms from vCenter Server
+
+        .EXAMPLE
+        Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will return vSAN Healthcheck alarms for all vCenter Server instances managed by SDDC Manager for a workload domain.
+
+        .EXAMPLE
+        Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will return vSAN Healthcheck alarms for all vCenter Server instances managed by SDDC Manager for a workload domain but only failed items.
+ 
+        .EXAMPLE
+        Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allAlertObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $vsanSystemAlert = Request-VsanAlert -server $server -user $user -pass $pass $domain.name -failureOnly; $allAlertObject += $vsanSystemAlert
+                        }
+                    }
+                    else {
+                        $vsanSystemAlert = Request-VsanAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $vsanSystemAlert
+                    }
+                }
+                else {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $vsanSystemAlert = Request-VsanAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $vsanSystemAlert
+                        }
+                    }
+                    else {
+                        $vsanSystemAlert = Request-VsanAlert -server $server -user $user -pass $pass -domain $workloadDomain; $allAlertObject += $vsanSystemAlert
+                    }
+                }
+
+                if ($allAlertObject.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alert</h3>' -PostContent '<p>No Issues Found</p>' 
+                }
+                else {
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alerts</h3>' -As Table
+                }
+                $allAlertObject = Convert-CssClass -htmldata $allAlertObject
+                $allAlertObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-VsanAlert
 
 Function Request-NsxtAlert {
     <#
@@ -4428,15 +4737,15 @@ Function Request-VcenterAlert {
         - Collects the alerts from vCenter Server
 
         .EXAMPLE
-        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return alarms of a vCenter Server managed by SDDC Manager for a workload domain.
+        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return alarms of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
         
         .EXAMPLE
-        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01 -filterOut hostOnly
-        This example will return alarms from ESXi hosts of a vCenter Server managed by SDDC Manager for a workload domain.
+        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -filterOut hostOnly
+        This example will return alarms from ESXi hosts of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
 
         .EXAMPLE
-        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01 -filterOut vsanOnly -failureOnly
+        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -filterOut vsanOnly -failureOnly
         This example will return alarms from vSAN clusters of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
     #>
 
@@ -5007,9 +5316,9 @@ Function Get-ClarityReportNavigation {
             <nav class="sidenav">
             <section class="sidenav-content">
                 <a class="nav-link nav-icon" href="#alert-vcenter">vCenter Server</a>
-                <a class="nav-link nav-icon" href="#alert-vsan">vSAN</a>
                 <a class="nav-link nav-icon" href="#alert-esxi">ESXi</a>
-                <a class="nav-link nav-icon" href="#alert-nsx">NSX Manager</a>
+                <a class="nav-link nav-icon" href="#alert-vsan">vSAN</a>
+                <a class="nav-link nav-icon" href="#alert-nsx">NSX-T Data Center</a>
             </section>
             </nav>
                 <div class="content-area">
