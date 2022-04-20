@@ -2905,24 +2905,35 @@ Function Request-SddcManagerBackupStatus {
 
                     # Set the message for the backup task
                     if ([string]::IsNullOrEmpty($errors)) {
-                        $message = "The backup completed without errors." # Ok; success
+                        $message = "The backup completed without errors. " # Ok; success
                     }
                     else {
-                        $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
+                        $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
                     }
 
                     # Set the alert and message for the backup task based on the age of the backup
                     if ($backupAge -ge 3) {
                         $alert = "RED" # Critical; >= 3 days
-                        $messageAppend = "Backup is more than 3 days old." # Set the alert message
+                        $messageAge = "Backup is more than 3 days old." # Set the alert message
                     }
                     elseif ($backupAge -gt 1) {
                         $alert = "YELLOW" # Warning; > 1 days
-                        $messageAppend = "Backup is more than 1 days old." # Set the alert message
+                        $messageBackupAge = "Backup is more than 1 days old." # Set the alert message
                     }
                     else {
                         $alert = "GREEN" # Ok; <= 1 days
-                        $messageAppend = "Backup is less than 1 day old." # Set the alert message
+                        $messageBackupAge = "Backup is less than 1 day old." # Set the alert message
+                    }
+
+                    $message += $messageBackupAge # Combine the alert message
+
+                    # Set the alert and message if the backup is located on the SDDC Manager.
+                    $backupServer = (Get-VCFBackupConfiguration).server # Get the backup server
+
+                    if ($backupServer -eq $server) {
+                        $alert = "RED" # Critical; backup server is located on the SDDC Manager.
+                        $messageBackupServer = "Backup is located on the SDDC Manager. Reconfigure backups to use another location." # Set the alert message
+                        $message = $messageBackupServer # Override the message
                     }
 
                     $elementObject = New-Object -TypeName psobject
@@ -2932,7 +2943,7 @@ Function Request-SddcManagerBackupStatus {
                     $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
                     $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $date # Set the timestamp
                     $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
                     if ($PsBoundParameters.ContainsKey('failureOnly')) {
                         if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                             $customObject += $elementObject
@@ -3020,26 +3031,28 @@ Function Request-NsxtManagerBackupStatus {
                                 # Set the alert and message based on the status of the backup
                                 if ($backupTask.node_backup_statuses.success -eq $true) {   
                                     $alert = "GREEN" # Ok; success
-                                    $message = 'The backup completed without errors.' # Set the backup status message
+                                    $message = 'The backup completed without errors. ' # Set the backup status message
                                 }
                                 else {
                                     $alert = "RED" # Critical; failure
-                                    $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
+                                    $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
                                 }
 
                                 # Set the alert and message update for the backup task based on the age of the backup
                                 if ($backupAge -ge 3) {
                                     $alert = 'RED' # Critical; >= 3 days
-                                    $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
+                                    $messageBackupAge = 'Backup is more than 3 days old.' # Set the alert message
                                 }
                                 elseif ($backupAge -gt 1) {
                                     $alert = 'YELLOW' # Warning; > 1 days
-                                    $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
+                                    $messageBackupAge = 'Backup is more than 1 days old.' # Set the alert message
                                 }
                                 else {
                                     $alert = 'GREEN' # Ok; <= 1 days
-                                    $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
+                                    $messageBackupAge = 'Backup is less than 1 day old.' # Set the alert message
                                 }
+
+                                $message += $messageBackupAge # Combine the alert message
 
                                 $elementObject = New-Object -TypeName psobject
                                 $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
@@ -3048,7 +3061,7 @@ Function Request-NsxtManagerBackupStatus {
                                 $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
                                 $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
                                 $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
                                 if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                     if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                         $customObject += $elementObject
@@ -3071,26 +3084,28 @@ Function Request-NsxtManagerBackupStatus {
                                 # Set the alert and message based on the status of the backup
                                 if ($backupTask.node_backup_statuses.success -eq $true) {   
                                     $alert = 'GREEN' # Ok; success
-                                    $message = 'The backup completed without errors.' # Set the backup status message
+                                    $message = 'The backup completed without errors. ' # Set the backup status message
                                 }
                                 else {
                                     $alert = 'RED' # Critical; failure
-                                    $message = 'The backup failed with errors. Please investigate before proceeding.' # Critical; failure
+                                    $message = 'The backup failed with errors. Please investigate before proceeding. ' # Critical; failure
                                 }
 
                                 # Set the alert and message update for the backup task based on the age of the backup
                                 if ($backupAge -ge 3) {
                                     $alert = 'RED' # Critical; >= 3 days
-                                    $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
+                                    $messageBackupAge = 'Backup is more than 3 days old.' # Set the alert message
                                 }
                                 elseif ($backupAge -gt 1) {
                                     $alert = 'YELLOW' # Warning; > 1 days
-                                    $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
+                                    $messageBackupAge = 'Backup is more than 1 days old.' # Set the alert message
                                 }
                                 else {
                                     $alert = 'GREEN' # Ok; <= 1 days
-                                    $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
+                                    $messageBackupAge = 'Backup is less than 1 day old.' # Set the alert message
                                 }
+
+                                $message += $messageBackupAge # Combine the alert message
 
                                 $elementObject = New-Object -TypeName psobject
                                 $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
@@ -3099,7 +3114,7 @@ Function Request-NsxtManagerBackupStatus {
                                 $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
                                 $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
                                 $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
                                 if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                     if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                         $customObject += $elementObject
@@ -3122,26 +3137,28 @@ Function Request-NsxtManagerBackupStatus {
                                 # Set the alert and message based on the status of the backup
                                 if ($backupTask.node_backup_statuses.success -eq $true) {   
                                     $alert = 'GREEN' # Ok; success
-                                    $message = 'The backup completed without errors.' # Set the backup status message
+                                    $message = 'The backup completed without errors. ' # Set the backup status message
                                 }
                                 else {
                                     $alert = 'RED' # Critical; failure
-                                    $message = 'The backup failed with errors. Please investigate before proceeding.' # Critical; failure
+                                    $message = 'The backup failed with errors. Please investigate before proceeding. ' # Critical; failure
                                 }
 
                                 # Set the alert and message update for the backup task based on the age of the backup
                                 if ($backupAge -ge 3) {
                                     $alert = 'RED' # Critical; >= 3 days
-                                    $messageAppend = 'Backup is more than 3 days old.' # Set the alert message
+                                    $messageBackupAge = 'Backup is more than 3 days old.' # Set the alert message
                                 }
                                 elseif ($backupAge -gt 1) {
                                     $alert = 'YELLOW' # Warning; > 1 days
-                                    $messageAppend = 'Backup is more than 1 days old.' # Set the alert message
+                                    $messageBackupAge = 'Backup is more than 1 days old.' # Set the alert message
                                 }
                                 else {
                                     $alert = 'GREEN' # Ok; <= 1 days
-                                    $messageAppend = 'Backup is less than 1 day old.' # Set the alert message
+                                    $messageBackupAge = 'Backup is less than 1 day old.' # Set the alert message
                                 }
+
+                                $message += $messageBackupAge # Combine the alert message
 
                                 $elementObject = New-Object -TypeName psobject
                                 $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
@@ -3150,7 +3167,7 @@ Function Request-NsxtManagerBackupStatus {
                                 $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
                                 $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the end timestamp
                                 $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
                                 if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                     if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                         $customObject += $elementObject
@@ -3253,25 +3270,27 @@ Function Request-VcenterBackupStatus {
 
                             # Set the message for the backup task
                             if ([string]::IsNullOrEmpty($messages)) {
-                                $Message = "The backup completed without errors." # Ok; success
+                                $Message = "The backup completed without errors. " # Ok; success
                             }
                             else {
-                                $message = "The backup failed with errors. Please investigate before proceeding." # Critical; failure
+                                $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
                             }
 
                             # Set the alert and message update for the backup task based on the age of the backup
                             if ($backupAge -ge 3) {
                                 $alert = "RED" # Critical; >= 3 days
-                                $messageAppend = "Backup is more than 3 days old." # Set the alert message
+                                $messageBackupAge = "Backup is more than 3 days old." # Set the alert message
                             }
                             elseif ($backupAge -gt 1) {
                                 $alert = "YELLOW" # Warning; > 1 days
-                                $messageAppend = "Backup is more than 1 days old." # Set the alert message
+                                $messageBackupAge = "Backup is more than 1 days old." # Set the alert message
                             }
                             else {
                                 $alert = "GREEN" # Ok; <= 1 days
-                                $messageAppend = "Backup is less than 1 day old." # Set the alert message
+                                $messageBackupAge = "Backup is less than 1 day old." # Set the alert message
                             }
+
+                            $message += $messageBackupAge # Combine the alert message
 
                             $elementObject = New-Object -TypeName psobject
                             $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
@@ -3280,7 +3299,7 @@ Function Request-VcenterBackupStatus {
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
                             $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the timestamp
                             $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend" # Set the message
+                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
                             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
@@ -5753,25 +5772,27 @@ Function Get-SnapshotConsolidation {
             # Set the alert and message based on the consolidation status
             if ($consolidation -eq $true) {
                 $alert = 'RED' # Critical: Consolidation needed
-                $message = "Consolidation is required."
+                $message = "Consolidation is required. "
             }
             else {
                 $alert = 'GREEN' # OK: Consolidation not needed
-                $message = "Consolidation is not required."
+                $message = "Consolidation is not required. "
             }
 
             if ($snapshotCount -gt 1) {
                 $messageAppend = "Use 'Get-SnapshotStatus -vm $vm' to review the status of each snapshot."
             }
 
+            $message += $messageAppend # Combine the alert message
+
             # Create a new PSObject to hold the results
             $outputObject = New-Object -TypeName psobject
             # Add the snapshot details to the PSObject
             $outputObject = New-Object -TypeName psobject
-            $outputObject | Add-Member -NotePropertyName 'Virtual Machine' -NotePropertyValue $name
+            $outputObject | Add-Member -NotePropertyName 'Virtual Machine' -NotePropertyValue $vm
             $outputObject | Add-Member -NotePropertyName 'Snapshots' -NotePropertyValue $snapshotCount
             $outputObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
-            $outputObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message $messageAppend"
+            $outputObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message"
             $outputObject
         }
         else {
