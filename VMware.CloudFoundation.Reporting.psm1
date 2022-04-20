@@ -50,11 +50,11 @@ Function Invoke-VcfHealthReport {
         The Invoke-VcfHealthReport provides a single cmdlet to perform health checks across a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Prechecks -allDomains
+        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Reporting -allDomains
         This example runs a health check across a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
+        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
         This example runs a health check for a specific Workload Domain within a VMware Cloud Foundation instance.
     #>
 
@@ -268,19 +268,19 @@ Function Invoke-VcfAlertReport {
         The Invoke-VcfAlertReport provides a single cmdlet to generates the alert report for a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -allDomains
+        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains
         This example generates the alert report across a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -allDomains -failureOnly
+        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains -failureOnly
         This example generates the alert report across a VMware Cloud Foundation instance but for only failed items.
 
         .EXAMPLE
-        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
+        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
         This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01 -failureOnly
+        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01 -failureOnly
         This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance but for only failed items.
     #>
 
@@ -389,7 +389,7 @@ Function Invoke-VcfAlertReport {
         $report += $reportNavigation
         $report += $reportData
         $report += $reportFooter
-
+        
         # Generate the report to an HTML file and then open it in the default browser
         Write-LogMessage -Type INFO -Message "Generating the final report and saving to ($reportName)."
         $report | Out-File $reportName
@@ -410,11 +410,11 @@ Function Invoke-VcfConfigReport {
         The Invoke-VcfConfigReport provides a single cmdlet to generates a configuration report for a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -allDomains
+        Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains
         This example generates the configuration report across a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
+        Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
         This example generates the configuration report for a specific Workload Domain within a VMware Cloud Foundation instance.
     #>
 
@@ -446,7 +446,7 @@ Function Invoke-VcfConfigReport {
         }
         
         # Combine all information gathered into a single HTML report
-        $reportData = "$esxiCoreDumpHtml"
+        $reportData += "$esxiCoreDumpHtml"
 
         $reportHeader = Get-ClarityReportHeader
         $reportNavigation = Get-ClarityReportNavigation -reportType config
@@ -476,7 +476,7 @@ Function Invoke-VcfUpgradePrecheck {
         The Invoke-VcfUpgradePrecheck runs an upgrade precheck for a Workload Domain
 
         .EXAMPLE
-        Invoke-VcfUpgradePrecheck -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Prechecks -workloadDomain sfo-w01
+        Invoke-VcfUpgradePrecheck -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
         This example runs a health check for a specific Workload Domain within an SDDC Manager instance.
     #>
 
@@ -494,13 +494,13 @@ Function Invoke-VcfUpgradePrecheck {
 
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the Process of Running an Upgrade Precheck Workload Domain ($workloadDomain)" -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Starting the Process of Running an Upgrade Precheck for Workload Domain ($workloadDomain)" -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType upgrade # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
 
-        if (Test-VCFConnection -server $server) {
-            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+        if (Test-VCFConnection -server $sddcManagerFqdn) {
+            if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
                 $jsonSpec = '{ "resources" : [ { "resourceId" : "'+ (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).id+'", "type" : "DOMAIN" } ] }'
                 $task = Start-VCFSystemPrecheck -json $jsonSpec
                 Write-LogMessage -Type INFO -Message "Waiting for Upgrade Precheck Task ($($task.name)) with Id ($($task.id)) to Complete"
@@ -555,7 +555,7 @@ Function Invoke-VcfUpgradePrecheck {
         $reportFooter = Get-ClarityReportFooter
         $report = $reportHeader
         $report += $reportNavigation
-        $report += $reportData
+        $report += $allChecksObject
         $report += $reportFooter
 
         # Generate the report to an HTML file and then open it in the default browser
@@ -568,6 +568,69 @@ Function Invoke-VcfUpgradePrecheck {
     }
 }
 Export-ModuleMember -Function Invoke-VcfUpgradePrecheck
+
+Function Invoke-VcfPasswordPolicy {
+    <#
+        .SYNOPSIS
+        Generate a password policy report
+
+        .DESCRIPTION
+        The Invoke-VcfPasswordPolicy runs a password policy report for a Workload Domain
+
+        .EXAMPLE
+        Invoke-VcfPasswordPolicy -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
+        This example runs a password policy report for a specific Workload Domain within an SDDC Manager instance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+
+    Try {
+
+        Clear-Host; Write-Host ""
+
+        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+        Write-LogMessage -Type INFO -Message "Starting the Process of Running a Password Policy Report for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType policy # Setup Report Location and Report File
+        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
+
+        if ($PsBoundParameters.ContainsKey('allDomains')) { 
+            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration from SDDC Manager ($sddcManagerFqdn)"
+            $sxiPolicyHtml = Publish-EsxiPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+        }
+        else {
+            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for Workload Domain ($workloadDomain)"
+            $sxiPolicyHtml = Publish-EsxiPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+        }
+        
+        $reportData += "$sxiPolicyHtml"
+
+        $reportHeader = Get-ClarityReportHeader
+        $reportNavigation = Get-ClarityReportNavigation -reportType policy
+        $reportFooter = Get-ClarityReportFooter
+        $report = $reportHeader
+        $report += $reportNavigation
+        $report += $reportData
+        $report += $reportFooter
+
+        # Generate the report to an HTML file and then open it in the default browser
+        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        $report | Out-File $reportName
+        Invoke-Item $reportName
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Invoke-VcfPasswordPolicy
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
@@ -5047,6 +5110,152 @@ Export-ModuleMember -Function Publish-EsxiCoreDumpConfig
 #######################################################################################################################
 
 
+#######################################################################################################################
+###############################  P A S S W O R D   P O L I C Y   F U N C T I O N S   ##################################
+
+Function Publish-EsxiPasswordPolicy {
+    <#
+        .SYNOPSIS
+        Publish password policy for ESXi hosts in a vCenter Server instance managed by SDDC Manager.
+
+        .DESCRIPTION
+        The Publish-EsxiPasswordPolicy cmdlet returns password policy from ESXi hosts managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates the authentication to vCenter Server with credentials from SDDC Manager
+        - Collects password policy from all ESXi hosts in vCenter Server instance
+
+        .EXAMPLE
+        Publish-EsxiPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will return password policy from all ESXi hosts in vCenter Server managed by SDDC Manager for a all workload domains.
+
+        .EXAMPLE
+        Publish-EsxiPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will return password policy from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allEsxiPolicyObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
+                    foreach ($domain in $allWorkloadDomains ) {
+                        $esxiPolicy = Request-EsxiPasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allEsxiPolicyObject += $esxiPolicy
+                    }
+                }
+                else {
+                    $esxiPolicy = Request-EsxiPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allEsxiPolicyObject += $esxiPolicy
+                }
+                $allEsxiPolicyObject = $allEsxiPolicyObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="policy-esxi"></a><h3>ESXi Password Policy</h3>' -As Table
+                $allEsxiPolicyObject = Convert-CssClass -htmldata $allEsxiPolicyObject
+                $allEsxiPolicyObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-EsxiPasswordPolicy
+
+Function Request-EsxiPasswordPolicy {
+    <#
+        .SYNOPSIS
+        Returns ESXi Password Policy.
+
+        .DESCRIPTION
+        The Request-EsxiPasswordPolicy cmdlet returns the Password Policy for ESXi hosts managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Collects the Password Policy configuration for each ESXi host
+
+        .EXAMPLE
+        Request-EsxiPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the Password Policy configuration for ESXi hosts managed by SDDC Manager for a workload domain.
+
+        .EXAMPLE
+        Request-EsxiPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -html
+        This example will return the Password Policy configuration for ESXi hosts managed by SDDC Manager for a workload domain and output in HTML
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
+                                $clusterObject = New-Object System.Collections.ArrayList
+                                $esxiPasswordPolicyObject = New-Object System.Collections.ArrayList
+                                $allClusters = Get-Cluster -Server $vcfVcenterDetails.fqdn
+                                foreach ($cluster in $allClusters) {
+                                    $allHosts = Get-Cluster $cluster.name -Server $vcfVcenterDetails.fqdn | Get-VMHost -Server $vcfVcenterDetails.fqdn
+                                    foreach ($esxiHost in $allHosts) {
+                                        $passwordPolicy = Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordQualityControl" }
+                                        if ($passwordPolicy -and $passwordExpire) {
+                                            $passwordPolicy.Value | Select-String -Pattern "^retry=(\d+)\s+min=(.+),(.+),(.+),(.+),(.+)" | Foreach-Object {$PasswdPolicyRetryValue, $PasswdPolicyMinValue1, $PasswdPolicyMinValue2, $PasswdPolicyMinValue3, $PasswdPolicyMinValue4, $PasswdPolicyMinValue5 = $_.Matches[0].Groups[1..6].Value}
+                                        }
+                                        $hostPasswordPolicyObject = New-Object -TypeName psobject
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Cluster" -notepropertyvalue $cluster
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "ESXi FQDN" -notepropertyvalue $esxiHost.Name
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Expiry (days)" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordMaxDays" }).Value
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Password History" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordHistory" }).Value
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Failed Login Attempts" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountLockFailures" }).Value
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Lockout Time (sec)" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountUnlockTime" }).Value                                        
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Password Retry (max)" -notepropertyvalue $PasswdPolicyRetryValue
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Password Policy" -notepropertyvalue ($PasswdPolicyMinValue1 + "," + $PasswdPolicyMinValue2 + "," + $PasswdPolicyMinValue3 + "," + $PasswdPolicyMinValue4)
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Password Length" -notepropertyvalue $PasswdPolicyMinValue5
+                                        $esxiPasswordPolicyObject += $hostPasswordPolicyObject
+                                    }
+                                    $clusterObject += $esxiPasswordPolicyObject
+                                }
+                                Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+
+                                # Return the structured data to the console or format using HTML CSS Styles
+                                if ($PsBoundParameters.ContainsKey("html")) { 
+                                    $clusterObject = $clusterObject | Sort-Object Cluster, 'ESXi FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-esxi"></a><h3>ESXi Password Policy</h3>' -As Table
+                                    $clusterObject = Convert-CssClass -htmldata $clusterObject
+                                } else {
+                                    $clusterObject | Sort-Object Cluster, 'ESXi FQDN'
+                                }
+                                $clusterObject
+                            } else {
+                                Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-EsxiPasswordPolicy
+
+##########################################  E N D   O F   F U N C T I O N S  ##########################################
+#######################################################################################################################
+
+
 #########################################################################################
 #############################  Start Supporting Functions  ##############################
 
@@ -5090,11 +5299,15 @@ Function Start-CreateReportDirectory {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$path,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
-        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade")] [String]$reportType
+        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade","policy")] [String]$reportType
     )
 
     $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
-    $Global:reportFolder = $path + '\HealthReports\'
+    if ($reportType -eq "health") { $Global:reportFolder = $path + '\HealthReports\' }
+    if ($reportType -eq "alert") { $Global:reportFolder = $path + '\AlertReports\' }
+    if ($reportType -eq "config") { $Global:reportFolder = $path + '\ConfigReports\' }
+    if ($reportType -eq "upgrade") { $Global:reportFolder = $path + '\UpgradeReports\' }
+    if ($reportType -eq "policy") { $Global:reportFolder = $path + '\PolicyReports\' }
     if (!(Test-Path -Path $reportFolder)) {
         New-Item -Path $reportFolder -ItemType "directory" | Out-Null
     }
@@ -5215,7 +5428,7 @@ Function Get-ClarityReportHeader {
                     <div class="branding">
                         <a href="">
                             <cds-icon shape="vm-bug">
-                                <img src="icon.svg" alt="VMware Cloud Foundation"/>
+                                <img src="../icon.svg" alt="VMware Cloud Foundation"/>
                             </cds-icon>
                             <span class="title">VMware Cloud Foundation</span>
                         </a>
@@ -5227,7 +5440,7 @@ Export-ModuleMember -Function Get-ClarityReportHeader
 
 Function Get-ClarityReportNavigation {
     Param (
-        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade")] [String]$reportType
+        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade","policy")] [String]$reportType
     )
 
     if ($reportType -eq "health") { # Define the Clarity Cascading Style Sheets (CSS) for a Health Report
@@ -5385,6 +5598,29 @@ Function Get-ClarityReportNavigation {
             </nav>
             <div class="content-container">
             <div class="content-area">'
+        $clarityCssNavigation
+    }
+
+    if ($reportType -eq "policy") { # Define the Clarity Cascading Style Sheets (CSS) for a Password Policy Report
+        $clarityCssNavigation = '
+                <nav class="subnav">
+                <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="">Password Policy Report</a>
+                </li>
+                </ul>
+            </nav>
+            <div class="content-container">
+            <nav class="sidenav">
+            <section class="sidenav-content">
+                <a class="nav-link nav-icon" href="#policy-vcenter">vCenter Server</a>
+                <a class="nav-link nav-icon" href="#policy-esxi">ESXi</a>
+                <a class="nav-link nav-icon" href="#policy-vsan">vSAN</a>
+                <a class="nav-link nav-icon" href="#policy-nsx">NSX-T Data Center</a>
+            </section>
+            </nav>
+                <div class="content-area">
+                    <div class="content-area">'
         $clarityCssNavigation
     }
 }
