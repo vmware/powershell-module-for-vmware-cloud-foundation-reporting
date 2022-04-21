@@ -3382,6 +3382,15 @@ Function Request-VcenterBackupStatus {
 
                             $message += $messageBackupAge # Combine the alert message
 
+                            # Set the alert and message if the backup is located on the SDDC Manager.
+                            $backupServer = (Get-VcenterBackupConfiguration).location # Get the backup server
+
+                            if ($backupServer.host -eq $server) { # Compare against the `host` attribute
+                                $alert = 'RED' # Critical; backup server is located on the SDDC Manager.
+                                $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
+                                $message = $messageBackupServer # Override the message
+                            }
+
                             $elementObject = New-Object -TypeName psobject
                             $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                             $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
@@ -5913,6 +5922,39 @@ Function Get-NsxtBackupHistory {
     }
 }
 Export-ModuleMember -Function Get-NsxtBackupHistory
+
+Function Get-VcenterBackupConfiguration {
+    <#
+        .SYNOPSIS
+        Return the backup configuration for a vCenter Server instance.
+
+        .DESCRIPTION
+        The Get-VcenterBackupConfiguration cmdlet returns the backup configuration for a vCenter Server instance.
+
+        .EXAMPLE
+        Get-VcenterBackupConfiguration
+        This example returns the backup configuration for the connected vCenter Server instance.
+    #>
+
+    Try {
+        $backupScheduleAPI = Get-CisService -name 'com.vmware.appliance.recovery.backup.schedules' # Get the backup job API from the vSphere Automation API
+        $backupSchedules = $backupScheduleAPI.list()
+        if ($backupSchedules.count -ge 1) {
+            $customObject = @()
+            foreach ($backupSchedule in $backupSchedules) {
+                $customObject += $backupSchedule.values | Select-Object *, @{N = 'ID'; e = { "$($backupSchedule.keys.value)" } } -ExpandProperty recurrence_info -ExcludeProperty Help | Select-Object * -ExcludeProperty recurrence_info, Help | Select-Object * -ExpandProperty retention_info | Select-Object * -ExcludeProperty retention_info, Help
+            }
+            return $customObject
+        }
+        else {
+            Write-Warning "No backup schedules configured."
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Get-VcenterBackupConfiguration
 
 Function Get-VcenterBackupJobs {
     <#
