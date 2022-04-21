@@ -2248,7 +2248,6 @@ Function Publish-SnapshotStatus {
     )
 
     Try {
-
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
@@ -2452,11 +2451,8 @@ Function Publish-StorageCapacityHealth {
         $allStorageCapacityHealth = New-Object System.Collections.ArrayList
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                # Compose commands for different options
-
                 $sddcManagerStorageHealthHeader = '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' # Adding the vCenter Server Disk Health Status header for report navigation.
                 $vCenterStorageHealthHeader = '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health Status</h3>' # Adding the vCenter Server Disk Health Status header for report navigation.
-                $esxiStorageCapacityHeader = '<a id="storage-esxi"></a><h3>ESXi Disk Health Status</h3>' # Adding the ESXi Disk Health Status header for report navigation.
 
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
@@ -2464,20 +2460,29 @@ Function Publish-StorageCapacityHealth {
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -html -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -html -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
                         $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -html -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    }
-                    elseif ($PsBoundParameters.ContainsKey("html")) {
+                    } elseif ($PsBoundParameters.ContainsKey("html")) {
+                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html ; $allStorageCapacityHealth += $sddcManagerStorageHealth
+                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
+                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $datastoreStorageCapacity
+                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
+                    } elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
+                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly ; $allStorageCapacityHealth += $sddcManagerStorageHealth
+                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
+                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
+                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
+                    } else {
+                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass ; $allStorageCapacityHealth += $sddcManagerStorageHealth
+                    } elseif ($PsBoundParameters.ContainsKey("html")) {
                         $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $datastoreStorageCapacity
                         $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    }
-                    elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
+                    } elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
                         $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
                         $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    }
-                    else {
+                    } else {
                         $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains ; $allStorageCapacityHealth += $datastoreStorageCapacity
@@ -2489,20 +2494,29 @@ Function Publish-StorageCapacityHealth {
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
                         $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    }
-                    elseif ($PsBoundParameters.ContainsKey("html")) {
+                    } elseif ($PsBoundParameters.ContainsKey("html")) {
+                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html ; $allStorageCapacityHealth += $sddcManagerStorageHealth
+                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
+                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $datastoreStorageCapacity
+                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
+                    } elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
+                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly ; $allStorageCapacityHealth += $sddcManagerStorageHealth
+                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
+                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
+                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
+                    } else {
+                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass ; $allStorageCapacityHealth += $sddcManagerStorageHealth
+                    } elseif ($PsBoundParameters.ContainsKey("html")) {
                         $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $datastoreStorageCapacity
                         $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    }
-                    elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
+                    } elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
                         $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
                         $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    }
-                    else {
+                    } else {
                         $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain ; $allStorageCapacityHealth += $datastoreStorageCapacity
@@ -3495,6 +3509,7 @@ Function Request-DatastoreStorageCapacity {
     # Define thresholds Green < Yellow < Red
     $greenThreshold = 80
     $redThreshold = 90
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -3821,11 +3836,10 @@ Function Request-EsxiStorageCapacity {
         Checks the disk usage for ESXi hosts.
 
         .DESCRIPTION
-        The Request-EsxiStorageCapacity cmdlets checks the disk space usage on ESXi hosts. The cmdlet 
-        connects to SDDC Manager using the -server, -user, and -password values:
+        The Request-EsxiStorageCapacity cmdlets checks the disk space usage on ESXi hosts. The cmdlet connects to SDDC
+        Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
-        - Gathers the details for each ESXi host
-        - Collects information for the disk usage
+        - Collects disk usage information for each ESXi host
         - Checks disk usage against thresholds and outputs the results
 
         .EXAMPLE
@@ -3839,9 +3853,11 @@ Function Request-EsxiStorageCapacity {
         .EXAMPLE
         Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will check the disk usage for all ESXi hosts managed by SDDC Manager but only reports issues.
-    #>
 
-    # TODO: Refactor to Request-EsxiStorageCapacity to remove Posh-SSH dependency.
+        .EXAMPLE
+        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -html
+        This example will check the disk usage for all ESXi hosts managed by SDDC Manager and output in html.
+    #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -3854,94 +3870,76 @@ Function Request-EsxiStorageCapacity {
     )
 
     Try {
-        # Define DF command for ESXi
-        $command = 'df -h | grep -e "^VMFS-L\|^vfat"'
-
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                            
-                if ($PsBoundParameters.ContainsKey("allDomains")) { 
-                    $allESXis = Get-VCFHost
-                    foreach ($esxi in $allESXis) {
-                        # Compose needed variables
-                        $workloadDomain = (Get-VCFWorkloadDomain -id ((Get-VCFHost -fqdn $esxi.fqdn).domain.id)).name 
-                        $reportTitle = "<a id=`"storage-esxi-$workloadDomain`"></a><h4>Disk Health for ESXi Host '$($esxi.fqdn)'. Workload Domain: $workloadDomain</h4>"
-                        $esxiUser = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.accountType -eq "USER" -and $_.resource.resourceName -eq $esxi.fqdn }).username
-                        $esxiUserPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.accountType -eq "USER" -and $_.resource.resourceName -eq $esxi.fqdn }).password
-                        $password = ConvertTo-SecureString $esxiUserPass -AsPlainText -Force
-                        $credential = New-Object System.Management.Automation.PSCredential ($esxiUser, $password)
-                        # TODO: Explore the possibility to get this information from API and remove Posh-SSH and SSH enabled on ESXi dependencies.
-                        $session = New-SSHSession -ComputerName $esxi.fqdn -Credential $credential -Force -WarningAction SilentlyContinue
-                        if ($session) { 
-                            $commandOutput = Invoke-SSHCommand -Index $session.SessionId -Command $command
-                            # Remove session once command is run
-                            Remove-SSHSession -Index $session.SessionId | Out-Null
+                $esxiPartitionsObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $allWorkloadDomains = Get-VCFWorkloadDomain
+                    foreach ($domain in $allWorkloadDomains) {
+                        if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain.name)) {
+                            if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                                if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                    $esxiHosts = Get-VMHost -Server $vcfVcenterDetails.fqdn
+                                    Foreach ($esxiHost in $esxiHosts) {
+                                        $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
+                                        $allPrtitions = $esxcli.storage.filesystem.list.invoke()
+                                        foreach ($partition in $allPrtitions) {
+                                            if ($partition.Type -eq "VMFS-L" -or $partition.Type -eq "vfat") {
+                                                $threshold = Test-StorageThreshold -size $partition.Size -free $partition.Free
+                                                $esxiPartition = New-Object -TypeName psobject
+                                                $esxiPartition | Add-Member -notepropertyname 'Domain' -notepropertyvalue $domain.name
+                                                $esxiPartition | Add-Member -notepropertyname 'ESXi FQDN' -notepropertyvalue $esxiHost.Name
+                                                $esxiPartition | Add-Member -notepropertyname 'Volume Name' -notepropertyvalue $partition.VolumeName.ToLower()
+                                                $esxiPartition | Add-Member -notepropertyname 'Filesystem' -notepropertyvalue $partition.Type.ToLower()
+                                                $esxiPartition | Add-Member -notepropertyname 'Used %' -notepropertyvalue $threshold.usage
+                                                $esxiPartition | Add-Member -notepropertyname 'Alert' -notepropertyvalue $threshold.alert
+                                                $esxiPartition | Add-Member -notepropertyname 'Message' -notepropertyvalue $threshold.message
+                                                $esxiPartitionsObject += $esxiPartition
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        else {
-                            # Print error message if connection was not successful and continue to the next ESXi host.
-                            ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Could not open SSH connection to ESXi host '$($esxi.fqdn)'. Please check the PowerShell console for more details.</p>"
-                            continue
-                        }
-                                    
-                        # Format output to be suitable for next function - Format-DfStorageHealth
-                        $dfOutput = ($commandOutput.Output -split ', ').Trim()
-
-                        # Compose command for Format-DfStorageHealth function
-                        if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
-                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html -failureOnly
-                        }
-                        elseif ($PsBoundParameters.ContainsKey("html")) {
-                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html
-                        }
-                        elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
-                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -failureOnly
-                        }
-                        else {
-                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput
-                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
                 }
                 else {
-                    $domainId = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $workloadDomain }).id
-                    $domainESXis = (Get-VCFHost | Where-Object { $_.domain.id -eq $domainId })
-                    foreach ($esxi in $domainESXis) {
-                        # Compose needed variables
-                        $workloadDomain = (Get-VCFWorkloadDomain -id ((Get-VCFHost -fqdn $esxi.fqdn).domain.id)).name 
-                        $reportTitle = "<a id=`"storage-esxi-$workloadDomain`"></a><h4>Disk Health for ESXi Host '$($esxi.fqdn)'. Workload Domain: $workloadDomain</h4>"
-                        $esxiUser = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.accountType -eq "USER" -and $_.resource.resourceName -eq $esxi.fqdn }).username
-                        $esxiUserPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.accountType -eq "USER" -and $_.resource.resourceName -eq $esxi.fqdn }).password
-                        $password = ConvertTo-SecureString $esxiUserPass -AsPlainText -Force
-                        $credential = New-Object System.Management.Automation.PSCredential ($esxiUser, $password)
-                        $session = New-SSHSession -ComputerName $esxi.fqdn -Credential $credential -Force -WarningAction SilentlyContinue
-                        if ($session) { 
-                            $commandOutput = Invoke-SSHCommand -Index $session.SessionId -Command $command
-                            # Remove session once command is run
-                            Remove-SSHSession -Index $session.SessionId | Out-Null
+                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $workloadDomain)) {
+                        if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                            if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                $esxiHosts = Get-VMHost -Server $vcfVcenterDetails.fqdn
+                                Foreach ($esxiHost in $esxiHosts) {
+                                    $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
+                                    $allPrtitions = $esxcli.storage.filesystem.list.invoke()
+                                    foreach ($partition in $allPrtitions) {
+                                        if ($partition.Type -eq "VMFS-L" -or $partition.Type -eq "vfat") {
+                                            $threshold = Test-StorageThreshold -size $partition.Size -free $partition.Free
+                                            $esxiPartition = New-Object -TypeName psobject
+                                            $esxiPartition | Add-Member -notepropertyname 'Domain' -notepropertyvalue $workloadDomain
+                                            $esxiPartition | Add-Member -notepropertyname 'ESXi FQDN' -notepropertyvalue $esxiHost.Name
+                                            $esxiPartition | Add-Member -notepropertyname 'Volume Name' -notepropertyvalue $partition.VolumeName.ToLower()
+                                            $esxiPartition | Add-Member -notepropertyname 'Filesystem' -notepropertyvalue $partition.Type.ToLower()
+                                            $esxiPartition | Add-Member -notepropertyname 'Used %' -notepropertyvalue $threshold.usage
+                                            $esxiPartition | Add-Member -notepropertyname 'Alert' -notepropertyvalue $threshold.alert
+                                            $esxiPartition | Add-Member -notepropertyname 'Message' -notepropertyvalue $threshold.message
+                                            $esxiPartitionsObject += $esxiPartition
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        else {
-                            # Print error message if connection was not successful and continue to the next ESXi host.
-                            ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Could not open SSH connection to ESXi host '$($esxi.fqdn)'. Please check the PowerShell console for more details.</p>"
-                            continue
-                        }
-                                    
-                        # Format output to be suitable for next function - Format-DfStorageHealth
-                        $dfOutput = ($commandOutput.Output -split ', ').Trim()
-
-                        # Compose command for Format-DfStorageHealth function
-                        if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
-                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html -failureOnly
-                        }
-                        elseif ($PsBoundParameters.ContainsKey("html")) {
-                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html
-                        }
-                        elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
-                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -failureOnly
-                        }
-                        else {
-                            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput
-                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
                 }
+                if ($PsBoundParameters.ContainsKey('html')) {
+                    $esxiPartitionsObject = $esxiPartitionsObject | Sort-Object Domain, 'ESXi FQDN', 'Volume Name', Alert | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Storage Health</h3>' -As Table
+                    $esxiPartitionsObject = Convert-CssClass -htmldata $esxiPartitionsObject
+                    $esxiPartitionsObject
+                } else {
+                    $esxiPartitionsObject | Sort-Object Domain, 'ESXi FQDN', 'Volume Name', Alert
+                }
+                
             }
         }
     }
@@ -5314,7 +5312,6 @@ Function Test-VcfHealthPrereq {
             @{ Name=("PowerValidatedSolutions"); Version=("1.5.0")}
             @{ Name=("VMware.PowerCLI"); Version=("12.4.1")}
             @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.7")}
-            @{ Name=("Posh-SSH"); Version=("3.0.1")} # TODO: Refactor to Request-EsxiStorageCapacity to remove Posh-SSH dependency.
         )
         foreach ($module in $modules ) {
             if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
@@ -5675,15 +5672,6 @@ Function Get-ClarityReportFooter {
     $clarityCssFooter
 }
 Export-ModuleMember -Function Get-ClarityReportFooter
-
-Function PercentCalc {
-    Param (
-        [Parameter (Mandatory = $true)] [Int]$InputNum1,
-        [Parameter (Mandatory = $true)] [Int]$InputNum2
-    )
-    
-    $InputNum1 / $InputNum2*100
-}
 
 Function Format-DfStorageHealth {
     <#
@@ -6187,9 +6175,13 @@ Function Get-VsanHealthTest {
 }
 Export-ModuleMember -Function Get-EsxiAlert
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 =======
+=======
+
+>>>>>>> 3a76cbf (Remove Posh-SSH for Request-EsxiStorageCapacity)
 Function Get-VsanHealthTest {
     <#
         .SYNOPSIS
@@ -6360,6 +6352,37 @@ Function Get-NsxtTier0BgpStatus {
     }
 }
 Export-ModuleMember -Function Get-NsxtTier0BgpStatus
+
+Function Test-StorageThreshold ($size, $free) {
+    # Define thresholds Green < Yellow < Red
+    $greenThreshold = 80
+    $redThreshold = 90
+    # Calculate datastore usage and capacity
+    [Int]$usage = [Math]::Round((($size - $free) / $size * 100))
+    # Applying thresholds and creating collection from input
+    Switch ($usage) {
+        { $_ -le $greenThreshold } {
+            # Green if $usage is up to $greenThreshold
+            $alert = 'GREEN'
+            $message = "Used space is less than $greenThreshold%. "
+        }
+        { $_ -ge $redThreshold } {
+            # Red if $usage is equal or above $redThreshold
+            $alert = 'RED'
+            $message = "Used space is above $redThreshold%. Please reclaim space on the volume."
+        }
+        Default {
+            # Yellow if above two are not matched
+            $alert = 'YELLOW'
+            $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the volume."
+        }
+    }
+    $thresholdObject = New-Object -TypeName psobject
+    $thresholdObject | Add-Member -notepropertyname 'usage' -notepropertyvalue $usage
+    $thresholdObject | Add-Member -notepropertyname 'alert' -notepropertyvalue $alert
+    $thresholdObject | Add-Member -notepropertyname 'message' -notepropertyvalue $message
+    $thresholdObject
+}
 
 ##############################  End Supporting Functions ###############################
 ########################################################################################
