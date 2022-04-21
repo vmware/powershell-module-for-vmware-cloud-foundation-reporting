@@ -4420,7 +4420,7 @@ Function Publish-EsxiAlert {
         .EXAMPLE
         Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a all workload domains but only for the failed items.
- 
+
         .EXAMPLE
         Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
@@ -4445,8 +4445,7 @@ Function Publish-EsxiAlert {
                         foreach ($domain in $allWorkloadDomains ) {
                             $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass $domain.name -failureOnly; $allAlertObject += $esxiSystemAlert
                         }
-                    }
-                    else {
+                    } else {
                         $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $esxiSystemAlert
                     }
                 }
@@ -4455,8 +4454,7 @@ Function Publish-EsxiAlert {
                         foreach ($domain in $allWorkloadDomains ) {
                             $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $esxiSystemAlert
                         }
-                    }
-                    else {
+                    } else {
                         $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass -domain $workloadDomain; $allAlertObject += $esxiSystemAlert
                     }
                 }
@@ -4466,8 +4464,7 @@ Function Publish-EsxiAlert {
                 }
                 if ($addNoIssues) {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alert</h3>' -PostContent '<p>No Issues Found</p>' 
-                }
-                else {
+                } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alerts</h3>' -As Table
                 }
                 $allAlertObject = Convert-CssClass -htmldata $allAlertObject
@@ -4501,7 +4498,7 @@ Function Publish-NsxtAlert {
         .EXAMPLE
         Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will return alarms from all NSX Manager clusters managed by SDDC Manager for a all workload domains but only for the failed items.
- 
+
         .EXAMPLE
         Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will return alarms from the NSX Manager cluster managed by SDDC Manager for a workload domain named sfo-w01.
@@ -4600,18 +4597,15 @@ Function Publish-VcenterAlert {
                         foreach ($domain in $allWorkloadDomains ) {
                             $vcenterSystemAlert = Request-VcenterAlert -server $server -user $user -pass $pass $domain.name -failureOnly; $allAlertObject += $vcenterSystemAlert
                         }
-                    }
-                    else {
+                    } else {
                         $vcenterSystemAlert = Request-VcenterAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $vcenterSystemAlert
                     }
-                }
-                else {
+                } else {
                     if ($PsBoundParameters.ContainsKey('allDomains')) { 
                         foreach ($domain in $allWorkloadDomains ) {
                             $vcenterSystemAlert = Request-VcenterAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $vcenterSystemAlert
                         }
-                    }
-                    else {
+                    } else {
                         $vcenterSystemAlert = Request-VcenterAlert -server $server -user $user -pass $pass -domain $workloadDomain; $allAlertObject += $vcenterSystemAlert
                     }
                 }
@@ -4621,8 +4615,7 @@ Function Publish-VcenterAlert {
                 }
                 if ($addNoIssues) {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alert</h3>' -PostContent '<p>No Issues Found</p>' 
-                }
-                else {
+                } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alerts</h3>' -As Table
                 }
                 $allAlertObject = Convert-CssClass -htmldata $allAlertObject
@@ -4655,7 +4648,7 @@ Function Publish-VsanAlert {
         .EXAMPLE
         Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will return vSAN Healthcheck alarms for all vCenter Server instances managed by SDDC Manager for a workload domain but only failed items.
- 
+
         .EXAMPLE
         Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
@@ -4680,18 +4673,15 @@ Function Publish-VsanAlert {
                         foreach ($domain in $allWorkloadDomains ) {
                             $vsanSystemAlert = Request-VsanAlert -server $server -user $user -pass $pass $domain.name -failureOnly; $allAlertObject += $vsanSystemAlert
                         }
-                    }
-                    else {
+                    } else {
                         $vsanSystemAlert = Request-VsanAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $vsanSystemAlert
                     }
-                }
-                else {
+                } else {
                     if ($PsBoundParameters.ContainsKey('allDomains')) { 
                         foreach ($domain in $allWorkloadDomains ) {
                             $vsanSystemAlert = Request-VsanAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $vsanSystemAlert
                         }
-                    }
-                    else {
+                    } else {
                         $vsanSystemAlert = Request-VsanAlert -server $server -user $user -pass $pass -domain $workloadDomain; $allAlertObject += $vsanSystemAlert
                     }
                 }
@@ -4701,8 +4691,7 @@ Function Publish-VsanAlert {
                 }
                 if ($addNoIssues) {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alert</h3>' -PostContent '<p>No Issues Found</p>' 
-                }
-                else {
+                } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alerts</h3>' -As Table
                 }
                 $allAlertObject = Convert-CssClass -htmldata $allAlertObject
@@ -4736,6 +4725,10 @@ Function Request-NsxtAlert {
         .EXAMPLE
         Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01 -failureOnly
         This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain but only for the failed items
+
+        .EXAMPLE
+        Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01 -html
+        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain and outputs to html.
     #>
 
     Param (
@@ -4752,11 +4745,8 @@ Function Request-NsxtAlert {
             if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                 if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                     if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
-                        #Get the NSX-T alarms
-                        $nsxtAlarms = Get-NsxtAlarm -fqdn $vcfNsxDetails.fqdn
+                        $nsxtAlarms = Get-NsxtAlarm -fqdn $vcfNsxDetails.fqdn # Get the NSX-T alarms
                         $customObject = New-Object System.Collections.ArrayList
-                        $component = 'NSX Manager'
-                        $resource = 'Node: ' + $vcfNsxDetails.fqdn
                         # TODO: Define the YELLOW alert based on Status and Severity
                         foreach ($alarm in $nsxtAlarms.results) {
                             if ($alarm.status -eq "RESOLVED") {
@@ -4765,8 +4755,8 @@ Function Request-NsxtAlert {
                                 $alert = "RED"
                             }
                             $elementObject = New-Object -TypeName psobject
-                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'NSX Manager' # Set the component name
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcfNsxDetails.fqdn # Set the resource name
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
                             $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
                             # Alarm properties
@@ -4776,25 +4766,23 @@ Function Request-NsxtAlert {
                             #$elementObject | Add-Member -NotePropertyName 'Last Reported Time' -NotePropertyValue $element.last_reported_time # Set the last_reported_time in [Long]
                             $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue $alarm.status # Set the status
                             $elementObject | Add-Member -NotePropertyName 'Severity' -NotePropertyValue $alarm.severity # Set the severity
-                            $elementObject | Add-Member -NotePropertyName 'Node Display Name' -NotePropertyValue $alarm.node_display_name # Set the node_display_name
-                            $elementObject | Add-Member -NotePropertyName 'Node Ip Addresses' -NotePropertyValue "$($alarm.node_ip_addresses)" # Set the node_ip_addresses array converted to sting
+                            $elementObject | Add-Member -NotePropertyName 'Node Name' -NotePropertyValue $alarm.node_display_name # Set the node_display_name
+                            $elementObject | Add-Member -NotePropertyName 'Node IP Address' -NotePropertyValue "$($alarm.node_ip_addresses)" # Set the node_ip_addresses array converted to sting
                             
                             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
                                 }
-                            }
-                            else {
+                            } else {
                                 $customObject += $elementObject
                             }
                         }
                         # Return the structured data to the console or format using HTML CSS Styles
                         if ($PsBoundParameters.ContainsKey('html')) { 
-                            $customObject = $customObject | Sort-Object component, domain, resource, status | ConvertTo-Html -Fragment -PreContent '<h2>NSX-T Alarms</h2>' -As Table
+                            $customObject = $customObject | Sort-Object Component, Resource, Domain, Status | ConvertTo-Html -Fragment -PreContent '<h2>NSX-T Data Center Alarms</h2>' -As Table
                             $customObject
-                        }
-                        else {
-                            $customObject | Sort-Object component, domain, resource, status
+                        } else {
+                            $customObject | Sort-Object Component, Resource, Domain, Status
                         }
                         
                     }
@@ -4824,6 +4812,10 @@ Function Request-VsanAlert {
         .EXAMPLE
         Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
+
+        .EXAMPLE
+        Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -html
+        This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain and outputs to html.
     #>
 
     Param (
@@ -4840,15 +4832,13 @@ Function Request-VsanAlert {
             if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
                 if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        foreach ($cluster in Get-Cluster) {
+                        foreach ($cluster in Get-Cluster -Server $vcfVcenterDetails.fqdn ) {
                             $vsanAlarms = Get-VsanHealthTest -cluster $cluster
                             $customObject = New-Object System.Collections.ArrayList
-                            $component = 'vSAN'
-                            $resource = 'Instance: ' + $vcfVcenterDetails.fqdn
                             foreach ($vsanAlarm in $vsanAlarms) {
                                 $elementObject = New-Object -TypeName psobject
-                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
-                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource
+                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'vSAN'
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcfVcenterDetails.fqdn
                                 $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
                                 $elementObject | Add-Member -NotePropertyName 'Cluster' -NotePropertyValue $cluster
                                 # Alarm properties
@@ -4860,21 +4850,21 @@ Function Request-VsanAlert {
                                     if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                         $customObject += $elementObject
                                     }
-                                }
-                                else {
+                                } else {
                                     $customObject += $elementObject
                                 }
                             }
                         }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                         
                         # Return the structured data to the console or format using HTML CSS Styles
                         if ($PsBoundParameters.ContainsKey('html')) { 
-                            $customObject = $customObject | Sort-Object component, domain, resource, cluster, alert | ConvertTo-Html -Fragment -PreContent '<h2>vCenter Alarms</h2>' -As Table
+                            $customObject = $customObject | Sort-Object Component, Resource, Domain, Cluster, Alert | ConvertTo-Html -Fragment -PreContent '<h2>vSAN Alarms</h2>' -As Table
                             $customObject
+                        } else {
+                            $customObject | Sort-Object Component, Resource, Domain, Cluster, Alert
                         }
-                        else {
-                            $customObject | Sort-Object component, domain, resource, cluster, alert
-                        }
+                        
                     }
                 }
             }
@@ -4904,8 +4894,12 @@ Function Request-VcenterAlert {
         This example will return alarms from ESXi hosts of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
 
         .EXAMPLE
-        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -filterOut vsanOnly -failureOnly
+        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return alarms from vSAN clusters of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
+
+        .EXAMPLE
+        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -html
+        This example will return alarms of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01 and output in html format.
     #>
 
     Param (
@@ -4928,26 +4922,23 @@ Function Request-VcenterAlert {
             if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
                 if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        #Get the vCenter alarms
-                        $vcenterAlarms = Get-VcenterTriggeredAlarm
+                        $vcenterAlarms = Get-VcenterTriggeredAlarm -server $vcfVcenterDetails.fqdn # Get the vCenter alarms
                         $customObject = New-Object System.Collections.ArrayList
-                        $component = 'vCenter Server'
-                        $resource = 'Instance: ' + $vcfVcenterDetails.fqdn
                         foreach ($alarm in $vcenterAlarms) {
                             [String]$alert = $alarm.Status
                             $alert = $alert.ToUpper()
                             $elementObject = New-Object -TypeName psobject
-                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
-                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'vCenter Server'
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcfVcenterDetails.fqdn
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
                             $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
                             # Alarm properties
-                            $elementObject | Add-Member -NotePropertyName 'EntityType' -NotePropertyValue $alarm.EntityType
+                            $elementObject | Add-Member -NotePropertyName 'Entity Type' -NotePropertyValue $alarm.EntityType
                             $elementObject | Add-Member -NotePropertyName 'Alarm' -NotePropertyValue $alarm.Alarm
                             $elementObject | Add-Member -NotePropertyName 'Time' -NotePropertyValue $alarm.Time
                             $elementObject | Add-Member -NotePropertyName 'Acknowledged' -NotePropertyValue $alarm.Acknowledged 
-                            $elementObject | Add-Member -NotePropertyName 'AcknowledgedBy' -NotePropertyValue $alarm.AckBy
-                            $elementObject | Add-Member -NotePropertyName 'AcknowledgedTime' -NotePropertyValue $alarm.AcknowledgedTime
+                            $elementObject | Add-Member -NotePropertyName 'Acknowledged By' -NotePropertyValue $alarm.AckBy
+                            $elementObject | Add-Member -NotePropertyName 'Acknowledged Time' -NotePropertyValue $alarm.AcknowledgedTime
                             
 <<<<<<< HEAD
                             if ($PsBoundParameters.ContainsKey('failureOnly')) {
@@ -4960,13 +4951,13 @@ Function Request-VcenterAlert {
                                     if ($elementObject.EntityType -eq "HostSystem") {
                                         $addToCustomObject = $true
                                     }
-                                    break
+                                    Break
                                 }
                                 "vsanOnly" {
                                     if (($elementObject.EntityType -eq "ClusterComputeResource") -and ($elementObject.Alarm -like "vsan*")) {
                                         $addToCustomObject = $true
                                     }
-                                    break
+                                    Break
                                 }
                                 default {
                                     $addToCustomObject = $true
@@ -4977,21 +4968,26 @@ Function Request-VcenterAlert {
                                     if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                         $customObject += $elementObject
                                     }
+<<<<<<< HEAD
                                 }
                                 else {
 >>>>>>> 5ee7fec (Enchace Request-VcenterAlert)
+=======
+                                } else {
+>>>>>>> 020b166 (Adjust Alert Output on Report)
                                     $customObject += $elementObject
                                 }
                             }
                             
                         }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+
                         # Return the structured data to the console or format using HTML CSS Styles
                         if ($PsBoundParameters.ContainsKey('html')) { 
-                            $customObject = $customObject | Sort-Object component, domain, resource, alert | ConvertTo-Html -Fragment -PreContent '<h2>vCenter Server Alarms</h2>' -As Table
+                            $customObject = $customObject | Sort-Object Component, Resource, Domain, 'Entity Type', Alert | ConvertTo-Html -Fragment -PreContent '<h2>vCenter Server Alarms</h2>' -As Table
                             $customObject
-                        }
-                        else {
-                            $customObject | Sort-Object component, domain, resource, alert
+                        } else {
+                            $customObject | Sort-Object Component, Resource, Domain, 'Entity Type', Alert
                         }
                     }
                 }
@@ -5014,12 +5010,16 @@ Function Request-EsxiAlert {
         - Collects the alerts from all ESXi hosts in vCenter Server instance
 
         .EXAMPLE
-        Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01
+        Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01.
 
         .EXAMPLE
         Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01 but only for the failed items.
+
+        .EXAMPLE
+        Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -html
+        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01 and output in html format
     #>
 
     Param (
@@ -5036,19 +5036,15 @@ Function Request-EsxiAlert {
             if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
                 if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        
-                        #Get the ESXi alarms
                         $customObject = New-Object System.Collections.ArrayList
-                        foreach ($host in Get-VMHost){
-                            $esxiAlarms = Get-EsxiAlert  -host $host
-                            $component = 'ESXi Host'
-                            $resource = 'Instance: ' + $vcfVcenterDetails.fqdn
+                        foreach ($allHosts in Get-VMHost -Server $vcfVcenterDetails.fqdn) {
+                            $esxiAlarms = Get-EsxiAlert -host $allHosts # Get the ESXi alarms
                             foreach ($alarm in $esxiAlarms) {
                                 [String]$alert = $alarm.Status
                                 $alert = $alert.ToUpper()
                                 $elementObject = New-Object -TypeName psobject
-                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
-                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource
+                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'ESXi Host'
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcfVcenterDetails.fqdn
                                 $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
                                 $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
                                 # Alarm properties
@@ -5056,27 +5052,25 @@ Function Request-EsxiAlert {
                                 $elementObject | Add-Member -NotePropertyName 'Alarm' -NotePropertyValue $alarm.Alarm
                                 $elementObject | Add-Member -NotePropertyName 'Time' -NotePropertyValue $alarm.Time
                                 $elementObject | Add-Member -NotePropertyName 'Acknowledged' -NotePropertyValue $alarm.Acknowledged 
-                                $elementObject | Add-Member -NotePropertyName 'Acknowledged by' -NotePropertyValue $alarm.AckBy
+                                $elementObject | Add-Member -NotePropertyName 'Acknowledged By' -NotePropertyValue $alarm.AckBy
                                 $elementObject | Add-Member -NotePropertyName 'Acknowledged Time' -NotePropertyValue $alarm.AcknowledgedTime
-                               
-                                
                                 if ($PsBoundParameters.ContainsKey("failureOnly")) {
                                     if ((($elementObject.alert -eq 'RED') -or ($elementObject.Alert -eq 'YELLOW')) -and !($elementObject.Acknowledged)) {
                                         $customObject += $elementObject
                                     }
-                                }
-                                else {
+                                } else {
                                     $customObject += $elementObject
                                 }
                             }
                         }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+
                         # Return the structured data to the console or format using HTML CSS Styles
                         if ($PsBoundParameters.ContainsKey("html")) { 
-                            $customObject = $customObject | Sort-Object component, domain, resource, alert | ConvertTo-Html -Fragment -PreContent '<h2>vCenter Alarms</h2>' -As Table
+                            $customObject = $customObject | Sort-Object Component, Resource, Domain, Entity, Alert | ConvertTo-Html -Fragment -PreContent '<h2>ESXi Alarms</h2>' -As Table
                             $customObject
-                        }
-                        else {
-                            $customObject | Sort-Object component, domain, resource, alert
+                        } else {
+                            $customObject | Sort-Object Component, Resource, Domain, Entity, Alert
                         }
                     }
                 }
@@ -6243,6 +6237,7 @@ Function Get-VsanHealthTest {
         Get-VsanHealthTest -cluster sfo-m01-c01
         This example returns all vSAN healthcheck tests from vSAN cluster sfo-m01-c01 in connected vCenter Server.
     #>
+
     Param (
 <<<<<<< HEAD
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -6253,6 +6248,7 @@ Function Get-VsanHealthTest {
 >>>>>>> b2bffce (remove connect-viserver from support functions)
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$cluster
     )
+
     $vsanClusterHealthSystem = Get-VSANView -Id "VsanVcClusterHealthSystem-vsan-cluster-health-system"
     $clusterView = (Get-Cluster -Name $cluster).ExtensionData.MoRef
     $results = $vsanClusterHealthSystem.VsanQueryVcClusterHealthSummary($clusterView,$null,$null,$true,$null,$null,'defaultView')
@@ -6267,7 +6263,7 @@ Function Get-VsanHealthTest {
                 TestName = $test.TestName
                 TestHealth = $test.TestHealth.ToUpper()
             }
-           $healthTests += $testResult
+            $healthTests += $testResult
         }
     }
     $healthTests 
@@ -6283,17 +6279,19 @@ Function Get-VcenterTriggeredAlarm {
         The Get-VcenterTriggeredAlarm cmdlet returns all triggered alarms from vCenter Server instance.
 
         .EXAMPLE
-        Get-VcenterTriggeredAlarm
+        Get-VcenterTriggeredAlarm -server sfo-w01-vc01.sfo.rainpole.io
         This example returns all triggered alarms for a vCenter Server instance named sfo-w01-vc01.sfo.rainpole.io.
     #>
 
-    $vc = $global:defaultviserver
-    $rootFolder = Get-Folder -Server $vc "Datacenters"
+    Param (
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server
+    )
 
+    $rootFolder = Get-Folder -Server $server "Datacenters"
     foreach ($triggeredAlarm in $rootFolder.ExtensionData.TriggeredAlarmState) {
         $alarm = "" | Select-Object EntityType, Alarm, Status, Time, Acknowledged, AckBy, AckTime
-        $alarm.Alarm = (Get-View -Server $vc $triggeredAlarm.Alarm).Info.Name
-        $alarm.EntityType = (Get-View -Server $vc $triggeredAlarm.Entity).GetType().Name
+        $alarm.Alarm = (Get-View -Server $server $triggeredAlarm.Alarm).Info.Name
+        $alarm.EntityType = (Get-View -Server $server $triggeredAlarm.Entity).GetType().Name
         $alarm.Status = $triggeredAlarm.OverallStatus
         $alarm.Time = $triggeredAlarm.Time
         $alarm.Acknowledged = $triggeredAlarm.Acknowledged
@@ -6301,11 +6299,15 @@ Function Get-VcenterTriggeredAlarm {
         $alarm.AckTime = $triggeredAlarm.AcknowledgedTime
         $alarm
 <<<<<<< HEAD
+<<<<<<< HEAD
     }
     Disconnect-VIServer -Server $server -Confirm:$false
 =======
   	}
 >>>>>>> b2bffce (remove connect-viserver from support functions)
+=======
+    }
+>>>>>>> 020b166 (Adjust Alert Output on Report)
 }
 Export-ModuleMember -Function Get-VcenterTriggeredAlarm
 
