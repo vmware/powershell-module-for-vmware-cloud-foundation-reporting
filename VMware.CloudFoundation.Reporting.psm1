@@ -2461,18 +2461,6 @@ Function Publish-StorageCapacityHealth {
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -html -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
                         $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -html -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
                     } elseif ($PsBoundParameters.ContainsKey("html")) {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html ; $allStorageCapacityHealth += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $datastoreStorageCapacity
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    } elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly ; $allStorageCapacityHealth += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    } else {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass ; $allStorageCapacityHealth += $sddcManagerStorageHealth
-                    } elseif ($PsBoundParameters.ContainsKey("html")) {
                         $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $datastoreStorageCapacity
@@ -2482,11 +2470,6 @@ Function Publish-StorageCapacityHealth {
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
                         $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    } else {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains ; $allStorageCapacityHealth += $datastoreStorageCapacity
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
                     }
                 } else {
                     if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
@@ -2495,18 +2478,6 @@ Function Publish-StorageCapacityHealth {
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
                         $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
                     } elseif ($PsBoundParameters.ContainsKey("html")) {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html ; $allStorageCapacityHealth += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $datastoreStorageCapacity
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    } elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly ; $allStorageCapacityHealth += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    } else {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass ; $allStorageCapacityHealth += $sddcManagerStorageHealth
-                    } elseif ($PsBoundParameters.ContainsKey("html")) {
                         $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $datastoreStorageCapacity
@@ -2516,11 +2487,6 @@ Function Publish-StorageCapacityHealth {
                         $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity
                         $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                    } else {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain ; $allStorageCapacityHealth += $datastoreStorageCapacity
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
                     }
                 }
 
