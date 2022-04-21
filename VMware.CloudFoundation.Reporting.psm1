@@ -4300,7 +4300,6 @@ Function Request-NsxtTier0BgpStatus {
                                         $message = "BGP is not established. Please check the configuration."
                                     }
                                     # TODO: Add warnings based on length of established time (e.g., flapping) or low prefix counts which may indicate a problem.
-                                    # TODO: Another option is to use Get-NsxtAlert to get the status for BGP and then use that to determine the alert state and message versus the current logic.
                                     $elementObject = New-Object -TypeName psobject
                                     # NSX Tier-0 BGP Status Properties
                                     # TODO: Capture the local ASN alongside the remote ASN. 
@@ -4308,8 +4307,6 @@ Function Request-NsxtTier0BgpStatus {
                                     $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
                                     $elementObject | Add-Member -NotePropertyName 'Tier-0 ID' -NotePropertyValue $tier0.id
                                     $elementObject | Add-Member -NotePropertyName 'Connection' -NotePropertyValue $element.connection_state
-                                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
-                                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
                                     $elementObject | Add-Member -NotePropertyName 'Source Address' -NotePropertyValue $element.source_address
                                     $elementObject | Add-Member -NotePropertyName 'Neighbor Address' -NotePropertyValue $element.neighbor_address
                                     $elementObject | Add-Member -NotePropertyName 'Remote ASN' -NotePropertyValue $element.remote_as_number
@@ -4318,6 +4315,8 @@ Function Request-NsxtTier0BgpStatus {
                                     $elementObject | Add-Member -NotePropertyName 'Established Time (sec)' -NotePropertyValue $element.time_since_established
                                     $elementObject | Add-Member -NotePropertyName 'Total In Prefix' -NotePropertyValue $element.total_in_prefix_count
                                     $elementObject | Add-Member -NotePropertyName 'Total Out Prefix' -NotePropertyValue $element.total_out_prefix_count
+                                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
                                     
                                     if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                         if ($element.connection_state -ne 'ESTABLISHED') {
