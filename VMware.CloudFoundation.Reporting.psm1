@@ -2058,15 +2058,19 @@ Function Publish-BackupStatus {
         Request and publish the backup status.
 
         .DESCRIPTION
-        The Publish-BackupStatus cmdlet checks the backup status for SDDC Manager, vCenter Server instances,
-        and NSX Local Manager clusters in a VMware Cloud Foundation instance and prepares the data to be published
-        to an HTML report. The cmdlet connects to SDDC Manager using the -server, -user, and password values:
+        The Publish-BackupStatus cmdlet checks the backup status for SDDC Manager, vCenter Server instances, and NSX
+        Local Manager clusters in a VMware Cloud Foundation instance and prepares the data to be published to an HTML
+        report. The cmdlet connects to SDDC Manager using the -server, -user, and password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Performs checks on the backup status and outputs the results
 
         .EXAMPLE
         Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance.  
+        This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will publish the backup status for the vCenter Server instances, and NSX Local Manager clusters in Workload Domain sfo-w01.  
 
         .EXAMPLE
         Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
@@ -3006,16 +3010,14 @@ Function Request-SddcManagerBackupStatus {
                     # Set the status for the backup task
                     if ($backupTask.status -eq 'Successful') {                              
                         $alert = "GREEN" # Ok; success
-                    }
-                    else {
+                    } else {
                         $alert = "RED" # Critical; failure
                     }
 
                     # Set the message for the backup task
                     if ([string]::IsNullOrEmpty($errors)) {
                         $message = "The backup completed without errors. " # Ok; success
-                    }
-                    else {
+                    } else {
                         $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
                     }
 
@@ -3023,12 +3025,10 @@ Function Request-SddcManagerBackupStatus {
                     if ($backupAge -ge 3) {
                         $alert = "RED" # Critical; >= 3 days
                         $messageAge = "Backup is more than 3 days old." # Set the alert message
-                    }
-                    elseif ($backupAge -gt 1) {
+                    } elseif ($backupAge -gt 1) {
                         $alert = "YELLOW" # Warning; > 1 days
                         $messageBackupAge = "Backup is more than 1 days old." # Set the alert message
-                    }
-                    else {
+                    } else {
                         $alert = "GREEN" # Ok; <= 1 days
                         $messageBackupAge = "Backup is less than 1 day old." # Set the alert message
                     }
@@ -3056,8 +3056,7 @@ Function Request-SddcManagerBackupStatus {
                         if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                             $customObject += $elementObject
                         }
-                    }
-                    else {
+                    } else {
                         $customObject += $elementObject
                     }  
                 }
@@ -3069,14 +3068,12 @@ Function Request-SddcManagerBackupStatus {
                     if ($outputObject.Count -eq 0) { $addNoIssues = $true }
                     if ($addNoIssues) {
                         $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -PostContent '<p>No Issues Found</p>' 
-                    }
-                    else {
+                    } else {
                         $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -As Table
                     }
                     $outputObject = Convert-CssClass -htmldata $outputObject
                     $outputObject
-                }
-                else {
+                } else {
                     $outputObject | Sort-Object Component, Resource, Element
                 }
             }
@@ -3140,8 +3137,7 @@ Function Request-NsxtManagerBackupStatus {
                                 if ($backupTask.node_backup_statuses.success -eq $true) {   
                                     $alert = "GREEN" # Ok; success
                                     $message = 'The backup completed without errors. ' # Set the backup status message
-                                }
-                                else {
+                                } else {
                                     $alert = "RED" # Critical; failure
                                     $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
                                 }
@@ -3150,12 +3146,10 @@ Function Request-NsxtManagerBackupStatus {
                                 if ($backupAge -ge 3) {
                                     $alert = 'RED' # Critical; >= 3 days
                                     $messageBackupAge = 'Backup is more than 3 days old.' # Set the alert message
-                                }
-                                elseif ($backupAge -gt 1) {
+                                } elseif ($backupAge -gt 1) {
                                     $alert = 'YELLOW' # Warning; > 1 days
                                     $messageBackupAge = 'Backup is more than 1 days old.' # Set the alert message
-                                }
-                                else {
+                                } else {
                                     $alert = 'GREEN' # Ok; <= 1 days
                                     $messageBackupAge = 'Backup is less than 1 day old.' # Set the alert message
                                 }
@@ -3183,8 +3177,7 @@ Function Request-NsxtManagerBackupStatus {
                                     if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                         $customObject += $elementObject
                                     }
-                                }
-                                else {
+                                } else {
                                     $customObject += $elementObject
                                 }  
                             }
@@ -3202,8 +3195,7 @@ Function Request-NsxtManagerBackupStatus {
                                 if ($backupTask.node_backup_statuses.success -eq $true) {   
                                     $alert = 'GREEN' # Ok; success
                                     $message = 'The backup completed without errors. ' # Set the backup status message
-                                }
-                                else {
+                                } else {
                                     $alert = 'RED' # Critical; failure
                                     $message = 'The backup failed with errors. Please investigate before proceeding. ' # Critical; failure
                                 }
@@ -3212,12 +3204,10 @@ Function Request-NsxtManagerBackupStatus {
                                 if ($backupAge -ge 3) {
                                     $alert = 'RED' # Critical; >= 3 days
                                     $messageBackupAge = 'Backup is more than 3 days old.' # Set the alert message
-                                }
-                                elseif ($backupAge -gt 1) {
+                                } elseif ($backupAge -gt 1) {
                                     $alert = 'YELLOW' # Warning; > 1 days
                                     $messageBackupAge = 'Backup is more than 1 days old.' # Set the alert message
-                                }
-                                else {
+                                } else {
                                     $alert = 'GREEN' # Ok; <= 1 days
                                     $messageBackupAge = 'Backup is less than 1 day old.' # Set the alert message
                                 }
@@ -3245,8 +3235,7 @@ Function Request-NsxtManagerBackupStatus {
                                     if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                         $customObject += $elementObject
                                     }
-                                }
-                                else {
+                                } else {
                                     $customObject += $elementObject
                                 }  
                             }
@@ -3264,8 +3253,7 @@ Function Request-NsxtManagerBackupStatus {
                                 if ($backupTask.node_backup_statuses.success -eq $true) {   
                                     $alert = 'GREEN' # Ok; success
                                     $message = 'The backup completed without errors. ' # Set the backup status message
-                                }
-                                else {
+                                } else {
                                     $alert = 'RED' # Critical; failure
                                     $message = 'The backup failed with errors. Please investigate before proceeding. ' # Critical; failure
                                 }
@@ -3274,12 +3262,10 @@ Function Request-NsxtManagerBackupStatus {
                                 if ($backupAge -ge 3) {
                                     $alert = 'RED' # Critical; >= 3 days
                                     $messageBackupAge = 'Backup is more than 3 days old.' # Set the alert message
-                                }
-                                elseif ($backupAge -gt 1) {
+                                } elseif ($backupAge -gt 1) {
                                     $alert = 'YELLOW' # Warning; > 1 days
                                     $messageBackupAge = 'Backup is more than 1 days old.' # Set the alert message
-                                }
-                                else {
+                                } else {
                                     $alert = 'GREEN' # Ok; <= 1 days
                                     $messageBackupAge = 'Backup is less than 1 day old.' # Set the alert message
                                 }
@@ -3307,8 +3293,7 @@ Function Request-NsxtManagerBackupStatus {
                                     if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                         $customObject += $elementObject
                                     }
-                                }
-                                else {
+                                } else {
                                     $customObject += $elementObject
                                 }  
                             }
@@ -3322,14 +3307,12 @@ Function Request-NsxtManagerBackupStatus {
                                 }
                                 if ($addNoIssues) {
                                     $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -PostContent '<p>No Issues Found</p>' 
-                                }
-                                else {
+                                } else {
                                     $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -As Table
                                 }
                                 $outputObject = Convert-CssClass -htmldata $outputObject
                                 $outputObject
-                            }
-                            else {
+                            } else {
                                 $outputObject | Sort-Object Component, Resource, Element
                             }                    
                         }
@@ -3395,19 +3378,16 @@ Function Request-VcenterBackupStatus {
                             # Set the status for the backup task
                             if ($backupTask.state -eq 'SUCCEEDED') {                              
                                 $alert = "Green" # Ok; success
-                            }
-                            elseif ($backupTask.state -eq 'IN PROGRESS') {                              
+                            } elseif ($backupTask.state -eq 'IN PROGRESS') {                              
                                 $alert = "YELLOW" # Warning; in progress
-                            }
-                            else {
+                            } else {
                                 $alert = "RED" # Critical; failure
                             }
 
                             # Set the message for the backup task
                             if ([string]::IsNullOrEmpty($messages)) {
                                 $Message = "The backup completed without errors. " # Ok; success
-                            }
-                            else {
+                            } else {
                                 $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
                             }
 
@@ -3415,12 +3395,10 @@ Function Request-VcenterBackupStatus {
                             if ($backupAge -ge 3) {
                                 $alert = "RED" # Critical; >= 3 days
                                 $messageBackupAge = "Backup is more than 3 days old." # Set the alert message
-                            }
-                            elseif ($backupAge -gt 1) {
+                            } elseif ($backupAge -gt 1) {
                                 $alert = "YELLOW" # Warning; > 1 days
                                 $messageBackupAge = "Backup is more than 1 days old." # Set the alert message
-                            }
-                            else {
+                            } else {
                                 $alert = "GREEN" # Ok; <= 1 days
                                 $messageBackupAge = "Backup is less than 1 day old." # Set the alert message
                             }
@@ -3448,8 +3426,7 @@ Function Request-VcenterBackupStatus {
                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
                                 }
-                            }
-                            else {
+                            } else {
                                 $customObject += $elementObject
                             }  
 
@@ -3462,14 +3439,12 @@ Function Request-VcenterBackupStatus {
                                 }
                                 if ($addNoIssues) {
                                     $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -PostContent '<p>No Issues Found</p>' 
-                                }
-                                else {
+                                } else {
                                     $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -As Table
                                 }
                                 $outputObject = Convert-CssClass -htmldata $outputObject
                                 $outputObject
-                            }
-                            else {
+                            } else {
                                 $outputObject | Sort-Object Component, Resource, Element
                             }
                             Disconnect-CisServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
