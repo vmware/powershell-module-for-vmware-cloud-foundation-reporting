@@ -66,7 +66,8 @@ Function Invoke-VcfHealthReport {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
 
     Try {
@@ -250,7 +251,11 @@ Function Invoke-VcfHealthReport {
         }
         $reportData += "$serviceHtml $componentConnectivityHtml $localPasswordHtml $certificateHtml $backupStatusHtml $snapshotStatusHtml $dnsHtml $ntpHtml $vcenterHtml $esxiHtml $vsanHtml $vsanPolicyHtml $nsxtHtml $nsxtEdgeClusterHtml $nsxtEdgeNodeHtml $nsxTier0BgpHtml $storageCapacityHealthHtml"
 
-        $reportHeader = Get-ClarityReportHeader
+        if ($PsBoundParameters.ContainsKey("darkMode")) {
+            $reportHeader = Get-ClarityReportHeader -dark 
+        } else {
+            $reportHeader = Get-ClarityReportHeader
+        }
         $reportNavigation = Get-ClarityReportNavigation -reportType health
         $reportFooter = Get-ClarityReportFooter
         $report = $reportHeader
@@ -301,7 +306,8 @@ Function Invoke-VcfAlertReport {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
 
     Try {
@@ -402,7 +408,11 @@ Function Invoke-VcfAlertReport {
         $reportData += $vsanAlertHtml
         $reportData += $nsxtAlertHtml
 
-        $reportHeader = Get-ClarityReportHeader
+        if ($PsBoundParameters.ContainsKey("darkMode")) {
+            $reportHeader = Get-ClarityReportHeader -dark 
+        } else {
+            $reportHeader = Get-ClarityReportHeader
+        }
         $reportNavigation = Get-ClarityReportNavigation -reportType alert
         $reportFooter = Get-ClarityReportFooter
         $report = $reportHeader
@@ -444,7 +454,8 @@ Function Invoke-VcfConfigReport {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
 
     Try {
@@ -478,7 +489,11 @@ Function Invoke-VcfConfigReport {
         }
         $reportData += "$esxiCoreDumpHtml"
 
-        $reportHeader = Get-ClarityReportHeader
+        if ($PsBoundParameters.ContainsKey("darkMode")) {
+            $reportHeader = Get-ClarityReportHeader -dark 
+        } else {
+            $reportHeader = Get-ClarityReportHeader
+        }
         $reportNavigation = Get-ClarityReportNavigation -reportType config
         $reportFooter = Get-ClarityReportFooter
         $report = $reportHeader
@@ -515,7 +530,8 @@ Function Invoke-VcfUpgradePrecheck {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
-        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
 
     Try {
@@ -585,7 +601,11 @@ Function Invoke-VcfUpgradePrecheck {
         $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
         $reportData += $allChecksObject
 
-        $reportHeader = Get-ClarityReportHeader
+        if ($PsBoundParameters.ContainsKey("darkMode")) {
+            $reportHeader = Get-ClarityReportHeader -dark 
+        } else {
+            $reportHeader = Get-ClarityReportHeader
+        }
         $reportNavigation = Get-ClarityReportNavigation -reportType upgrade
         $reportFooter = Get-ClarityReportFooter
         $report = $reportHeader
@@ -623,7 +643,8 @@ Function Invoke-VcfPasswordPolicy {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
 
     Try {
@@ -654,7 +675,11 @@ Function Invoke-VcfPasswordPolicy {
         }
         $reportData += $sxiPolicyHtml
 
-        $reportHeader = Get-ClarityReportHeader
+        if ($PsBoundParameters.ContainsKey("darkMode")) {
+            $reportHeader = Get-ClarityReportHeader -dark 
+        } else {
+            $reportHeader = Get-ClarityReportHeader
+        }
         $reportNavigation = Get-ClarityReportNavigation -reportType policy
         $reportFooter = Get-ClarityReportFooter
         $report = $reportHeader
@@ -2519,10 +2544,6 @@ Function Request-SddcManagerUserExpiry {
         This example checks the expiry for all local OS users in the SDDC Manager appliance.
 
         .EXAMPLE
-        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -html
-        This example checks the expiry for all local OS users in the SDDC Manager appliance and outputs in HTML format.
-
-        .EXAMPLE
         Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -failureOnly
         This example checks the expiry for all local OS users in the SDDC Manager appliance but only reports issues.
     #>
@@ -2532,7 +2553,6 @@ Function Request-SddcManagerUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -2570,15 +2590,7 @@ Function Request-SddcManagerUserExpiry {
                             else {
                                 $customObject += $elementObject
                             }
-
-                            # Return the structured data to the console or format using HTML CSS Styles
-                            if ($PsBoundParameters.ContainsKey("html")) { 
-                                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
-                                $customObject = Convert-CssClass -htmldata $customObject
-                                $customObject
-                            } else {
-                                $customObject | Sort-Object Component, Resource 
-                            }
+                            $customObject | Sort-Object Component, Resource # Output Results
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
@@ -2605,11 +2617,11 @@ Function Request-NsxtEdgeUserExpiry {
         - Performs checks on the local OS users for NSX Manager appliances and outputs the results
 
         .EXAMPLE
-        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
+        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example checks the expiry for local OS users for the NSX Edge node appliances for a specific workload domain.
 
         .EXAMPLE
-        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01 -failureOnly
+        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example checks the expiry for local OS users for the NSX Edge node appliances for a specific workload domain but only reports issues.
     #>
 
@@ -2618,7 +2630,6 @@ Function Request-NsxtEdgeUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -2663,16 +2674,7 @@ Function Request-NsxtEdgeUserExpiry {
                                             }
                                         }
                                     }
-
-                                    # Return the structured data to the console or format using HTML CSS Styles
-                                    if ($PsBoundParameters.ContainsKey('html')) { 
-                                        $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<h2>Password Expiry Health Status</h2>' -As Table
-                                        $customObject = Convert-CssClass -htmldata $customObject
-                                        $customObject
-                                    }
-                                    else {
-                                        $customObject | Sort-Object Component, Resource 
-                                    }
+                                    $customObject | Sort-Object Component, Resource # Output Results
                                 }
                             }
                         }
@@ -2701,11 +2703,11 @@ Function Request-NsxtManagerUserExpiry {
         - Performs checks on the local OS users for NSX Manager appliances and outputs the results
 
         .EXAMPLE
-        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
+        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example checks the expiry for local OS users for the NSX Manager appliances for a specific workload domain.
 
         .EXAMPLE
-        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01 -failureOnly
+        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example checks the expiry for local OS users for the NSX Manager appliances for a specific workload domain but only reports issues.
     #>
 
@@ -2714,7 +2716,6 @@ Function Request-NsxtManagerUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -2757,15 +2758,7 @@ Function Request-NsxtManagerUserExpiry {
                                             $customObject += $elementObject
                                         }
                                     }
-
-                                    # Return the structured data to the console or format using HTML CSS Styles
-                                    if ($PsBoundParameters.ContainsKey("html")) { 
-                                        $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
-                                        $customObject = Convert-CssClass -htmldata $customObject
-                                        $customObject
-                                    } else {
-                                        $customObject | Sort-Object Component, Resource 
-                                    }
+                                    $customObject | Sort-Object Component, Resource # Output Results
                                 }
                             }
                         }
@@ -2814,7 +2807,6 @@ Function Request-vCenterUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -2834,13 +2826,11 @@ Function Request-vCenterUserExpiry {
                                         if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                             $customObject += $elementObject
                                         }
-                                    }
-                                    else {
+                                    } else {
                                         $customObject += $elementObject
                                     }
                                 }
-                            }
-                            else {
+                            } else {
                                 $vcenter = (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).vcenters.fqdn
                                 $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter}).password
                                 $elementObject = Request-LocalUserExpiry -fqdn $vcenter -component vCenter -rootPass $rootPass -checkUser root
@@ -2848,20 +2838,11 @@ Function Request-vCenterUserExpiry {
                                     if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                         $customObject += $elementObject
                                     }
-                                }
-                                else {
+                                } else {
                                     $customObject += $elementObject
                                 }
                             }
-
-                            # Return the structured data to the console or format using HTML CSS Styles
-                            if ($PsBoundParameters.ContainsKey("html")) { 
-                                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>Password Expiry Health Status</h3>" -As Table
-                                $customObject = Convert-CssClass -htmldata $customObject
-                                $customObject
-                            } else {
-                                $customObject | Sort-Object Component, Resource 
-                            }
+                            $customObject | Sort-Object Component, Resource # Output Results
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
@@ -2892,13 +2873,16 @@ Function Request-vRslcmUserExpiry {
         .EXAMPLE
         Request-vRslcmUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will check the expiry date of the local OS 'root' account on the vRealize Suite Lifecycle Manager instance deployed by SDDC Manager.
+
+        .EXAMPLE
+        Request-vRslcmUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+        This example will check the expiry date of the local OS 'root' account on the vRealize Suite Lifecycle Manager instance but only reports issues.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -2916,19 +2900,10 @@ Function Request-vRslcmUserExpiry {
                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
                                 }
-                            }
-                            else {
+                            } else {
                                 $customObject += $elementObject
                             }
-
-                            # Return the structured data to the console or format using HTML CSS Styles
-                            if ($PsBoundParameters.ContainsKey("html")) { 
-                                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h2>Password Expiry Health Status</h2>" -As Table
-                                $customObject = Convert-CssClass -htmldata $customObject
-                                $customObject
-                            } else {
-                                $customObject | Sort-Object Component, Resource 
-                            }
+                            $customObject | Sort-Object Component, Resource
                         }
                     }
                     Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
@@ -5393,13 +5368,22 @@ Function Convert-TextToHtml {
 Export-ModuleMember -Function Convert-TextToHtml
 
 Function Get-ClarityReportHeader {
+    Param (
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$dark
+    )
+
+    if ($PsBoundParameters.ContainsKey("dark")) { 
+        $styleSheet = "clr-ui-dark.css"
+    } else {
+        $styleSheet = "clr-ui.css"
+    }
     # Define the default Clarity Cascading Style Sheets (CSS) for the HTML report Header
     $clarityCssHeader = '
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml">
         
         <head>
-            <link href="../clr-ui.css" rel="stylesheet" />
+            <link href="../'+$styleSheet+'" rel="stylesheet" />
             <style>
                 .alertOK {
                     color: #78BE20;
