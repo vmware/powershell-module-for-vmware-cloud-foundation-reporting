@@ -633,6 +633,10 @@ Function Invoke-VcfPasswordPolicy {
         The Invoke-VcfPasswordPolicy runs a password policy report for a Workload Domain
 
         .EXAMPLE
+        Invoke-VcfPasswordPolicy -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains
+        This example runs a password policy report for all Workload Domain within an SDDC Manager instance.
+
+        .EXAMPLE
         Invoke-VcfPasswordPolicy -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
         This example runs a password policy report for a specific Workload Domain within an SDDC Manager instance.
     #>
@@ -5213,17 +5217,17 @@ Function Request-EsxiPasswordPolicy {
                                 foreach ($cluster in $allClusters) {
                                     $allHosts = Get-Cluster $cluster.name -Server $vcfVcenterDetails.fqdn | Get-VMHost -Server $vcfVcenterDetails.fqdn
                                     foreach ($esxiHost in $allHosts) {
-                                        $passwordPolicy = Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordQualityControl" }
+                                        $passwordPolicy = Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" -or $_.ConnectionState -eq "Maintenance"} | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordQualityControl" }
                                         if ($passwordPolicy) {
                                             $passwordPolicy.Value | Select-String -Pattern "^retry=(\d+)\s+min=(.+),(.+),(.+),(.+),(.+)" | Foreach-Object {$PasswdPolicyRetryValue, $PasswdPolicyMinValue1, $PasswdPolicyMinValue2, $PasswdPolicyMinValue3, $PasswdPolicyMinValue4, $PasswdPolicyMinValue5 = $_.Matches[0].Groups[1..6].Value}
                                         }
                                         $hostPasswordPolicyObject = New-Object -TypeName psobject
                                         $hostPasswordPolicyObject | Add-Member -notepropertyname "Cluster" -notepropertyvalue $cluster
                                         $hostPasswordPolicyObject | Add-Member -notepropertyname "ESXi FQDN" -notepropertyvalue $esxiHost.Name
-                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Password Life Time (days)" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordMaxDays" }).Value
-                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Password History" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordHistory" }).Value
-                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Password Policy" -notepropertyvalue ($PasswdPolicyMinValue1 + "," + $PasswdPolicyMinValue2 + "," + $PasswdPolicyMinValue3 + "," + $PasswdPolicyMinValue4)
-                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Password Length" -notepropertyvalue $PasswdPolicyMinValue5
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Lifetime (days)" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordMaxDays" }).Value
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "History" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordHistory" }).Value
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Policy" -notepropertyvalue ($PasswdPolicyMinValue1 + "," + $PasswdPolicyMinValue2 + "," + $PasswdPolicyMinValue3 + "," + $PasswdPolicyMinValue4)
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Length" -notepropertyvalue $PasswdPolicyMinValue5
                                         $esxiPasswordPolicyObject += $hostPasswordPolicyObject
                                     }
                                     $clusterObject += $esxiPasswordPolicyObject
@@ -5289,7 +5293,7 @@ Function Request-EsxiLockoutPolicy {
                                         $hostLockoutPolicyObject = New-Object -TypeName psobject
                                         $hostLockoutPolicyObject | Add-Member -notepropertyname "Cluster" -notepropertyvalue $cluster
                                         $hostLockoutPolicyObject | Add-Member -notepropertyname "ESXi FQDN" -notepropertyvalue $esxiHost.Name
-                                        $hostLockoutPolicyObject | Add-Member -notepropertyname "Failed Login Attempts" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountLockFailures" }).Value
+                                        $hostLockoutPolicyObject | Add-Member -notepropertyname "Failed Attempts" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountLockFailures" }).Value
                                         $hostLockoutPolicyObject | Add-Member -notepropertyname "Lockout Time (sec)" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountUnlockTime" }).Value                                        
                                         $esxiLockoutPolicyObject += $hostLockoutPolicyObject
                                     }
@@ -5422,11 +5426,11 @@ Function Request-VcenterRootPasswordPolicy {
                                 $rootPasswordExpiry = Get-VCPasswordExpiry
                                 $customObject = New-Object -TypeName psobject
                                 $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
-                                $customObject | Add-Member -notepropertyname "Password Lifetime (days)" -notepropertyvalue $rootPasswordExpiry.max_days_between_password_change
+                                $customObject | Add-Member -notepropertyname "Lifetime (days)" -notepropertyvalue $rootPasswordExpiry.max_days_between_password_change
                                 $customObject | Add-Member -notepropertyname "Warning (days)" -notepropertyvalue $rootPasswordExpiry.warn_days_before_password_expiration
                                 $customObject | Add-Member -notepropertyname "Email" -notepropertyvalue $rootPasswordExpiry.email
                                 $customObject | Add-Member -notepropertyname "Enabled" -notepropertyvalue $rootPasswordExpiry.enabled
-                                $customObject | Add-Member -notepropertyname "Password Expires" -notepropertyvalue $rootPasswordExpiry.password_expires_at
+                                $customObject | Add-Member -notepropertyname "Expires" -notepropertyvalue $rootPasswordExpiry.password_expires_at
                             }
                             $customObject | Sort-Object 'vCenter Server FQDN'
                         }
@@ -5478,8 +5482,8 @@ Function Request-VcenterPasswordPolicy {
                                 $passwordPolicy = Get-VCPasswordPolicy
                                 $customObject = New-Object -TypeName psobject
                                 $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
-                                $customObject | Add-Member -notepropertyname "Password Lifetime (max days)" -notepropertyvalue $passwordPolicy.max_days
-                                $customObject | Add-Member -notepropertyname "Password Lifetime (min days)" -notepropertyvalue $passwordPolicy.min_days
+                                $customObject | Add-Member -notepropertyname "Lifetime (max days)" -notepropertyvalue $passwordPolicy.max_days
+                                $customObject | Add-Member -notepropertyname "Lifetime (min days)" -notepropertyvalue $passwordPolicy.min_days
                                 $customObject | Add-Member -notepropertyname "Warning (days)" -notepropertyvalue $passwordPolicy.warn_days
                             }
                             $customObject | Sort-Object 'vCenter Server FQDN'
@@ -5531,10 +5535,10 @@ Function Request-SsoPasswordPolicy {
                                 $passwordPolicy = Get-SSOPasswordPolicy
                                 $customObject = New-Object -TypeName psobject
                                 $customObject | Add-Member -notepropertyname "Single Sign-On FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
-                                $customObject | Add-Member -notepropertyname "Password History" -notepropertyvalue $passwordPolicy.ProhibitedPreviousPasswordsCount
-                                $customObject | Add-Member -notepropertyname "Password Length (min)" -notepropertyvalue $passwordPolicy.MinLength
-                                $customObject | Add-Member -notepropertyname "Password Length (max)" -notepropertyvalue $passwordPolicy.MaxLength
-                                $customObject | Add-Member -notepropertyname "Password Lifetime (days)" -notepropertyvalue $passwordPolicy.PasswordLifetimeDays
+                                $customObject | Add-Member -notepropertyname "History" -notepropertyvalue $passwordPolicy.ProhibitedPreviousPasswordsCount
+                                $customObject | Add-Member -notepropertyname "Length (min)" -notepropertyvalue $passwordPolicy.MinLength
+                                $customObject | Add-Member -notepropertyname "Length (max)" -notepropertyvalue $passwordPolicy.MaxLength
+                                $customObject | Add-Member -notepropertyname "Lifetime (days)" -notepropertyvalue $passwordPolicy.PasswordLifetimeDays
                                 $customObject | Add-Member -notepropertyname "Numerical (min)" -notepropertyvalue $passwordPolicy.MinNumericCount
                                 $customObject | Add-Member -notepropertyname "Special Char (min)" -notepropertyvalue $passwordPolicy.MinSpecialCharCount
                                 $customObject | Add-Member -notepropertyname "Identical Adjacent Char (max)" -notepropertyvalue $passwordPolicy.MaxIdenticalAdjacentCharacters
@@ -5591,7 +5595,7 @@ Function Request-SsoLockoutPolicy {
                                 $lockoutPolicy = Get-SSOLockoutPolicy
                                 $customObject = New-Object -TypeName psobject
                                 $customObject | Add-Member -notepropertyname "Single Sign-On FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
-                                $customObject | Add-Member -notepropertyname "Failed Login Attempts" -notepropertyvalue $lockoutPolicy.MaxFailedAttempts
+                                $customObject | Add-Member -notepropertyname "Login Attempts" -notepropertyvalue $lockoutPolicy.MaxFailedAttempts
                                 $customObject | Add-Member -notepropertyname "Unlock Time (sec)" -notepropertyvalue $lockoutPolicy.AutoUnlockIntervalSec
                                 $customObject | Add-Member -notepropertyname "Failed Attempt Inteval (sec)" -notepropertyvalue $lockoutPolicy.FailedAttemptIntervalSec
                                 $customObject | Sort-Object 'Single Sign-On FQDN'
