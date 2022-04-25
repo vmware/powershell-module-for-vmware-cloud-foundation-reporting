@@ -5663,7 +5663,7 @@ Function Publish-NsxtPolicy {
                 }
                 $allNsxtManagerPasswordPolicyObject = $allNsxtManagerPasswordPolicyObject | Sort-Object Cluster, 'NSX Manager FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-manager"></a><h3>NSX Manager Password Policy</h3>' -As Table
                 $allNsxtManagerPasswordPolicyObject = Convert-CssClass -htmldata $allNsxtManagerPasswordPolicyObject
-                $allNsxtEdgePassordPolicyObject = $allNsxtEdgePassordPolicyObject | Sort-Object Cluster, 'NSX Edge' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-manager"></a><h3>NSX Edge Password Policy</h3>' -As Table
+                $allNsxtEdgePassordPolicyObject = $allNsxtEdgePassordPolicyObject | Sort-Object Cluster, 'NSX Edge' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-edge"></a><h3>NSX Edge Password Policy</h3>' -As Table
                 $allNsxtEdgePassordPolicyObject = Convert-CssClass -htmldata $allNsxtEdgePassordPolicyObject
                 $allNsxtPolicyObject += $allNsxtManagerPasswordPolicyObject
                 $allNsxtPolicyObject += $allNsxtEdgePassordPolicyObject
@@ -6188,7 +6188,7 @@ Function Get-ClarityReportNavigation {
                 <label for="ns">NSX-T Data Center</label>
                 <ul class="nav-list">
                     <li><a class="nav-link" href="#policy-password-manager">Manager Password Policy</a></li>
-                    <li><a class="nav-link" href="#policy-password-Edge">Edge Password Policy</a></li>
+                    <li><a class="nav-link" href="#policy-password-edge">Edge Password Policy</a></li>
                 </ul>
             </section>
             </section>
