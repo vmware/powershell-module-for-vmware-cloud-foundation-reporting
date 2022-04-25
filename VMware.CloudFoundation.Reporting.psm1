@@ -652,19 +652,45 @@ Function Invoke-VcfPasswordPolicy {
         Clear-Host; Write-Host ""
 
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        if ($PsBoundParameters.ContainsKey("allDomains")) {
+            $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
+        } else {
+            $workflowMessage = "Workload Domain ($workloadDomain)"
+        }
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the Process of Running a Password Policy Report for VMware Cloud Foundation Instance ($sddcManagerFqdn)" -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Starting the Process of Running a Password Policy Report for $workflowMessage" -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType policy # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
 
+        # Collect vCenter Server Password Policies
         if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration from SDDC Manager ($sddcManagerFqdn)"
-            $sxiPolicyHtml = Publish-EsxiPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+            Write-LogMessage -Type INFO -Message "Collecting vCenter Server Password Policy Configuration for $workflowMessage"
+            $vcenterPolicyHtml = Publish-VcenterPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
         }
         else {
-            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for Workload Domain ($workloadDomain)"
-            $sxiPolicyHtml = Publish-EsxiPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+            Write-LogMessage -Type INFO -Message "Collecting vCenter Server Policy Configuration for $workflowMessage"
+            $vcenterPolicyHtml = Publish-VcenterPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+        }
+
+        # Collect ESXi Password Policies
+        if ($PsBoundParameters.ContainsKey('allDomains')) { 
+            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for $workflowMessage"
+            $esxiPolicyHtml = Publish-EsxiPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+        }
+        else {
+            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for $workflowMessage"
+            $esxiPolicyHtml = Publish-EsxiPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+        }
+
+        # Collect NSX-T Data Center Password Policies
+        if ($PsBoundParameters.ContainsKey('allDomains')) { 
+            Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage"
+            $nsxtPolicyHtml = Publish-NsxtPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+        }
+        else {
+            Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage"
+            $nsxtPolicyHtml = Publish-NsxtPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
         
         # Combine all information gathered into a single HTML report
@@ -673,7 +699,9 @@ Function Invoke-VcfPasswordPolicy {
         } else{
             $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
         }
-        $reportData += $sxiPolicyHtml
+        $reportData += $vcenterPolicyHtml
+        $reportData += $esxiPolicyHtml
+        $reportData += $nsxtPolicyHtml
 
         if ($PsBoundParameters.ContainsKey("darkMode")) {
             $reportHeader = Get-ClarityReportHeader -dark 
@@ -5087,24 +5115,24 @@ Export-ModuleMember -Function Publish-EsxiCoreDumpConfig
 #######################################################################################################################
 ###############################  P A S S W O R D   P O L I C Y   F U N C T I O N S   ##################################
 
-Function Publish-EsxiPasswordPolicy {
+Function Publish-EsxiPolicy {
     <#
         .SYNOPSIS
         Publish password policy for ESXi hosts in a vCenter Server instance managed by SDDC Manager.
 
         .DESCRIPTION
-        The Publish-EsxiPasswordPolicy cmdlet returns password policy from ESXi hosts managed by SDDC Manager.
+        The Publish-EsxiPolicy cmdlet returns password policy from ESXi hosts managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Collects password policy from all ESXi hosts in vCenter Server instance
 
         .EXAMPLE
-        Publish-EsxiPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        Publish-EsxiPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
         This example will return password policy from all ESXi hosts in vCenter Server managed by SDDC Manager for a all workload domains.
 
         .EXAMPLE
-        Publish-EsxiPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        Publish-EsxiPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will return password policy from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
     #>
 
@@ -5119,18 +5147,26 @@ Function Publish-EsxiPasswordPolicy {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                $allWorkloadDomains = Get-VCFWorkloadDomain
                 $allEsxiPolicyObject = New-Object System.Collections.ArrayList
+                $allEsxiPasswordPolicyObject = New-Object System.Collections.ArrayList
+                $allEsxiLockoutPolicyObject = New-Object System.Collections.ArrayList
                 if ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $allWorkloadDomains = Get-VCFWorkloadDomain
                     foreach ($domain in $allWorkloadDomains ) {
-                        $esxiPolicy = Request-EsxiPasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allEsxiPolicyObject += $esxiPolicy
+                        $esxiPasswordPolicy = Request-EsxiPasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allEsxiPasswordPolicyObject += $esxiPasswordPolicy
+                        $esxiLockoutPolicy = Request-EsxiLockoutPolicy -server $server -user $user -pass $pass -domain $domain.name; $allEsxiLockoutPolicyObject += $esxiLockoutPolicy
                     }
                 }
                 else {
-                    $esxiPolicy = Request-EsxiPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allEsxiPolicyObject += $esxiPolicy
+                    $esxiPasswordPolicy = Request-EsxiPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allEsxiPasswordPolicyObject += $esxiPasswordPolicy
+                    $esxiLockoutPolicy = Request-EsxiLockoutPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allEsxiLockoutPolicyObject += $esxiLockoutPolicy
                 }
-                $allEsxiPolicyObject = $allEsxiPolicyObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="policy-esxi"></a><h3>ESXi Password Policy</h3>' -As Table
-                $allEsxiPolicyObject = Convert-CssClass -htmldata $allEsxiPolicyObject
+                $allEsxiPasswordPolicyObject = $allEsxiPasswordPolicyObject | Sort-Object Cluster, 'ESXi FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-esxi"></a><h3>ESXi Password Policy</h3>' -As Table
+                $allEsxiPasswordPolicyObject = Convert-CssClass -htmldata $allEsxiPasswordPolicyObject
+                $allEsxiLockoutPolicyObject = $allEsxiLockoutPolicyObject | Sort-Object Cluster, 'ESXi FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-lockout-esxi"></a><h3>ESXi Lockout Policy</h3>' -As Table
+                $allEsxiLockoutPolicyObject = Convert-CssClass -htmldata $allEsxiLockoutPolicyObject
+                $allEsxiPolicyObject += $allEsxiPasswordPolicyObject
+                $allEsxiPolicyObject += $allEsxiLockoutPolicyObject
                 $allEsxiPolicyObject
             }
         }
@@ -5139,7 +5175,7 @@ Function Publish-EsxiPasswordPolicy {
         Debug-CatchWriter -object $_
     }
 }
-Export-ModuleMember -Function Publish-EsxiPasswordPolicy
+Export-ModuleMember -Function Publish-EsxiPolicy
 
 Function Request-EsxiPasswordPolicy {
     <#
@@ -5155,18 +5191,13 @@ Function Request-EsxiPasswordPolicy {
         .EXAMPLE
         Request-EsxiPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return the Password Policy configuration for ESXi hosts managed by SDDC Manager for a workload domain.
-
-        .EXAMPLE
-        Request-EsxiPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -html
-        This example will return the Password Policy configuration for ESXi hosts managed by SDDC Manager for a workload domain and output in HTML
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
     )
 
     Try {
@@ -5183,17 +5214,14 @@ Function Request-EsxiPasswordPolicy {
                                     $allHosts = Get-Cluster $cluster.name -Server $vcfVcenterDetails.fqdn | Get-VMHost -Server $vcfVcenterDetails.fqdn
                                     foreach ($esxiHost in $allHosts) {
                                         $passwordPolicy = Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordQualityControl" }
-                                        if ($passwordPolicy -and $passwordExpire) {
+                                        if ($passwordPolicy) {
                                             $passwordPolicy.Value | Select-String -Pattern "^retry=(\d+)\s+min=(.+),(.+),(.+),(.+),(.+)" | Foreach-Object {$PasswdPolicyRetryValue, $PasswdPolicyMinValue1, $PasswdPolicyMinValue2, $PasswdPolicyMinValue3, $PasswdPolicyMinValue4, $PasswdPolicyMinValue5 = $_.Matches[0].Groups[1..6].Value}
                                         }
                                         $hostPasswordPolicyObject = New-Object -TypeName psobject
                                         $hostPasswordPolicyObject | Add-Member -notepropertyname "Cluster" -notepropertyvalue $cluster
                                         $hostPasswordPolicyObject | Add-Member -notepropertyname "ESXi FQDN" -notepropertyvalue $esxiHost.Name
-                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Expiry (days)" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordMaxDays" }).Value
+                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Password Life Time (days)" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordMaxDays" }).Value
                                         $hostPasswordPolicyObject | Add-Member -notepropertyname "Password History" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.PasswordHistory" }).Value
-                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Failed Login Attempts" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountLockFailures" }).Value
-                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Lockout Time (sec)" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountUnlockTime" }).Value                                        
-                                        $hostPasswordPolicyObject | Add-Member -notepropertyname "Password Retry (max)" -notepropertyvalue $PasswdPolicyRetryValue
                                         $hostPasswordPolicyObject | Add-Member -notepropertyname "Password Policy" -notepropertyvalue ($PasswdPolicyMinValue1 + "," + $PasswdPolicyMinValue2 + "," + $PasswdPolicyMinValue3 + "," + $PasswdPolicyMinValue4)
                                         $hostPasswordPolicyObject | Add-Member -notepropertyname "Password Length" -notepropertyvalue $PasswdPolicyMinValue5
                                         $esxiPasswordPolicyObject += $hostPasswordPolicyObject
@@ -5201,15 +5229,7 @@ Function Request-EsxiPasswordPolicy {
                                     $clusterObject += $esxiPasswordPolicyObject
                                 }
                                 Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-
-                                # Return the structured data to the console or format using HTML CSS Styles
-                                if ($PsBoundParameters.ContainsKey("html")) { 
-                                    $clusterObject = $clusterObject | Sort-Object Cluster, 'ESXi FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-esxi"></a><h3>ESXi Password Policy</h3>' -As Table
-                                    $clusterObject = Convert-CssClass -htmldata $clusterObject
-                                } else {
-                                    $clusterObject | Sort-Object Cluster, 'ESXi FQDN'
-                                }
-                                $clusterObject
+                                $clusterObject | Sort-Object Cluster, 'ESXi FQDN'
                             } else {
                                 Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
                             }
@@ -5225,6 +5245,550 @@ Function Request-EsxiPasswordPolicy {
     }
 }
 Export-ModuleMember -Function Request-EsxiPasswordPolicy
+
+Function Request-EsxiLockoutPolicy {
+    <#
+        .SYNOPSIS
+        Returns ESXi Password Lockout Policy.
+
+        .DESCRIPTION
+        The Request-EsxiLockoutPolicy cmdlet returns the Password Lockout Policy for ESXi hosts managed by SDDC
+        Manager. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Collects the Password Policy configuration for each ESXi host
+
+        .EXAMPLE
+        Request-EsxiLockoutPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the Password Lockout Policy configuration for ESXi hosts managed by SDDC Manager for a workload domain.
+
+        .EXAMPLE
+        Request-EsxiLockoutPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -html
+        This example will return the Password Lockout Policy configuration for ESXi hosts managed by SDDC Manager for a workload domain and output in HTML
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
+                                $clusterObject = New-Object System.Collections.ArrayList
+                                $esxiLockoutPolicyObject = New-Object System.Collections.ArrayList
+                                $allClusters = Get-Cluster -Server $vcfVcenterDetails.fqdn
+                                foreach ($cluster in $allClusters) {
+                                    $allHosts = Get-Cluster $cluster.name -Server $vcfVcenterDetails.fqdn | Get-VMHost -Server $vcfVcenterDetails.fqdn
+                                    foreach ($esxiHost in $allHosts) {
+                                        $hostLockoutPolicyObject = New-Object -TypeName psobject
+                                        $hostLockoutPolicyObject | Add-Member -notepropertyname "Cluster" -notepropertyvalue $cluster
+                                        $hostLockoutPolicyObject | Add-Member -notepropertyname "ESXi FQDN" -notepropertyvalue $esxiHost.Name
+                                        $hostLockoutPolicyObject | Add-Member -notepropertyname "Failed Login Attempts" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountLockFailures" }).Value
+                                        $hostLockoutPolicyObject | Add-Member -notepropertyname "Lockout Time (sec)" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountUnlockTime" }).Value                                        
+                                        $esxiLockoutPolicyObject += $hostLockoutPolicyObject
+                                    }
+                                    $clusterObject += $esxiLockoutPolicyObject
+                                }
+                                Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                                $clusterObject | Sort-Object Cluster, 'ESXi FQDN'
+                            } else {
+                                Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-EsxiLockoutPolicy
+
+
+Function Publish-VcenterPolicy {
+    <#
+        .SYNOPSIS
+        Publish password policy for vCenter Server instance managed by SDDC Manager.
+
+        .DESCRIPTION
+        The Publish-VcenterPolicy cmdlet returns password policy for vCenter Server managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates the authentication to vCenter Server with credentials from SDDC Manager
+        - Collects password policy from all ESXi hosts in vCenter Server instance
+
+        .EXAMPLE
+        Publish-VcenterPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will return password policy for vCenter Server managed by SDDC Manager for a all workload domains.
+
+        .EXAMPLE
+        Publish-VcenterPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will return password policy for vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allVcenterPolicyObject = New-Object System.Collections.ArrayList
+                $allVcenterRootPasswordPolicyObject = New-Object System.Collections.ArrayList
+                $allVcenterPasswordPolicyObject = New-Object System.Collections.ArrayList
+                $allSsoPasswordPolicyObject = New-Object System.Collections.ArrayList
+                $allSsoLockoutPolicyObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $allWorkloadDomains = Get-VCFWorkloadDomain
+                    foreach ($domain in $allWorkloadDomains ) {
+                        $vcenterRootPasswordPolicy = Request-VcenterRootPasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allVcenterRootPasswordPolicyObject += $vcenterRootPasswordPolicy
+                        $vcenterPasswordPolicy = Request-VcenterPasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allVcenterPasswordPolicyObject += $vcenterPasswordPolicy
+                        $ssoPasswordPolicy = Request-SsoPasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allSsoPasswordPolicyObject += $ssoPasswordPolicy
+                        $ssoLockoutPolicy = Request-SsoLockoutPolicy -server $server -user $user -pass $pass -domain $domain.name; $allSsoLockoutPolicyObject += $ssoLockoutPolicy
+                    }
+                }
+                else {
+                    $vcenterRootPasswordPolicy = Request-VcenterRootPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allVcenterRootPasswordPolicyObject += $vcenterRootPasswordPolicy
+                    $vcenterPasswordPolicy = Request-VcenterPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allVcenterPasswordPolicyObject += $vcenterPasswordPolicy
+                    $ssoPasswordPolicy = Request-SsoPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allSsoPasswordPolicyObject += $ssoPasswordPolicy
+                    $ssoLockoutPolicy = Request-SsoLockoutPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allSsoLockoutPolicyObject += $ssoLockoutPolicy
+                }
+                $allVcenterRootPasswordPolicyObject = $allVcenterRootPasswordPolicyObject | Sort-Object 'vCenter Server FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-vcenter-root"></a><h3>Password Policy (root)</h3>' -As Table
+                $allVcenterRootPasswordPolicyObject = Convert-CssClass -htmldata $allVcenterRootPasswordPolicyObject
+                $allVcenterPasswordPolicyObject = $allVcenterPasswordPolicyObject | Sort-Object 'vCenter Server FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-vcenter"></a><h3>Password Policy</h3>' -As Table
+                $allVcenterPasswordPolicyObject = Convert-CssClass -htmldata $allVcenterPasswordPolicyObject
+                $allSsoPasswordPolicyObject = $allSsoPasswordPolicyObject | Sort-Object 'Single Sign-On FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-sso"></a><h3>SSO Password Policy</h3>' -As Table
+                $allSsoPasswordPolicyObject = Convert-CssClass -htmldata $allSsoPasswordPolicyObject
+                $allSsoLockoutPolicyObject = $allSsoLockoutPolicyObject | Sort-Object 'Single Sign-On FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-lockout-sso"></a><h3>SSO Lockout Policy</h3>' -As Table
+                $allSsoLockoutPolicyObject = Convert-CssClass -htmldata $allSsoLockoutPolicyObject
+                $allVcenterPolicyObject += $allVcenterRootPasswordPolicyObject
+                $allVcenterPolicyObject += $allVcenterPasswordPolicyObject
+                $allVcenterPolicyObject += $allSsoPasswordPolicyObject
+                $allVcenterPolicyObject += $allSsoLockoutPolicyObject
+                $allVcenterPolicyObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-VcenterPolicy
+
+Function Request-VcenterRootPasswordPolicy {
+    <#
+        .SYNOPSIS
+        Returns vCenter Server Root Password Policy.
+
+        .DESCRIPTION
+        The Request-VcenterRootPasswordPolicy cmdlet returns the Root Password Policy for vCenter Server managed by
+        SDDC Manager. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Collects the Password Policy configuration for vCenter Server
+
+        .EXAMPLE
+        Request-VcenterRootPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the Root Password Policy configuration for vCenter Server managed by SDDC Manager for a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
+                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                        if (Test-vSphereApiConnection -server $($vcfVcenterDetails.fqdn)) {
+                            if (Test-vSphereApiAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                Request-vSphereApiToken -fqdn $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass -admin | Out-Null
+                                $customObject = New-Object System.Collections.ArrayList
+                                $rootPasswordExpiry = Get-VCPasswordExpiry
+                                $customObject = New-Object -TypeName psobject
+                                $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
+                                $customObject | Add-Member -notepropertyname "Password Lifetime (days)" -notepropertyvalue $rootPasswordExpiry.max_days_between_password_change
+                                $customObject | Add-Member -notepropertyname "Warning (days)" -notepropertyvalue $rootPasswordExpiry.warn_days_before_password_expiration
+                                $customObject | Add-Member -notepropertyname "Email" -notepropertyvalue $rootPasswordExpiry.email
+                                $customObject | Add-Member -notepropertyname "Enabled" -notepropertyvalue $rootPasswordExpiry.enabled
+                                $customObject | Add-Member -notepropertyname "Password Expires" -notepropertyvalue $rootPasswordExpiry.password_expires_at
+                            }
+                            $customObject | Sort-Object 'vCenter Server FQDN'
+                        }
+                    }
+                    
+                } else {
+                    Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
+                }
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-VcenterRootPasswordPolicy
+
+Function Request-VcenterPasswordPolicy {
+    <#
+        .SYNOPSIS
+        Returns vCenter Server Password Policy.
+
+        .DESCRIPTION
+        The Request-VcenterPasswordPolicy cmdlet returns the Password Policy for vCenter Server managed by
+        SDDC Manager. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Collects the Password Policy configuration for vCenter Server
+
+        .EXAMPLE
+        Request-VcenterPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the Password Policy configuration for vCenter Server managed by SDDC Manager for a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
+                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                        if (Test-vSphereApiConnection -server $($vcfVcenterDetails.fqdn)) {
+                            if (Test-vSphereApiAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                Request-vSphereApiToken -fqdn $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
+                                $passwordPolicy = Get-VCPasswordPolicy
+                                $customObject = New-Object -TypeName psobject
+                                $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
+                                $customObject | Add-Member -notepropertyname "Password Lifetime (max days)" -notepropertyvalue $passwordPolicy.max_days
+                                $customObject | Add-Member -notepropertyname "Password Lifetime (min days)" -notepropertyvalue $passwordPolicy.min_days
+                                $customObject | Add-Member -notepropertyname "Warning (days)" -notepropertyvalue $passwordPolicy.warn_days
+                            }
+                            $customObject | Sort-Object 'vCenter Server FQDN'
+                        }
+                    }
+                    
+                } else {
+                    Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
+                }
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-VcenterPasswordPolicy
+
+Function Request-SsoPasswordPolicy {
+    <#
+        .SYNOPSIS
+        Returns vCenter Single Sign-On Password Policy.
+
+        .DESCRIPTION
+        The Request-SsoPasswordPolicy cmdlet returns the Password Policy for vCenter Single Sign-On managed by
+        SDDC Manager. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Single Sign-On instance
+        - Collects the Password Policy configuration forvCenter Server
+
+        .EXAMPLE
+        Request-SsoPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the Password Policy configuration for vCenter Single Sign-On managed by SDDC Manager for a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
+                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                        if (Test-SsoConnection -server $($vcfVcenterDetails.fqdn)) {
+                            if (Test-SsoAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                $passwordPolicy = Get-SSOPasswordPolicy
+                                $customObject = New-Object -TypeName psobject
+                                $customObject | Add-Member -notepropertyname "Single Sign-On FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
+                                $customObject | Add-Member -notepropertyname "Password History" -notepropertyvalue $passwordPolicy.ProhibitedPreviousPasswordsCount
+                                $customObject | Add-Member -notepropertyname "Password Length (min)" -notepropertyvalue $passwordPolicy.MinLength
+                                $customObject | Add-Member -notepropertyname "Password Length (max)" -notepropertyvalue $passwordPolicy.MaxLength
+                                $customObject | Add-Member -notepropertyname "Password Lifetime (days)" -notepropertyvalue $passwordPolicy.PasswordLifetimeDays
+                                $customObject | Add-Member -notepropertyname "Numerical (min)" -notepropertyvalue $passwordPolicy.MinNumericCount
+                                $customObject | Add-Member -notepropertyname "Special Char (min)" -notepropertyvalue $passwordPolicy.MinSpecialCharCount
+                                $customObject | Add-Member -notepropertyname "Identical Adjacent Char (max)" -notepropertyvalue $passwordPolicy.MaxIdenticalAdjacentCharacters
+                                $customObject | Add-Member -notepropertyname "Alphabetic Char (min)" -notepropertyvalue $passwordPolicy.MinAlphabeticCount
+                                $customObject | Add-Member -notepropertyname "Uppercase Char (min)" -notepropertyvalue $passwordPolicy.MinUppercaseCount
+                                $customObject | Add-Member -notepropertyname "Lowercase Char (min)" -notepropertyvalue $passwordPolicy.MinLowercaseCount
+                                $customObject | Sort-Object 'Single Sign-On FQDN'
+                            }
+                        }
+                    }
+                    Disconnect-SsoAdminServer -Server $vcfVcenterDetails.fqdn
+                } else {
+                    Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
+                }
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-SsoPasswordPolicy
+
+Function Request-SsoLockoutPolicy {
+    <#
+        .SYNOPSIS
+        Returns vCenter Single Sign-On Lockout Policy.
+
+        .DESCRIPTION
+        The Request-SsoLockoutPolicy cmdlet returns the Lockout Policy for vCenter Single Sign-On managed by
+        SDDC Manager. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Single Sign-On instance
+        - Collects the Lockout Policy configuration forvCenter Server
+
+        .EXAMPLE
+        Request-SsoLockoutPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the Lockout Policy configuration for vCenter Single Sign-On managed by SDDC Manager for a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
+                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                        if (Test-SsoConnection -server $($vcfVcenterDetails.fqdn)) {
+                            if (Test-SsoAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                $lockoutPolicy = Get-SSOLockoutPolicy
+                                $customObject = New-Object -TypeName psobject
+                                $customObject | Add-Member -notepropertyname "Single Sign-On FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
+                                $customObject | Add-Member -notepropertyname "Failed Login Attempts" -notepropertyvalue $lockoutPolicy.MaxFailedAttempts
+                                $customObject | Add-Member -notepropertyname "Unlock Time (sec)" -notepropertyvalue $lockoutPolicy.AutoUnlockIntervalSec
+                                $customObject | Add-Member -notepropertyname "Failed Attempt Inteval (sec)" -notepropertyvalue $lockoutPolicy.FailedAttemptIntervalSec
+                                $customObject | Sort-Object 'Single Sign-On FQDN'
+                            }
+                        }
+                    }
+                    Disconnect-SsoAdminServer -Server $vcfVcenterDetails.fqdn
+                } else {
+                    Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
+                }
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-SsoLockoutPolicy
+
+Function Publish-NsxtPolicy {
+    <#
+        .SYNOPSIS
+        Publish password policy for NSX-T Data Center instance managed by SDDC Manager.
+
+        .DESCRIPTION
+        The Publish-NsxtPolicy cmdlet returns password policy from NSX-T Data Center by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the NSX Manager instance
+        - Validates the authentication to NSX Manager with credentials from SDDC Manager
+        - Collects password policy from all ESXi hosts in vCenter Server instance
+
+        .EXAMPLE
+        Publish-NsxtPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will return password policy from NSX Manager managed by SDDC Manager for a all workload domains.
+
+        .EXAMPLE
+        Publish-NsxtPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will return password policy from NSX Manager managed by SDDC Manager for a workload domain names sfo-w01.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allNsxtPolicyObject = New-Object System.Collections.ArrayList
+                $allNsxtManagerPasswordPolicyObject = New-Object System.Collections.ArrayList
+                $allNsxtEdgePassordPolicyObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $allWorkloadDomains = Get-VCFWorkloadDomain
+                    foreach ($domain in $allWorkloadDomains ) {
+                        $nsxtManagerPasswordPolicy = Request-NsxtManagerPasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allNsxtManagerPasswordPolicyObject += $nsxtManagerPasswordPolicy
+                        $nsxtEdgePasswordPolicy = Request-NsxtEdgePasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allNsxtEdgePassordPolicyObject += $nsxtEdgePasswordPolicy
+                    }
+                }
+                else {
+                    $nsxtManagerPasswordPolicy = Request-NsxtManagerPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtManagerPasswordPolicyObject += $nsxtManagerPasswordPolicy
+                    $nsxtEdgePasswordPolicy = Request-NsxtEdgePasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtEdgePassordPolicyObject += $nsxtEdgePasswordPolicy
+                }
+                $allNsxtManagerPasswordPolicyObject = $allNsxtManagerPasswordPolicyObject | Sort-Object Cluster, 'NSX Manager FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-manager"></a><h3>NSX Manager Password Policy</h3>' -As Table
+                $allNsxtManagerPasswordPolicyObject = Convert-CssClass -htmldata $allNsxtManagerPasswordPolicyObject
+                $allNsxtEdgePassordPolicyObject = $allNsxtEdgePassordPolicyObject | Sort-Object Cluster, 'NSX Edge' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-manager"></a><h3>NSX Edge Password Policy</h3>' -As Table
+                $allNsxtEdgePassordPolicyObject = Convert-CssClass -htmldata $allNsxtEdgePassordPolicyObject
+                $allNsxtPolicyObject += $allNsxtManagerPasswordPolicyObject
+                $allNsxtPolicyObject += $allNsxtEdgePassordPolicyObject
+                $allNsxtPolicyObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-NsxtPolicy
+
+Function Request-NsxtManagerPasswordPolicy {
+    <#
+        .SYNOPSIS
+        Returns NSX Manager Password Policy.
+
+        .DESCRIPTION
+        The Request-NsxtManagerPasswordPolicy cmdlet returns the Password Policy for NSX Manager managed by
+        SDDC Manager. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the NSX Manager instance
+        - Collects the Password Policy configuration for the NSX Manager
+
+        .EXAMPLE
+        Request-NsxtManagerPasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the Password Policy configuration for NSX Manager managed by SDDC Manager for a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
+                    if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {
+                        $allNsxtManagerObject = New-Object System.Collections.ArrayList
+                        foreach ($nsxtManagerNode in $vcfNsxDetails.nodes) {
+                            if (Test-NSXTConnection -server $nsxtManagerNode.fqdn) {
+                                if (Test-NSXTAuthentication -server $nsxtManagerNode.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                                    $passwordPolicy = Get-NsxtManagerAuthPolicy -nsxtManagerNode $nsxtManagerNode.fqdn
+                                    $customObject = New-Object -TypeName psobject
+                                    $customObject | Add-Member -notepropertyname "NSX Manager FQDN" -notepropertyvalue $nsxtManagerNode.fqdn
+                                    $customObject | Add-Member -notepropertyname "Length (min)" -notepropertyvalue $passwordPolicy.minimum_password_length
+                                    $customObject | Add-Member -notepropertyname "CLI Failures (max)" -notepropertyvalue $passwordPolicy.cli_max_auth_failures
+                                    $customObject | Add-Member -notepropertyname "CLI Lockout" -notepropertyvalue $passwordPolicy.cli_failed_auth_lockout_period
+                                    $customObject | Add-Member -notepropertyname "API Failures (max)" -notepropertyvalue $passwordPolicy.api_max_auth_failures
+                                    $customObject | Add-Member -notepropertyname "API Lockout" -notepropertyvalue $passwordPolicy.api_failed_auth_lockout_period
+                                    $customObject | Add-Member -notepropertyname "API Reset" -notepropertyvalue $passwordPolicy.api_failed_auth_reset_period
+                                    $allNsxtManagerObject += $customObject
+                                }
+                            }
+                        }
+                        $allNsxtManagerObject | Sort-Object 'NSX Manager FQDN'
+                    }
+                } else {
+                    Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
+                }
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-NsxtManagerPasswordPolicy
+
+Function Request-NsxtEdgePasswordPolicy {
+    <#
+        .SYNOPSIS
+        Returns NSX Edge Password Policy.
+
+        .DESCRIPTION
+        The Request-NsxtEdgePasswordPolicy cmdlet returns the Password Policy for NSX Edge managed by
+        SDDC Manager. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the NSX Manager instance
+        - Collects the Password Policy configuration for the NSX Manager
+
+        .EXAMPLE
+        Request-NsxtEdgePasswordPolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the Password Policy configuration for NSX Edge managed by SDDC Manager for a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
+                    if ($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                            $allNsxtEdgeObject = New-Object System.Collections.ArrayList
+                            $nsxtEdgeNodes = (Get-NsxtEdgeCluster | Where-Object {$_.member_node_type -eq "EDGE_NODE"})
+                            # if (Test-NSXTAuthentication -server $nsxtManagerNode.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                            foreach ($nsxtEdgeNode in $nsxtEdgeNodes.members) {
+                                $edgePolicy = Get-NsxtEdgeNodeAuthPolicy -nsxtManager $vcfNsxDetails.fqdn -nsxtEdgeNodeID $nsxtEdgeNode.transport_node_id  
+                                $customObject = New-Object -TypeName psobject
+                                $customObject | Add-Member -notepropertyname "NSX Edge" -notepropertyvalue (Get-NsxtEdgeNode -transportNodeID $nsxtEdgeNode.transport_node_id).display_name
+                                $customObject | Add-Member -notepropertyname "Length (min)" -notepropertyvalue $edgePolicy.minimum_password_length
+                                $customObject | Add-Member -notepropertyname "CLI Failures (max)" -notepropertyvalue $edgePolicy.cli_max_auth_failures
+                                $customObject | Add-Member -notepropertyname "CLI Lockout" -notepropertyvalue $edgePolicy.cli_failed_auth_lockout_period
+                                $allNsxtEdgeObject += $customObject
+                                    
+                            }
+                            $allNsxtEdgeObject | Sort-Object 'NSX Edge'
+                            # }
+                        }
+                    }
+                } else {
+                    Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
+                }
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-NsxtEdgePasswordPolicy
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
@@ -5597,10 +6161,32 @@ Function Get-ClarityReportNavigation {
             <div class="content-container">
             <nav class="sidenav">
             <section class="sidenav-content">
-                <a class="nav-link nav-icon" href="#policy-vcenter">vCenter Server</a>
-                <a class="nav-link nav-icon" href="#policy-esxi">ESXi</a>
-                <a class="nav-link nav-icon" href="#policy-vsan">vSAN</a>
-                <a class="nav-link nav-icon" href="#policy-nsx">NSX-T Data Center</a>
+                <section class="nav-group collapsible">
+                    <input id="vcenter" type="checkbox"/>
+                    <label for="vcenter">vCenter Server</label>
+                    <ul class="nav-list">
+                        <li><a class="nav-link" href="#policy-password-vcenter-root">Password Policy (root)</a></li>
+                        <li><a class="nav-link" href="#policy-password-vcenter">Password Policy</a></li>
+                        <li><a class="nav-link" href="#policy-password-sso">SSO Password Policy</a></li>
+                        <li><a class="nav-link" href="#policy-lockout-sso">SSO Lockout Policy</a></li>
+                    </ul>
+                </section>
+                <section class="nav-group collapsible">
+                    <input id="esxi" type="checkbox"/>
+                    <label for="esxi">ESXi Server</label>
+                    <ul class="nav-list">
+                        <li><a class="nav-link" href="#policy-password-esxi">Password Policy</a></li>
+                        <li><a class="nav-link" href="#policy-lockout-esxi">Lockout Policy</a></li>
+                    </ul>
+                </section>
+                <section class="nav-group collapsible">
+                <input id="nsx" type="checkbox"/>
+                <label for="ns">NSX-T Data Center</label>
+                <ul class="nav-list">
+                    <li><a class="nav-link" href="#policy-password-manager">Manager Password Policy</a></li>
+                    <li><a class="nav-link" href="#policy-password-Edge">Edge Password Policy</a></li>
+                </ul>
+            </section>
             </section>
             </nav>
                 <div class="content-area">
@@ -6332,6 +6918,33 @@ Function Test-StorageThreshold ($size, $free) {
     $thresholdObject | Add-Member -notepropertyname 'message' -notepropertyvalue $message
     $thresholdObject
 }
+
+Function Get-NsxtEdgeNode {
+    <#
+        .SYNOPSIS
+        Get details for NSX Edge.
+
+        .DESCRIPTION
+        The Get-NsxtEdgeNode cmdlet returns the details of an NSX Edge node
+
+        .EXAMPLE
+        Get-NsxtEdgeNode -transportNodeId sfo-w01-nsx01.sfo.rainpole.io
+        This example returns the details of an NSX Edge node
+    #>
+
+	Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$transportNodeId
+    )
+
+    Try {
+        $uri = "https://$nsxtmanager/api/v1/transport-nodes/$transportNodeId"
+        Invoke-RestMethod -Method GET -URI $uri -ContentType application/json -headers $nsxtHeaders
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Get-NsxtEdgeNode
 
 ##############################  End Supporting Functions ###############################
 ########################################################################################
