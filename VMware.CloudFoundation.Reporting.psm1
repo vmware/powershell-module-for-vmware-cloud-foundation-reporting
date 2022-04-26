@@ -4531,27 +4531,27 @@ Export-ModuleMember -Function Request-NsxtAuthentication
 Function Request-NsxtTier0BgpStatus {
     <#
         .SYNOPSIS
-        Returns the BGP status for all Tier-0 gateways managed by the NSX Manager cluster.
+        Returns the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster.
 
         .DESCRIPTION
         The Request-NsxtTier0BgpStatus cmdlet returns the BGP status for all Tier-0 gateways managed by the NSX Manager
-        cluster. The cmdlet connects to the NSX-T Manager using the -server, -user, and -password values:
+         cluster. The cmdlet connects to the NSX Local Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the NSX-T Manager instance
-        - Gathers the details for the NSX Manager cluster
-        - Collects the BGP status for all Tier-0s managed by the NSX Manager cluster
+        - Validates that network connectivity is available to the NSX Local Manager cluster
+        - Gathers the details for the NSX Local Manager cluster
+        - Collects the BGP status for all Tier-0s managed by the NSX Local Manager cluster
 
         .EXAMPLE
         Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return the BGP status for all Tier-0 gateways managed by the NSX Manager cluster that is managed by SDDC Manager for a workload domain.
+        This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain.
 
         .EXAMPLE
         Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return the BGP status for all Tier-0 gateways managed by the NSX Manager cluster that is managed by SDDC Manager for a workload domain but only reports issues.
+        This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain but only reports issues.
     
         .EXAMPLE
         Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -html
-        This example will return the BGP status for all Tier-0 gateways managed by the NSX Manager cluster that is managed by SDDC Manager for a workload domain in html format.
+        This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain in html format.
     #>
 
     Param (
@@ -4559,7 +4559,6 @@ Function Request-NsxtTier0BgpStatus {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -4581,10 +4580,8 @@ Function Request-NsxtTier0BgpStatus {
                                         $alert = "RED"
                                         $message = "BGP is not established. Please check the configuration."
                                     }
-                                    # TODO: Add warnings based on length of established time (e.g., flapping) or low prefix counts which may indicate a problem.
                                     $elementObject = New-Object -TypeName psobject
                                     # NSX Tier-0 BGP Status Properties
-                                    # TODO: Capture the local ASN alongside the remote ASN. 
                                     $elementObject | Add-Member -NotePropertyName 'NSX Manager' -NotePropertyValue $vcfNsxDetails.fqdn
                                     $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
                                     $elementObject | Add-Member -NotePropertyName 'Tier-0 ID' -NotePropertyValue $tier0.id
@@ -4602,30 +4599,14 @@ Function Request-NsxtTier0BgpStatus {
                                     
                                     if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                         if ($element.connection_state -ne 'ESTABLISHED') {
-                                            $customObject += $elementObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address'
+                                            $customObject += $elementObject
                                         }
                                     } else {
-                                        $customObject += $elementObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address'
+                                        $customObject += $elementObject
                                     }  
                                 }
                             }
-                            $outputObject += $customObject # Add the custom object to the output object
-
-                            # Return the structured data to the console or format using HTML CSS Styles
-                            if ($PsBoundParameters.ContainsKey('html')) { 
-                                if ($outputObject.Count -eq 0) {
-                                    $addNoIssues = $true 
-                                }
-                                if ($addNoIssues) {
-                                    $outputObject = $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No issues found.</p>' 
-                                } else {
-                                    $outputObject = $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
-                                }
-                                $outputObject = Convert-CssClass -htmldata $outputObject
-                                $outputObject
-                            } else {
-                                $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address'
-                            }                    
+                            $customObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address'             
                         }
                     }
                 }
