@@ -4497,7 +4497,6 @@ Function Request-VcenterAuthentication {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -4559,14 +4558,7 @@ Function Request-VcenterAuthentication {
                     }
                 }
 
-                # Return the structured data to the console or format using HTML CSS Styles
-                if ($PsBoundParameters.ContainsKey("html")) { 
-                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>vCenter Server Connectivity Health Status</h3>" -As Table
-                    $customObject = Convert-CssClass -htmldata $customObject
-                    $customObject
-                } else {
-                    $customObject | Sort-Object Component, Resource 
-                }
+                $customObject | Sort-Object Component, Resource
             }
         }
     }
@@ -4606,7 +4598,6 @@ Function Request-NsxtAuthentication {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -4671,15 +4662,8 @@ Function Request-NsxtAuthentication {
                         }
                     }  
                 }
-
-                # Return the structured data to the console or format using HTML CSS Styles
-                if ($PsBoundParameters.ContainsKey("html")) { 
-                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent "<h3>NSX Manager Connectivity Health Status</h3>" -As Table
-                    $customObject = Convert-CssClass -htmldata $customObject
-                    $customObject
-                } else {
-                    $customObject | Sort-Object Component, Resource 
-                }
+                
+                $customObject | Sort-Object Component, Resource
             }
         }
     }
