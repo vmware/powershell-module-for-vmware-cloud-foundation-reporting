@@ -167,23 +167,22 @@ Function Invoke-VcfHealthReport {
         }
         
         # Generating the Snapshot Status Health Data
-        # TODO: Snapshot to be re-implemented to allow for -failureOnly.
         Write-LogMessage -type INFO -Message "Generating the Snapshots Report for $workflowMessage."
         if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            # if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            #     $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-            # }
-            # else { 
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+            }
+            else { 
             $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-            # }
+            }
         }
         else {
-            # if ($PsBoundParameters.ContainsKey('failureOnly')) { 
-            #     $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-            # }
-            # else {
+            if ($PsBoundParameters.ContainsKey('failureOnly')) { 
+                $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+            }
+            else {
             $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-            # }
+            }
         }
 
         # Generating the Password Expiry Health Data
@@ -2176,7 +2175,7 @@ Function Publish-BackupStatus {
                             $sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass; $allBackupStatusObject += $sddcManagerBackupStatus
                         }
                         $vcenterBackupStatus = Request-VcenterBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $vcenterBackupStatus
-                            $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $nsxtManagerBackupStatus
+                        $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allBackupStatusObject += $nsxtManagerBackupStatus
                     }
                 }
 
@@ -2292,80 +2291,62 @@ Function Publish-SnapshotStatus {
         .EXAMPLE
         Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
         This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.  
-    #>
 
-    # TODO: Snapshots status to be re-implemented with simple helper functions and mid-tier request functions.
+        .EXAMPLE
+        Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager but only failed items
+ 
+        .EXAMPLE
+        Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will publish the snapshot status for the SDDC Manager, vCenter Server instance, and NSX Edge nodes managed by SDDC Manager for a workload domain names sfo-w01.
+    #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
-                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {  
-                            
-                            $allSnapshotStatusObject = New-Object System.Collections.ArrayList
-                            if ($PsBoundParameters.ContainsKey('allDomains')) { 
-                                # Get the snapshot status for the SDDC Manager
-                                $sddcManagerSnapshotStatus = Get-SnapshotStatus -vm ($server.Split('.')[0]); $allSnapshotStatusObject += $sddcManagerSnapshotStatus
-                                
-                                # Get the snapshot status for all vCenter Server instances in all workload domains
-                                $allVcenters = Get-VCFvCenter
-                                foreach ($vcenter in $allVcenters) {
-                                    $vcenterSnapshotStatus = Get-SnapshotStatus -vm ($vcenter.fqdn.Split('.')[0]); $allSnapshotStatusObject += $vcenterSnapshotStatus
-                                }
-                                
-                                # Get the snapshot status for all NSX Edge nodes in all workload domains
-                                $allNsxtManagers = Get-VCFNsxtCluster
-                                foreach ($nsxtManager in $allNsxtManagers) {
-                                    if (($vcfNsxEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipFQDN -eq $nsxtManager.vipFQDN })) {   
-                                        foreach ($nsxtEdgeNode in $vcfNsxEdgeDetails.edgeNodes) {
-                                            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $nsxtManager.domains.name)) {
-                                                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                                                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) { 
-                                                        $nsxtEdgeSnapshotStatus = Get-SnapshotStatus -vm ($nsxtEdgeNode.hostName.Split('.')[0]); $allSnapshotStatusObject += $nsxtEdgeSnapshotStatus 
-                                                    }
-                                                }
-                                            }     
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                # Get the snapshot status for the vCenter Server instance for the specific workload domain
-                                $vcenter = Get-VCFWorkloadDomain | Where-Object { $_.name -eq $workloadDomain }
-                                $vcenterSnapshotStatus = Get-SnapshotStatus -vm ($vcenter.vcenters.fqdn.Split('.')[0]); $allSnapshotStatusObject += $vcenterSnapshotStatus
-
-                                # Get the snapshot status for the NSX Edge nodes for the specific workload domain
-                                $nsxtManager = Get-VCFNsxtCluster | Where-Object { $_.domains.name -eq $workloadDomain }
-                                if ($nsxtEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipfqdn -eq $nsxtManager.vipFqdn }) {   
-                                    foreach ($nsxtEdgeNode in $nsxtEdgeDetails.edgeNodes) {
-                                        if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $nsxtManager.domains.name)) {
-                                            if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                                                if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) { 
-                                                    $nsxtEdgeSnapshotStatus = Get-SnapshotStatus -vm ($nsxtEdgeNode.hostName.Split('.')[0]); $allSnapshotStatusObject += $nsxtEdgeSnapshotStatus 
-                                                }
-                                            }
-                                        }    
-                                    }
-                                }
-                            }
-
-                            # Return the structured data to the console or format using HTML CSS Styles
-                            $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object 'Virtual Machine', 'Created' | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3><p>By default, snapshots for NSX Local Manager cluster appliances are disabled and are not recommended.</p>' -As Table
-                            $allSnapshotStatusObject = Convert-CssClass -htmldata $allSnapshotStatusObject
-                            $allSnapshotStatusObject
-                        }
-                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                    }    
+                $allSnapshotStatusObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
+                        $sddcManagerSnapshotStatus = Request-SddcManagerSnapshotStatus -server $server -user $user -pass $pass -failureOnly; $allSnapshotStatusObject += $sddcManagerSnapshotStatus
+                        $vcenterSnapshotStatus = Request-VcenterSnapshotStatus -server $server -user $user -pass $pass -allDomains -failureOnly; $allSnapshotStatusObject += $vcenterSnapshotStatus
+                        $nsxtEdgeSnapshotStatus = Request-NsxtEdgeSnapshotStatus -server $server -user $user -pass $pass -allDomains -failureOnly; $allSnapshotStatusObject += $nsxtEdgeSnapshotStatus
+                    } else {
+                        $sddcManagerSnapshotStatus = Request-SddcManagerSnapshotStatus -server $server -user $user -pass $pass -failureOnly; $allSnapshotStatusObject += $sddcManagerSnapshotStatus
+                        $vcenterSnapshotStatus = Request-VcenterSnapshotStatus -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allSnapshotStatusObject += $vcenterBackupStatus
+                        $nsxtEdgeSnapshotStatus = Request-NsxtEdgeSnapshotStatus -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allSnapshotStatusObject += $nsxtEdgeSnapshotStatus
+                    }
+                } else {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                        $sddcManagerSnapshotStatus = Request-SddcManagerSnapshotStatus -server $server -user $user -pass $pass; $allSnapshotStatusObject += $sddcManagerSnapshotStatus
+                        $vcenterSnapshotStatus = Request-VcenterSnapshotStatus -server $server -user $user -pass $pass -allDomains; $allSnapshotStatusObject += $vcenterSnapshotStatus
+                        $nsxtEdgeSnapshotStatus = Request-NsxtEdgeSnapshotStatus -server $server -user $user -pass $pass -allDomains; $allSnapshotStatusObject += $nsxtEdgeSnapshotStatus
+                    } else {
+                        $sddcManagerSnapshotStatus = Request-SddcManagerSnapshotStatus -server $server -user $user -pass $pass; $allSnapshotStatusObject += $sddcManagerSnapshotStatus
+                        $vcenterSnapshotStatus = Request-VcenterSnapshotStatus -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allSnapshotStatusObject += $vcenterSnapshotStatus
+                        $nsxtEdgeSnapshotStatus = Request-NsxtEdgeSnapshotStatus -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allSnapshotStatusObject += $nsxtEdgeSnapshotStatus
+                    }
                 }
+
+                if ($allSnapshotStatusObject.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                }
+                else {
+                    $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3><p>By default, snapshots for NSX Local Manager cluster appliances are disabled and are not recommended.</p>' -As Table
+                }
+                $allSnapshotStatusObject = Convert-CssClass -htmldata $allSnapshotStatusObject
+                $allSnapshotStatusObject
             }
         }
     }
@@ -2945,6 +2926,544 @@ Function Request-vRslcmUserExpiry {
     }
 }
 Export-ModuleMember -Function Request-vRslcmUserExpiry
+
+Function Request-SddcManagerSnapshotStatus {
+    <#
+		.SYNOPSIS
+        Request the snapshot status for the SDDC Manager.
+
+        .DESCRIPTION
+        The Request-SddcManagerSnapshotStatus cmdlet checks the snapshot status for SDDC Manager.
+        The cmdlet connects to SDDC Manager using the -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Performs checks on the snapshot status and outputs the results
+
+        .EXAMPLE
+        Request-SddcManagerSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will publish the snapshot status for the SDDC Manager in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Request-SddcManagerSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+        This example will publish the snapshot status for the SDDC Manager in a VMware Cloud Foundation instance, but for only failed items.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $vcfVcenterDetails.fqdn) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            $customObject = New-Object System.Collections.ArrayList
+                            $component = 'SDDC Manager'
+                            $resource = 'SDDC Manager Snapshot'
+                            $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ','
+                            $snapshotStatus = Get-SnapshotStatus -vm ($server.Split('.')[0])
+                            $snapshotCount = ($snapshotStatus | measure).count
+                            $snapshotLast = $snapshotStatus.Created | select -Last 1
+                            $snapshotAge = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshotLast)).TotalDays)
+                            
+                            # Set the alert color based on the age of the snapshot
+                            if ($snapshotCount -eq 0) {
+                                $alert = 'GREEN' # Ok; = 0 snapshots
+                                $message = 'No snapshots exist. '
+                            }
+                            elseif ($snapshotAge -le 1) {
+                                $alert = 'GREEN' # OK; <= 1 days
+                                $message = 'Latest snapshot is less than 1 day old. '
+                            }
+                            elseif ($snapshotAge -gt 1 -and $snapshotAge -le 3) {
+                                $alert = 'YELLOW' # Warning; > 1 days and <= 3 days
+                                $message = 'Latest snapshot is greater than 1 day old. '
+                            }
+                            elseif ($snapshotAge -gt 3) {
+                                $alert = 'RED' # Critical; >= 7 days
+                                $message = 'Latest snapshot is greater than 3 days old. '
+                            }
+
+                            # Set the alert color based on the number of snapshots.
+                            if ($snapshotCount -eq 1) {
+                                $messageCount = 'A single snapshot exists. '
+                            }
+                            elseif ($snapshotCount -gt 1) {
+                                $messageCount = 'More than 1 snapshot exist. '
+                            }
+
+                            $message += $messageCount # Combine the alert message
+
+                            # Set the alert message based on the snapshot consolidation status.
+                            if (Get-SnapshotConsolidation -vm ($server.Split('.')[0])) {
+                                $alert = 'RED' # Critical; Consolidation is required
+                                $consolidationRequired = $true
+                                $messageConsolidation += 'Snapshot consolidation is required.'
+                            }
+                            else {
+                                $consolidationRequired = $false
+                            }
+
+                            $message += $messageConsolidation
+
+                            $elementObject = New-Object -TypeName psobject
+                            # Add the snapshot details to the PSObject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource
+                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $server
+                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
+                            $elementObject | Add-Member -NotePropertyName 'Snapshots' -NotePropertyValue $snapshotCount
+                            $elementObject | Add-Member -NotePropertyName 'Latest' -NotePropertyValue $snapshotLast
+                            $elementObject | Add-Member -NotePropertyName 'Consolidation Required' -NotePropertyValue $consolidationRequired
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }                     
+                            $customObject | Sort-Object Component, Resource, Element
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-SddcManagerSnapshotStatus
+
+Function Request-VcenterSnapshotStatus {
+    <#
+		.SYNOPSIS
+        Request the snapshot status for the vCenter Server instance.
+
+        .DESCRIPTION
+        The Request-VcenterSnapshotStatus cmdlet checks the snapshot status for vCenter Server instance.
+        The cmdlet connects to SDDC Manager using the -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Performs checks on the snapshot status and outputs the results
+
+        .EXAMPLE
+        Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will publish the snapshot status for all vCenter Server instances in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains --failureOnly
+        This example will publish the snapshot status for all vCenter Server instances in a VMware Cloud Foundation instance, but only failed items.
+
+        .EXAMPLE
+        Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will publish the snapshot status for a vCenter Server instance for a specific workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $allVcenters = Get-VCFvCenter
+                    $vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT         
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            $customObject = New-Object System.Collections.ArrayList    
+                            $component = 'vCenter Server'
+                            $resource = 'vCenter Server Snapshot'
+                            foreach ($vcenter in $allVcenters) {
+                                $domain = (Get-VCFWorkloadDomain | Where-Object {$_.vcenters.fqdn -eq $vcenter.fqdn}).name
+                                $snapshotStatus = Get-SnapshotStatus -vm ($vcenter.fqdn.Split('.')[0])
+                                $snapshotCount = ($snapshotStatus | measure).count
+                                $snapshotLast = $snapshotStatus.Created | select -Last 1
+                                $snapshotAge = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshotLast)).TotalDays)
+
+                                # Set the alert color based on the age of the snapshot
+                                if ($snapshotCount -eq 0) {
+                                    $alert = 'GREEN' # Ok; = 0 snapshots
+                                    $message = 'No snapshots exist. '
+                                }
+                                elseif ($snapshotAge -le 1) {
+                                    $alert = 'GREEN' # OK; <= 1 days
+                                    $message = 'Latest snapshot is less than 1 day old. '
+                                }
+                                elseif ($snapshotAge -gt 1 -and $snapshotAge -le 3) {
+                                    $alert = 'YELLOW' # Warning; > 1 days and <= 3 days
+                                    $message = 'Latest snapshot is greater than 1 day old. '
+                                }
+                                elseif ($snapshotAge -gt 3) {
+                                    $alert = 'RED' # Critical; >= 7 days
+                                    $message = 'Latest snapshot is greater than 3 days old. '
+                                }
+
+                                # Set the alert message based on the number of snapshots.
+                                if ($snapshotCount -eq 1) {
+                                    $messageCount = 'A single snapshot exists. '
+                                }
+                                elseif ($snapshotCount -gt 1) {
+                                    $messageCount = 'More than 1 snapshot exist. '
+                                }
+
+                                $message += $messageCount # Combine the alert message
+
+                                # Set the alert message based on the snapshot consolidation status.
+                                if (Get-SnapshotConsolidation -vm ($vcenter.fqdn.Split('.')[0])) {
+                                    $alert = 'RED' # Critical; Consolidation is required
+                                    $consolidationRequired = $true
+                                    $messageConsolidation += 'Snapshot consolidation is required.'
+                                }
+                                else {
+                                    $consolidationRequired = $false
+                                }
+
+                                $message += $messageConsolidation
+
+                                $elementObject = New-Object -TypeName psobject
+                                # Add the snapshot details to the PSObject
+                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource
+                                $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcenter.fqdn
+                                $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
+                                $elementObject | Add-Member -NotePropertyName 'Snapshots' -NotePropertyValue $snapshotCount
+                                $elementObject | Add-Member -NotePropertyName 'Latest' -NotePropertyValue $snapshotLast
+                                $elementObject | Add-Member -NotePropertyName 'Consolidation Required' -NotePropertyValue $consolidationRequired
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+
+                                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                    if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                        $customObject += $elementObject
+                                    }
+                                }
+                                else {
+                                    $customObject += $elementObject
+                                }  
+                            }                              
+                            $outputObject += $customObject # Add the custom object to the output object    
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }
+                }
+                else {
+                    $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $workloadDomain }).vcenters
+                    $vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            $customObject = New-Object System.Collections.ArrayList    
+                            $component = 'vCenter Server'
+                            $resource = 'vCenter Server Snapshot'
+                            $domain = (Get-VCFWorkloadDomain | Where-Object { $_.vcenters.fqdn -eq $vcenter.fqdn }).name
+                            $snapshotStatus = Get-SnapshotStatus -vm ($vcenter.fqdn.Split('.')[0])
+                            $snapshotCount = ($snapshotStatus | measure).count
+                            $snapshotLast = $snapshotStatus.Created | select -Last 1
+                            $snapshotAge = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshotLast)).TotalDays)
+
+                            # Set the alert color based on the age of the snapshot
+                            if ($snapshotCount -eq 0) {
+                                $alert = 'GREEN' # Ok; = 0 snapshots
+                                $message = 'No snapshots exist. '
+                            }
+                            elseif ($snapshotAge -le 1) {
+                                $alert = 'GREEN' # OK; <= 1 days
+                                $message = 'Latest snapshot is less than 1 day old. '
+                            }
+                            elseif ($snapshotAge -gt 1 -and $snapshotAge -le 3) {
+                                $alert = 'YELLOW' # Warning; > 1 days and <= 3 days
+                                $message = 'Latest snapshot is greater than 1 day old. '
+                            }
+                            elseif ($snapshotAge -gt 3) {
+                                $alert = 'RED' # Critical; >= 7 days
+                                $message = 'Latest snapshot is greater than 3 days old. '
+                            }
+
+                            # Set the alert message based on the number of snapshots.
+                            if ($snapshotCount -eq 1) {
+                                $messageCount = 'A single snapshot exists. '
+                            }
+                            elseif ($snapshotCount -gt 1) {
+                                $messageCount = 'More than 1 snapshot exist. '
+                            }
+
+                            $message += $messageCount # Combine the alert message
+
+                            # Set the alert message based on the snapshot consolidation status.
+                            if (Get-SnapshotConsolidation -vm ($vcenter.fqdn.Split('.')[0])) {
+                                $alert = 'RED' # Critical; Consolidation is required
+                                $consolidationRequired = $true
+                                $messageConsolidation += 'Snapshot consolidation is required.'
+                            }
+                            else {
+                                $consolidationRequired = $false
+                            }
+
+                            $message += $messageConsolidation
+
+                            $elementObject = New-Object -TypeName psobject
+                            # Add the snapshot details to the PSObject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource
+                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcenter.fqdn
+                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
+                            $elementObject | Add-Member -NotePropertyName 'Snapshots' -NotePropertyValue $snapshotCount
+                            $elementObject | Add-Member -NotePropertyName 'Latest' -NotePropertyValue $snapshotLast
+                            $elementObject | Add-Member -NotePropertyName 'Consolidation Required' -NotePropertyValue $consolidationRequired
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }                              
+                            $outputObject += $customObject # Add the custom object to the output object    
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }
+                }
+                $outputObject | Sort-Object Component, Resource, Element
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-VcenterSnapshotStatus
+
+Function Request-NsxtEdgeSnapshotStatus {
+    <#
+		.SYNOPSIS
+        Request the snapshot status for NSX Edge nodes.
+
+        .DESCRIPTION
+        The Request-NsxtEdgeSnapshotStatus cmdlet checks the snapshot status for NSX Edge nodes.
+        The cmdlet connects to SDDC Manager using the -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Performs checks on the snapshot status and outputs the results
+
+        .EXAMPLE
+        Request-NsxtEdgeSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will publish the snapshot status for all NSX Edge nodes managed by SDDC Manager in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Request-NsxtEdgeSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains --failureOnly
+        This example will publish the snapshot status for all NSX Edge nodes managed by SDDC Manager in a VMware Cloud Foundation instance, but only failed items.
+
+        .EXAMPLE
+        Request-NsxtEdgeSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will publish the snapshot status for NSX Edge nodes managed by SDDC Manager for a specific workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $allNsxtManagers = Get-VCFNsxtCluster
+                    foreach ($nsxtManager in $allNsxtManagers) {
+                        if ($nsxtEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipfqdn -eq $nsxtManager.vipFqdn }) {
+                            foreach ($nsxtEdgeNode in $nsxtEdgeDetails.edgeNodes) {
+                                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $nsxtManager.domains.name)) {
+                                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) { 
+                                            $customObject = New-Object System.Collections.ArrayList    
+                                            $message = ''
+                                            $component = 'NSX'
+                                            $resource = 'NSX Edge Node Snapshot'
+                                            $domain = $nsxtManager.domains.name
+                                            $snapshotStatus = Get-SnapshotStatus -vm ($nsxtEdgeNode.hostName.Split('.')[0])
+                                            $snapshotCount = ($snapshotStatus | measure).count
+                                            $snapshotLast = $snapshotStatus.Created | select -Last 1
+                                            $snapshotAge = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshotLast)).TotalDays)
+
+                                            # Set the alert color based on the age of the snapshot
+                                            if ($snapshotCount -eq 0) {
+                                                $alert = 'GREEN' # Ok; = 0 snapshots
+                                                $message = 'No snapshots exist. '
+                                            }
+                                            elseif ($snapshotAge -le 1) {
+                                                $alert = 'GREEN' # OK; <= 1 days
+                                                $message = 'Latest snapshot is less than 1 day old. '
+                                            }
+                                            elseif ($snapshotAge -gt 1 -and $snapshotAge -le 3) {
+                                                $alert = 'YELLOW' # Warning; > 1 days and <= 3 days
+                                                $message = 'Latest snapshot is greater than 1 day old. '
+                                            }
+                                            elseif ($snapshotAge -gt 3) {
+                                                $alert = 'RED' # Critical; >= 7 days
+                                                $message = 'Latest snapshot is greater than 3 days old. '
+                                            }
+
+                                            # Set the alert color based on the number of snapshots.
+                                            if ($snapshotCount -eq 1) {
+                                                $messageCount = 'A single snapshot exists. '
+                                            }
+                                            elseif ($snapshotCount -gt 1) {
+                                                $messageCount = 'More than 1 snapshot exist. '
+                                            }
+
+                                            $message += $messageCount # Combine the alert message
+
+                                            if (Get-SnapshotConsolidation -vm ($nsxtEdgeNode.hostName.Split('.')[0])) {
+                                                $alert = 'RED' # Critical; Consolidation is required
+                                                $consolidationRequired = $true
+                                                $messageConsolidation += 'Snapshot consolidation is required.'
+                                            }
+                                            else {
+                                                $consolidationRequired = $false
+                                            }
+
+                                            $message += $messageConsolidation
+
+                                            $elementObject = New-Object -TypeName psobject
+                                            # Add the snapshot details to the PSObject
+                                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource
+                                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $nsxtEdgeNode.hostName
+                                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
+                                            $elementObject | Add-Member -NotePropertyName 'Snapshots' -NotePropertyValue $snapshotCount
+                                            $elementObject | Add-Member -NotePropertyName 'Latest' -NotePropertyValue $snapshotLast
+                                            $elementObject | Add-Member -NotePropertyName 'Consolidation Required' -NotePropertyValue $consolidationRequired
+                                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+
+                                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                                    $customObject += $elementObject
+                                                }
+                                            } else {
+                                                $customObject += $elementObject
+                                            }  
+                                        }                              
+                                        $outputObject += $customObject # Add the custom object to the output object    
+                                    }
+                                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                                }
+                            }
+                        }
+                    }
+                } else {
+                $nsxtManager = Get-VCFNsxtCluster | Where-Object { $_.domains.name -eq $workloadDomain }
+                if ($nsxtEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipfqdn -eq $nsxtManager.vipFqdn }) {
+                    foreach ($nsxtEdgeNode in $nsxtEdgeDetails.edgeNodes) {
+                        if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $nsxtManager.domains.name)) {
+                            if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                                if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                    $customObject = New-Object System.Collections.ArrayList 
+                                    $message = ''
+                                    $component = 'NSX'
+                                    $resource = 'NSX Edge Node Snapshot'
+                                    $domain = $nsxtManager.domains.name
+                                    $snapshotStatus = Get-SnapshotStatus -vm ($nsxtEdgeNode.hostName.Split('.')[0])
+                                    $snapshotCount = ($snapshotStatus | measure).count
+                                    $snapshotLast = $snapshotStatus.Created | select -Last 1
+                                    $snapshotAge = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshotLast)).TotalDays)
+
+                                    # Set the alert color based on the age of the snapshot
+                                    if ($snapshotCount -eq 0) {
+                                        $alert = 'GREEN' # Ok; = 0 snapshots
+                                        $messageCount = 'No snapshots exist. ' 
+                                    }
+                                    elseif ($snapshotAge -le 1) {
+                                        $alert = 'GREEN' # OK; <= 1 days
+                                        $message = 'Latest snapshot is less than 1 day old. '
+                                    }
+                                    elseif ($snapshotAge -gt 1 -and $snapshotAge -le 3) {
+                                        $alert = 'YELLOW' # Warning; > 1 days and <= 3 days
+                                        $message = 'Latest snapshot is greater than 1 day old. '
+                                    }
+                                    elseif ($snapshotAge -gt 3) {
+                                        $alert = 'RED' # Critical; >= 7 days
+                                        $message = 'Latest snapshot is greater than 3 days old. '
+                                    }
+
+                                    # Set the alert message based on the number of snapshots.
+                                    if ($snapshotCount -eq 1) {
+                                        $messageCount = 'A single snapshot exists. '
+                                    }
+                                    elseif ($snapshotCount -gt 1) {
+                                        $messageCount = 'More than 1 snapshot exist. '
+                                    }
+
+                                    $message += $messageCount # Combine the alert message
+
+                                    # Set the alert message based on snapshots consolidation status.
+                                    if (Get-SnapshotConsolidation -vm ($nsxtEdgeNode.hostName.Split('.')[0])) {
+                                        $alert = 'RED' # Critical; Consolidation is required
+                                        $consolidationRequired = $true
+                                        $messageConsolidation += 'Snapshot consolidation is required.'
+                                    }
+                                    else {
+                                        $consolidationRequired = $false
+                                    }
+
+                                    $message += $messageConsolidation
+
+                                    $elementObject = New-Object -TypeName psobject
+                                    # Add the snapshot details to the PSObject
+                                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                                    $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource
+                                    $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $nsxtEdgeNode.hostName
+                                    $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
+                                    $elementObject | Add-Member -NotePropertyName 'Snapshots' -NotePropertyValue $snapshotCount
+                                    $elementObject | Add-Member -NotePropertyName 'Latest' -NotePropertyValue $snapshotLast
+                                    $elementObject | Add-Member -NotePropertyName 'Consolidation Required' -NotePropertyValue $consolidationRequired
+                                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+
+                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                            $customObject += $elementObject
+                                        }
+                                    } else {
+                                        $customObject += $elementObject
+                                    }  
+                                }                              
+                                $outputObject += $customObject # Add the custom object to the output object    
+                            }
+                            Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                        }
+                    }                        
+                }
+            }
+        $outputObject | Sort-Object Component, Resource, Element
+    }
+}
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-NsxtEdgeSnapshotStatus
 
 Function Request-SddcManagerBackupStatus {
     <#
@@ -6551,8 +7070,8 @@ Function Get-VcenterBackupStatus {
 }
 Export-ModuleMember -Function Get-VcenterBackupStatus
 
-Function Get-SnapshotStatus {
-    <#
+    Function Get-SnapshotStatus {
+     <#
         .SYNOPSIS
         Returns the status of a virtual machine's snapshots.
 
@@ -6564,55 +7083,16 @@ Function Get-SnapshotStatus {
         This example returns the status of the snapshots for the virtual machine named "foo".
     #>
 
-    Param (
-        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
-    )
+        Param (
+            [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
+        )
 
-    Try {
-        if (Get-VM -Name $vm) {
-            $snapshot = Get-VM $vm | Get-Snapshot | Select-Object -Property Name, Created, isCurrent # Get the snapshot details
-            # Return the snapshot details
-            foreach ($snapshot in $snapshot) {
-                $snapshotDays = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshot.Created)).TotalDays) # Calculate the number of days since the snapshot was created
-                
-                # Set the alert color based on the age of the snapshot
-                if ($snapshotDays -ge 3) {
-                    $alert = 'RED' # Critical: >= 3 days
-                    $message = "The snapshot is greater than or equal to 3 days old."
-                }
-                if ($snapshotDays -gt 1) {
-                    $alert = 'YELLOW' # Warning: > 1 days
-                    $message = "The snapshot is greater than 1 day old."
-                }
-                else {
-                    $alert = 'GREEN' # OK: <= 1 days
-                    $message = "The snapshot is less than 1 day old."
-                }
-                # Create a new PSObject to hold the results
-                $snapshotObject = New-Object -TypeName psobject
-                # Add the snapshot details to the PSObject
-                $snapshotObject | Add-Member -NotePropertyName 'Virtual Machine' -NotePropertyValue $vm
-                $snapshotObject | Add-Member -NotePropertyName 'Snapshot Name' -NotePropertyValue $snapshot.Name
-                $snapshotObject | Add-Member -NotePropertyName 'Created' -NotePropertyValue $snapshot.Created
-                $snapshotObject | Add-Member -NotePropertyName 'Current' -NotePropertyValue $snapshot.isCurrent
-                $snapshotObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
-                $snapshotObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
-                $snapshotObject | Sort-Object 'Virtual Machine', 'Created', 'Current'
-            }
-        }
-        else {
-            Write-Error "Unable to locate virtual machine ($name) in the vCenter Server inventory."
-        }
-
+        $response = Get-VM $vm | Get-Snapshot | Select-Object -Property Name, Created, isCurrent # Get the snapshot details
+        $response # Return the snapshot details
     }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
+    Export-ModuleMember -Function Get-SnapshotStatus
 
-}
-Export-ModuleMember -Function Get-SnapshotStatus
-
-Function Get-SnapshotConsolidation {
+    Function Get-SnapshotConsolidation {
     <#
         .SYNOPSIS
         Returns the status of a virtual machine's need for snapshot consolidation.
@@ -6625,49 +7105,15 @@ Function Get-SnapshotConsolidation {
         This example returns the status of the snapshot consolidation for the virtual machine named "foo".
     #>
 
-    Param (
-        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
-    )
+        Param (
+            [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
+        )
 
-    Try {
-        if (Get-VM -Name $vm) {
-            $snapshotConsolidation = (Get-View -ViewType VirtualMachine -Filter @{'Name' = $vm }).Runtime.ConsolidationNeeded # Get the consolidation status
-            $snapshotCount = (Get-VM $vm | Get-Snapshot).Count # Get the number of snapshots
-            # Set the alert and message based on the consolidation status
-            if ($consolidation -eq $true) {
-                $alert = 'RED' # Critical: Consolidation needed
-                $message = "Consolidation is required. "
-            }
-            else {
-                $alert = 'GREEN' # OK: Consolidation not needed
-                $message = "Consolidation is not required. "
-            }
-
-            if ($snapshotCount -gt 1) {
-                $messageAppend = "Use 'Get-SnapshotStatus -vm $vm' to review the status of each snapshot."
-            }
-
-            $message += $messageAppend # Combine the alert message
-
-            # Create a new PSObject to hold the results
-            $outputObject = New-Object -TypeName psobject
-            # Add the snapshot details to the PSObject
-            $outputObject = New-Object -TypeName psobject
-            $outputObject | Add-Member -NotePropertyName 'Virtual Machine' -NotePropertyValue $vm
-            $outputObject | Add-Member -NotePropertyName 'Snapshots' -NotePropertyValue $snapshotCount
-            $outputObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
-            $outputObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message"
-            $outputObject
-        }
-        else {
-            Write-Error "Unable to locate virtual machine ($name) in the vCenter Server inventory."
-        }
+        $response = (Get-View -ViewType VirtualMachine -Filter @{'Name' = $vm }).Runtime.ConsolidationNeeded # Get the consolidation status
+        $response # Return the consolidation status
+    
     }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Get-SnapshotConsolidation
+    Export-ModuleMember -Function Get-SnapshotConsolidation
 
 <<<<<<< HEAD
 Function Get-EsxiAlert {
