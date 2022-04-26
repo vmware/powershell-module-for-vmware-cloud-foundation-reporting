@@ -865,7 +865,7 @@ Function Publish-CertificateHealth {
         if ($PsBoundParameters.ContainsKey('html')) { 
             if ($outputObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-certificate"></a><h3>Certificate Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-certificate"></a><h3>Certificate Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-certificate"></a><h3>Certificate Health Status</h3>' -As Table
             }
@@ -958,7 +958,7 @@ Function Publish-ConnectivityHealth {
         if ($PsBoundParameters.ContainsKey('html')) {
             if ($outputObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -As Table
             }
@@ -1032,7 +1032,7 @@ Function Publish-DnsHealth {
         if ($PsBoundParameters.ContainsKey("html")) { 
             if ($allForwardLookupObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-forward"></a><h3>DNS Forward Lookup Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-forward"></a><h3>DNS Forward Lookup Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-forward"></a><h3>DNS Forward Lookup Health Status</h3>' -As Table
             }
@@ -1040,7 +1040,7 @@ Function Publish-DnsHealth {
             $allForwardLookupObject
             if ($allReverseLookupObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $allReverseLookupObject = $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-reverse"></a><h3>DNS Reverse Lookup Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $allReverseLookupObject = $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-reverse"></a><h3>DNS Reverse Lookup Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $allReverseLookupObject = $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-reverse"></a><h3>DNS Reverse Lookup Health Status</h3>' -As Table
             }
@@ -1141,7 +1141,7 @@ Function Publish-EsxiHealth {
         if ($PsBoundParameters.ContainsKey('html')) {
             if ($allOverallHealthObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-overall"></a><h3>ESXi Overall Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-overall"></a><h3>ESXi Overall Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-overall"></a><h3>ESXi Overall Health Status</h3>' -As Table
             }
@@ -1150,7 +1150,7 @@ Function Publish-EsxiHealth {
 
             if ($allCoreDumpObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-coredump"></a><h3>ESXi Core Dump Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-coredump"></a><h3>ESXi Core Dump Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-coredump"></a><h3>ESXi Core Dump Health Status</h3>' -As Table
             }
@@ -1159,7 +1159,7 @@ Function Publish-EsxiHealth {
 
             if ($allLicenseObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-license"></a><h3>ESXi License Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-license"></a><h3>ESXi License Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-license"></a><h3>ESXi License Health Status</h3>' -As Table
             }
@@ -1168,7 +1168,7 @@ Function Publish-EsxiHealth {
 
             if ($allDiskObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-disk"></a><h3>ESXi Disk Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-disk"></a><h3>ESXi Disk Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-disk"></a><h3>ESXi Disk Health Status</h3>' -As Table
             }
@@ -1332,7 +1332,7 @@ Function Publish-NsxtHealth {
         if ($PsBoundParameters.ContainsKey('html')) {
             if ($customObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -As Table
             }
@@ -1411,7 +1411,7 @@ Function Publish-NsxtEdgeNodeHealth {
         if ($PsBoundParameters.ContainsKey('html')) { 
             if ($customObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -As Table
             }
@@ -1491,7 +1491,7 @@ Function Publish-NsxtEdgeClusterHealth {
         if ($PsBoundParameters.ContainsKey('html')) { 
             if ($customObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -As Table
             }
@@ -1557,7 +1557,7 @@ Function Publish-NtpHealth {
         if ($PsBoundParameters.ContainsKey("html")) { 
             if ($outputObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-ntp"></a><h3>NTP Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-ntp"></a><h3>NTP Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-ntp"></a><h3>NTP Health Status</h3>' -As Table
             }
@@ -1620,7 +1620,7 @@ Function Publish-PasswordHealth {
         if ($PsBoundParameters.ContainsKey("html")) { 
             if ($outputObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -As Table
             }
@@ -1696,7 +1696,7 @@ Function Publish-ServiceHealth {
         if ($PsBoundParameters.ContainsKey('html')) { 
             if ($outputObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-service"></a><h3>Service Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-service"></a><h3>Service Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-service"></a><h3>Service Health Status</h3>' -As Table
             }
@@ -1776,7 +1776,7 @@ Function Publish-VcenterHealth {
         if ($PsBoundParameters.ContainsKey("html")) { 
             if ($vcenterOverall.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $vcenterOverall = $vcenterOverall | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Overall Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $vcenterOverall = $vcenterOverall | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Overall Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $vcenterOverall = $vcenterOverall | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Overall Health Status</h3>' -As Table
             }
@@ -1785,7 +1785,7 @@ Function Publish-VcenterHealth {
 
             if ($ringTopologyHealth.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring"></a><h3>vCenter Single Sign-On Ring Topology Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring"></a><h3>vCenter Single Sign-On Ring Topology Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring"></a><h3>vCenter Single Sign-On Ring Topology Health Status</h3>' -As Table
             }
@@ -1900,7 +1900,7 @@ Function Publish-VsanHealth {
         if ($PsBoundParameters.ContainsKey("html")) { 
             if ($customObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-overall"></a><h3>vSAN Overall Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-overall"></a><h3>vSAN Overall Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-overall"></a><h3>vSAN Overall Health Status</h3>' -As Table
             }
@@ -1987,7 +1987,7 @@ Function Publish-VsanStoragePolicy {
         if ($PsBoundParameters.ContainsKey("html")) {
             if ($outputObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
                 $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -As Table
             }
@@ -2125,12 +2125,12 @@ Function Publish-BackupStatus {
         This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will publish the backup status for the vCenter Server instances, and NSX Local Manager clusters in Workload Domain sfo-w01.  
+        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance but only reports issues.
 
         .EXAMPLE
-        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance but only for the failed items.
+        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will publish the backup status for the vCenter Server instances, and NSX Local Manager clusters in Workload Domain sfo-w01.  
     #>
 
     Param (
@@ -2181,7 +2181,7 @@ Function Publish-BackupStatus {
 
                 if ($allBackupStatusObject.Count -eq 0) { $addNoIssues = $true }
                     if ($addNoIssues) {
-                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -PostContent "<p>No Issues Found</p>" 
+                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -PostContent "<p>No I=issues Found</p>" 
                     } else {
                         $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -As Table
                     }
@@ -2256,7 +2256,7 @@ Function Publish-NsxtTier0BgpStatus {
                     $addNoIssues = $true 
                 }
                 if ($addNoIssues) {
-                    $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                    $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No issues found.</p>' 
                 } else {
                     $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
                 }
@@ -2340,7 +2340,7 @@ Function Publish-SnapshotStatus {
                     $addNoIssues = $true 
                 }
                 if ($addNoIssues) {
-                    $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                    $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3>' -PostContent '<p>No issues found.</p>' 
                 }
                 else {
                     $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3><p>By default, snapshots for NSX Local Manager cluster appliances are disabled and are not recommended.</p>' -As Table
@@ -2440,7 +2440,7 @@ Function Publish-LocalUserExpiry {
 
         if ($allPasswordExpiryObject.Count -eq 0) { $addNoIssues = $true }
         if ($addNoIssues) {
-            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p>No issues found.</p>' 
         } else {
             $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -As Table
         }
@@ -3491,7 +3491,6 @@ Function Request-SddcManagerBackupStatus {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -3500,13 +3499,12 @@ Function Request-SddcManagerBackupStatus {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $backupTasks = Get-VCFTask | Where-Object { $_.type -eq 'SDDCMANAGER_BACKUP' } | Select-Object -First 1
                 foreach ($backupTask in $backupTasks) {
+                    $customObject = New-Object System.Collections.ArrayList
                     $component = 'SDDC Manager' # Define the component name
                     $date = [DateTime]::ParseExact($backupTask.creationTimestamp, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
                     $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ',' # Define the domain(s)
                     $resource = $backupTask.name # Define the resource name
                     $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$date)).TotalDays) # Calculate the number of days since the backup was created
-
-                    $customObject = New-Object System.Collections.ArrayList
 
                     # Set the status for the backup task
                     if ($backupTask.status -eq 'Successful') {                              
@@ -3525,7 +3523,7 @@ Function Request-SddcManagerBackupStatus {
                     # Set the alert and message for the backup task based on the age of the backup
                     if ($backupAge -ge 3) {
                         $alert = "RED" # Critical; >= 3 days
-                        $messageAge = "Backup is more than 3 days old." # Set the alert message
+                        $messageBackupAge = "Backup is more than 3 days old." # Set the alert message
                     } elseif ($backupAge -gt 1) {
                         $alert = "YELLOW" # Warning; > 1 days
                         $messageBackupAge = "Backup is more than 1 days old." # Set the alert message
@@ -3544,7 +3542,7 @@ Function Request-SddcManagerBackupStatus {
                         $messageBackupServer = "Backup is located on the SDDC Manager. Reconfigure backups to use another location." # Set the alert message
                         $message = $messageBackupServer # Override the message
                     }
-
+                    # Add Backup Status Properties to the element object
                     $elementObject = New-Object -TypeName psobject
                     $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                     $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the name
@@ -3561,22 +3559,7 @@ Function Request-SddcManagerBackupStatus {
                         $customObject += $elementObject
                     }  
                 }
-
-                $outputObject += $customObject # Add the custom object to the output object
-
-                # Return the structured data to the console or format using HTML CSS Styles
-                if ($PsBoundParameters.ContainsKey("html")) { 
-                    if ($outputObject.Count -eq 0) { $addNoIssues = $true }
-                    if ($addNoIssues) {
-                        $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -PostContent '<p>No Issues Found</p>' 
-                    } else {
-                        $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -As Table
-                    }
-                    $outputObject = Convert-CssClass -htmldata $outputObject
-                    $outputObject
-                } else {
-                    $outputObject | Sort-Object Component, Resource, Element
-                }
+                $customObject | Sort-Object Component, Resource, Element
             }
         }
     }
@@ -3613,7 +3596,6 @@ Function Request-NsxtManagerBackupStatus {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -3666,6 +3648,7 @@ Function Request-NsxtManagerBackupStatus {
                                     $message = $messageBackupServer # Override the message
                                 }
 
+                                # Add Backup Status Properties to the element object
                                 $elementObject = New-Object -TypeName psobject
                                 $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
@@ -3724,6 +3707,7 @@ Function Request-NsxtManagerBackupStatus {
                                     $message = $messageBackupServer # Override the message
                                 }
 
+                                # Add Backup Status Properties to the element object
                                 $elementObject = New-Object -TypeName psobject
                                 $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
@@ -3782,6 +3766,7 @@ Function Request-NsxtManagerBackupStatus {
                                     $message = $messageBackupServer # Override the message
                                 }
 
+                                # Add Backup Status Properties to the element object
                                 $elementObject = New-Object -TypeName psobject
                                 $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
@@ -3798,24 +3783,7 @@ Function Request-NsxtManagerBackupStatus {
                                     $customObject += $elementObject
                                 }  
                             }
-
-                            $outputObject += $customObject # Add the custom object to the output object
-
-                            # Return the structured data to the console or format using HTML CSS Styles
-                            if ($PsBoundParameters.ContainsKey('html')) { 
-                                if ($outputObject.Count -eq 0) {
-                                    $addNoIssues = $true 
-                                }
-                                if ($addNoIssues) {
-                                    $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -PostContent '<p>No Issues Found</p>' 
-                                } else {
-                                    $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -As Table
-                                }
-                                $outputObject = Convert-CssClass -htmldata $outputObject
-                                $outputObject
-                            } else {
-                                $outputObject | Sort-Object Component, Resource, Element
-                            }                    
+                            $customObject | Sort-Object Component, Resource, Element                 
                         }
                     }
                 }
@@ -3855,7 +3823,6 @@ Function Request-VcenterBackupStatus {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
 
     )
@@ -3868,13 +3835,11 @@ Function Request-VcenterBackupStatus {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             Connect-CisServer -server $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
                             $backupTask = Get-VcenterBackupJobs | Select-Object -First 1 | Get-VcenterBackupStatus
-
+                            $customObject = New-Object System.Collections.ArrayList
                             $component = 'vCenter Server' # Define the component name
                             $resource = 'vCenter Server Backup Operation' # Define the resource name
                             $timestamp = $backupTask.end_time # Define the end timestamp
                             $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
-
-                            $customObject = New-Object System.Collections.ArrayList
 
                             # Set the status for the backup task
                             if ($backupTask.state -eq 'SUCCEEDED') {                              
@@ -3915,6 +3880,7 @@ Function Request-VcenterBackupStatus {
                                 $message = $messageBackupServer # Override the message
                             }
 
+                            # Add Backup Status Properties to the element object
                             $elementObject = New-Object -TypeName psobject
                             $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                             $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
@@ -3931,23 +3897,8 @@ Function Request-VcenterBackupStatus {
                                 $customObject += $elementObject
                             }  
 
-                            $outputObject += $customObject # Add the custom object to the output object
+                            $customObject | Sort-Object Component, Resource, Element
 
-                            # Return the structured data to the console or format using HTML CSS Styles
-                            if ($PsBoundParameters.ContainsKey('html')) { 
-                                if ($outputObject.Count -eq 0) {
-                                    $addNoIssues = $true 
-                                }
-                                if ($addNoIssues) {
-                                    $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -PostContent '<p>No Issues Found</p>' 
-                                } else {
-                                    $outputObject = $outputObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backups"></a><h3>Backup Status</h3>' -As Table
-                                }
-                                $outputObject = Convert-CssClass -htmldata $outputObject
-                                $outputObject
-                            } else {
-                                $outputObject | Sort-Object Component, Resource, Element
-                            }
                             Disconnect-CisServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                         }
                     }
@@ -4111,7 +4062,7 @@ Function Request-DatastoreStorageCapacity {
                 # Return the structured data to the console or format using HTML CSS Styles
                 if ($PsBoundParameters.ContainsKey('html')) { 
                     if ($customObject.Count -eq 0) {
-                        $customObject = $customObject | Sort-Object 'vCenter Server', 'Datastore Type', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -PostContent "<p>No Issues Found</p>" 
+                        $customObject = $customObject | Sort-Object 'vCenter Server', 'Datastore Type', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -PostContent "<p>No issues found.</p>" 
                     } else {
                         $customObject = $customObject | Sort-Object 'vCenter Server', 'Datastore Type', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -As Table
                     }
@@ -4503,7 +4454,7 @@ Function Publish-ComponentConnectivityHealth {
         $allConnectivityObject += $connectivityRaw
         if ($allConnectivityObject.Count -eq 0) { $addNoIssues = $true }
         if ($addNoIssues) {
-            $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p>No Issues Found</p>' 
+            $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p>No issues found.</p>' 
         } else {
             $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -As Table
         }
@@ -4827,7 +4778,7 @@ Function Request-NsxtTier0BgpStatus {
                                     $addNoIssues = $true 
                                 }
                                 if ($addNoIssues) {
-                                    $outputObject = $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No Issues Found</p>' 
+                                    $outputObject = $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No issues found.</p>' 
                                 } else {
                                     $outputObject = $outputObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
                                 }
@@ -4917,7 +4868,7 @@ Function Publish-EsxiAlert {
                     $addNoIssues = $true 
                 }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alert</h3>' -PostContent '<p>No Issues Found</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alert</h3>' -PostContent '<p>No issues found.</p>' 
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alerts</h3>' -As Table
                 }
@@ -4992,7 +4943,7 @@ Function Publish-NsxtAlert {
 
                 if ($allAlertObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alert</h3>' -PostContent '<p>No Issues Found</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alert</h3>' -PostContent '<p>No issues found.</p>' 
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alerts</h3>' -As Table
                 }
@@ -5068,7 +5019,7 @@ Function Publish-VcenterAlert {
                     $addNoIssues = $true 
                 }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alert</h3>' -PostContent '<p>No Issues Found</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alert</h3>' -PostContent '<p>No issues found.</p>' 
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alerts</h3>' -As Table
                 }
@@ -5144,7 +5095,7 @@ Function Publish-VsanAlert {
                     $addNoIssues = $true 
                 }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alert</h3>' -PostContent '<p>No Issues Found</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alert</h3>' -PostContent '<p>No issues found.</p>' 
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alerts</h3>' -As Table
                 }
@@ -6812,7 +6763,7 @@ Function Format-DfStorageHealth {
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) { 
             if ($customObject.Count -eq 0) {
-                $customObject = $customObject | ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>No Issues Found</p>" 
+                $customObject = $customObject | ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>No issues found.</p>" 
             }
             else {
                 $customObject = $customObject | ConvertTo-Html -Fragment -PreContent $reportTitle -As Table
