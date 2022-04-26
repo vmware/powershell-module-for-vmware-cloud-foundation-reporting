@@ -227,18 +227,18 @@ Function Invoke-VcfHealthReport {
         Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report for $workflowMessage.'"
         if ($PsBoundParameters.ContainsKey("allDomains")) { 
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html -allDomains -failureOnly
+                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains -failureOnly
             }
             else {
-                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html -allDomains
+                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains
             }
         }
         else {
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html -workloadDomain $workloadDomain -failureOnly
+                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
             }
             else {
-                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -html -workloadDomain $workloadDomain
+                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain
             }
         }
 
@@ -248,7 +248,23 @@ Function Invoke-VcfHealthReport {
         } else {
             $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
         }
-        $reportData += "$serviceHtml $componentConnectivityHtml $localPasswordHtml $certificateHtml $backupStatusHtml $snapshotStatusHtml $dnsHtml $ntpHtml $vcenterHtml $esxiHtml $vsanHtml $vsanPolicyHtml $nsxtHtml $nsxtEdgeClusterHtml $nsxtEdgeNodeHtml $nsxTier0BgpHtml $storageCapacityHealthHtml"
+        $reportData += $serviceHtml
+        $reportData += $componentConnectivityHtml
+        $reportData += $localPasswordHtml
+        $reportData += $certificateHtml
+        $reportData += $backupStatusHtml
+        $reportData += $snapshotStatusHtml
+        $reportData += $dnsHtml
+        $reportData += $ntpHtml
+        $reportData += $vcenterHtml
+        $reportData += $esxiHtml
+        $reportData += $vsanHtml
+        $reportData += $vsanPolicyHtml
+        $reportData += $nsxtHtml
+        $reportData += $nsxtEdgeClusterHtml
+        $reportData += $nsxtEdgeNodeHtml
+        $reportData += $nsxTier0BgpHtml
+        $reportData += $storageCapacityHealthHtml
 
         if ($PsBoundParameters.ContainsKey("darkMode")) {
             $reportHeader = Get-ClarityReportHeader -dark 
@@ -2295,7 +2311,7 @@ Function Publish-SnapshotStatus {
         .EXAMPLE
         Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager but only failed items
- 
+
         .EXAMPLE
         Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will publish the snapshot status for the SDDC Manager, vCenter Server instance, and NSX Edge nodes managed by SDDC Manager for a workload domain names sfo-w01.
@@ -2462,16 +2478,20 @@ Function Publish-StorageCapacityHealth {
         The Publish-StorageCapacityHealth cmdlet checks the storage usage status for SDDC Manager, vCenter Server, 
         Datastores and ESXi hosts, in a VMware Cloud Foundation instance and prepares the data to be published
         to an HTML report or plain text to console. The cmdlet connects to SDDC Manager using the -server, -user, -password and -rootPass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates the network connectivity and authantication to the SDDC Manager instance
         - Performs checks on the storage usage status and outputs the results
 
         .EXAMPLE
-        Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -html -allDomains
+        Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -allDomains
         This example will publish storage usage status for SDDC Manager, vCenter Server instances, ESXi hosts, and datastores in a VMware Cloud Foundation instance  
 
         .EXAMPLE
         Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -allDomains -failureOnly
         This example will publish storage usage status for SDDC Manager, vCenter Server instances, ESXi hosts, and datastores in a VMware Cloud Foundation instance but only for the failed items.
+
+        .EXAMPLE
+        Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -workloadDomain sfo-w01
+        This example will publish storage usage status for a specific Workload Domain in a VMware Cloud Foundation instance
     #>
 
     Param (
@@ -2481,54 +2501,98 @@ Function Publish-StorageCapacityHealth {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     Try {
-        $allStorageCapacityHealth = New-Object System.Collections.ArrayList
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                $sddcManagerStorageHealthHeader = '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' # Adding the vCenter Server Disk Health Status header for report navigation.
-                $vCenterStorageHealthHeader = '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health Status</h3>' # Adding the vCenter Server Disk Health Status header for report navigation.
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $singleWorkloadDomain = Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}
+                $allStorageCapacityHealth = New-Object System.Collections.ArrayList
 
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html -failureOnly ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -html -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -html -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -html -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity                        
-                    } elseif ($PsBoundParameters.ContainsKey("html")) {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -html ; $allStorageCapacityHealth += $datastoreStorageCapacity                        
-                    } elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -allDomains -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity                        
+                    if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly;
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allVcenterStorageHealth += $vCenterStorageHealth
+                            $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allEsxiStorageCapacity += $esxiStorageCapacity
+                            $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allDatastoreStorageCapacity += $datastoreStorageCapacity
+                        }
+                    } else {
+                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $domain.name; $allVcenterStorageHealth += $vCenterStorageHealth
+                            $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $domain.name; $allEsxiStorageCapacity += $esxiStorageCapacity
+                            $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $domain.name; $allDatastoreStorageCapacity += $datastoreStorageCapacity                       
+                        }
                     }
                 } else {
-                    if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html -failureOnly ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity                       
-                    } elseif ($PsBoundParameters.ContainsKey("html")) {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -html ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -html ; $allStorageCapacityHealth += $datastoreStorageCapacity                        
-                    } elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly ; $allStorageCapacityHealth += $sddcManagerStorageHealthHeader += $sddcManagerStorageHealth
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $vCenterStorageHealthHeader += $vCenterStorageHealth
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $esxiStorageCapacityHeader += $esxiStorageCapacity
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly ; $allStorageCapacityHealth += $datastoreStorageCapacity                        
+                    if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                        if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
+                            $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly
+                        }
+                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allVcenterStorageHealth += $vCenterStorageHealth
+                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allEsxiStorageCapacity += $esxiStorageCapacity
+                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allDatastoreStorageCapacity += $datastoreStorageCapacity
+                    } else {
+                        if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
+                            $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass
+                        }
+                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $workloadDomain; $allVcenterStorageHealth += $vCenterStorageHealth 
+                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain; $allEsxiStorageCapacity += $esxiStorageCapacity
+                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain; $allDatastoreStorageCapacity += $datastoreStorageCapacity
                     }
                 }
 
-                # Return Storage capacity usage:
+                if ($sddcManagerStorageHealth.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -PostContent '<p>No Issues Found</p>'
+                }
+                else {
+                    $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -As Table
+                }
+                $sddcManagerStorageHealth = Convert-CssClass -htmldata $sddcManagerStorageHealth
+
+                if ($allVcenterStorageHealth.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $allVcenterStorageHealth = $allVcenterStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -PostContent '<p>No Issues Found</p>'
+                }
+                else {
+                    $allVcenterStorageHealth = $allVcenterStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -As Table
+                }
+                $allVcenterStorageHealth = Convert-CssClass -htmldata $allVcenterStorageHealth
+
+                if ($allEsxiStorageCapacity.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $allEsxiStorageCapacity = $allEsxiStorageCapacity | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -PostContent '<p>No Issues Found</p>'
+                }
+                else {
+                    $allEsxiStorageCapacity = $allEsxiStorageCapacity | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -As Table
+                }
+                $allEsxiStorageCapacity = Convert-CssClass -htmldata $allEsxiStorageCapacity
+
+                if ($allDatastoreStorageCapacity.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -PostContent '<p>No Issues Found</p>'
+                }
+                else {
+                    $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -As Table
+                }
+                $allDatastoreStorageCapacity = Convert-CssClass -htmldata $allDatastoreStorageCapacity
+                
+                $allStorageCapacityHealth += $sddcManagerStorageHealth
+                $allStorageCapacityHealth += $allVcenterStorageHealth
+                $allStorageCapacityHealth += $allEsxiStorageCapacity
+                $allStorageCapacityHealth += $allDatastoreStorageCapacity
                 $allStorageCapacityHealth
             }
         }
@@ -3926,15 +3990,11 @@ Function Request-DatastoreStorageCapacity {
         - Collects information about datastore usage
         
         .EXAMPLE
-        Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will check datastores on all vCenter Servers managed by SDDC Manager in a VMware Cloud Foundation instance.
-
-        .EXAMPLE
-        Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will check datastores on all vCenter Servers managed by SDDC Manager in a VMware Cloud Foundation instance but only failed items.
 
         .EXAMPLE
-        Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will check datastore on a vCenter Servers managed by SDDC Manager for a workload domain.
 
     #>
@@ -3943,10 +4003,8 @@ Function Request-DatastoreStorageCapacity {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
         
     # Define thresholds Green < Yellow < Red
@@ -3957,119 +4015,48 @@ Function Request-DatastoreStorageCapacity {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $customObject = New-Object System.Collections.ArrayList
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $allVcenters = Get-VCFvCenter
-                    $vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT
-                    foreach ($vcenter in $allVcenters) {
-                        if (Test-VsphereConnection -server $($vcenter.fqdn)) {
-                            if (Test-VsphereAuthentication -server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                                Connect-VIServer -Server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass | Out-Null
-                                $datastores = Get-Datastore
-                                foreach ($datastore in $datastores) {
-                                    # Calculate datastore usage and capacity
-                                    $usage = [math]::Round((($datastore.CapacityGB - $datastore.FreeSpaceGB) / $datastore.CapacityGB * 100))
-                                    $usage = [int]$usage
-                                    $capacity = [int]$datastore.CapacityGB
-    
-                                    # Applying thresholds and creating collection from input
-                                    switch ($usage) {
-                                        { $_ -le $greenThreshold } {
-                                            # Green if $usage is up to $greenThreshold
-                                            $alert = 'GREEN'
-                                            $message = "Used space is less than $greenThreshold%. "
-                                        }
-                                        { $_ -ge $redThreshold } {
-                                            # Red if $usage is equal or above $redThreshold
-                                            $alert = 'RED'
-                                            $message = "Used space is above $redThreshold%. Please reclaim space on the datastore."
-                                        }
-                                        Default {
-                                            # Yellow if above two are not matched
-                                            $alert = 'YELLOW'
-                                            $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the datastore."
-                                        }
-                                    }
-                                    # Populate data into the object
-                                    # Skip population of object if "failureOnly" is selected and alert is "GREEN"
-                                    if (($PsBoundParameters.ContainsKey("failureOnly")) -and ($alert -eq 'GREEN')) { continue }
-                                    $userObject = New-Object -TypeName psobject
-                                    $userObject | Add-Member -notepropertyname 'vCenter Server' -notepropertyvalue $vcenter.fqdn
-                                    $userObject | Add-Member -notepropertyname 'Datastore Name' -notepropertyvalue $datastore.Name
-                                    $userObject | Add-Member -notepropertyname 'Datastore Type' -notepropertyvalue $datastore.Type.ToUpper()
-                                    $userObject | Add-Member -notepropertyname 'Size (GB)' -notepropertyvalue $capacity
-                                    $userObject | Add-Member -notepropertyname 'Used %' -notepropertyvalue $usage
-                                    $userObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $alert
-                                    $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
-                                    $customObject += $userObject # Creating collection to work with afterwords
-                                }
-                                # Disconnect from the vCenter server
-                                Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                            }
-                        }
-                    }
-                }
-                else {
-                    # Run checks on specific domain only
-                    $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $workloadDomain }).vcenters
-                    $vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT
-                    if (Test-VsphereConnection -server $($vcenter.fqdn)) {
-                        if (Test-VsphereAuthentication -server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                            Connect-VIServer -Server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass | Out-Null
-                            $datastores = Get-Datastore
-                            foreach ($datastore in $datastores) {
-                                # Calculate datastore usage and capacity
-                                $usage = [math]::Round((($datastore.CapacityGB - $datastore.FreeSpaceGB) / $datastore.CapacityGB * 100))
-                                $usage = [int]$usage
-                                $capacity = [int]$datastore.CapacityGB
-    
-                                # Applying thresholds and creating collection from input
-                                switch ($usage) {
-                                    { $_ -le $greenThreshold } {
-                                        # Green if $usage is up to $greenThreshold
-                                        $alert = 'GREEN'
-                                        $message = "Used space is less than $greenThreshold%."
-                                    }
-                                    { $_ -ge $redThreshold } {
-                                        # Red if $usage is equal or above $redThreshold
-                                        $alert = 'RED'
-                                        $message = "Used space is above $redThreshold%. Please reclaim space on the datastore."
-                                    }
-                                    Default {
-                                        # Yellow if above two are not matched
-                                        $alert = 'YELLOW'
-                                        $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the datastore."
-                                    }
-                                }
-                                # Populate data into the object
-                                # Skip population of object if "failureOnly" is selected and alert is "GREEN"
-                                if (($PsBoundParameters.ContainsKey("failureOnly")) -and ($alert -eq 'GREEN')) { continue }
-                                $userObject = New-Object -TypeName psobject
-                                $userObject | Add-Member -notepropertyname 'vCenter Server' -notepropertyvalue $vcenter.fqdn
-                                $userObject | Add-Member -notepropertyname 'Datastore Name' -notepropertyvalue $datastore.Name
-                                $userObject | Add-Member -notepropertyname 'Datastore Type' -notepropertyvalue $datastore.Type.ToUpper()
-                                $userObject | Add-Member -notepropertyname 'Size (GB)' -notepropertyvalue $capacity
-                                $userObject | Add-Member -notepropertyname 'Used %' -notepropertyvalue $usage
-                                $userObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $alert
-                                $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
-                                $customObject += $userObject # Creating collection to work with afterwords
-                            }
-                            # Disconnect from the vCenter server
-                            Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                        }
-                    }
-                }
+                $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }).vcenters
+                $vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT
+                if (Test-VsphereConnection -server $($vcenter.fqdn)) {
+                    if (Test-VsphereAuthentication -server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                        Connect-VIServer -Server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass | Out-Null
+                        $datastores = Get-Datastore
+                        foreach ($datastore in $datastores) {
+                            # Calculate datastore usage and capacity
+                            $usage = [math]::Round((($datastore.CapacityGB - $datastore.FreeSpaceGB) / $datastore.CapacityGB * 100))
+                            $usage = [int]$usage
+                            $capacity = [int]$datastore.CapacityGB
 
-                # Return the structured data to the console or format using HTML CSS Styles
-                if ($PsBoundParameters.ContainsKey('html')) { 
-                    if ($customObject.Count -eq 0) {
-                        $customObject = $customObject | Sort-Object 'vCenter Server', 'Datastore Type', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -PostContent "<p>No issues found.</p>" 
-                    } else {
-                        $customObject = $customObject | Sort-Object 'vCenter Server', 'Datastore Type', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -As Table
+                            # Applying thresholds and creating collection from input
+                            Switch ($usage) {
+                                { $_ -le $greenThreshold } {
+                                    $alert = 'GREEN' # Green if $usage is up to $greenThreshold
+                                    $message = "Used space is less than $greenThreshold%."
+                                }
+                                { $_ -ge $redThreshold } {
+                                    $alert = 'RED' # Red if $usage is equal or above $redThreshold
+                                    $message = "Used space is above $redThreshold%. Please reclaim space on the datastore."
+                                }
+                                Default {
+                                    $alert = 'YELLOW' # Yellow if above two are not matched
+                                    $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the datastore."
+                                }
+                            }
+
+                            # Populate data into the object
+                            if (($PsBoundParameters.ContainsKey("failureOnly")) -and ($alert -eq 'GREEN')) { continue } # Skip population of object if "failureOnly" is selected and alert is "GREEN"
+                            $userObject = New-Object -TypeName psobject
+                            $userObject | Add-Member -notepropertyname 'vCenter Server' -notepropertyvalue $vcenter.fqdn
+                            $userObject | Add-Member -notepropertyname 'Datastore Name' -notepropertyvalue $datastore.Name
+                            $userObject | Add-Member -notepropertyname 'Datastore Type' -notepropertyvalue $datastore.Type.ToUpper()
+                            $userObject | Add-Member -notepropertyname 'Size (GB)' -notepropertyvalue $capacity
+                            $userObject | Add-Member -notepropertyname 'Used %' -notepropertyvalue $usage
+                            $userObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $alert
+                            $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
+                            $customObject += $userObject # Creating collection to work with afterwords
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
-                    $customObject = Convert-CssClass -htmldata $customObject
-                    $customObject
-                } else {
-                    # Return $customObject in HTML or plain format
                     $customObject | Sort-Object 'vCenter Server', 'Datastore Type', 'Datastore Name'
                 }
             }
@@ -4085,20 +4072,15 @@ Export-ModuleMember -Function Request-DatastoreStorageCapacity
 Function Request-VcenterStorageHealth {
     <#
 		.SYNOPSIS
-        Checks the disk usage in a vCenter Server instance.
+        Checks the disk usage on a vCenter Server instance.
 
         .DESCRIPTION
-        The Request-VcenterStorageHealth cmdlets checks the disk space usage on vCenter Server. The cmdlet 
+        The Request-VcenterStorageHealth cmdlets checks the disk space usage on a vCenter Server. The cmdlet 
         connects to SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the details for each vCenter Server
+        - Validates network connectivity and authentication to the SDDC Manager instance
+        - Validates network connectivity and authentication to the vCenter Server instance
         - Collects information for the disk usage
         - Checks disk usage against thresholds and outputs the results
-
-        .EXAMPLE
-        Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will check the disk usage for all vCenter Server instances managed by SDDC Manager.
 
         .EXAMPLE
         Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
@@ -4113,9 +4095,7 @@ Function Request-VcenterStorageHealth {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -4125,78 +4105,16 @@ Function Request-VcenterStorageHealth {
                 if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
                     if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                            # Define DF command for vCenter Server
-                            $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
-                            if ($PsBoundParameters.ContainsKey("allDomains")) { 
-                                $allVcenters = Get-VCFvCenter
-                                foreach ($vcenter in $allVcenters) {
-                                    # Compose needed variables
-                                    $reportTitle = "<a id=`"storage-vcenter-$($vcenter.fqdn.Split('.')[0])`"></a><h4>Disk Health for vCenter Server: $($vcenter.fqdn)</h4>"
-                                    $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn }).password
+                            $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"' # Define Command for Retriveing Disk Information
+                            $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }).vcenters
+                            $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn }).password
+                            $dfOutput = Invoke-VMScript -VM ($vcenter.fqdn.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass -Server $vcfVcenterDetails.fqdn
 
-                                    # Get information from vCenter Server
-                                    $dfOutput = Invoke-VMScript -VM ($vcenter.fqdn.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass -Server $vcfVcenterDetails.fqdn
-
-                                    # Check if we got the information for disk usage and return error if not
-                                    if (!$dfOutput) {
-                                        if ($PsBoundParameters.ContainsKey("html")) {
-                                            ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details.</p>"
-                                        }
-                                        else {
-                                            Write-Output "Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details."
-                                        }
-                                        continue
-                                    }
-
-                                    # Compose command for Format-DfStorageHealth function
-                                    if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
-                                        Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html -failureOnly
-                                    }
-                                    elseif ($PsBoundParameters.ContainsKey("html")) {
-                                        Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html
-                                    }
-                                    elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
-                                        Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -failureOnly
-                                    }
-                                    else {
-                                        Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput
-                                    }
-                                }
+                            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                                Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $vcenter.fqdn -failureOnly
                             }
                             else {
-                                
-                                # Compose needed variables
-                                $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $workloadDomain }).vcenters
-                                $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn }).password
-                                $reportTitle = "<a id=`"storage-vcenter-$($vcenter.fqdn.Split('.')[0])`"></a><h4>Disk Health for vCenter Server: $($vcenter.fqdn)</h4>"
-
-                                # Get information from VC
-                                $dfOutput = Invoke-VMScript -VM ($vcenter.fqdn.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass -Server $vcfVcenterDetails.fqdn
-
-                                # Check if we got the information for disk usage and return error if not
-                                if (!$dfOutput) {
-                                    if ($PsBoundParameters.ContainsKey("html")) {
-                                        ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details.</p>"
-                                    }
-                                    else {
-                                        Write-Output "Something went wrong while running the command '$command' on '$($vcenter.fqdn)'. Please check the PowerShell console for more details."
-                                    }
-                                    continue
-                                }
-
-                                # Compose command for Format-DfStorageHealth function
-                                if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
-                                    Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html -failureOnly
-                                }
-                                elseif ($PsBoundParameters.ContainsKey("html")) {
-                                    Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html
-                                }
-                                elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
-                                    Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -failureOnly
-                                }
-                                else {
-                                    Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput
-                                }
+                                Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $vcenter.fqdn
                             }
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
@@ -4217,16 +4135,17 @@ Function Request-SddcManagerStorageHealth {
         Checks the storage health (capacity) in an SDDC Manager appliance.
 
         .DESCRIPTION
-        The Request-SddcManagerStorageHealth cmdlet checks the disk free space in the SDDC Manager
-        appliance not reported in the SoS Health Check. The cmdlet connects to SDDC Manager using the -server, -user,
-        and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the Management Domain vCenter Server instance
+        The Request-SddcManagerStorageHealth cmdlet checks the disk free space on the SDDC Manager appliance. 
+        The cmdlet connects to SDDC Manager using the -server, -user, and password values:
         - Performs checks on the local storage used space and outputs the results
 
         .EXAMPLE
         Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1!
         This example checks the hard disk space in the SDDC Manager appliance.
+
+        .EXAMPLE
+        Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -failureOnly
+        This example checks the hard disk space in the SDDC Manager appliance and outputs only the failures.
     #>
 
     Param (
@@ -4234,37 +4153,17 @@ Function Request-SddcManagerStorageHealth {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
     
     Try {
-        # Define some variables
-        $reportTitle = "<h4>Disk Health for SDDC Manager: $server</h4>"
-        $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
+        $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"' # Define Command for Retriveing Disk Information
+        $dfOutput = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command # Get Disk Information from SDDC Manager
 
-        # Get information from SDDC Manager and format it
-        $dfOutput = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command
-
-        # Check if we got the information for disk usage and return error if not
-        if (!$dfOutput) {
-            if ($PsBoundParameters.ContainsKey("html")) {
-                $returnValue = ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>Something went wrong while running the command: '$command' on $server. Please check the PowerShell console for more details.</p>"
-            }
-            return $returnValue
-        }
-
-        # Compose command for Format-DfStorageHealth function
-        if (($PsBoundParameters.ContainsKey("html")) -and ($PsBoundParameters.ContainsKey("failureOnly"))) { 
-            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html -failureOnly
-        }
-        elseif ($PsBoundParameters.ContainsKey("html")) {
-            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -html
-        }
-        elseif ($PsBoundParameters.ContainsKey("failureOnly")) {
-            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput -failureOnly
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $server -failureOnly
         } else {
-            Format-DfStorageHealth -reportTitle $reportTitle -dfOutput $dfOutput
+            Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $server
         }
     }
     Catch {
@@ -4281,34 +4180,24 @@ Function Request-EsxiStorageCapacity {
         .DESCRIPTION
         The Request-EsxiStorageCapacity cmdlets checks the disk space usage on ESXi hosts. The cmdlet connects to SDDC
         Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Collects disk usage information for each ESXi host
+        - Validates network connectivity and authentication to the SDDC Manager instance
+        - Collects disk usage information for each ESXi host in the Workload Domain
         - Checks disk usage against thresholds and outputs the results
 
         .EXAMPLE
-        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will check the disk usage for all ESXi hosts managed by SDDC Manager.
-
-        .EXAMPLE
-        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will check disk usage for ESXi hosts managed by SDDC Manager for a single workload domain.
 
         .EXAMPLE
-        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will check the disk usage for all ESXi hosts managed by SDDC Manager but only reports issues.
-
-        .EXAMPLE
-        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -html
-        This example will check the disk usage for all ESXi hosts managed by SDDC Manager and output in html.
+        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+        This example will check disk usage for ESXi hosts managed by SDDC Manager for a single workload domain but only reports issues.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -4316,73 +4205,39 @@ Function Request-EsxiStorageCapacity {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $esxiPartitionsObject = New-Object System.Collections.ArrayList
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $allWorkloadDomains = Get-VCFWorkloadDomain
-                    foreach ($domain in $allWorkloadDomains) {
-                        if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain.name)) {
-                            if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                                if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                                    $esxiHosts = Get-VMHost -Server $vcfVcenterDetails.fqdn
-                                    Foreach ($esxiHost in $esxiHosts) {
-                                        $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
-                                        $allPrtitions = $esxcli.storage.filesystem.list.invoke()
-                                        foreach ($partition in $allPrtitions) {
-                                            if ($partition.Type -eq "VMFS-L" -or $partition.Type -eq "vfat") {
-                                                $threshold = Test-StorageThreshold -size $partition.Size -free $partition.Free
-                                                $esxiPartition = New-Object -TypeName psobject
-                                                $esxiPartition | Add-Member -notepropertyname 'Domain' -notepropertyvalue $domain.name
-                                                $esxiPartition | Add-Member -notepropertyname 'ESXi FQDN' -notepropertyvalue $esxiHost.Name
-                                                $esxiPartition | Add-Member -notepropertyname 'Volume Name' -notepropertyvalue $partition.VolumeName.ToLower()
-                                                $esxiPartition | Add-Member -notepropertyname 'Filesystem' -notepropertyvalue $partition.Type.ToLower()
-                                                $esxiPartition | Add-Member -notepropertyname 'Used %' -notepropertyvalue $threshold.usage
-                                                $esxiPartition | Add-Member -notepropertyname 'Alert' -notepropertyvalue $threshold.alert
-                                                $esxiPartition | Add-Member -notepropertyname 'Message' -notepropertyvalue $threshold.message
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            $esxiHosts = Get-VMHost -Server $vcfVcenterDetails.fqdn
+                            Foreach ($esxiHost in $esxiHosts) {
+                                $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
+                                $allPrtitions = $esxcli.storage.filesystem.list.invoke()
+                                foreach ($partition in $allPrtitions) {
+                                    if ($partition.Type -eq "VMFS-L" -or $partition.Type -eq "vfat") {
+                                        $threshold = Test-StorageThreshold -size $partition.Size -free $partition.Free
+                                        $esxiPartition = New-Object -TypeName psobject
+                                        $esxiPartition | Add-Member -notepropertyname 'Domain' -notepropertyvalue $domain
+                                        $esxiPartition | Add-Member -notepropertyname 'ESXi FQDN' -notepropertyvalue $esxiHost.Name
+                                        $esxiPartition | Add-Member -notepropertyname 'Volume Name' -notepropertyvalue $partition.VolumeName.ToLower()
+                                        $esxiPartition | Add-Member -notepropertyname 'Filesystem' -notepropertyvalue $partition.Type.ToLower()
+                                        $esxiPartition | Add-Member -notepropertyname 'Used %' -notepropertyvalue $threshold.usage
+                                        $esxiPartition | Add-Member -notepropertyname 'Alert' -notepropertyvalue $threshold.alert
+                                        $esxiPartition | Add-Member -notepropertyname 'Message' -notepropertyvalue $threshold.message
+                                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                            if (($esxiPartition.alert -eq 'RED') -or ($esxiPartition.alert -eq 'YELLOW')) {
                                                 $esxiPartitionsObject += $esxiPartition
                                             }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                    }
-                }
-                else {
-                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $workloadDomain)) {
-                        if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                            if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                                $esxiHosts = Get-VMHost -Server $vcfVcenterDetails.fqdn
-                                Foreach ($esxiHost in $esxiHosts) {
-                                    $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
-                                    $allPrtitions = $esxcli.storage.filesystem.list.invoke()
-                                    foreach ($partition in $allPrtitions) {
-                                        if ($partition.Type -eq "VMFS-L" -or $partition.Type -eq "vfat") {
-                                            $threshold = Test-StorageThreshold -size $partition.Size -free $partition.Free
-                                            $esxiPartition = New-Object -TypeName psobject
-                                            $esxiPartition | Add-Member -notepropertyname 'Domain' -notepropertyvalue $workloadDomain
-                                            $esxiPartition | Add-Member -notepropertyname 'ESXi FQDN' -notepropertyvalue $esxiHost.Name
-                                            $esxiPartition | Add-Member -notepropertyname 'Volume Name' -notepropertyvalue $partition.VolumeName.ToLower()
-                                            $esxiPartition | Add-Member -notepropertyname 'Filesystem' -notepropertyvalue $partition.Type.ToLower()
-                                            $esxiPartition | Add-Member -notepropertyname 'Used %' -notepropertyvalue $threshold.usage
-                                            $esxiPartition | Add-Member -notepropertyname 'Alert' -notepropertyvalue $threshold.alert
-                                            $esxiPartition | Add-Member -notepropertyname 'Message' -notepropertyvalue $threshold.message
+                                        } else {
                                             $esxiPartitionsObject += $esxiPartition
                                         }
                                     }
                                 }
                             }
                         }
-                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
+                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                 }
-                if ($PsBoundParameters.ContainsKey('html')) {
-                    $esxiPartitionsObject = $esxiPartitionsObject | Sort-Object Domain, 'ESXi FQDN', 'Volume Name', Alert | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -As Table
-                    $esxiPartitionsObject = Convert-CssClass -htmldata $esxiPartitionsObject
-                    $esxiPartitionsObject
-                } else {
-                    $esxiPartitionsObject | Sort-Object Domain, 'ESXi FQDN', 'Volume Name', Alert
-                }
-                
+                $esxiPartitionsObject | Sort-Object Domain, 'ESXi FQDN', 'Volume Name', Alert
             }
         }
     }
@@ -5770,7 +5625,6 @@ Function Request-EsxiLockoutPolicy {
 }
 Export-ModuleMember -Function Request-EsxiLockoutPolicy
 
-
 Function Publish-VcenterPolicy {
     <#
         .SYNOPSIS
@@ -6669,7 +6523,7 @@ Export-ModuleMember -Function Get-ClarityReportFooter
 Function Format-DfStorageHealth {
     <#
 		.SYNOPSIS
-        Formats output from 'fd -h' command and set alerts based on thresholds.
+        Formats output from 'fd -h' command and sets alerts based on thresholds.
 
         .DESCRIPTION
         The Format-DfStorageHealth cmdlet formats and returns output from 'df -h' in html or plain text
@@ -6680,10 +6534,9 @@ Function Format-DfStorageHealth {
     #>
 
     Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportTitle,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] $dfOutput,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] $systemFqdn,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateRange(1, 100)] [int]$greenThreshold = 70, # Define default value for "Green" threshold
         [Parameter (Mandatory = $false)] [ValidateRange(1, 100)] [int]$redThreshold = 85   # Define default value for "Red" threshold
     )
@@ -6704,15 +6557,13 @@ Function Format-DfStorageHealth {
             $usage = [int]$usage
 
             # Applying thresholds and creating collection from input
-            switch ($usage) {
+            Switch ($usage) {
                 { $_ -le $greenThreshold } {
-                    # Green if $usage is up to $greenThreshold
-                    $alert = 'GREEN'
+                    $alert = 'GREEN' # Green if $usage is up to $greenThreshold
                     $message = "Used space is less than $greenThreshold%."
                 }
                 { $_ -ge $redThreshold } {
-                    # Red if $usage is equal or above $redThreshold
-                    $alert = 'RED'
+                    $alert = 'RED' # Red if $usage is equal or above $redThreshold
                     $message = "Used space is above $redThreshold%. Please reclaim space on the partition."
                     # TODO: Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
                     # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
@@ -6720,9 +6571,8 @@ Function Format-DfStorageHealth {
                     # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <administrator@vsphere.local> -pass <administrator@vsphere.local_password> -rootPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
                 }
                 Default {
-                    # Yellow if above two are not matched
                     # TODO: Same as above - add hints on new lines }
-                    $alert = 'YELLOW'
+                    $alert = 'YELLOW' # Yellow if above two are not matched
                     $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the partition."
                 }
             }
@@ -6730,10 +6580,8 @@ Function Format-DfStorageHealth {
             # Skip population of object if "failureOnly" is selected and alert is "GREEN"
             if (($PsBoundParameters.ContainsKey("failureOnly")) -and ($alert -eq 'GREEN')) { continue }
 
-            # TODO Add logic/information (new field "instance/FQDN") to $customObject in case -html is not specified.
-            # In this way the returned information will be easier to handle for following processing of the returned object
-            
             $userObject = New-Object -TypeName psobject
+            $userObject | Add-Member -notepropertyname 'FQDN' -notepropertyvalue $systemFqdn
             $userObject | Add-Member -notepropertyname 'Filesystem' -notepropertyvalue $partition.Split(" ")[0]
             $userObject | Add-Member -notepropertyname 'Size' -notepropertyvalue $partition.Split(" ")[1]
             $userObject | Add-Member -notepropertyname 'Available' -notepropertyvalue $partition.Split(" ")[2]
@@ -6743,18 +6591,7 @@ Function Format-DfStorageHealth {
             $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
             $customObject += $userObject # Creating collection to work with afterwords
         }
-
-        # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            if ($customObject.Count -eq 0) {
-                $customObject = $customObject | ConvertTo-Html -Fragment -PreContent $reportTitle -PostContent "<p>No issues found.</p>" 
-            }
-            else {
-                $customObject = $customObject | ConvertTo-Html -Fragment -PreContent $reportTitle -As Table
-            }
-            $customObject = Convert-CssClass -htmldata $customObject
-        }
-        $customObject # Return $customObject in HTML or pain format
+        $customObject | Sort-Object FQDN # Return $customObject in HTML or pain format
     }
     Catch {
         Debug-CatchWriter -object $_
@@ -7005,8 +6842,8 @@ Function Get-VcenterBackupStatus {
 }
 Export-ModuleMember -Function Get-VcenterBackupStatus
 
-    Function Get-SnapshotStatus {
-     <#
+Function Get-SnapshotStatus {
+    <#
         .SYNOPSIS
         Returns the status of a virtual machine's snapshots.
 
@@ -7018,16 +6855,16 @@ Export-ModuleMember -Function Get-VcenterBackupStatus
         This example returns the status of the snapshots for the virtual machine named "foo".
     #>
 
-        Param (
-            [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
-        )
+    Param (
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
+    )
 
-        $response = Get-VM $vm | Get-Snapshot | Select-Object -Property Name, Created, isCurrent # Get the snapshot details
-        $response # Return the snapshot details
-    }
-    Export-ModuleMember -Function Get-SnapshotStatus
+    $response = Get-VM $vm | Get-Snapshot | Select-Object -Property Name, Created, isCurrent # Get the snapshot details
+    $response # Return the snapshot details
+}
+Export-ModuleMember -Function Get-SnapshotStatus
 
-    Function Get-SnapshotConsolidation {
+Function Get-SnapshotConsolidation {
     <#
         .SYNOPSIS
         Returns the status of a virtual machine's need for snapshot consolidation.
@@ -7040,15 +6877,15 @@ Export-ModuleMember -Function Get-VcenterBackupStatus
         This example returns the status of the snapshot consolidation for the virtual machine named "foo".
     #>
 
-        Param (
-            [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
-        )
+    Param (
+        [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
+    )
 
-        $response = (Get-View -ViewType VirtualMachine -Filter @{'Name' = $vm }).Runtime.ConsolidationNeeded # Get the consolidation status
-        $response # Return the consolidation status
+    $response = (Get-View -ViewType VirtualMachine -Filter @{'Name' = $vm }).Runtime.ConsolidationNeeded # Get the consolidation status
+    $response # Return the consolidation status
     
-    }
-    Export-ModuleMember -Function Get-SnapshotConsolidation
+}
+Export-ModuleMember -Function Get-SnapshotConsolidation
 
 <<<<<<< HEAD
 Function Get-EsxiAlert {
