@@ -304,76 +304,56 @@ Function Invoke-VcfAlertReport {
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType alert # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."  
 
+        # Generate vCenter Server Alerts Using PowerShell Function
         Write-LogMessage -Type INFO -Message "Generating the vCenter Server alerts for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains")) { 
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
-            }
-            else {
-                $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
-            }
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
         }
-        else {
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-            }
-            else {
-                $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-            }
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
 
+        # Generate ESXi Alerts Using PowerShell Function
         Write-LogMessage -type INFO -Message "Generating the ESXi host alerts for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
-            }
-            else {
-                $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
-            }
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
         }
-        else {
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-            }
-            else {
-                $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-            }
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
-
+        
+        # Generate vSAN Alerts Using PowerShell Function
         Write-LogMessage -type INFO -Message "Generating the vSAN alerts for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
-            }
-            else {
-                $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
-            }
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
         }
-        else {
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-            }
-            else {
-                $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-            }
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
-
+        
+        # Generate NSX-T Data Center Alerts Using PowerShell Function
         Write-LogMessage -type INFO -Message "Generating the NSX-T Data Center alerts for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
-            }
-            else {
-                $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
-            }
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
         }
-        else {
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-            }
-            else {
-                $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-            }
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
         
         # Combine all information gathered into a single HTML report
@@ -7104,6 +7084,30 @@ Function Get-NsxtEdgeNode {
     }
 }
 Export-ModuleMember -Function Get-NsxtEdgeNode
+
+Function Get-NsxtVidmStatus {
+    <#
+        .SYNOPSIS
+        Get Identity Manager integration status
+
+        .DESCRIPTION
+        The Get-NsxtVidmStatus cmdlet gets the Identity Manager integration status
+
+        .EXAMPLE
+        Get-NsxtVidmStatus
+        This example gets the Identity Manager integration status
+    #>
+
+    Try {
+        $uri = "https://$nsxtManager/api/v1/node/aaa/providers/vidm/status"
+        $response = Invoke-RestMethod $uri -Method 'GET' -Headers $nsxtHeaders
+        $response
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Get-NsxtVidmStatus
 
 ##############################  End Supporting Functions ###############################
 ########################################################################################
