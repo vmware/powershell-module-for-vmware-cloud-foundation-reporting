@@ -6535,6 +6535,37 @@ Function Convert-CssClass {
 }
 Export-ModuleMember -Function Convert-CssClass
 
+Function Test-StorageThreshold ($size, $free) {
+    # Define thresholds Green < Yellow < Red
+    $greenThreshold = 80
+    $redThreshold = 90
+    # Calculate datastore usage and capacity
+    [Int]$usage = [Math]::Round((($size - $free) / $size * 100))
+    # Applying thresholds and creating collection from input
+    Switch ($usage) {
+        { $_ -le $greenThreshold } {
+            # Green if $usage is up to $greenThreshold
+            $alert = 'GREEN'
+            $message = "Used space is less than $greenThreshold%. "
+        }
+        { $_ -ge $redThreshold } {
+            # Red if $usage is equal or above $redThreshold
+            $alert = 'RED'
+            $message = "Used space is above $redThreshold%. Please reclaim space on the volume."
+        }
+        Default {
+            # Yellow if above two are not matched
+            $alert = 'YELLOW'
+            $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the volume."
+        }
+    }
+    $thresholdObject = New-Object -TypeName psobject
+    $thresholdObject | Add-Member -NotePropertyName 'usage' -NotePropertyValue $usage
+    $thresholdObject | Add-Member -NotePropertyName 'alert' -NotePropertyValue $alert
+    $thresholdObject | Add-Member -NotePropertyName 'message' -NotePropertyValue $message
+    $thresholdObject
+}
+
 Function Request-LocalUserExpiry {
     <#
         .SYNOPSIS
@@ -6601,7 +6632,7 @@ Function Request-LocalUserExpiry {
 
     }
     Catch {
-        Debug-CatchWriter -object $_
+        Write-Error $_.Exception.Message
     }
 }
 Export-ModuleMember -Function Request-LocalUserExpiry
@@ -6630,7 +6661,7 @@ Function Get-NsxtBackupConfiguration {
         $response
     }
     Catch {
-        Debug-CatchWriter -object $_
+        Write-Error $_.Exception.Message
     }
 }
 Export-ModuleMember -Function Get-NsxtBackupConfiguration
@@ -6658,7 +6689,7 @@ Function Get-NsxtBackupHistory {
         $response
     }
     Catch {
-        Debug-CatchWriter -object $_
+        Write-Error $_.Exception.Message
     }
 }
 Export-ModuleMember -Function Get-NsxtBackupHistory
@@ -6685,13 +6716,12 @@ Function Get-VcenterBackupConfiguration {
                 $customObject += $backupSchedule.values | Select-Object *, @{N = 'ID'; e = { "$($backupSchedule.keys.value)" } } -ExpandProperty recurrence_info -ExcludeProperty Help | Select-Object * -ExcludeProperty recurrence_info, Help | Select-Object * -ExpandProperty retention_info | Select-Object * -ExcludeProperty retention_info, Help
             }
             return $customObject
-        }
-        else {
+        } else {
             Write-Warning "No backup schedules configured."
         }
     }
     Catch {
-        Debug-CatchWriter -object $_
+        Write-Error $_.Exception.Message
     }
 }
 Export-ModuleMember -Function Get-VcenterBackupConfiguration
@@ -6727,13 +6757,12 @@ Function Get-VcenterBackupJobs {
         if ($PsBoundParameters.ContainsKey('latest')) {
             $results = $backupJobAPI.list()
             $results[0] # Return the latest backup job
-        }
-        else {
+        } else {
             $backupJobAPI.list() # Return all backup jobs
         }
     }
     Catch {
-        Debug-CatchWriter -object $_
+        Write-Error $_.Exception.Message
     }
 }
 Export-ModuleMember -Function Get-VcenterBackupJobs
@@ -6755,9 +6784,14 @@ Function Get-VcenterBackupStatus {
         [Parameter(Mandatory = $false, ValueFromPipeline = $True)][string[]]$jobId
     )
 
-    $backupJobAPI = Get-CisService 'com.vmware.appliance.recovery.backup.job' # Get the backup job API from the vSphere Automation API
-    foreach ($id in $jobID) {
-        $backupJobAPI.get("$id") | Select-Object id, progress, state, start_time, end_time, messages
+    Try {
+        $backupJobAPI = Get-CisService 'com.vmware.appliance.recovery.backup.job' # Get the backup job API from the vSphere Automation API
+        foreach ($id in $jobID) {
+            $backupJobAPI.get("$id") | Select-Object id, progress, state, start_time, end_time, messages
+        }
+    }
+    Catch {
+        Write-Error $_.Exception.Message
     }
 }
 Export-ModuleMember -Function Get-VcenterBackupStatus
@@ -6779,8 +6813,13 @@ Function Get-SnapshotStatus {
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
     )
 
-    $response = Get-VM $vm | Get-Snapshot | Select-Object -Property Name, Created, isCurrent # Get the snapshot details
-    $response # Return the snapshot details
+    Try {
+        $response = Get-VM $vm | Get-Snapshot | Select-Object -Property Name, Created, isCurrent # Get the snapshot details
+        $response # Return the snapshot details
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
 }
 Export-ModuleMember -Function Get-SnapshotStatus
 
@@ -6801,9 +6840,13 @@ Function Get-SnapshotConsolidation {
         [Parameter(Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vm
     )
 
-    $response = (Get-View -ViewType VirtualMachine -Filter @{'Name' = $vm }).Runtime.ConsolidationNeeded # Get the consolidation status
-    $response # Return the consolidation status
-    
+    Try {
+        $response = (Get-View -ViewType VirtualMachine -Filter @{'Name' = $vm }).Runtime.ConsolidationNeeded # Get the consolidation status
+        $response # Return the consolidation status
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
 }
 Export-ModuleMember -Function Get-SnapshotConsolidation
 
@@ -6968,7 +7011,7 @@ Function Get-NsxtAlarm {
         $response
     }
     Catch {
-        Debug-CatchWriter -object $_
+        Write-Error $_.Exception.Message
     }
 }
 Export-ModuleMember -Function Get-NsxtAlarm
@@ -6996,7 +7039,7 @@ Function Get-NsxtEvent {
         $response
     }
     Catch {
-        Debug-CatchWriter -object $_
+        Write-Error $_.Exception.Message
     }
 }
 Export-ModuleMember -Function Get-NsxtEvent
@@ -7010,7 +7053,7 @@ Function Get-NsxtTier0BgpStatus {
         The Get-NsxtTier0BgpStatus cmdlet returns the status of the BGP routing for NSX Tier-0 gateways.
 
         .EXAMPLE
-        Get-NsxtTier0BgpStatus -id sfo-w01-nsx01.sfo.rainpole.io
+        Get-NsxtTier0BgpStatus -id <guid>
         This example returns the status of the BGP routing for NSX Tier-0 gateway.
     #>
 
@@ -7025,41 +7068,10 @@ Function Get-NsxtTier0BgpStatus {
         $response.results
     }
     Catch {
-        Debug-CatchWriter -object $_
+        Write-Error $_.Exception.Message
     }
 }
 Export-ModuleMember -Function Get-NsxtTier0BgpStatus
-
-Function Test-StorageThreshold ($size, $free) {
-    # Define thresholds Green < Yellow < Red
-    $greenThreshold = 80
-    $redThreshold = 90
-    # Calculate datastore usage and capacity
-    [Int]$usage = [Math]::Round((($size - $free) / $size * 100))
-    # Applying thresholds and creating collection from input
-    Switch ($usage) {
-        { $_ -le $greenThreshold } {
-            # Green if $usage is up to $greenThreshold
-            $alert = 'GREEN'
-            $message = "Used space is less than $greenThreshold%. "
-        }
-        { $_ -ge $redThreshold } {
-            # Red if $usage is equal or above $redThreshold
-            $alert = 'RED'
-            $message = "Used space is above $redThreshold%. Please reclaim space on the volume."
-        }
-        Default {
-            # Yellow if above two are not matched
-            $alert = 'YELLOW'
-            $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the volume."
-        }
-    }
-    $thresholdObject = New-Object -TypeName psobject
-    $thresholdObject | Add-Member -notepropertyname 'usage' -notepropertyvalue $usage
-    $thresholdObject | Add-Member -notepropertyname 'alert' -notepropertyvalue $alert
-    $thresholdObject | Add-Member -notepropertyname 'message' -notepropertyvalue $message
-    $thresholdObject
-}
 
 Function Get-NsxtEdgeNode {
     <#
@@ -7080,7 +7092,7 @@ Function Get-NsxtEdgeNode {
 
     Try {
         $uri = "https://$nsxtmanager/api/v1/transport-nodes/$transportNodeId"
-        Invoke-RestMethod -Method GET -URI $uri -ContentType application/json -headers $nsxtHeaders
+        Invoke-RestMethod -Method GET -URI $uri -headers $nsxtHeaders
     }
     Catch {
         Write-Error $_.Exception.Message
@@ -7097,7 +7109,7 @@ Function Get-NsxtTier0LocaleServiceBgp {
         The Get-NsxtTier0LocaleServiceBgp cmdlet returns the details for BGP in the locale services.
 
         .EXAMPLE
-        Get-NsxtTier0LocaleServiceBgp -$id <guid>
+        Get-NsxtTier0LocaleServiceBgp -id <guid>
         This example returns the details for BGP in the locale services.
     #>
 
@@ -7107,7 +7119,7 @@ Function Get-NsxtTier0LocaleServiceBgp {
 
     Try {
         $uri = "https://$nsxtmanager/policy/api/v1/infra/tier-0s/$id/locale-services/default/bgp"
-        $response = Invoke-RestMethod -Method GET -Uri $uri -ContentType application/json -Headers $nsxtHeaders
+        $response = Invoke-RestMethod -Method GET -Uri $uri -Headers $nsxtHeaders
         $response
     }
     Catch {
@@ -7119,14 +7131,14 @@ Export-ModuleMember -Function Get-NsxtTier0LocaleServiceBgp
 Function Get-NsxtVidmStatus {
     <#
         .SYNOPSIS
-        Get Identity Manager integration status
+        Get the status of the Identity Manager integration.
 
         .DESCRIPTION
-        The Get-NsxtVidmStatus cmdlet gets the Identity Manager integration status
+        The Get-NsxtVidmStatus cmdlet returns the status of the Identity Manager integration.
 
         .EXAMPLE
         Get-NsxtVidmStatus
-        This example gets the Identity Manager integration status
+        This example returns the status of the Identity Manager integration.
     #>
 
     Try {
@@ -7139,6 +7151,98 @@ Function Get-NsxtVidmStatus {
     }
 }
 Export-ModuleMember -Function Get-NsxtVidmStatus
+
+Function Get-NsxtTransportNodeStatus {
+    <#
+        .SYNOPSIS
+        Get the status of the NSX transport nodes.
+
+        .DESCRIPTION
+        The Get-NsxtTransportNodeStatus cmdlet returns the status of the transport nodes.
+
+        .EXAMPLE
+        Get-NsxtTransportNodeStatus
+        This example returns the status of all transport nodes.
+
+        .EXAMPLE
+        Get-NsxtTransportNodeStatus -type edge
+        This example returns the status of the edge transport nodes.
+
+        .EXAMPLE
+        Get-NsxtTransportNodeStatus -type host
+        This example returns the status of the host transport nodes.   
+    #>
+
+    Param (
+        [Parameter (Mandatory = $false)] [ValidateSet('host', 'edge')][ValidateNotNullOrEmpty()] [String]$type
+    )
+
+    Try {
+        if ($PsBoundParameters.ContainsKey('type')) {
+            $uri = "https://$nsxtManager/api/v1/transport-nodes/status?node_type=$($type.ToUpper())"
+        } else {
+            $uri = "https://$nsxtManager/api/v1/transport-nodes/status"
+        }
+        $response = Invoke-RestMethod $uri -Method 'GET' -Headers $nsxtHeaders
+        $response
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Get-NsxtTransportNodeStatus
+
+Function Get-NsxtComputeManager {
+    <#
+        .SYNOPSIS
+        Get the compute managers registered to the NSX Manager cluster.
+
+        .DESCRIPTION
+        The Get-NsxtComputeManager cmdlet returns compute managers registered to the NSX Manager cluster.
+
+        .EXAMPLE
+        Get-NsxtComputeManager
+        This example returns the compute managers registered to the NSX Manager cluster.
+    #>
+
+    Try {
+        $uri = "https://$nsxtManager/api/v1/fabric/compute-managers"
+        $response = Invoke-RestMethod $uri -Method 'GET' -Headers $nsxtHeaders
+        $response.results
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Get-NsxtComputeManager
+
+Function Get-NsxtComputeManagerStatus {
+    <#
+        .SYNOPSIS
+        Get the status of a compute manager registered to the NSX Manager cluster.
+
+        .DESCRIPTION
+        The Get-NsxtComputeManagerStatus cmdlet returns the status of a compute manager registered to the NSX Manager cluster.
+
+        .EXAMPLE
+        Get-NsxtComputeManagerStatus -id <guid>
+        This example returns the status of a compute manager registered to the NSX Manager cluster.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$id
+    )
+
+    Try {
+        $uri = "https://$nsxtManager/api/v1/fabric/compute-managers/$id/status"
+        $response = Invoke-RestMethod $uri -Method 'GET' -Headers $nsxtHeaders
+        $response
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Get-NsxtComputeManagerStatus
 
 ##############################  End Supporting Functions ###############################
 ########################################################################################
