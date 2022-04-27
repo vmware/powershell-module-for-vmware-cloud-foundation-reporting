@@ -85,7 +85,7 @@ Function Invoke-VcfHealthReport {
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
-        Write-LogMessage -Type INFO -Message "Running an SoS Health Check Collection for $workflowMessage, process takes time."
+        Write-LogMessage -Type INFO -Message "Running an SoS Health Check for $workflowMessage, process takes time."
         if ($PsBoundParameters.ContainsKey("allDomains")) { 
             $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
         } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
@@ -128,118 +128,82 @@ Function Invoke-VcfHealthReport {
             $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html
         }
 
-        # Generating the Connectivity Health Data
+        # Generating the Connectivity Health Data Using SoS output and Supplimental PowerShell Request Functions
         Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report using the SoS output for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains")) { 
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
-            }
-            else {
-                $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
-            }
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
         }
-        else {
-            if ($PsBoundParameters.ContainsKey("failureOnly")) { 
-                $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
-            }
-            else {
-                $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
-            }
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
         }
 
-        # Generating the Backup Status Health Data
+        # Generating the Backup Status Health Data Using PowerShell Request Functions
         Write-LogMessage -Type INFO -Message "Generating the Backup Status Report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains")) { 
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-            }
-            else { 
-                $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-            }
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
         }
-        else {
-            if ($PsBoundParameters.ContainsKey("failureOnly")) { 
-                $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-            }
-            else {
-                $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-            }
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
         
-        # Generating the Snapshot Status Health Data
+        # Generating the Snapshot Status Health Data Using PowerShell Request Functions
         Write-LogMessage -type INFO -Message "Generating the Snapshots Report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-            }
-            else { 
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
             $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-            }
         }
-        else {
-            if ($PsBoundParameters.ContainsKey('failureOnly')) { 
-                $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-            }
-            else {
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
             $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-            }
         }
 
-        # Generating the Password Expiry Health Data
+        # Generating the Password Expiry Health Data using PowerShell Request Functions
         Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains")) { 
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains -failureOnly
-            }
-            else { 
-                $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
-            }
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
         }
-        else {
-            if ($PsBoundParameters.ContainsKey("failureOnly")) { 
-                $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
-            }
-            else {
-                $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
-            }
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
         }
 
-        # Generating the NSX Tier-0 Gateway BGP Health Data
+        # Generating the NSX Tier-0 Gateway BGP Health Data Using PowerShell Request Functions
         Write-LogMessage -type INFO -Message "Generating the NSX Tier-0 Gateway BGP Report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-            }
-            else { 
-                $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-            }
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
         }
-        else {
-            if ($PsBoundParameters.ContainsKey('failureOnly')) { 
-                $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-            }
-            else {
-                $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-            }
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
 
-        # Generating the Disk Capacity Health Data
+        # Generating the Disk Capacity Health Data Using PowerShell Request Functions
         Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report for $workflowMessage.'"
-        if ($PsBoundParameters.ContainsKey("allDomains")) { 
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains -failureOnly
-            }
-            else {
-                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains
-            }
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains
         }
-        else {
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
-            }
-            else {
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
                 $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain
-            }
         }
 
         # Combine all information gathered into a single HTML report
@@ -773,7 +737,7 @@ Function Request-SoSHealthJson {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
 
     Try {
@@ -846,11 +810,10 @@ Function Publish-CertificateHealth {
         $outputObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.'Certificates'.'Certificate Status'.ESXi # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         }
         else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
         
         # Certificate Health (Except ESXi)
@@ -938,22 +901,20 @@ Function Publish-ConnectivityHealth {
         # ESXi SSH Status
         $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi SSH Status' # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         }
         else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
         $customObject += $outputObject # Adding individual component to main customObject
 
         # ESXi API Status
         $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi API Status' # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         }
         else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
         $customObject += $outputObject # Adding individual component to main customObject
 
@@ -962,11 +923,10 @@ Function Publish-ConnectivityHealth {
         $jsonInputData.PSObject.Properties.Remove('ESXi SSH Status')
         $jsonInputData.PSObject.Properties.Remove('ESXi API Status')
         if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         }
         else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
         $customObject += $outputObject # Adding individual component to main customObject
 
@@ -1029,19 +989,19 @@ Function Publish-DnsHealth {
         # Forward Lookup Health Status
         $allForwardLookupObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.'DNS lookup Status'.'Forward lookup Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $allForwardLookupObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $allForwardLookupObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         } else {
-            $allForwardLookupObject = Read-JsonElement -inputData $jsonInputData
+            $allForwardLookupObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
 
         # Reverse Lookup Health Status
         $allReverseLookupObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.'DNS lookup Status'.'Reverse lookup Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $allReverseLookupObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $allReverseLookupObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         } else {
-            $allReverseLookupObject = Read-JsonElement -inputData $jsonInputData
+            $allReverseLookupObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
@@ -1113,44 +1073,40 @@ Function Publish-EsxiHealth {
         $allOverallHealthObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.Compute.'ESXi Overall Health' # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         }
         else {
-            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData
+            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
 
         # ESXi Core Dump Status
         $allCoreDumpObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.General.'ESXi Core Dump Status' # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         }
         else {
-            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData
+            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
         
         # ESXi License Status
         $allLicenseObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.Compute.'ESXi License Status' # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $allLicenseObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+            $allLicenseObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         }
         else {
-            $allLicenseObject = Read-JsonElement -inputData $jsonInputData
+            $allLicenseObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
 
         # ESXi Disk Status
         $allDiskObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.Compute.'ESXi Disk Status' # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $allDiskObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+            $allDiskObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         }
         else {
-            $allDiskObject = Read-JsonElement -inputData $jsonInputData
+            $allDiskObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
@@ -1300,29 +1256,6 @@ Function Publish-NsxtHealth {
             }
         }
 
-        # # NSX Edge Health
-        # $component = 'NSX Edge'
-        # $nsxtClusters = Get-VCFNsxtCluster
-        # $inputData = $targetContent.General.'NSX Health'.'NSX Edge'
-        # foreach ($nsxtVip in $nsxtClusters.vipFqdn) {
-        #     $inputData.PSObject.Properties.Remove($nsxtVip)
-        # }
-        # foreach ($element in $inputData.PsObject.Properties.Value) {
-        #     $elementObject = New-Object -TypeName psobject
-        #     $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
-        #     $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
-        #     $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
-        #     $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
-        #     if ($PsBoundParameters.ContainsKey('failureOnly')) {
-        #         if (($element.status -eq 'FAILED')) {
-        #             $customObject += $elementObject
-        #         }
-        #     }
-        #     else {
-        #         $customObject += $elementObject
-        #     }
-        # }
-
         # NSX Controllers Health
         $component = 'NSX Controllers'
         $inputData = $targetContent.General.'NSX Health'.'NSX Controllers'
@@ -1348,15 +1281,15 @@ Function Publish-NsxtHealth {
         if ($PsBoundParameters.ContainsKey('html')) {
             if ($customObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+                $customObject = $customObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -As Table
+                $customObject = $customObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -As Table
             }
             $customObject = Convert-CssClass -htmldata $customObject
             $customObject
         }
         else {
-            $customObject | Sort-Object Component, Resource 
+            $customObject | Sort-Object Resource, Component 
         }
     }
     Catch {
@@ -1563,10 +1496,10 @@ Function Publish-NtpHealth {
         $jsonInputData.PSObject.Properties.Remove('ESXi HW Time')
         $jsonInputData.PSObject.Properties.Remove('ESXi Time')
 
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
@@ -1626,10 +1559,10 @@ Function Publish-PasswordHealth {
 
         # Password Expiry Health
         $jsonInputData = $targetContent.'Password Expiry Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
@@ -1767,10 +1700,9 @@ Function Publish-VcenterHealth {
         # vCenter Overall Health
         $jsonInputData = $targetContent.Compute.'vCenter Overall Health' # Extract Data from the provided SOS JSON
         if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $vcenterOverall = Read-JsonElement -inputData $jsonInputData -failureOnly
+            $vcenterOverall = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         } else {
-            $vcenterOverall = Read-JsonElement -inputData $jsonInputData
+            $vcenterOverall = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
 
         # Ring Topology Health
@@ -1860,55 +1792,55 @@ Function Publish-VsanHealth {
         $customObject = New-Object System.Collections.ArrayList
         # VSAN Cluster Health Status
         $jsonInputData = $targetContent.VSAN.'Cluster vSAN Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
         $customObject += $outputObject # Adding individual component to main customObject
         
         # Cluster Disk Status
         $jsonInputData = $targetContent.VSAN.'Cluster Disk Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
         $customObject += $outputObject # Adding individual component to main customObject
 
         # Cluster Data Compression Status
         $jsonInputData = $targetContent.VSAN.'Cluster Data Compression Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
         $customObject += $outputObject # Adding individual component to main customObject
 
         # Cluster Data Encryption Status
         $jsonInputData = $targetContent.VSAN.'Cluster Data Encryption Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
         $customObject += $outputObject # Adding individual component to main customObject
 
         # Cluster Data Deduplication Status
         $jsonInputData = $targetContent.VSAN.'Cluster Data Deduplication Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
         $customObject += $outputObject # Adding individual component to main customObject
 
         # Stretched Cluster Status
         $jsonInputData = $targetContent.VSAN.'Stretched Cluster Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) { # Run the extracted data through the Read-JsonElement function to structure the data for report output
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
         } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData
+            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
         }
         $customObject += $outputObject # Adding individual component to main customObject
 
@@ -2003,9 +1935,9 @@ Function Publish-VsanStoragePolicy {
         if ($PsBoundParameters.ContainsKey("html")) {
             if ($outputObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+                $outputObject = $outputObject | Sort-Object Component, 'vCenter Server', Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -As Table
+                $outputObject = $outputObject | Sort-Object Component, 'vCenter Server', Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -As Table
             }
             $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
@@ -2549,7 +2481,7 @@ Function Publish-StorageCapacityHealth {
                     $addNoIssues = $true 
                 }
                 if ($addNoIssues) {
-                    $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -PostContent '<p>No Issues Found</p>'
+                    $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -PostContent '<p>No Issues Found.</p>'
                 }
                 else {
                     $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -As Table
@@ -2560,10 +2492,10 @@ Function Publish-StorageCapacityHealth {
                     $addNoIssues = $true 
                 }
                 if ($addNoIssues) {
-                    $allVcenterStorageHealth = $allVcenterStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -PostContent '<p>No Issues Found</p>'
+                    $allVcenterStorageHealth = $allVcenterStorageHealth | Sort-Object FQDN, Filesystem | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -PostContent '<p>No Issues Found.</p>'
                 }
                 else {
-                    $allVcenterStorageHealth = $allVcenterStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -As Table
+                    $allVcenterStorageHealth = $allVcenterStorageHealth | Sort-Object  FQDN, Filesystem | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -As Table
                 }
                 $allVcenterStorageHealth = Convert-CssClass -htmldata $allVcenterStorageHealth
 
@@ -2571,10 +2503,10 @@ Function Publish-StorageCapacityHealth {
                     $addNoIssues = $true 
                 }
                 if ($addNoIssues) {
-                    $allEsxiStorageCapacity = $allEsxiStorageCapacity | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -PostContent '<p>No Issues Found</p>'
+                    $allEsxiStorageCapacity = $allEsxiStorageCapacity | Sort-Object Domain, 'ESXi FQDN', 'Volume Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -PostContent '<p>No Issues Found.</p>'
                 }
                 else {
-                    $allEsxiStorageCapacity = $allEsxiStorageCapacity | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -As Table
+                    $allEsxiStorageCapacity = $allEsxiStorageCapacity | Sort-Object Domain, 'ESXi FQDN', 'Volume Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -As Table
                 }
                 $allEsxiStorageCapacity = Convert-CssClass -htmldata $allEsxiStorageCapacity
 
@@ -2582,10 +2514,10 @@ Function Publish-StorageCapacityHealth {
                     $addNoIssues = $true 
                 }
                 if ($addNoIssues) {
-                    $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -PostContent '<p>No Issues Found</p>'
+                    $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | Sort-Object 'vCenter Server', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -PostContent '<p>No Issues Found.</p>'
                 }
                 else {
-                    $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -As Table
+                    $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | Sort-Object 'vCenter Server', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -As Table
                 }
                 $allDatastoreStorageCapacity = Convert-CssClass -htmldata $allDatastoreStorageCapacity
                 
@@ -3847,7 +3779,7 @@ Function Request-NsxtManagerBackupStatus {
                                     $customObject += $elementObject
                                 }  
                             }
-                            $customObject | Sort-Object Component, Resource, Element                 
+                            $customObject | Sort-Object Domain, Element, Resource                
                         }
                     }
                 }
@@ -3903,7 +3835,9 @@ Function Request-VcenterBackupStatus {
                             $component = 'vCenter Server' # Define the component name
                             $resource = 'vCenter Server Backup Operation' # Define the resource name
                             $timestamp = $backupTask.end_time # Define the end timestamp
-                            $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
+                            if ($timestamp) {
+                                $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
+                            }
 
                             # Set the status for the backup task
                             if ($backupTask.state -eq 'SUCCEEDED') {                              
@@ -3914,15 +3848,20 @@ Function Request-VcenterBackupStatus {
                                 $alert = "RED" # Critical; failure
                             }
 
-                            # Set the message for the backup task
-                            if ([string]::IsNullOrEmpty($messages)) {
-                                $Message = "The backup completed without errors. " # Ok; success
-                            } else {
-                                $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
+                            if ($timestamp) {
+                                # Set the message for the backup task
+                                if ([String]::IsNullOrEmpty($messages)) {
+                                    $Message = "The backup completed without errors. " # Ok; success
+                                } else {
+                                    $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
+                                }
                             }
 
                             # Set the alert and message update for the backup task based on the age of the backup
-                            if ($backupAge -ge 3) {
+                            if ($null -eq $backupAge) {
+                                $alert = "RED" # Critical; 
+                                $messageBackupAge = "Backup has never been run or not configured. " # Set the alert message
+                            } elseif ($backupAge -ge 3) {
                                 $alert = "RED" # Critical; >= 3 days
                                 $messageBackupAge = "Backup is more than 3 days old." # Set the alert message
                             } elseif ($backupAge -gt 1) {
@@ -4465,13 +4404,18 @@ Function Request-NsxtAuthentication {
                     foreach ($domain in $allWorkloadDomains) {
                         $vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain.name -listNodes
                         foreach ($node in $vcfNsxDetails.nodes) {
-                            if (Test-NsxtAuthentication -server $node.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
-                                $alert = "GREEN"
-                                $message = "API Connection check successful!"
-                            }
-                            else {
+                            if (Test-NsxtConnection -server $node.fqdn -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage ) {
+                                if (Test-NsxtAuthentication -server $node.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                                    $alert = "GREEN"
+                                    $message = "API Connection check successful!"
+                                }
+                                else {
+                                    $alert = "RED"
+                                    $message = "API Connection check failed!"
+                                }
+                            } else {
                                 $alert = "RED"
-                                $message = "API Connection check failed!"
+                                $message = "API Connection check failed! " + $ErrorMessage
                             }
                             $elementObject = New-Object System.Collections.ArrayList
                             $elementObject = New-Object -TypeName psobject
@@ -4493,13 +4437,18 @@ Function Request-NsxtAuthentication {
                 else {
                     $vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $workloadDomain -listNodes
                     foreach ($node in $vcfNsxDetails.nodes) {
-                        if (Test-NsxtAuthentication -server $node.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
-                            $alert = "GREEN"
-                            $message = "API Connection check successful!"
-                        }
-                        else {
+                        if (Test-NsxtConnection -server $node.fqdn -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage ) {
+                            if (Test-NsxtAuthentication -server $node.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                                $alert = "GREEN"
+                                $message = "API Connection check successful!"
+                            }
+                            else {
+                                $alert = "RED"
+                                $message = "API Connection check failed!"
+                            }
+                        } else {
                             $alert = "RED"
-                            $message = "API Connection check failed!"
+                            $message = $ErrorMessage
                         }
                         $elementObject = New-Object System.Collections.ArrayList
                         $elementObject = New-Object -TypeName psobject
@@ -4535,7 +4484,7 @@ Function Request-NsxtTier0BgpStatus {
 
         .DESCRIPTION
         The Request-NsxtTier0BgpStatus cmdlet returns the BGP status for all Tier-0 gateways managed by the NSX Manager
-         cluster. The cmdlet connects to the NSX Local Manager using the -server, -user, and -password values:
+        cluster. The cmdlet connects to the NSX Local Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the NSX Local Manager cluster
         - Gathers the details for the NSX Local Manager cluster
@@ -6634,19 +6583,26 @@ Function Request-LocalUserExpiry {
             # Get the current date and expiration date
             Add-Type  -AssemblyName  Microsoft.VisualBasic
             $endDate = ($formatOutput[1] -Split (':'))[1].Trim()
-            $expiryDays = [math]::Ceiling((([DateTime]$endDate) - (Get-Date)).TotalDays)
+            if ($endDate -ne "never") {
+                $expiryDays = [math]::Ceiling((([DateTime]$endDate) - (Get-Date)).TotalDays)
+            }
 
             # Set the alet for the local user account based on the expiry date
-            if ($expiryDays -le 15) {
-                $alert = 'YELLOW'  # Warning: <= 15 days
-                $message = "Password will expire in 15 or less days. Verified using $command."
-            }
-            if ($expiryDays -le 5) {
-                $alert = 'RED'     # Critical: <= 5 days
-                $message = "Password will expire in less than 5 days or has already expired. Verified using $command."
+            if ($endDate -eq "never") {
+                $alert = 'GREEN'
+                $message = "Password set to never expire. Verified using $command."
             } else {
-                $alert = 'GREEN'   # OK: > 15 days
-                $message = "Password will not expire within the next 15 days. Verified using $command."
+                if ($expiryDays -le 15) {
+                    $alert = 'YELLOW'  # Warning: <= 15 days
+                    $message = "Password will expire in 15 or less days. Verified using $command."
+                }
+                if ($expiryDays -le 5) {
+                    $alert = 'RED'     # Critical: <= 5 days
+                    $message = "Password will expire in less than 5 days or has already expired. Verified using $command."
+                } else {
+                    $alert = 'GREEN'   # OK: > 15 days
+                    $message = "Password will not expire within the next 15 days. Verified using $command."
+                }
             }
 
             $userObject = New-Object -TypeName psobject
