@@ -4501,6 +4501,7 @@ Function Request-NsxtTier0BgpStatus {
                             $tier0s = Get-NsxtTier0Gateway
                             foreach ($tier0 in $tier0s) {
                                 $bgpStatus = Get-NsxtTier0BgpStatus -id $tier0.id | Where-Object {$_.type -eq 'USER'}
+                                $localAsn = (Get-NsxtTier0LocaleServiceBgp -id $tier0.id).local_as_num
                                 foreach ($element in $bgpStatus) {
                                     if ($element.connection_state -eq 'ESTABLISHED') {  
                                         $alert = "GREEN"
@@ -4517,6 +4518,7 @@ Function Request-NsxtTier0BgpStatus {
                                     $elementObject | Add-Member -NotePropertyName 'Connection' -NotePropertyValue $element.connection_state
                                     $elementObject | Add-Member -NotePropertyName 'Source Address' -NotePropertyValue $element.source_address
                                     $elementObject | Add-Member -NotePropertyName 'Neighbor Address' -NotePropertyValue $element.neighbor_address
+                                    $elementObject | Add-Member -NotePropertyName 'Local ASN' -NotePropertyValue $localAsn
                                     $elementObject | Add-Member -NotePropertyName 'Remote ASN' -NotePropertyValue $element.remote_as_number
                                     $elementObject | Add-Member -NotePropertyName 'Hold' -NotePropertyValue $element.hold_time
                                     $elementObject | Add-Member -NotePropertyName 'Keep Alive ' -NotePropertyValue $element.keep_alive_interval
@@ -7084,6 +7086,34 @@ Function Get-NsxtEdgeNode {
     }
 }
 Export-ModuleMember -Function Get-NsxtEdgeNode
+
+Function Get-NsxtTier0LocaleServiceBgp {
+    <#
+        .SYNOPSIS
+        Get details for BGP in the locale services.
+
+        .DESCRIPTION
+        The Get-NsxtTier0LocaleServiceBgp cmdlet returns the details for BGP in the locale services.
+
+        .EXAMPLE
+        Get-NsxtTier0LocaleServiceBgp -$id <guid>
+        This example returns the details for BGP in the locale services.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$id
+    )
+
+    Try {
+        $uri = "https://$nsxtmanager/policy/api/v1/infra/tier-0s/$id/locale-services/default/bgp"
+        $response = Invoke-RestMethod -Method GET -Uri $uri -ContentType application/json -Headers $nsxtHeaders
+        $response
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Get-NsxtTier0LocaleServiceBgp
 
 Function Get-NsxtVidmStatus {
     <#
