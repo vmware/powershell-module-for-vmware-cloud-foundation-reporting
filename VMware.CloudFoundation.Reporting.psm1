@@ -4133,7 +4133,7 @@ Function Request-EsxiStorageCapacity {
                                 $allPrtitions = $esxcli.storage.filesystem.list.invoke()
                                 foreach ($partition in $allPrtitions) {
                                     if ($partition.Type -eq "VMFS-L" -or $partition.Type -eq "vfat") {
-                                        $threshold = Test-StorageThreshold -size $partition.Size -free $partition.Free
+                                        $threshold = Format-StorageThreshold -size $partition.Size -free $partition.Free
                                         $esxiPartition = New-Object -TypeName psobject
                                         $esxiPartition | Add-Member -notepropertyname 'Domain' -notepropertyvalue $domain
                                         $esxiPartition | Add-Member -notepropertyname 'ESXi FQDN' -notepropertyvalue $esxiHost.Name
@@ -6535,35 +6535,58 @@ Function Convert-CssClass {
 }
 Export-ModuleMember -Function Convert-CssClass
 
-Function Test-StorageThreshold ($size, $free) {
-    # Define thresholds Green < Yellow < Red
-    $greenThreshold = 80
-    $redThreshold = 90
-    # Calculate datastore usage and capacity
-    [Int]$usage = [Math]::Round((($size - $free) / $size * 100))
-    # Applying thresholds and creating collection from input
-    Switch ($usage) {
-        { $_ -le $greenThreshold } {
-            # Green if $usage is up to $greenThreshold
-            $alert = 'GREEN'
-            $message = "Used space is less than $greenThreshold%. "
+Function Format-StorageThreshold {
+    <#
+        .SYNOPSIS
+        Calculate storage percentage.
+
+        .DESCRIPTION
+        The Format-StorageThreshold cmdlet converts the storage to a percentage and checks capacity .
+
+        .EXAMPLE
+        Format-StorageThreshold -size <size> -free <free>
+        This example returns the status of the BGP routing for NSX Tier-0 gateway.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$size,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$free
+
+    )
+
+    Try {
+        # Define thresholds Green < Yellow < Red
+        $greenThreshold = 80
+        $redThreshold = 90
+        # Calculate datastore usage and capacity
+        [Int]$usage = [Math]::Round((($size - $free) / $size * 100))
+        # Applying thresholds and creating collection from input
+        Switch ($usage) {
+            { $_ -le $greenThreshold } {
+                # Green if $usage is up to $greenThreshold
+                $alert = 'GREEN'
+                $message = "Used space is less than $greenThreshold%. "
+            }
+            { $_ -ge $redThreshold } {
+                # Red if $usage is equal or above $redThreshold
+                $alert = 'RED'
+                $message = "Used space is above $redThreshold%. Please reclaim space on the volume."
+            }
+            Default {
+                # Yellow if above two are not matched
+                $alert = 'YELLOW'
+                $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the volume."
+            }
         }
-        { $_ -ge $redThreshold } {
-            # Red if $usage is equal or above $redThreshold
-            $alert = 'RED'
-            $message = "Used space is above $redThreshold%. Please reclaim space on the volume."
-        }
-        Default {
-            # Yellow if above two are not matched
-            $alert = 'YELLOW'
-            $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the volume."
-        }
+        $thresholdObject = New-Object -TypeName psobject
+        $thresholdObject | Add-Member -notepropertyname 'usage' -notepropertyvalue $usage
+        $thresholdObject | Add-Member -notepropertyname 'alert' -notepropertyvalue $alert
+        $thresholdObject | Add-Member -notepropertyname 'message' -notepropertyvalue $message
+        $thresholdObject
     }
-    $thresholdObject = New-Object -TypeName psobject
-    $thresholdObject | Add-Member -NotePropertyName 'usage' -NotePropertyValue $usage
-    $thresholdObject | Add-Member -NotePropertyName 'alert' -NotePropertyValue $alert
-    $thresholdObject | Add-Member -NotePropertyName 'message' -NotePropertyValue $message
-    $thresholdObject
+    Catch {
+        Write-Error $_.Exception.Message
+    }
 }
 
 Function Request-LocalUserExpiry {
