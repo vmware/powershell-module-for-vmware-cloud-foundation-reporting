@@ -548,7 +548,14 @@ Function Invoke-VcfUpgradePrecheck {
                         $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $subTask.resources.resourceId
                     }
                     $elementObject | Add-Member -NotePropertyName 'Precheck Task' -NotePropertyValue $subTask.name
-                    $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue $subTask.status
+                    if ($subTask.status -eq "SUCCESSFUL") {
+                        $alert = "GREEN"
+                    } elseif ($subTask.status -eq "WARNING") {
+                        $alert = "YELLOW"
+                    } elseif ($subTask.status -eq "FAILED") {
+                        $alert = "RED"
+                    }
+                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
                     $allChecksObject += $elementObject
                 }
                 $allChecksObject = $allChecksObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="upgrade-precheck"></a><h3>Upgrade Precheck</h3>' -As Table
