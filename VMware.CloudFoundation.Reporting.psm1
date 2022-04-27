@@ -2903,6 +2903,98 @@ Function Request-vRslcmUserExpiry {
 }
 Export-ModuleMember -Function Request-vRslcmUserExpiry
 
+Function Request-NsxtVidmStatus {
+    <#
+        .SYNOPSIS
+        Returns the status of the Identity Manager integration for an NSX Manager cluster.
+
+        .DESCRIPTION
+        The Request-NsxtVidmStatus cmdlet returns the status of the Identity Manager integration for an NSX Manager cluster.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates network connectivity and authentication to the SDDC Manager instanc
+        - Gathers the details for the NSX Manager cluster from the SDDC Manager
+        - Validates network connectivity and authentication to the NSX Local Manager cluster
+        - Collects the Identity Manager integration status details
+
+        .EXAMPLE
+        Request-NsxtVidmStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the status of the Identity Manager integration for an NSX Manager cluster managed by SDDC Manager for a workload domain.
+
+        .EXAMPLE
+        Request-NsxtVidmStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+        This example will return the status of the Identity Manager integration for an NSX Manager cluster managed by SDDC Manager for a workload domain but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                    if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                            $integration = Get-NsxtVidmStatus
+                            $customObject = New-Object System.Collections.ArrayList
+
+                            # NSX Node Backup
+                            $component = 'Identity Manager Integration' # Define the component name
+                            $resource = $vcfNsxDetails.fqdn # Define the resource name
+
+                            # Set the alert and message based on the status of the integration
+                            if ($integration.vidm_enable -eq $true) {   
+                                $alert = 'GREEN' # Ok; enabled
+                                $message = 'Integration is enabled ' # Set the status message
+                            } else {
+                                $alert = '-' # Notice; not enabled
+                                $message = 'Integration is not enabled. ' # Critical; failure
+                            }
+
+                            # Set the alert and message update for the backup task based on the age of the backup
+                            if ($integration.runtime_state -eq 'ALL_OK') {
+                                $alert = 'GREEN' # Ok; integration status is OK
+                                $messageState = 'and healthy.' # Set the alert message
+                            } elseif ($integration.vidm_enable -eq $true -and $integration.runtime_state -ne 'ALL_OK') {
+                                $alert = 'RED' # Critical; integration status is has failed
+                                $messageBackupAge = 'but unhealthy.' # Set the alert message
+                            } elseif ($integration.vidm_enable -eq $false -and $integration.runtime_state -ne 'ALL_OK') {
+                                $alert = '-' # Notice; integration is not enabled
+                            }
+
+                            $message += $messageState # Combine the alert message
+
+                            # Add Backup Status Properties to the element object
+                            $elementObject = New-Object -TypeName psobject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }  
+                        }
+                        $customObject | Sort-Object Component, Resource
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-NsxtVidmStatus
+
 Function Request-SddcManagerSnapshotStatus {
     <#
 		.SYNOPSIS
@@ -2911,8 +3003,9 @@ Function Request-SddcManagerSnapshotStatus {
         .DESCRIPTION
         The Request-SddcManagerSnapshotStatus cmdlet checks the snapshot status for SDDC Manager.
         The cmdlet connects to SDDC Manager using the -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates network connectivity and authenticaton to the SDDC Manager instance
+        - Gathers the details for the vCenter Server instance from the SDDC Manager
+        - Validates network connectivity and authentication to the vCenter Server instance
         - Performs checks on the snapshot status and outputs the results
 
         .EXAMPLE
@@ -3027,8 +3120,9 @@ Function Request-VcenterSnapshotStatus {
         .DESCRIPTION
         The Request-VcenterSnapshotStatus cmdlet checks the snapshot status for vCenter Server instance.
         The cmdlet connects to SDDC Manager using the -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates network connectivity and authentication to the SDDC Manager instance
+        - Gathers the details for the vCenter Server instance from the SDDC Manager
+        - Validates network connectivity and authentication to the vCenter Server instance
         - Performs checks on the snapshot status and outputs the results
 
         .EXAMPLE
@@ -3234,8 +3328,9 @@ Function Request-NsxtEdgeSnapshotStatus {
         .DESCRIPTION
         The Request-NsxtEdgeSnapshotStatus cmdlet checks the snapshot status for NSX Edge nodes.
         The cmdlet connects to SDDC Manager using the -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates network connectivity and authentication to the SDDC Manager instance
+        - Gathers the NSX Manager and NSX Edge node details from the SDDC Manager
+        - Validates network connectivity and authentication to the vCenter Server instance
         - Performs checks on the snapshot status and outputs the results
 
         .EXAMPLE
@@ -3449,9 +3544,7 @@ Function Request-SddcManagerBackupStatus {
         .DESCRIPTION
         The Request-SddcManagerBackupStatus cmdlet returns the status of the latest file-level backup task in an SDDC
         Manager instance. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the details for the SDDC Manager
+        - Validates network connectivity and authentication to the SDDC Manager instance
         - Collects the latest file-level backup status details
 
         .EXAMPLE
@@ -3552,10 +3645,10 @@ Function Request-NsxtManagerBackupStatus {
 
         .DESCRIPTION
         The Request-NsxtManagerBackupStatus cmdlet returns the status of the latest backup of an NSX Manager cluster.
-        The cmdlet connects to the NSX-T Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the NSX-T Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the details for the NSX Manager cluster
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates network connectivity and authentication to the SDDC Manager instance
+        - Gathers the details for the NSX Manager cluster from the SDDC Manager
+        - Validates network connectivity and authentication to the NSX Manager cluster
         - Collects the file-level backup status details
 
         .EXAMPLE
@@ -3779,10 +3872,10 @@ Function Request-VcenterBackupStatus {
 
         .DESCRIPTION
         The Request-VcenterBackupStatus cmdlet returns the status of the latest backup of a vCenter Server instance.
-        The cmdlet connects to the NSX Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the NSX-T Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the details for the vCenter Server instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates network connectivity and authentication to the SDDC Manager instance
+        - Gathers the details for the NvCenter Server instance from the SDDC Manager
+        - Validates network connectivity and authentication to the vCenter Server instance
         - Collects the file-level backup status details
 
         .EXAMPLE
