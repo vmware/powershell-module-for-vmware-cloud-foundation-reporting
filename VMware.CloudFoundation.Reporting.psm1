@@ -6072,8 +6072,9 @@ Function Start-CreateReportDirectory {
     if (!(Test-Path -Path $reportFolder)) {
         New-Item -Path $reportFolder -ItemType "directory" | Out-Null
     }
-    Copy-Item -Path "./*.css" -Destination $path -Force -Confirm:$False
-    Copy-Item -Path "./*.svg" -Destination $path -Force -Confirm:$False
+    $source = ((Get-Module -ListAvailable VMware.CloudFoundation.Reporting | Sort-Object Version).path)[-1] -Split ('VMware.CloudFoundation.Reporting.psd1').Trim() | Where-Object { $_ -ne "" }
+    Copy-Item -Path ("$source*.css") -Destination $path -Force -Confirm:$False
+    Copy-Item -Path ("$source*.svg") -Destination $path -Force -Confirm:$False
     $Global:reportName = $reportFolder + $sddcManagerFqdn.Split(".")[0] + "-" + $reportType + "-" + $filetimeStamp + ".htm"
 }
 Export-ModuleMember -Function Start-CreateReportDirectory
