@@ -6,10 +6,12 @@ A PowerShell module for VMware Cloud Foundation reporting.
 
 `VMware.CloudFoundation.Reporting` is a PowerShell module that has been written to support the ability to provide insight to the operational state of VMware Cloud Foundation through the use of PowerShell cmdlets. These cmdlets provide quick access to information from the PowerShell console as well as the ability to publish the following HTML reports.
 
-- [Health Reports](#generating-health-report-tasks)
-- [Alert Reports](#generating-system-alert-report-tasks)
-- [Configuration Reports](#generating-configuration-report-tasks)
-- [Upgrade Precheck Reports](#generating-upgrade-precheck-report-tasks)
+- [Overview Report](#generating-system-overview-report-tasks)
+- [Health Report](#generating-health-report-tasks)
+- [Alert Report](#generating-system-alert-report-tasks)
+- [Password Policy Report](#generating-password-policy-report-tasks)
+- [Configuration Report](#generating-configuration-report-tasks)
+- [Upgrade Precheck Report](#generating-upgrade-precheck-report-tasks)
 
 Example:
 
@@ -56,6 +58,32 @@ Get-Help -Module Invoke-VcfHealthReport -Examples
 ```
 
 ## Getting Started
+
+### Generating System Overview Report Tasks
+
+#### Generate a System Overview Report for a VMware Cloud Foundation Instance
+
+1. Start Windows PowerShell.
+
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+
+    ```powershell
+    $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
+    $sddcManagerUser = "admin@local"
+    $sddcManagerPass = "VMw@re1!VMw@re1!"
+
+    $sddcManagerRootPass = "VMw@re1!"
+    $reportPath = "F:\Reporting"
+    ```
+
+3. Perform the configuration by running the command in the PowerShell console.
+
+    ```powershell
+    Invoke-VcfOverviewReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath
+    ```
+
+4. Review the generated HTML report.
+
 
 ### Generating Health Report Tasks
 
@@ -244,6 +272,55 @@ Get-Help -Module Invoke-VcfHealthReport -Examples
     ```
 
 4. Review the generated HTML report and perform remediation of any identified issues.
+
+### Generating Password Policy Report Tasks
+
+#### Generate a Password Policy Report for a VMware Cloud Foundation Instance
+
+1. Start Windows PowerShell.
+
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+
+    ```powershell
+    $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
+    $sddcManagerUser = "admin@local"
+    $sddcManagerPass = "VMw@re1!VMw@re1!"
+
+    $sddcManagerRootPass = "VMw@re1!"
+    $reportPath = "F:\Reporting"
+    ```
+
+3. Perform the configuration by running the command in the PowerShell console.
+
+    ```powershell
+    Invoke-VcfPasswordPolicy -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -allDomains
+    ```
+
+4. Review the generated HTML report.
+
+#### Generate a Password Policy Report for a Workload Domain
+
+1. Start Windows PowerShell.
+
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+
+    ```powershell
+    $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
+    $sddcManagerUser = "admin@local"
+    $sddcManagerPass = "VMw@re1!VMw@re1!"
+
+    $sddcManagerRootPass = "VMw@re1!"
+    $workloadDomain = "sfo-m01"
+    $reportPath = "F:\Reporting"
+    ```
+
+3. Perform the configuration by running the command in the PowerShell console.
+
+    ```powershell
+    Invoke-VcfPasswordPolicy -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -workloadDomain $workloadDomain
+    ```
+
+4. Review the generated HTML report.
 
 ### Generating Configuration Report Tasks
 
