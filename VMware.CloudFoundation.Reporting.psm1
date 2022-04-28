@@ -102,7 +102,6 @@ Function Invoke-VcfHealthReport {
         Write-LogMessage -Type INFO -Message "Generating the vSAN Health Report using the SoS output for $workflowMessage."
         Write-LogMessage -Type INFO -Message "Generating the vSAN Storage Policy Health Report using the SoS output for $workflowMessage."
         Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report using the SoS output for $workflowMessage."
-        Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report using the SoS output for $workflowMessage."
         if ($PsBoundParameters.ContainsKey("failureOnly")) {
             $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html -failureOnly
             $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html -failureOnly
@@ -112,7 +111,6 @@ Function Invoke-VcfHealthReport {
             $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html -failureOnly
             $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html -failureOnly
             $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html -failureOnly
-            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -html -failureOnly
             $nsxtEdgeClusterHtml = Publish-NsxtEdgeClusterHealth -json $jsonFilePath -html -failureOnly
             $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html -failureOnly
         } else {
@@ -124,9 +122,21 @@ Function Invoke-VcfHealthReport {
             $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html
             $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html
             $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html
-            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -html
             $nsxtEdgeClusterHtml = Publish-NsxtEdgeClusterHealth -json $jsonFilePath -html
             $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html
+        }
+
+        # Generating the NSX Manager Health Data Using SoS output and Supplimental PowerShell Request Functions
+        Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report using the SoS output for $workflowMessage."
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
+        }
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
         }
 
         # Generating the Connectivity Health Data Using SoS output and Supplimental PowerShell Request Functions
@@ -2535,9 +2545,9 @@ Function Publish-LocalUserExpiry {
 
         if ($allPasswordExpiryObject.Count -eq 0) { $addNoIssues = $true }
         if ($addNoIssues) {
-            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p>No issues found.</p>' 
         } else {
-            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -As Table
+            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -As Table
         }
         $allPasswordExpiryObject = Convert-CssClass -htmldata $allPasswordExpiryObject
         $allPasswordExpiryObject
@@ -2547,6 +2557,84 @@ Function Publish-LocalUserExpiry {
     }
 }
 Export-ModuleMember -Function Publish-LocalUserExpiry
+
+Function Publish-NsxtCombinedHealth {
+    <#
+		.SYNOPSIS
+        Request and publish NSX Manager Health.
+
+        .DESCRIPTION
+        The Publish-NsxtCombinedHealth cmdlet checks the health of NSX Manager on the VMware Cloud Foundation instance
+        and prepares the data to be published to an HTML report. The cmdlet connects to SDDC Manager using the
+        -server, -user, and password values:
+        - Validates that network connectivity and autehentication is available to SDDC Manager
+        - Validates that network connectivity and autehentication is available to NSX Manager
+        - Performs health checks and outputs the results
+
+        .EXAMPLE
+        Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains
+        This example checks NSX Manager health for all Workload Domains across the VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -workloadDomain sfo-w01
+        This example checks NSX Manager health for a single Workload Domain in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains -failureOnly
+        This example checks NSX Manager health for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        $allNsxtHealthObject = New-Object System.Collections.ArrayList
+        $allWorkloadDomains = Get-VCFWorkloadDomain
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+            foreach ($domain in $allWorkloadDomains ) {
+                $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtHealthObject += $nsxtVidmStatus
+                $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtHealthObject += $nsxtComputeManagerStatus
+            }
+            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -failureOnly; $allNsxtHealthObject += $nsxtHtml
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            foreach ($domain in $allWorkloadDomains ) {
+                $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtHealthObject += $nsxtVidmStatus
+                $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtHealthObject += $nsxtComputeManagerStatus
+            }
+            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath; $allNsxtHealthObject += $nsxtHtml
+        }
+
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+            $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtHealthObject += $nsxtVidmStatus
+            $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtHealthObject += $nsxtComputeManagerStatus
+            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -failureOnly; $allNsxtHealthObject += $nsxtHtml
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtHealthObject += $nsxtVidmStatus
+            $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtHealthObject += $nsxtComputeManagerStatus
+            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath; $allNsxtHealthObject += $nsxtHtml
+        }
+
+        if ($allNsxtHealthObject.Count -eq 0) { $addNoIssues = $true }
+        if ($addNoIssues) {
+            $allNsxtHealthObject = $allNsxtHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+        } else {
+            $allNsxtHealthObject = $allNsxtHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -As Table
+        }
+        $allNsxtHealthObject = Convert-CssClass -htmldata $allNsxtHealthObject
+        $allNsxtHealthObject
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-NsxtCombinedHealth
 
 Function Publish-StorageCapacityHealth {
     <#
@@ -4519,7 +4607,7 @@ Function Publish-ComponentConnectivityHealth {
         instance and prepares the data to be published to an HTML report. The cmdlet connects to SDDC Manager using the
         -server, -user, and password values:
         - Validates that network connectivity is available to the SDDC Manager instance
-        - Performs checks on the local OS users and outputs the results
+        - Performs connectivityy health checks and outputs the results
 
         .EXAMPLE
         Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains
@@ -4540,7 +4628,7 @@ Function Publish-ComponentConnectivityHealth {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
