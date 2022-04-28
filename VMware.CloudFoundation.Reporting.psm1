@@ -3005,13 +3005,11 @@ Function Request-NsxtVidmStatus {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
-                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
-                            $integration = Get-NsxtVidmStatus
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {        
                             $customObject = New-Object System.Collections.ArrayList
-
-                            # NSX Node Backup
                             $component = 'Identity Manager Integration' # Define the component name
                             $resource = $vcfNsxDetails.fqdn # Define the resource name
+                            $integration = Get-NsxtVidmStatus
 
                             # Set the alert and message based on the status of the integration
                             if ($integration.vidm_enable -eq $true) {   
@@ -3022,7 +3020,7 @@ Function Request-NsxtVidmStatus {
                                 $message = 'Integration is not enabled. ' # Critical; failure
                             }
 
-                            # Set the alert and message update for the backup task based on the age of the backup
+                            # Set the alert and message based on the status of the runtime state
                             if ($integration.runtime_state -eq 'ALL_OK') {
                                 $alert = 'GREEN' # Ok; integration status is OK
                                 $messageState = 'and healthy.' # Set the alert message
@@ -3035,7 +3033,7 @@ Function Request-NsxtVidmStatus {
 
                             $message += $messageState # Combine the alert message
 
-                            # Add Backup Status Properties to the element object
+                            # Add the properties to the element object
                             $elementObject = New-Object -TypeName psobject
                             $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                             $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
@@ -3061,6 +3059,91 @@ Function Request-NsxtVidmStatus {
     }
 }
 Export-ModuleMember -Function Request-NsxtVidmStatus
+
+Function Request-NsxtComputeManagerStatus {
+    <#
+        .SYNOPSIS
+        Returns the status of the compute managers attached to an NSX Manager cluster.
+
+        .DESCRIPTION
+        The Request-NsxtComputeManagerStatus cmdlet returns the status of the compute managers attached to an NSX Manager cluster.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates network connectivity and authentication to the SDDC Manager instanc
+        - Gathers the details for the NSX Manager cluster from the SDDC Manager
+        - Validates network connectivity and authentication to the NSX Local Manager cluster
+        - Collects the status of the compute managers
+
+        .EXAMPLE
+        Request-NsxtComputeManagerStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the status of the compute managers attached to an NSX Manager cluster managed by SDDC Manager for a workload domain.
+
+        .EXAMPLE
+        Request-NsxtComputeManagerStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+        This example will return the status of the compute managers attached to an NSX Manager cluster managed by SDDC Manager for a workload domain but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                    if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                            $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }).vcenters.fqdn
+                            $computeManagers = (Get-NsxtComputeManager | Where-Object { $_.server -eq $vcenter })
+                            foreach ($computeManager in $computeManagers) {
+                                # TODO: Add support to check the status of a rouge compute manager registration.
+                                $customObject = New-Object System.Collections.ArrayList
+                                $component = 'Compute Manager' # Define the component name
+                                $resource = $vcfNsxDetails.fqdn # Define the resource name
+                                $status  = (Get-NsxtComputeManagerStatus -id $computeManager.id)
+
+                                # Set the alert and message based on the status of the registration and connection
+                                if ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -eq 'UP') {   
+                                    $alert = 'GREEN' # Ok; registered and up
+                                    $message = "$($computeManager.server) is registered and healthy." # Set the status message
+                                } elseif ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -ne 'UP') {
+                                    $alert = 'RED' # Critical; registered and not up
+                                    $message = "$($computeManager.server) is registered but unhealthy." # Set the alert message
+                                } else {
+                                    $alert = 'RED' # Critical; not registered
+                                    $message = "($computeManager.server) is not registered." # Critical; failure
+                                }
+
+                                # Add the properties to the element object
+                                $elementObject = New-Object -TypeName psobject
+                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
+                                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                    if ($elementObject.alert -eq 'RED') {
+                                        $customObject += $elementObject
+                                    }
+                                }
+                                else {
+                                    $customObject += $elementObject
+                                }  
+                            }
+                        }
+                        $customObject | Sort-Object Component, Resource
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-NsxtComputeManagerStatus
 
 Function Request-SddcManagerSnapshotStatus {
     <#
