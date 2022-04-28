@@ -73,6 +73,7 @@ Function Invoke-VcfHealthReport {
     Try {
         Clear-Host; Write-Host ""
 
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
         if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
@@ -83,7 +84,6 @@ Function Invoke-VcfHealthReport {
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the process of creating a Health Report for $workflowMessage." -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
         Write-LogMessage -Type INFO -Message "Running an SoS Health Check for $workflowMessage, process takes time."
@@ -319,6 +319,7 @@ Function Invoke-VcfAlertReport {
     Try {
         Clear-Host; Write-Host ""
 
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType alert # Setup Report Location and Report File
         if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
@@ -329,7 +330,6 @@ Function Invoke-VcfAlertReport {
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the process of creating an Alert Report for $workflowMessage." -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType alert # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."  
 
         # Generate vCenter Server Alerts Using PowerShell Function
@@ -448,6 +448,7 @@ Function Invoke-VcfConfigReport {
     Try {
         Clear-Host; Write-Host ""
 
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType config # Setup Report Location and Report File
         if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
@@ -458,7 +459,6 @@ Function Invoke-VcfConfigReport {
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the Process of Creating a Configuration Report for $workflowMessage." -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType config # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
         Write-LogMessage -Type INFO -Message "Collecting ESXi Core Dump Configuration for $workflowMessage."
@@ -526,12 +526,13 @@ Function Invoke-VcfUpgradePrecheck {
 
         Clear-Host; Write-Host ""
 
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType upgrade # Setup Report Location and Report File
+        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         $workflowMessage = "Workload Domain ($workloadDomain)"
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the Process of Running an Upgrade Precheck for $workflowMessage." -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType upgrade # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
         if (Test-VCFConnection -server $sddcManagerFqdn) {
@@ -650,6 +651,7 @@ Function Invoke-VcfPasswordPolicy {
 
         Clear-Host; Write-Host ""
 
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType policy # Setup Report Location and Report File
         if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
@@ -660,7 +662,6 @@ Function Invoke-VcfPasswordPolicy {
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the Process of Running a Password Policy Report for $workflowMessage." -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType policy # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
         # Collect vCenter Server Password Policies
@@ -750,13 +751,13 @@ Function Invoke-VcfOverviewReport {
     Try {
         Clear-Host; Write-Host ""
 
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType overview # Setup Report Location and Report File
         if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the Process of Creating a System Overview Report for $workflowMessage." -Colour Yellow
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType overview # Setup Report Location and Report File
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
         Write-LogMessage -Type INFO -Message "Generating System Overview Report for $workflowMessage."
