@@ -696,6 +696,66 @@ Function Invoke-VcfPasswordPolicy {
 }
 Export-ModuleMember -Function Invoke-VcfPasswordPolicy
 
+Function Invoke-VcfOverviewReport {
+    <#
+        .SYNOPSIS
+        Generates the system overview report
+
+        .DESCRIPTION
+        The Invoke-VcfOverviewReport provides a single cmdlet to generates a system overview report for a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Invoke-VcfOverviewReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting
+        This example generates the system overview report for a VMware Cloud Foundation instance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
+    )
+
+    Try {
+        Clear-Host; Write-Host ""
+
+        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
+        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+        Write-LogMessage -Type INFO -Message "Starting the Process of Creating a System Overview Report for $workflowMessage." -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
+        Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType overview # Setup Report Location and Report File
+        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
+
+        Write-LogMessage -Type INFO -Message "Generating System Overview Report for $workflowMessage."
+        $vcfOverviewHtml = Publish-VcfSystemOverview -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
+        
+        $reportData += $vcfOverviewHtml
+
+        if ($PsBoundParameters.ContainsKey("darkMode")) {
+            $reportHeader = Get-ClarityReportHeader -dark 
+        } else {
+            $reportHeader = Get-ClarityReportHeader
+        }
+        $reportNavigation = Get-ClarityReportNavigation -reportType overview
+        $reportFooter = Get-ClarityReportFooter
+        $report = $reportHeader
+        $report += $reportNavigation
+        $report += $reportData
+        $report += $reportFooter
+
+        # Generate the report to an HTML file and then open it in the default browser
+        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        $report | Out-File $reportName
+        Invoke-Item $reportName
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Invoke-VcfOverviewReport
+
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
 
@@ -6118,6 +6178,390 @@ Export-ModuleMember -Function Request-NsxtEdgePasswordPolicy
 #######################################################################################################################
 
 
+#######################################################################################################################
+###############################  S Y S T E M   O V E R V I E W   F U N C T I O N S   ##################################
+
+Function Publish-VcfSystemOverview {
+    <#
+        .SYNOPSIS
+        Publish system overview report.
+
+        .DESCRIPTION
+        The Publish-VcfSystemOverview cmdlet returns password policy from NSX-T Data Center by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the NSX Manager instance
+        - Validates the authentication to NSX Manager with credentials from SDDC Manager
+        - Collects password policy from all ESXi hosts in vCenter Server instance
+
+        .EXAMPLE
+        Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will return system overview report for SDDC Manager for a all workload domains.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allOverviewObject = New-Object System.Collections.ArrayList
+                $vcfOverview = Request-VcfOverview -server $server -user $user -pass $pass
+                $vcenterOverview = Request-VcenterOverview -server $server -user $user -pass $pass
+                $clusterOverview = Request-ClusterOverview -server $server -user $user -pass $pass
+                $networkingOverview = Request-NetworkOverview -server $server -user $user -pass $pass
+                $vrealizeOverview = Request-VrealizeOverview -server $server -user $user -pass $pass
+
+                $vcfOverview = $vcfOverview | ConvertTo-Html -Fragment -PreContent '<h4>VMware Cloud Foundation Overview</h4>'
+                $vcfOverview = Convert-CssClass -htmldata $vcfOverview
+                $vcenterOverview = $vcenterOverview | ConvertTo-Html -Fragment -PreContent '<h4>vCenter Server Overview</h4>' -As Table
+                $vcenterOverview = Convert-CssClass -htmldata $vcenterOverview
+                $clusterOverview = $clusterOverview | ConvertTo-Html -Fragment -PreContent '<h4>vSphere Cluster Overview</h4>'
+                $clusterOverview = Convert-CssClass -htmldata $clusterOverview
+                $networkingOverview = $networkingOverview | ConvertTo-Html -Fragment -PreContent '<h4>Networking Overview</h4>'
+                $networkingOverview = Convert-CssClass -htmldata $networkingOverview
+                if ($vrealizeOverview) {
+                    $vrealizeOverview = $vrealizeOverview | ConvertTo-Html -Fragment -PreContent '<h4>vRealize Suite Overview</h4>'
+                    $vrealizeOverview = Convert-CssClass -htmldata $vrealizeOverview
+                } else {
+                    $vrealizeOverview = $vrealizeOverview | ConvertTo-Html -Fragment -PreContent '<h4>vRealize Suite Overview</h4>' -PostContent '<p>No vRealize Suite Installed.</p>'
+                }
+
+                $allOverviewObject += $vcfOverview
+                $allOverviewObject += $vcenterOverview
+                $allOverviewObject += $clusterOverview
+                $allOverviewObject += $networkingOverview
+                $allOverviewObject += $vrealizeOverview
+                $allOverviewObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-VcfSystemOverview
+
+Function Request-VcfOverview {
+    <#
+        .SYNOPSIS
+        Returns System Overview.
+
+        .DESCRIPTION
+        The Request-VcfOverview cmdlet returns an overview of the SDDC Manager instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Collects the overview detail
+
+        .EXAMPLE
+        Request-VcfOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will return an overview of the SDDC Manager instance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                # Gather Hardware OEM
+                $harwdareOemObject = New-Object System.Collections.ArrayList
+                foreach ($esxiHost in (Get-VCFHost)) {
+                    if (-not ($harwdareOemObject -match $esxiHost.hardwareVendor)) {
+                        $harwdareOemObject.Add($esxiHost.hardwareVendor)
+                    }
+                }
+
+                # Gather Hardware Platform
+                $harwdareModelObject = New-Object System.Collections.ArrayList
+                foreach ($esxiHost in (Get-VCFHost)) {
+                    if (-not ($harwdareModelObject -match $esxiHost.hardwareModel)) {
+                        $harwdareModelObject.Add($esxiHost.hardwareModel)
+                    }
+                }
+
+                # Gather CPU Sockets / Cores Platform
+                $totalSockets = $null
+                foreach ($esxiHost in (Get-VCFHost)) {
+                    $totalSockets = $totalSockets + $esxiHost.cpu.cpuCores.Count
+                }
+
+                # Gather VCF Architecture
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            $vcfArchitecture = (Get-AdvancedSetting -Name "config.SDDC.Deployed.Flavor" -Entity $vcfVcenterDetails.fqdn -Server $vcfVcenterDetails.fqdn).value
+                            Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                        }
+                    }
+                }
+
+                $customObject = New-Object -TypeName psobject    
+                $customObject | Add-Member -notepropertyname "SDDC Manager UUID" -notepropertyvalue (Get-VCFManager).id
+                $customObject | Add-Member -notepropertyname "VCF Version" -notepropertyvalue (Get-VCFManager).version
+                $customObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $harwdareOemObject
+                $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $harwdareModelObject
+                $customObject | Add-Member -notepropertyname "CPUs Sockets Deployed" -notepropertyvalue $totalSockets
+                $customObject | Add-Member -notepropertyname "Hosts Deployed" -notepropertyvalue (Get-VCFHost).Count
+                $customObject | Add-Member -notepropertyname "Workload Domains" -notepropertyvalue (Get-VCFWorkloadDomain).Count
+                $customObject | Add-Member -notepropertyname "VCF Architecture" -notepropertyvalue $vcfArchitecture
+                $customObject
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-VcfOverview
+
+Function Request-VcenterOverview {
+    <#
+        .SYNOPSIS
+        Returns overview of vSphere.
+
+        .DESCRIPTION
+        The Request-VcenterOverview cmdlet returns an overview of the vSphere environment managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity and authantcation to the SDDC Manager instance
+        - Validates that network connectivity and authantcation to the vCenter Server instances
+        - Collects the vSphere overview detail
+
+        .EXAMPLE
+        Request-VcenterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will return an overview of the vSphere environment managed by the SDDC Manager instance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allVsphereObject = New-Object System.Collections.ArrayList
+                foreach ($domain in $allWorkloadDomains) {
+                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain.name)) {
+                        if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                            if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                $customObject = New-Object -TypeName psobject
+                                $customObject | Add-Member -notepropertyname "vCenter Server UUID" -notepropertyvalue $domain.vcenters.id
+                                $customObject | Add-Member -notepropertyname "vCenter Server Version" -notepropertyvalue (Get-VCFvCenter -id $domain.vcenters.id).version
+                                $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
+                                $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
+                                $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-Cluster -Server $vcfVcenterDetails.fqdn).Count
+                                $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VMHost -Server $vcfVcenterDetails.fqdn).Count
+                                $customObject | Add-Member -notepropertyname "Total VM Count" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
+                                Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                            }
+                        }
+                    }
+                    $allVsphereObject += $customObject
+                }
+                $allVsphereObject | Sort-Object 'Domain Type'
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-VcenterOverview
+
+Function Request-ClusterOverview {
+    <#
+        .SYNOPSIS
+        Returns overview of vSphere.
+
+        .DESCRIPTION
+        The Request-ClusterOverview cmdlet returns an overview of the vSphere environment managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity and authantcation to the SDDC Manager instance
+        - Validates that network connectivity and authantcation to the vCenter Server instances
+        - Collects the vSphere overview detail
+
+        .EXAMPLE
+        Request-ClusterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will return an overview of the vSphere environment managed by the SDDC Manager instance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allClusterObject = New-Object System.Collections.ArrayList
+                foreach ($domain in $allWorkloadDomains) {
+                    foreach ($cluster in $domain.clusters) {
+                        $customObject = New-Object -TypeName psobject
+                        $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
+                        $customObject | Add-Member -notepropertyname "Cluster UUID" -notepropertyvalue $cluster.id
+                        $customObject | Add-Member -notepropertyname "Principal Storage" -notepropertyvalue  (Get-VCFCluster -id $cluster.id).primaryDatastoreType
+                        $customObject | Add-Member -notepropertyname "Stretched Cluster" -notepropertyvalue  (Get-VCFCluster -id $cluster.id).isStretched
+                    }
+                    $allClusterObject += $customObject
+                }
+                $allClusterObject
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-ClusterOverview
+
+Function Request-NetworkOverview {
+    <#
+        .SYNOPSIS
+        Returns overview of networking.
+
+        .DESCRIPTION
+        The Request-NetworkOverview cmdlet returns an overview of the networking managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity and authantcation to the SDDC Manager instance
+        - Collects the networking overview detail
+
+        .EXAMPLE
+        Request-NetworkOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will return an overview of the networking managed by the SDDC Manager instance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allNetworkingObject = New-Object System.Collections.ArrayList
+                foreach ($domain in $allWorkloadDomains) {
+                    foreach ($cluster in $domain.clusters) {
+                        if (Get-VCFEdgeCluster | Where-Object {$_.nsxtCluster.id -eq $domain.nsxtCluster.id}) { $edgeCluster = "True" } else { $edgeCluster = "False" }
+                        if ($domain.type -eq "MANAGEMENT" -and (Get-VCFApplicationVirtualNetwork)) { $avnStatus = "True"} else { $avnStatus = "False" }
+                        $customObject = New-Object -TypeName psobject
+                        $customObject | Add-Member -notepropertyname "NSX Manager UUID" -notepropertyvalue $domain.nsxtCluster.id
+                        $customObject | Add-Member -notepropertyname "NSX Manager Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
+                        $customObject | Add-Member -notepropertyname "NSX Stretched" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
+                        $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
+                        $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
+                        $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
+                        $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
+                    }
+                    $allNetworkingObject += $customObject 
+                }
+                $allNetworkingObject | Sort-Object 'Domain Type'
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-NetworkOverview
+
+Function Request-VrealizeOverview {
+    <#
+        .SYNOPSIS
+        Returns overview of vRealize Suite.
+
+        .DESCRIPTION
+        The Request-VrealizeOverview cmdlet returns an overview of vRealize Suite managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity and authantcation to the SDDC Manager instance
+        - Collects the networking overview detail
+
+        .EXAMPLE
+        Request-VrealizeOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will return an overview of vRealize Suite managed by the SDDC Manager instance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allVrealizeObject = New-Object System.Collections.ArrayList
+                if ((Get-VCFvRSLCM).status -eq "ACTIVE") {
+                    $customObject = New-Object -TypeName psobject
+                    $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue "vRealize Suite Lifecycle Manager"
+                    $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Get-VCFvRSLCM).id
+                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFvRSLCM).version
+                    $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Get-VCFvRSLCM).status
+                    $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue "1"
+                    $allVrealizeObject += $customObject
+                }
+                if ((Get-VCFWSA).status -eq "ACTIVE") {
+                    $customObject = New-Object -TypeName psobject
+                    $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue "Workspace ONE Access"
+                    $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Get-VCFWSA).id
+                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFWSA).version
+                    $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Get-VCFWSA).status
+                    $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue ((Get-VCFWSA).nodes).Count
+                    $allVrealizeObject += $customObject
+                }
+                if ((Get-VCFvRLI).status -eq "ACTIVE") {
+                    $customObject = New-Object -TypeName psobject
+                    $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue "vRealize Log Insight"
+                    $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Get-VCFvRLI).id
+                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFvRLI).version
+                    $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Get-VCFvRLI).status
+                    $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue ((Get-VCFvRLI).nodes).Count
+                    $allVrealizeObject += $customObject
+                }
+                if ((Get-VCFvROPS).status -eq "ACTIVE") {
+                    $customObject = New-Object -TypeName psobject
+                    $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue "vRealize Operations"
+                    $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Get-VCFvROPS).id
+                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFvROPS).version
+                    $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Get-VCFvROPS).status
+                    $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue ((Get-VCFvROPS).nodes).Count
+                    $allVrealizeObject += $customObject
+                }
+                if ((Get-VCFvRA).status -eq "ACTIVE") {
+                    $customObject = New-Object -TypeName psobject
+                    $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue "vRealize Automation"
+                    $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Get-VCFvRA).id
+                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFvRA).version
+                    $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Get-VCFvRA).status
+                    $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue ((Get-VCFvRA).nodes).Count
+                    $allVrealizeObject += $customObject
+                }
+
+                $allVrealizeObject
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-VrealizeOverview
+
+##########################################  E N D   O F   F U N C T I O N S  ##########################################
+#######################################################################################################################
+
+
 #########################################################################################
 #############################  Start Supporting Functions  ##############################
 
@@ -6160,7 +6604,7 @@ Function Start-CreateReportDirectory {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$path,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
-        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade","policy")] [String]$reportType
+        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade","policy","overview")] [String]$reportType
     )
 
     $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
@@ -6169,6 +6613,7 @@ Function Start-CreateReportDirectory {
     if ($reportType -eq "config") { $Global:reportFolder = $path + '\ConfigReports\' }
     if ($reportType -eq "upgrade") { $Global:reportFolder = $path + '\UpgradeReports\' }
     if ($reportType -eq "policy") { $Global:reportFolder = $path + '\PolicyReports\' }
+    if ($reportType -eq "overview") { $Global:reportFolder = $path + '\OverviewReports\' }
     if (!(Test-Path -Path $reportFolder)) {
         New-Item -Path $reportFolder -ItemType "directory" | Out-Null
     }
@@ -6318,7 +6763,7 @@ Export-ModuleMember -Function Get-ClarityReportHeader
 
 Function Get-ClarityReportNavigation {
     Param (
-        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade","policy")] [String]$reportType
+        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade","policy","overview")] [String]$reportType
     )
 
     if ($reportType -eq "health") { # Define the Clarity Cascading Style Sheets (CSS) for a Health Report
@@ -6521,6 +6966,20 @@ Function Get-ClarityReportNavigation {
             </nav>
                 <div class="content-area">
                     <div class="content-area">'
+        $clarityCssNavigation
+    }
+
+    if ($reportType -eq "overview") { # Define the Clarity Cascading Style Sheets (CSS) for a System Overview Report
+        $clarityCssNavigation = '
+            <nav class="subnav">
+            <ul class="nav">
+                <li class="nav-item">
+                <a class="nav-link active" href="">System Overview Report</a>
+                </li>
+            </ul>
+            </nav>
+            <div class="content-container">
+            <div class="content-area">'
         $clarityCssNavigation
     }
 }
