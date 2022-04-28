@@ -19,6 +19,20 @@ Example:
 
 >**Note**: Reports default to a light-mode theme. If you prefer a dark-mode theme, you can use the `-dark` parameter on the `Invoke-Vcf*Report` cmdlets.
 
+## Requirements
+
+**Operating System**
+- Microsoft Windows Server 2019 or later.
+- Microsoft Windows 10 or later.
+
+**PowerShell**
+- Microsoft Windows PowerShell 5.1
+
+**Browser**
+- Microsoft Edge
+- Google Chrome
+- Mozilla Firefox
+
 ## Installing the Module
 
 Verify that your system has Microsoft Windows PowerShell 5.1 installed. See [Microsoft Windows PowerShell][microsoft-windows-powershell].
@@ -30,7 +44,7 @@ Install-Module -Name VMware.PowerCLI -MinimumVersion 12.4.1
 Install-Module -Name VMware.vSphere.SsoAdmin -MinimumVersion 1.3.7
 Install-Module -Name PowerVCF -MinimumVersion 2.1.7
 Install-Module -Name PowerValidatedSolutions -MinimumVersion 1.6.0
-Install-Module -Name VMware.CloudFoundation.Reporting -MinimumVersion 1.0.0
+Install-Module -Name VMware.CloudFoundation.Reporting -RequiredVersion 0.0.3
 ```
 
 To verify the modules are installed, run the following command in the PowerShell console.
