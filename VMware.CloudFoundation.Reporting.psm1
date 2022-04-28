@@ -181,6 +181,21 @@ Function Invoke-VcfHealthReport {
             $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
         }
 
+        # Generating the NSX Transport Node Health Data Using PowerShell Request Functions
+        Write-LogMessage -type INFO -Message "Generating the NSX Transport Node Report for $workflowMessage."
+        if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+            $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+        }
+        elseif ($PsBoundParameters.ContainsKey('allDomains')) {
+            $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+        }
+        if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+            $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        }
+        elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
+            $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+        }
+
         # Generating the NSX Tier-0 Gateway BGP Health Data Using PowerShell Request Functions
         Write-LogMessage -type INFO -Message "Generating the NSX Tier-0 Gateway BGP Report for $workflowMessage."
         if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
@@ -228,6 +243,7 @@ Function Invoke-VcfHealthReport {
         $reportData += $nsxtHtml
         $reportData += $nsxtEdgeClusterHtml
         $reportData += $nsxtEdgeNodeHtml
+        $reportData += $nsxTransportNodeHtml
         $reportData += $nsxTier0BgpHtml
         $reportData += $storageCapacityHealthHtml
 
@@ -2195,6 +2211,85 @@ Function Publish-BackupStatus {
     }
 }
 Export-ModuleMember -Function Publish-BackupStatus
+
+Function Publish-NsxtTransportNodeStatus {
+    <#
+		.SYNOPSIS
+        Request and publish the status of NSX transport nodes managed by an NSX Manager cluster.
+
+        .DESCRIPTION
+        The Publish-NsxtTransportNodeStatus cmdlet checks the status NSX transport nodes managed by an NSX Manager cluster
+        and prepares the data to be published to an HTML report.  The cmdlet connects to SDDC Manager using the
+        -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Performs checks on the NSX transport node status and outputs the results
+
+        .EXAMPLE
+        Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will publish the status of all NSX transport nodes in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will publish thestatus of all NSX transport nodes in a VMware Cloud Foundation instance but only reports issues.
+
+        .EXAMPLE
+        Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will publish the BGP status for the NSX transport nodes in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
+    #>
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allNsxtTransportNodeStatusObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $nsxtTransportNodeStatus = Request-NsxtTransportNodeStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTransportNodeStatusObject += $nsxtTransportNodeStatus
+                        }
+                    }
+                    else {
+                        $nsxtTransportNodeStatus = Request-NsxtTransportNodeStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTransportNodeStatusObject += $nsxtTransportNodeStatus
+                    }
+                }
+                else {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $nsxtTransportNodeStatus = Request-NsxtTransportNodeStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtTransportNodeStatusObject += $nsxtTransportNodeStatus
+                        }
+                    }
+                    else {
+                        $nsxtTransportNodeStatus = Request-NsxtTransportNodeStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtTransportNodeStatusObject += $nsxtTransportNodeStatus
+                    }
+                }
+
+                if ($allNsxtTransportNodeStatusObject.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $allNsxtTransportNodeStatusObject = $allNsxtTransportNodeStatusObject | Sort-Object Domain, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn"></a><h3>NSX Transport Node Status</h3>' -PostContent '<p>No issues found.</p>' 
+                }
+                else {
+                    $allNsxtTransportNodeStatusObject = $allNsxtTransportNodeStatusObject | Sort-Object Domain, Resource, Element  | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn"></a><h3>NSX Transport Node Status</h3>' -As Table
+                }
+                $allNsxtTransportNodeStatusObject = Convert-CssClass -htmldata $allNsxtTransportNodeStatusObject
+                $allNsxtTransportNodeStatusObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-NsxtTransportNodeStatus
 
 Function Publish-NsxtTier0BgpStatus {
     <#
@@ -4705,6 +4800,141 @@ Function Request-NsxtAuthentication {
 }
 Export-ModuleMember -Function Request-NsxtAuthentication
 
+Function Request-NsxtTransportNodeStatus {
+    <#
+        .SYNOPSIS
+        Returns the status of NSX transport nodes managed by an NSX Manager cluster.
+
+        .DESCRIPTION
+        The Request-NsxtTransportNodeStatus cmdlet returns the status NSX transport nodes managed by an NSX Manager cluster.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates network connectivity and authentication to the SDDC Manager instanc
+        - Gathers the details for the NSX Manager cluster from the SDDC Manager
+        - Validates network connectivity and authentication to the NSX Local Manager cluster
+        - Collects the status of the transport nodes
+
+        .EXAMPLE
+        Request-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the status of the NSX transport nodes managed by an NSX Manager cluster which is managed by SDDC Manager for a workload domain.
+
+        .EXAMPLE
+        Request-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+        This example will return the status of the NSX transport nodes managed by an NSX Manager cluster which is managed by SDDC Manager for a workload domain but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                    if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -First 1) -pass ($vcfNsxDetails.adminPass | Select-Object -First 1)) {
+                            $customObject = New-Object System.Collections.ArrayList
+                            
+                            # NSX Edge Transport Nodes
+                            $type = 'edge' # Define the type of transport node
+                            $component = 'NSX Transport Node' # Define the component name
+                            $resource = $vcfNsxDetails.fqdn # Define the resource name
+                            $transportNodeStatus = (Get-NsxtTransportNodeStatus -type $type) # Get the status of the transport nodes
+                            $nodeType = (Get-Culture).textinfo.ToTitleCase($type.ToLower()) # Convert the type to title case
+
+                            # Set the alert and message based on the status of the transport node
+                            if ($downCount -ge 0 -or $unknownCount -ge 0) {
+                                $alert = 'Red' # Critical, transport node(s) down or unknown
+                                $message = $nodeType + ' transport node(s) in down or unknown state.' # Set the alert message
+                            }
+                            elseif ($degradedCount -ge 0) {
+                                $alert = 'Yellow' # Warning, transport node(s) degraded
+                                $message = $nodeType + ' transport node(s) in degraded state.' #
+                            }
+                            else {
+                                $alert = 'Green' # OK, transport node(s)  up
+                                $message = $nodeType + ' transport node(s) in up state.' # Set the alert message
+                            }
+
+                            # Add the properties to the element object
+                            $elementObject = New-Object -TypeName psobject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $nodeType # Set the node type
+                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the message
+                            $elementObject | Add-Member -NotePropertyName 'Up' -NotePropertyValue $transportNodeStatus.up_count # Set the up count
+                            $elementObject | Add-Member -NotePropertyName 'Down' -NotePropertyValue $transportNodeStatus.down_count # Set the down count
+                            $elementObject | Add-Member -NotePropertyName 'Degraded' -NotePropertyValue $transportNodeStatus.degraded_count # Set the degraded count
+                            $elementObject | Add-Member -NotePropertyName 'Unknown' -NotePropertyValue $transportNodeStatus.unknown_count # Set the unknown count
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if ($elementObject.alert -eq 'RED') {
+                                    $customObject += $elementObject
+                                }
+                            }
+                            else {
+                                $customObject += $elementObject
+                            }
+                        }
+                        $outputObject += $customObject # Add the custom object to the output object
+
+                        # NSX Host Transport Nodes
+                        $type = 'host' # Define the type of transport node
+                        $component = 'NSX Transport Node' # Define the component name
+                        $resource = $vcfNsxDetails.fqdn # Define the resource name
+                        $transportNodeStatus = (Get-NsxtTransportNodeStatus -type $type) # Get the status of the transport nodes
+                        $nodeType = (Get-Culture).textinfo.ToTitleCase($type.ToLower()) # Convert the type to title case
+
+                        # Set the alert and message based on the status of the transport node
+                        if ($downCount -ge 0 -or $unknownCount -ge 0) {
+                            $alert = 'RED' # Critical, transport node(s) down or unknown
+                            $message = $nodeType + ' transport node(s) in down or unknown state.' # Set the alert message
+                        }
+                        elseif ($degradedCount -ge 0) {
+                            $alert = 'YELLOW' # Warning, transport node(s) degraded
+                            $message = $nodeType + ' transport node(s) in degraded state.' #
+                        }
+                        else {
+                            $alert = 'GREEN' # OK, transport node(s)  up
+                            $message = $nodeType + ' transport node(s) in up state.' # Set the alert message
+                        }
+
+                        # Add the properties to the element object
+                        $elementObject = New-Object -TypeName psobject
+                        $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                        $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $nodeType # Set the node type
+                        $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the message
+                        $elementObject | Add-Member -NotePropertyName 'Up' -NotePropertyValue $transportNodeStatus.up_count # Set the up count
+                        $elementObject | Add-Member -NotePropertyName 'Down' -NotePropertyValue $transportNodeStatus.down_count # Set the down count
+                        $elementObject | Add-Member -NotePropertyName 'Degraded' -NotePropertyValue $transportNodeStatus.degraded_count # Set the degraded count
+                        $elementObject | Add-Member -NotePropertyName 'Unknown' -NotePropertyValue $transportNodeStatus.unknown_count # Set the unknown count
+                        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                        $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
+                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                            if ($elementObject.alert -eq 'RED' -or $elementObject.alert -eq 'YELLOW') {
+                                $customObject += $elementObject
+                            }
+                        }
+                        else {
+                            $customObject += $elementObject
+                        }
+                        $customObject | Sort-Object Domain, Resource, Element                
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-NsxtTransportNodeStatus
+
 Function Request-NsxtTier0BgpStatus {
     <#
         .SYNOPSIS
@@ -6925,6 +7155,7 @@ Function Get-ClarityReportNavigation {
                         <li><a class="nav-link" href="#nsx-local-manager">NSX Managers (Local)</a></li>
                         <li><a class="nav-link" href="#nsx-edge-cluster">NSX Edge Cluster</a></li>
                         <li><a class="nav-link" href="#nsx-edge">NSX Edge Nodes</a></li>
+                        <li><a class="nav-link" href="#nsx-tn">NSX Transport Nodes</a></li>
                         <li><a class="nav-link" href="#nsx-t0-bgp">NSX Tier-0 Gateway BGP</a></li>
                     </ul>
                 </section>
@@ -7390,8 +7621,8 @@ Function Get-VcenterBackupConfiguration {
                 $customObject += $backupSchedule.values | Select-Object *, @{N = 'ID'; e = { "$($backupSchedule.keys.value)" } } -ExpandProperty recurrence_info -ExcludeProperty Help | Select-Object * -ExcludeProperty recurrence_info, Help | Select-Object * -ExpandProperty retention_info | Select-Object * -ExcludeProperty retention_info, Help
             }
             return $customObject
-        # } else {
-        #     Write-Warning "No backup schedules configured."
+        } else {
+            continue
         }
     }
     Catch {

@@ -17,6 +17,8 @@ Example:
 
 ![Screenshot](screenshot.png)
 
+>**Note**: Reports default to a light-mode theme. If you prefer a dark-mode theme, you can use the `-dark` parameter on the `Invoke-Vcf*Report` cmdlets.
+
 ## Installing the Module
 
 Verify that your system has Microsoft Windows PowerShell 5.1 installed. See [Microsoft Windows PowerShell][microsoft-windows-powershell].
