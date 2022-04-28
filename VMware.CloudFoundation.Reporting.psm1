@@ -3285,7 +3285,7 @@ Function Request-NsxtComputeManagerStatus {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
                             $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }).vcenters.fqdn
-                            $computeManagers = (Get-NsxtComputeManager | Where-Object { $_.server -eq $vcenter })
+                            $computeManagers = (Get-NsxtComputeManager -vCenterServer $vcenter )
                             foreach ($computeManager in $computeManagers) {
                                 # TODO: Add support to check the status of a rouge compute manager registration.
                                 $customObject = New-Object System.Collections.ArrayList
@@ -8110,30 +8110,6 @@ Function Get-NsxtTransportNodeStatus {
     }
 }
 Export-ModuleMember -Function Get-NsxtTransportNodeStatus
-
-Function Get-NsxtComputeManager {
-    <#
-        .SYNOPSIS
-        Get the compute managers registered to the NSX Manager cluster.
-
-        .DESCRIPTION
-        The Get-NsxtComputeManager cmdlet returns compute managers registered to the NSX Manager cluster.
-
-        .EXAMPLE
-        Get-NsxtComputeManager
-        This example returns the compute managers registered to the NSX Manager cluster.
-    #>
-
-    Try {
-        $uri = "https://$nsxtManager/api/v1/fabric/compute-managers"
-        $response = Invoke-RestMethod $uri -Method 'GET' -Headers $nsxtHeaders
-        $response.results
-    }
-    Catch {
-        Write-Error $_.Exception.Message
-    }
-}
-Export-ModuleMember -Function Get-NsxtComputeManager
 
 Function Get-NsxtComputeManagerStatus {
     <#
