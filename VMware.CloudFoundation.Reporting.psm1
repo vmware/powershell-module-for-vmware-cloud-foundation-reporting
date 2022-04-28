@@ -6949,7 +6949,7 @@ Function Start-CreateReportDirectory {
         New-Item -Path $reportFolder -ItemType "directory" | Out-Null
     }
     if (Get-Module -ListAvailable VMware.CloudFoundation.Reporting) {
-        $source = ((Get-Module -ListAvailable VMware.CloudFoundation.Reporting | Sort-Object Version).path)[-1] -Split ('VMware.CloudFoundation.Reporting.psd1').Trim() | Where-Object { $_ -ne "" }
+        $source = (((Get-Module -ListAvailable VMware.CloudFoundation.Reporting | Sort-Object Version).path) | Select-Object -Last 1) -Split ('VMware.CloudFoundation.Reporting.psd1').Trim() | Where-Object { $_ -ne "" }
         Copy-Item -Path ("$source*.css") -Destination $path -Force -Confirm:$False
         Copy-Item -Path ("$source*.svg") -Destination $path -Force -Confirm:$False
     } else {
