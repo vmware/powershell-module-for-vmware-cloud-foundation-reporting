@@ -4926,90 +4926,49 @@ Function Request-NsxtTransportNodeStatus {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -First 1) -pass ($vcfNsxDetails.adminPass | Select-Object -First 1)) {
                             $customObject = New-Object System.Collections.ArrayList
                             
-                            # NSX Edge Transport Nodes
-                            $type = 'edge' # Define the type of transport node
-                            $component = 'NSX Transport Node' # Define the component name
-                            $resource = $vcfNsxDetails.fqdn # Define the resource name
-                            $transportNodeStatus = (Get-NsxtTransportNodeStatus -type $type) # Get the status of the transport nodes
-                            $nodeType = (Get-Culture).textinfo.ToTitleCase($type.ToLower()) # Convert the type to title case
+                            # NSX Transport Nodes
+                            $types = @("edge","host")
+                            foreach ($type in $types) {
+                                $component = 'NSX Transport Node' # Define the component name
+                                $resource = $vcfNsxDetails.fqdn # Define the resource name
+                                $transportNodeStatus = (Get-NsxtTransportNodeStatus -type $type) # Get the status of the transport nodes
+                                $nodeType = (Get-Culture).textinfo.ToTitleCase($type.ToLower()) # Convert the type to title case
 
-                            # Set the alert and message based on the status of the transport node
-                            if ($downCount -ge 0 -or $unknownCount -ge 0) {
-                                $alert = 'Red' # Critical, transport node(s) down or unknown
-                                $message = $nodeType + ' transport node(s) in down or unknown state.' # Set the alert message
-                            }
-                            elseif ($degradedCount -ge 0) {
-                                $alert = 'Yellow' # Warning, transport node(s) degraded
-                                $message = $nodeType + ' transport node(s) in degraded state.' #
-                            }
-                            else {
-                                $alert = 'Green' # OK, transport node(s)  up
-                                $message = $nodeType + ' transport node(s) in up state.' # Set the alert message
-                            }
+                                # Set the alert and message based on the status of the transport node
+                                if ($downCount -ge 0 -or $unknownCount -ge 0) {
+                                    $alert = 'Red' # Critical, transport node(s) down or unknown
+                                    $message = $nodeType + ' transport node(s) in down or unknown state.' # Set the alert message
+                                }
+                                elseif ($degradedCount -ge 0) {
+                                    $alert = 'Yellow' # Warning, transport node(s) degraded
+                                    $message = $nodeType + ' transport node(s) in degraded state.' #
+                                }
+                                else {
+                                    $alert = 'Green' # OK, transport node(s)  up
+                                    $message = $nodeType + ' transport node(s) in up state.' # Set the alert message
+                                }
 
-                            # Add the properties to the element object
-                            $elementObject = New-Object -TypeName psobject
-                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
-                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $nodeType # Set the node type
-                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the message
-                            $elementObject | Add-Member -NotePropertyName 'Up' -NotePropertyValue $transportNodeStatus.up_count # Set the up count
-                            $elementObject | Add-Member -NotePropertyName 'Down' -NotePropertyValue $transportNodeStatus.down_count # Set the down count
-                            $elementObject | Add-Member -NotePropertyName 'Degraded' -NotePropertyValue $transportNodeStatus.degraded_count # Set the degraded count
-                            $elementObject | Add-Member -NotePropertyName 'Unknown' -NotePropertyValue $transportNodeStatus.unknown_count # Set the unknown count
-                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
-                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                if ($elementObject.alert -eq 'RED') {
+                                # Add the properties to the element object
+                                $elementObject = New-Object -TypeName psobject
+                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                                $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $nodeType # Set the node type
+                                $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the message
+                                $elementObject | Add-Member -NotePropertyName 'Up' -NotePropertyValue $transportNodeStatus.up_count # Set the up count
+                                $elementObject | Add-Member -NotePropertyName 'Down' -NotePropertyValue $transportNodeStatus.down_count # Set the down count
+                                $elementObject | Add-Member -NotePropertyName 'Degraded' -NotePropertyValue $transportNodeStatus.degraded_count # Set the degraded count
+                                $elementObject | Add-Member -NotePropertyName 'Unknown' -NotePropertyValue $transportNodeStatus.unknown_count # Set the unknown count
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
+                                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                    if ($elementObject.alert -eq 'RED') {
+                                        $customObject += $elementObject
+                                    }
+                                }
+                                else {
                                     $customObject += $elementObject
                                 }
                             }
-                            else {
-                                $customObject += $elementObject
-                            }
-                        }
-                        $outputObject += $customObject # Add the custom object to the output object
-
-                        # NSX Host Transport Nodes
-                        $type = 'host' # Define the type of transport node
-                        $component = 'NSX Transport Node' # Define the component name
-                        $resource = $vcfNsxDetails.fqdn # Define the resource name
-                        $transportNodeStatus = (Get-NsxtTransportNodeStatus -type $type) # Get the status of the transport nodes
-                        $nodeType = (Get-Culture).textinfo.ToTitleCase($type.ToLower()) # Convert the type to title case
-
-                        # Set the alert and message based on the status of the transport node
-                        if ($downCount -ge 0 -or $unknownCount -ge 0) {
-                            $alert = 'RED' # Critical, transport node(s) down or unknown
-                            $message = $nodeType + ' transport node(s) in down or unknown state.' # Set the alert message
-                        }
-                        elseif ($degradedCount -ge 0) {
-                            $alert = 'YELLOW' # Warning, transport node(s) degraded
-                            $message = $nodeType + ' transport node(s) in degraded state.' #
-                        }
-                        else {
-                            $alert = 'GREEN' # OK, transport node(s)  up
-                            $message = $nodeType + ' transport node(s) in up state.' # Set the alert message
-                        }
-
-                        # Add the properties to the element object
-                        $elementObject = New-Object -TypeName psobject
-                        $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
-                        $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $nodeType # Set the node type
-                        $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the message
-                        $elementObject | Add-Member -NotePropertyName 'Up' -NotePropertyValue $transportNodeStatus.up_count # Set the up count
-                        $elementObject | Add-Member -NotePropertyName 'Down' -NotePropertyValue $transportNodeStatus.down_count # Set the down count
-                        $elementObject | Add-Member -NotePropertyName 'Degraded' -NotePropertyValue $transportNodeStatus.degraded_count # Set the degraded count
-                        $elementObject | Add-Member -NotePropertyName 'Unknown' -NotePropertyValue $transportNodeStatus.unknown_count # Set the unknown count
-                        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                        $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
-                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                            if ($elementObject.alert -eq 'RED' -or $elementObject.alert -eq 'YELLOW') {
-                                $customObject += $elementObject
-                            }
-                        }
-                        else {
-                            $customObject += $elementObject
                         }
                         $customObject | Sort-Object Domain, Resource, Element                
                     }
@@ -6907,52 +6866,19 @@ Function Request-VrealizeOverview {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $allVrealizeObject = New-Object System.Collections.ArrayList
-                if ((Get-VCFvRSLCM).status -eq "ACTIVE") {
-                    $customObject = New-Object -TypeName psobject
-                    $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue "vRealize Suite Lifecycle Manager"
-                    $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Get-VCFvRSLCM).id
-                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFvRSLCM).version
-                    $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Get-VCFvRSLCM).status
-                    $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue "1"
-                    $allVrealizeObject += $customObject
+                $vcfApiCmdlet = @("Get-VCFvRSLCM","Get-VCFWSA","Get-VCFvRLI","Get-VCFvROPS","Get-VCFvRA")
+                foreach ($apiCmdlet in $vcfApiCmdlet) {
+                    if ((Invoke-Expression $apiCmdlet).status -eq "ACTIVE") {
+                        if ($apiCmdlet -eq "Get-VCFvRSLCM") {$nodeCount = "1" } else { ($nodeCount = ((Invoke-Expression $apiCmdlet).nodes).Count)}
+                        $customObject = New-Object -TypeName psobject
+                        $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue ((Get-Help -Name $apiCmdlet).synopsis -Split ("Get the existing ") | Select-Object -Last 1)
+                        $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Invoke-Expression $apiCmdlet).id
+                        $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Invoke-Expression $apiCmdlet).version
+                        $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Invoke-Expression $apiCmdlet).status
+                        $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue $nodeCount
+                        $allVrealizeObject += $customObject
+                    }
                 }
-                if ((Get-VCFWSA).status -eq "ACTIVE") {
-                    $customObject = New-Object -TypeName psobject
-                    $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue "Workspace ONE Access"
-                    $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Get-VCFWSA).id
-                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFWSA).version
-                    $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Get-VCFWSA).status
-                    $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue ((Get-VCFWSA).nodes).Count
-                    $allVrealizeObject += $customObject
-                }
-                if ((Get-VCFvRLI).status -eq "ACTIVE") {
-                    $customObject = New-Object -TypeName psobject
-                    $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue "vRealize Log Insight"
-                    $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Get-VCFvRLI).id
-                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFvRLI).version
-                    $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Get-VCFvRLI).status
-                    $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue ((Get-VCFvRLI).nodes).Count
-                    $allVrealizeObject += $customObject
-                }
-                if ((Get-VCFvROPS).status -eq "ACTIVE") {
-                    $customObject = New-Object -TypeName psobject
-                    $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue "vRealize Operations"
-                    $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Get-VCFvROPS).id
-                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFvROPS).version
-                    $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Get-VCFvROPS).status
-                    $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue ((Get-VCFvROPS).nodes).Count
-                    $allVrealizeObject += $customObject
-                }
-                if ((Get-VCFvRA).status -eq "ACTIVE") {
-                    $customObject = New-Object -TypeName psobject
-                    $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue "vRealize Automation"
-                    $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Get-VCFvRA).id
-                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFvRA).version
-                    $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Get-VCFvRA).status
-                    $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue ((Get-VCFvRA).nodes).Count
-                    $allVrealizeObject += $customObject
-                }
-
                 $allVrealizeObject
             }
         }
