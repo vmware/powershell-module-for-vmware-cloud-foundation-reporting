@@ -27,7 +27,7 @@ Install the supporting PowerShell modules from the PowerShell Gallery by running
 Install-Module -Name VMware.PowerCLI -MinimumVersion 12.4.1
 Install-Module -Name VMware.vSphere.SsoAdmin -MinimumVersion 1.3.7
 Install-Module -Name PowerVCF -MinimumVersion 2.1.7
-Install-Module -Name PowerValidatedSolutions -MinimumVersion 1.5.0
+Install-Module -Name PowerValidatedSolutions -MinimumVersion 1.6.0
 Install-Module -Name VMware.CloudFoundation.Reporting -MinimumVersion 1.0.0
 ```
 
@@ -50,11 +50,11 @@ To view the help for any cmdlet, run the `Get-Help` command in the PowerShell co
 For example:
 
 ```powershell
-Get-Help -Module Invoke-VcfHealthReport
+Get-Help -Name Invoke-VcfHealthReport
 ```
 
 ```powershell
-Get-Help -Module Invoke-VcfHealthReport -Examples
+Get-Help -Name Invoke-VcfHealthReport -Examples
 ```
 
 ## Getting Started

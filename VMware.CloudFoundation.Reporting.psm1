@@ -73,6 +73,7 @@ Function Invoke-VcfHealthReport {
     Try {
         Clear-Host; Write-Host ""
 
+        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
@@ -292,6 +293,7 @@ Function Invoke-VcfAlertReport {
     Try {
         Clear-Host; Write-Host ""
 
+        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
@@ -420,6 +422,7 @@ Function Invoke-VcfConfigReport {
     Try {
         Clear-Host; Write-Host ""
 
+        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
@@ -428,9 +431,9 @@ Function Invoke-VcfConfigReport {
         }
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the Process of Creating a Configuration Report for $workflowMessage." -Colour Yellow
-        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
+        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType config # Setup Report Location and Report File
-        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
+        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
         Write-LogMessage -Type INFO -Message "Collecting ESXi Core Dump Configuration for $workflowMessage."
         if ($PsBoundParameters.ContainsKey("allDomains")) {
@@ -461,7 +464,7 @@ Function Invoke-VcfConfigReport {
         $report += $reportFooter
 
         # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
         $report | Out-File $reportName
         Invoke-Item $reportName
     }
@@ -501,17 +504,17 @@ Function Invoke-VcfUpgradePrecheck {
         $workflowMessage = "Workload Domain ($workloadDomain)"
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the Process of Running an Upgrade Precheck for $workflowMessage." -Colour Yellow
-        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
+        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType upgrade # Setup Report Location and Report File
-        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
+        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
         if (Test-VCFConnection -server $sddcManagerFqdn) {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
                 $jsonSpec = '{ "resources" : [ { "resourceId" : "'+ (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).id+'", "type" : "DOMAIN" } ] }'
                 $task = Start-VCFSystemPrecheck -json $jsonSpec
-                Write-LogMessage -Type INFO -Message "Waiting for Upgrade Precheck Task ($($task.name)) with Id ($($task.id)) to Complete"
+                Write-LogMessage -Type INFO -Message "Waiting for Upgrade Precheck Task ($($task.name)) with Id ($($task.id)) to Complete."
                 Do { $status = Get-VCFSystemPrecheckTask -id $task.id } While ($status.status -eq "IN_PROGRESS")
-                Write-LogMessage -Type INFO -Message "Task ($($task.name)) with Task Id ($($task.id)) completed with status ($($status.status))"
+                Write-LogMessage -Type INFO -Message "Task ($($task.name)) with Task Id ($($task.id)) completed with status ($($status.status))."
                 $allChecksObject = New-Object System.Collections.ArrayList
                 foreach ($subTask in $status.subTasks) {
                     $elementObject = New-Object -TypeName psobject
@@ -580,7 +583,7 @@ Function Invoke-VcfUpgradePrecheck {
         $report += $reportFooter
 
         # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
         $report | Out-File $reportName
         Invoke-Item $reportName
     }
@@ -621,6 +624,7 @@ Function Invoke-VcfPasswordPolicy {
 
         Clear-Host; Write-Host ""
 
+        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
@@ -628,38 +632,38 @@ Function Invoke-VcfPasswordPolicy {
             $workflowMessage = "Workload Domain ($workloadDomain)"
         }
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the Process of Running a Password Policy Report for $workflowMessage" -Colour Yellow
-        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile"
+        Write-LogMessage -Type INFO -Message "Starting the Process of Running a Password Policy Report for $workflowMessage." -Colour Yellow
+        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType policy # Setup Report Location and Report File
-        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName"
+        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
         # Collect vCenter Server Password Policies
         if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            Write-LogMessage -Type INFO -Message "Collecting vCenter Server Password Policy Configuration for $workflowMessage"
+            Write-LogMessage -Type INFO -Message "Collecting vCenter Server Password Policy Configuration for $workflowMessage."
             $vcenterPolicyHtml = Publish-VcenterPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
         }
         else {
-            Write-LogMessage -Type INFO -Message "Collecting vCenter Server Policy Configuration for $workflowMessage"
+            Write-LogMessage -Type INFO -Message "Collecting vCenter Server Policy Configuration for $workflowMessage."
             $vcenterPolicyHtml = Publish-VcenterPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
 
         # Collect ESXi Password Policies
         if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for $workflowMessage"
+            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for $workflowMessage."
             $esxiPolicyHtml = Publish-EsxiPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
         }
         else {
-            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for $workflowMessage"
+            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for $workflowMessage."
             $esxiPolicyHtml = Publish-EsxiPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
 
         # Collect NSX-T Data Center Password Policies
         if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage"
+            Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage."
             $nsxtPolicyHtml = Publish-NsxtPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
         }
         else {
-            Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage"
+            Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage."
             $nsxtPolicyHtml = Publish-NsxtPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
         
@@ -686,7 +690,7 @@ Function Invoke-VcfPasswordPolicy {
         $report += $reportFooter
 
         # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
         $report | Out-File $reportName
         Invoke-Item $reportName
     }
@@ -720,6 +724,7 @@ Function Invoke-VcfOverviewReport {
     Try {
         Clear-Host; Write-Host ""
 
+        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
         if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
         $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
@@ -746,7 +751,7 @@ Function Invoke-VcfOverviewReport {
         $report += $reportFooter
 
         # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)"
+        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
         $report | Out-File $reportName
         Invoke-Item $reportName
     }
@@ -2785,7 +2790,7 @@ Function Request-NsxtManagerUserExpiry {
                                 if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {    
                                     $customObject = New-Object System.Collections.ArrayList
                                     foreach ($nsxtManagerNode in $vcfNsxDetails.nodes) {
-                                        $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password
+                                        $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password | Select-Object -first 1
                                         $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser admin
                                         if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                             if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
@@ -3823,7 +3828,7 @@ Function Request-NsxtManagerBackupStatus {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
-                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                             $backupTask = Get-NsxtBackupHistory -fqdn $vcfNsxDetails.fqdn
                             $customObject = New-Object System.Collections.ArrayList
 
@@ -4628,7 +4633,7 @@ Function Request-NsxtAuthentication {
                         $vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain.name -listNodes
                         foreach ($node in $vcfNsxDetails.nodes) {
                             if (Test-NsxtConnection -server $node.fqdn -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage ) {
-                                if (Test-NsxtAuthentication -server $node.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                                if (Test-NsxtAuthentication -server $node.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                                     $alert = "GREEN"
                                     $message = "API Connection check successful!"
                                 }
@@ -4661,7 +4666,7 @@ Function Request-NsxtAuthentication {
                     $vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $workloadDomain -listNodes
                     foreach ($node in $vcfNsxDetails.nodes) {
                         if (Test-NsxtConnection -server $node.fqdn -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage ) {
-                            if (Test-NsxtAuthentication -server $node.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                            if (Test-NsxtAuthentication -server $node.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                                 $alert = "GREEN"
                                 $message = "API Connection check successful!"
                             }
@@ -4720,10 +4725,6 @@ Function Request-NsxtTier0BgpStatus {
         .EXAMPLE
         Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain but only reports issues.
-    
-        .EXAMPLE
-        Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -html
-        This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain in html format.
     #>
 
     Param (
@@ -4739,7 +4740,7 @@ Function Request-NsxtTier0BgpStatus {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
-                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                             $customObject = New-Object System.Collections.ArrayList
                             $tier0s = Get-NsxtTier0Gateway
                             foreach ($tier0 in $tier0s) {
@@ -5143,7 +5144,7 @@ Function Request-NsxtAlert {
         if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
             if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                 if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
-                    if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                    if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                         $nsxtAlarms = Get-NsxtAlarm -fqdn $vcfNsxDetails.fqdn # Get the NSX-T alarms
                         $customObject = New-Object System.Collections.ArrayList
                         # TODO: Define the YELLOW alert based on Status and Severity
@@ -5162,7 +5163,6 @@ Function Request-NsxtAlert {
                             $elementObject | Add-Member -NotePropertyName 'Feature Name' -NotePropertyValue $alarm.feature_name # Set the feature_name
                             $elementObject | Add-Member -NotePropertyName 'Event Type' -NotePropertyValue $alarm.event_type # Set the event_type
                             $elementObject | Add-Member -NotePropertyName 'Description' -NotePropertyValue $alarm.description # Set the description
-                            #$elementObject | Add-Member -NotePropertyName 'Last Reported Time' -NotePropertyValue $element.last_reported_time # Set the last_reported_time in [Long]
                             $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue $alarm.status # Set the status
                             $elementObject | Add-Member -NotePropertyName 'Severity' -NotePropertyValue $alarm.severity # Set the severity
                             $elementObject | Add-Member -NotePropertyName 'Node Name' -NotePropertyValue $alarm.node_display_name # Set the node_display_name
@@ -6427,8 +6427,8 @@ Function Request-VcenterOverview {
     )
 
     Try {
-        if (Test-VCFConnection -server $server) {
-            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+        if (Test-VCFConnection -server $server -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage) {
                 $allWorkloadDomains = Get-VCFWorkloadDomain
                 $allVsphereObject = New-Object System.Collections.ArrayList
                 foreach ($domain in $allWorkloadDomains) {
@@ -6450,7 +6450,11 @@ Function Request-VcenterOverview {
                     $allVsphereObject += $customObject
                 }
                 $allVsphereObject | Sort-Object 'Domain Type'
+            } else {
+                Write-LogMessage -Type ERROR -Message "$ErrorMessage"
             }
+        } else {
+            Write-LogMessage -Type ERROR -Message "$ErrorMessage"
         }
     }
 	Catch {
@@ -6664,7 +6668,7 @@ Function Test-VcfHealthPrereq {
     Try {
         $modules = @( 
             @{ Name=("PowerVCF"); Version=("2.1.7")}
-            @{ Name=("PowerValidatedSolutions"); Version=("1.5.0")}
+            @{ Name=("PowerValidatedSolutions"); Version=("1.6.0")}
             @{ Name=("VMware.PowerCLI"); Version=("12.4.1")}
             @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.7")}
         )
@@ -7386,8 +7390,8 @@ Function Get-VcenterBackupConfiguration {
                 $customObject += $backupSchedule.values | Select-Object *, @{N = 'ID'; e = { "$($backupSchedule.keys.value)" } } -ExpandProperty recurrence_info -ExcludeProperty Help | Select-Object * -ExcludeProperty recurrence_info, Help | Select-Object * -ExpandProperty retention_info | Select-Object * -ExcludeProperty retention_info, Help
             }
             return $customObject
-        } else {
-            Write-Warning "No backup schedules configured."
+        # } else {
+        #     Write-Warning "No backup schedules configured."
         }
     }
     Catch {
