@@ -1,5 +1,4 @@
 # Copyright 2022 VMware, Inc.
-
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
@@ -2208,7 +2207,7 @@ Function Publish-BackupStatus {
 
                 if ($allBackupStatusObject.Count -eq 0) { $addNoIssues = $true }
                     if ($addNoIssues) {
-                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -PostContent "<p>No I=issues Found</p>" 
+                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -PostContent "<p>No issues found.</p>" 
                     } else {
                         $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -As Table
                     }
@@ -8139,6 +8138,114 @@ Function Get-NsxtComputeManagerStatus {
     }
 }
 Export-ModuleMember -Function Get-NsxtComputeManagerStatus
+
+Function Get-NsxtApplianceUser {
+    <#
+        .SYNOPSIS
+        Returns the list of users configued to log in to the NSX appliance.
+
+        .DESCRIPTION
+        The Get-NsxtApplianceUser cmdlet returns the list of users configued to log in to the NSX appliance.
+
+        .EXAMPLE
+        Get-NsxtApplianceUser
+        This example returns a all users configued to log in to the NSX appliance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$transportNodeId,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$clusterNodeId
+    )
+
+    Try {
+        if ($PsBoundParameters.ContainsKey("transportNodeId")) {
+            $uri = "https://$nsxtmanager/api/v1/transport-nodes/$transportNodeId/node/users"
+        } elseif ($PsBoundParameters.ContainsKey("clusterNodeId")) {
+            $uri = "https://$nsxtmanager/api/v1/cluster/$clusterNodeId/node/users"
+        } else {
+            $uri = "https://$nsxtmanager/api/v1/node/users"
+        }
+        (Invoke-RestMethod $uri -Method 'GET' -Headers $nsxtHeaders).results
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Get-NsxtApplianceUser
+
+Function Set-NsxtApplianceUserExpirationPolicy {
+    <#
+        .SYNOPSIS
+        Updates the password expiration policy for NSX appliance user.
+
+        .DESCRIPTION
+        The Set-NsxtApplianceUserExpirationPolicy cmdlet updates the password expiration policy for an NSX appliance user.
+
+        .EXAMPLE
+        Set-NsxtApplianceUserExpirationPolicy -userId 0 -days 9999
+        This example updates the password expiration policy for the userId 0 (root) to 9999 days.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$userId,
+        [Parameter (Mandatory = $true)] [ValidateRange(0,9999)] [Int]$days,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$transportNodeId,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$clusterNodeId
+    )
+
+    Try {
+        $json = '{"password_change_frequency": ' + $days + ' }'
+        if ($PsBoundParameters.ContainsKey("transportNodeId")) {
+            $uri = "https://$nsxtmanager/api/v1/transport-nodes/$transportNodeId/node/users/$userId"
+        } elseif ($PsBoundParameters.ContainsKey("clusterNodeId")) {
+            $uri = "https://$nsxtmanager/api/v1/cluster/$clusterNodeId/node/users/$userId"
+        } else {
+            $uri = "https://$nsxtmanager/api/v1/node/users/$userId"
+        }
+        (Invoke-RestMethod $uri -Method 'PUT' -Headers $nsxtHeaders -Body $json).results
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Set-NsxtApplianceUserExpirationPolicy
+
+Function Set-NsxtApplianceUserPassword {
+    <#
+        .SYNOPSIS
+        Updates the password for NSX appliance user.
+
+        .DESCRIPTION
+        The Set-NsxtApplianceUserPassword cmdlet updates the password for an NSX appliance user.
+
+        .EXAMPLE
+        Set-NsxtApplianceUserPassword -userId 0 -password VMware123!VMware123!
+        This example updates the password for the userId 0 (root).
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$userId,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()]  [String]$password,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$transportNodeId,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$clusterNodeId
+    )
+
+    Try {
+        $json = '{"password": "' + $password + '" }'
+        if ($PsBoundParameters.ContainsKey("transportNodeId")) {
+            $uri = "https://$nsxtmanager/api/v1/transport-nodes/$transportNodeId/node/users/$userId`?action=reset_password"
+        } elseif ($PsBoundParameters.ContainsKey("clusterNodeId")) {
+            $uri = "https://$nsxtmanager/api/v1/cluster/$clusterNodeId/node/users/$userId`?action=reset_password"
+        } else {
+            $uri = "https://$nsxtmanager/api/v1/node/users/$userId`?action=reset_password"
+        }
+        (Invoke-RestMethod $uri -Method 'POST' -Headers $nsxtHeaders -Body $json).results
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Set-NsxtApplianceUserPassword
 
 ##############################  End Supporting Functions ###############################
 ########################################################################################
