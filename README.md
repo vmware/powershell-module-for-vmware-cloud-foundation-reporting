@@ -17,9 +17,12 @@ Example:
 
 ![Screenshot](screenshot.png)
 
->**Note**: Reports default to a light-mode theme. If you prefer a dark-mode theme, you can use the `-dark` parameter on the `Invoke-Vcf*Report` cmdlets.
+>**Note**: Reports default to a light-mode theme. If you prefer a dark-mode theme, you can use the `-dark` parameter with each `Invoke-Vcf*Report` cmdlets.
 
 ## Requirements
+
+**Supported Platforms**
+- VMware Cloud Foundation 4.2.1 and later
 
 **Operating System**
 - Microsoft Windows Server 2019 or later.
@@ -45,6 +48,12 @@ Install-Module -Name VMware.vSphere.SsoAdmin -MinimumVersion 1.3.7
 Install-Module -Name PowerVCF -MinimumVersion 2.1.7
 Install-Module -Name PowerValidatedSolutions -MinimumVersion 1.6.0
 Install-Module -Name VMware.CloudFoundation.Reporting -RequiredVersion 0.0.3
+```
+
+If you experience an error downloading the module from the PSGallery you may need to run the following command in the Windows PowerShell console to enable TLS 1.2.
+
+```powershell
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
 ```
 
 To verify the modules are installed, run the following command in the PowerShell console.
@@ -409,6 +418,10 @@ Get-Help -Name Invoke-VcfHealthReport -Examples
     ```
 
 4. Review the generated HTML report.
+
+## Support
+
+This module is not supported by VMware Support.
 
 ## License
 
