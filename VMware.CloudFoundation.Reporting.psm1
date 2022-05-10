@@ -3285,24 +3285,32 @@ Function Request-NsxtComputeManagerStatus {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
                             $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }).vcenters.fqdn
-                            $computeManagers = (Get-NsxtComputeManager -vCenterServer $vcenter )
+                            $computeManagers = (Get-NsxtComputeManager)
                             foreach ($computeManager in $computeManagers) {
-                                # TODO: Add support to check the status of a rouge compute manager registration.
                                 $customObject = New-Object System.Collections.ArrayList
                                 $component = 'Compute Manager' # Define the component name
                                 $resource = $vcfNsxDetails.fqdn # Define the resource name
-                                $status  = (Get-NsxtComputeManagerStatus -id $computeManager.id)
 
-                                # Set the alert and message based on the status of the registration and connection
+                                # Get the status of the compute manager
+                                if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain -and $_.vcenters.fqdn -ne $computeManager.server }) {
+                                    $status = 'ROGUE'
+                                } else {
+                                    $status = (Get-NsxtComputeManagerStatus -id $computeManager.id)
+                                }
+
+                                # Set the alert and message based on the status of the compute manager
                                 if ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -eq 'UP') {   
                                     $alert = 'GREEN' # Ok; registered and up
-                                    $message = "$($computeManager.server) is registered and healthy." # Set the status message
+                                    $message = "$($computeManager.server) is registered and healthy." # Ok; registered and up
                                 } elseif ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -ne 'UP') {
                                     $alert = 'RED' # Critical; registered and not up
-                                    $message = "$($computeManager.server) is registered but unhealthy." # Set the alert message
+                                    $message = "$($computeManager.server) is registered but unhealthy." # Critical; registered and not up
+                                } elseif ($status -eq 'ROGUE') {
+                                    $alert = 'RED' # Critical; rouge addition detected
+                                    $message = "$($computeManager.server) has been detected as a rouge addition." # Critical; rouge addition detected
                                 } else {
                                     $alert = 'RED' # Critical; not registered
-                                    $message = "($computeManager.server) is not registered." # Critical; failure
+                                    $message = "$($computeManager.server) is not registered." # Critical; not registered
                                 }
 
                                 # Add the properties to the element object
@@ -3315,13 +3323,13 @@ Function Request-NsxtComputeManagerStatus {
                                     if ($elementObject.alert -eq 'RED') {
                                         $customObject += $elementObject
                                     }
-                                }
-                                else {
+                                } else {
                                     $customObject += $elementObject
-                                }  
+                                }
+                                $outputObject += $customObject
                             }
                         }
-                        $customObject | Sort-Object Component, Resource
+                        $outputObject | Sort-Object Component, Resource
                     }
                 }
             }
