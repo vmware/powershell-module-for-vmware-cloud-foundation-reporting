@@ -6645,11 +6645,11 @@ Function Request-VcfOverview {
 
                 $systemObject = New-Object -TypeName psobject    
                 $systemObject | Add-Member -notepropertyname "SDDC Manager UUID" -notepropertyvalue (Get-VCFManager).id
-                $systemObject | Add-Member -notepropertyname "VCF Version" -notepropertyvalue (Get-VCFManager).version
-                $systemObject | Add-Member -notepropertyname "VCF Architecture" -notepropertyvalue $vcfArchitecture
+                $systemObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFManager).version
+                $systemObject | Add-Member -notepropertyname "Architecture" -notepropertyvalue $vcfArchitecture
                 $systemObject | Add-Member -notepropertyname "CEIP Status" -notepropertyvalue (Get-Culture).TextInfo.ToTitleCase((Get-VCFCeip).status.ToLower())
-                $systemObject | Add-Member -notepropertyname "Depot User" -notepropertyvalue (Get-VCFDepotCredential).username.ToLower()
-                $systemObject | Add-Member -notepropertyname "Depot Status" -notepropertyvalue ((Get-VCFDepotCredential).message -Split ": ")[-1]
+                $systemObject | Add-Member -notepropertyname "Customer Connect User" -notepropertyvalue (Get-VCFDepotCredential).username.ToLower()
+                $systemObject | Add-Member -notepropertyname "Customer Connect Status" -notepropertyvalue ((Get-VCFDepotCredential).message -Split ": ")[-1]
                 $systemObject
             }
         }
@@ -6685,6 +6685,22 @@ Function Request-HardwareOverview {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                # Calculate Total VMs Across VCF Instance
+                $totalVms = $null
+                $totalPoweredOnVms = $null
+                $totalPoweredOffVms = $null
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                foreach ($domain in $allWorkloadDomains) {
+                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain.name)) {
+                        if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                            if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                $totalVms += (Get-VM -Server $vcfVcenterDetails.fqdn).Count
+                                $totalPoweredOnVms += (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
+                                $totalPoweredOffVms += (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
+                            }
+                        }
+                    }
+                }
                 # Gather Hardware OEM
                 $harwdareOemObject = New-Object System.Collections.ArrayList
                 foreach ($esxiHost in (Get-VCFHost)) {
@@ -6707,13 +6723,16 @@ Function Request-HardwareOverview {
                     $totalSockets = $totalSockets + $esxiHost.cpu.cpuCores.Count
                 }
 
-                $hardwareObject = New-Object -TypeName psobject    
-                $hardwareObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $harwdareOemObject
-                $hardwareObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $harwdareModelObject
-                $hardwareObject | Add-Member -notepropertyname "CPUs Sockets Deployed" -notepropertyvalue $totalSockets
-                $hardwareObject | Add-Member -notepropertyname "Hosts Deployed" -notepropertyvalue (Get-VCFHost).Count
-                $hardwareObject | Add-Member -notepropertyname "Workload Domains" -notepropertyvalue (Get-VCFWorkloadDomain).Count
-                $hardwareObject
+                $customObject = New-Object -TypeName psobject    
+                $customObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $harwdareOemObject
+                $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $harwdareModelObject
+                $customObject | Add-Member -notepropertyname "CPUs Sockets Deployed" -notepropertyvalue $totalSockets
+                $customObject | Add-Member -notepropertyname "Hosts Deployed" -notepropertyvalue (Get-VCFHost).Count
+                $customObject | Add-Member -notepropertyname "Workload Domains" -notepropertyvalue (Get-VCFWorkloadDomain).Count
+                $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue $totalVms
+                $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue $totalPoweredOnVms
+                $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue $totalPoweredOffVms
+                $customObject
             }
         }
     }
@@ -6762,7 +6781,9 @@ Function Request-VcenterOverview {
                                 $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
                                 $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-Cluster -Server $vcfVcenterDetails.fqdn).Count
                                 $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VMHost -Server $vcfVcenterDetails.fqdn).Count
-                                $customObject | Add-Member -notepropertyname "Total VM Count" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
+                                $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
+                                $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
+                                $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
                                 Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                             }
                         }
