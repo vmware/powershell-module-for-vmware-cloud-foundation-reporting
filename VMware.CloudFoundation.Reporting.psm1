@@ -460,13 +460,21 @@ Function Invoke-VcfConfigReport {
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
-        Write-LogMessage -Type INFO -Message "Collecting ESXi Core Dump Configuration for $workflowMessage."
+        # Collecting Cluster Configuration Using PowerShell Functions
+        Write-LogMessage -Type INFO -Message "Generating the Cluster Configuration for $workflowMessage."
         if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $esxiCoreDumpHtml = Publish-EsxiCoreDumpConfig -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -html
+            $clusterConfigHtml = Publish-ClusterConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+        } else {
+            $clusterConfigHtml = Publish-ClusterConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
-        else {
-            $esxiCoreDumpHtml = Publish-EsxiCoreDumpConfig -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -html
-        }
+
+        # Write-LogMessage -Type INFO -Message "Collecting ESXi Core Dump Configuration for $workflowMessage."
+        # if ($PsBoundParameters.ContainsKey("allDomains")) {
+        #     $esxiCoreDumpHtml = Publish-EsxiCoreDumpConfig -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -html
+        # }
+        # else {
+        #     $esxiCoreDumpHtml = Publish-EsxiCoreDumpConfig -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -html
+        # }
         
         # Combine all information gathered into a single HTML report
         if ($PsBoundParameters.ContainsKey("allDomains")) {
@@ -474,7 +482,7 @@ Function Invoke-VcfConfigReport {
         } else {
             $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
         }
-        $reportData += "$esxiCoreDumpHtml"
+        $reportData += $clusterConfigHtml
 
         if ($PsBoundParameters.ContainsKey("darkMode")) {
             $reportHeader = Get-ClarityReportHeader -dark 
@@ -5771,6 +5779,61 @@ Export-ModuleMember -Function Request-EsxiAlert
 #######################################################################################################################
 #################################  C O N F I G U R A T I O N   F U N C T I O N S   ####################################
 
+Function Publish-ClusterConfiguration {
+    <#
+        .SYNOPSIS
+        Publish cluster configuration information in HTML format.
+
+        .DESCRIPTION
+        The Publish-ClusterConfiguration cmdlet returns cluster configuration information in HTML format.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates the authentication to vCenter Server with credentials from SDDC Manager
+        - Publishes information
+
+        .EXAMPLE
+        Publish-ClusterConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will return password policy from all ESXi hosts in vCenter Server managed by SDDC Manager for a all workload domains.
+
+        .EXAMPLE
+        Publish-ClusterConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will return password policy from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allConfigurationObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $allWorkloadDomains = Get-VCFWorkloadDomain
+                    foreach ($domain in $allWorkloadDomains ) {
+                        $clusterConfiguration = Request-ClusterConfiguration -server  $server -user $user -pass $pass -domain $domain.name;
+                        $allConfigurationObject += $clusterConfiguration
+                    }
+                }
+                else {
+                    $clusterConfiguration = Request-ClusterConfiguration -server  $server -user $user -pass $pass -domain $workloadDomain; $allConfigurationObject += $clusterConfiguration
+                }
+                $allConfigurationObject = $allConfigurationObject | Sort-Object Cluster | ConvertTo-Html -Fragment -PreContent '<a id="cluster-config"></a><h3>Cluster Configuration</h3>' -As Table
+                $allConfigurationObject = Convert-CssClass -htmldata $allConfigurationObject
+                $allConfigurationObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-ClusterConfiguration
+
 Function Publish-EsxiCoreDumpConfig {
     <#
 		.SYNOPSIS
@@ -5860,6 +5923,71 @@ Function Publish-EsxiCoreDumpConfig {
     }
 }
 Export-ModuleMember -Function Publish-EsxiCoreDumpConfig
+
+Function Request-ClusterConfiguration {
+    <#
+		.SYNOPSIS
+        Gets cluster configuration from a vCenter Server instance.
+
+        .DESCRIPTION
+        The Request-ClusterConfiguration cmdlets gets the cluster configuration for a vCenter Server instance. The
+        cmdlet  connects to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the cluster details from vCenter Server
+
+        .EXAMPLE
+        Request-ClusterConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
+        This example gets the cluster configuration for a vCenter Server instance based on the Workload Domain provided.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            $allClustersObject = New-Object System.Collections.ArrayList
+                            $allClusters = Get-Cluster -Server $vcfVcenterDetails.fqdn
+                            foreach ($cluster in $allClusters) {
+                                $haStatus = if ($cluster.HAEnabled -eq "True") { "Enabled" } else { "Disabled" }
+                                $drsStatus = if ($cluster.DrsEnabled -eq "True") { "Enabled" } else { "Disabled" }
+                                $evcStatus = if ($null -eq $cluster.EVCMode) { "Disabled" } else { $cluster.EVCMode }
+                                $clusterAdvancedSettings = Get-AdvancedSetting -Entity (Get-Cluster -Name $cluster) | Select-Object Name, Value
+                                $settingsObject = New-Object System.Collections.ArrayList
+                                foreach ($AdvancedSetting in $clusterAdvancedSettings) {
+                                    $settingsObject += "$($AdvancedSetting.Name) : $($AdvancedSetting.Value)"
+                                }
+
+                                $customObject = New-Object -TypeName psobject
+                                $customObject | Add-Member -notepropertyname "Cluster Name" -notepropertyvalue $cluster.Name
+                                $customObject | Add-Member -notepropertyname "vSphere HA" -notepropertyvalue $haStatus
+                                $customObject | Add-Member -notepropertyname "vSphere DRS" -notepropertyvalue $drsStatus
+                                $customObject | Add-Member -notepropertyname "vSphere DRS Mode" -notepropertyvalue $cluster.DrsAutomationLevel
+                                $customObject | Add-Member -notepropertyname "vSphere EVC" -notepropertyvalue $evcStatus
+                                $customObject | Add-Member -Type NoteProperty -Name "Advanced Settings" -Value ($settingsObject -join ':-: ')
+                                $allClustersObject += $customObject
+                            }
+                            $allClustersObject
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-ClusterConfiguration
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
@@ -6736,9 +6864,9 @@ Function Request-HardwareOverview {
                     $totalSockets = $totalSockets + $esxiHost.cpu.cpuCores.Count
                 }
 
-                $customObject = New-Object -TypeName psobject    
-                $customObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $harwdareOemObject
-                $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $harwdareModelObject
+                $customObject = New-Object -TypeName psobject
+                $customObject | Add-Member -Type NoteProperty -Name "Hardware OEM" -Value ($harwdareOemObject -join ':-: ')
+                $customObject | Add-Member -Type NoteProperty -Name "Hardware Platform" -Value ($harwdareModelObject -join ':-: ')
                 $customObject | Add-Member -notepropertyname "CPUs Sockets Deployed" -notepropertyvalue $totalSockets
                 $customObject | Add-Member -notepropertyname "Hosts Deployed" -notepropertyvalue (Get-VCFHost).Count
                 $customObject | Add-Member -notepropertyname "Workload Domains" -notepropertyvalue (Get-VCFWorkloadDomain).Count
@@ -7588,16 +7716,13 @@ Function Get-ClarityReportNavigation {
             <div class="content-container">
             <nav class="sidenav">
             <section class="sidenav-content">
-                <a class="nav-link nav-icon" href="#config-vcenter">vCenter Server</a>
-                <a class="nav-link nav-icon" href="#config-vsan">vSAN</a>
                 <section class="nav-group collapsible">
-                    <input id="esxi" type="checkbox"/>
-                    <label for="esxi">ESXi</label>
+                    <input id="vcenter" type="checkbox"/>
+                    <label for="vcenter">vCenter Server</label>
                     <ul class="nav-list">
-                        <li><a class="nav-link" href="#esxi-coredump">ESXi Core Dump</a></li>
+                        <li><a class="nav-link" href="#cluster-config">Cluster Configuration</a></li>
                     </ul>
                 </section>
-                <a class="nav-link nav-icon" href="#config-nsx">NSX Manager</a>
             </section>
             </nav>
                 <div class="content-area">
@@ -7785,11 +7910,14 @@ Function Convert-CssClass {
     $newAlertWarning = '<td class="alertWarning">YELLOW</td>'
     $oldTable = '<table>'
     $newTable = '<table class="table">'
+    $oldAddLine = ':-: '
+    $newNewLine = '<br/>'
 
     $htmlData = $htmlData -replace $oldAlertOK,$newAlertOK
     $htmlData = $htmlData -replace $oldAlertCritical,$newAlertCritical
     $htmlData = $htmlData -replace $oldAlertWarning,$newAlertWarning
     $htmlData = $htmlData -replace $oldTable,$newTable
+    $htmlData = $htmlData -replace $oldAddLine,$newNewLine
     $htmlData
 }
 Export-ModuleMember -Function Convert-CssClass
