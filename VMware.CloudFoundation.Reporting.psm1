@@ -6582,6 +6582,8 @@ Function Publish-VcfSystemOverview {
                 $clusterOverview = Request-ClusterOverview -server $server -user $user -pass $pass
                 $networkingOverview = Request-NetworkOverview -server $server -user $user -pass $pass
                 $vrealizeOverview = Request-VrealizeOverview -server $server -user $user -pass $pass
+                $vvsOverview = Request-ValidatedSolutionOverview -server $server -user $user -pass $pass
+
 
                 $vcfOverview = $vcfOverview | ConvertTo-Html -Fragment -PreContent '<h4>VMware Cloud Foundation Overview</h4>'
                 $vcfOverview = Convert-CssClass -htmldata $vcfOverview
@@ -6599,6 +6601,8 @@ Function Publish-VcfSystemOverview {
                 } else {
                     $vrealizeOverview = $vrealizeOverview | ConvertTo-Html -Fragment -PreContent '<h4>vRealize Suite Overview</h4>' -PostContent '<p>No vRealize Suite Installed.</p>'
                 }
+                $vvsOverview = $vvsOverview | ConvertTo-Html -Fragment -PreContent '<h4>VMware Validated Solutions Overview</h4>'
+                $vvsOverview = Convert-CssClass -htmldata $vvsOverview
 
                 $allOverviewObject += $vcfOverview
                 $allOverviewObject += $hardwareOverview
@@ -6606,6 +6610,7 @@ Function Publish-VcfSystemOverview {
                 $allOverviewObject += $clusterOverview
                 $allOverviewObject += $networkingOverview
                 $allOverviewObject += $vrealizeOverview
+                $allOverviewObject += $vvsOverview
                 $allOverviewObject
             }
         }
@@ -6960,6 +6965,154 @@ Function Request-VrealizeOverview {
     }
 }
 Export-ModuleMember -Function Request-VrealizeOverview
+
+Function Request-ValidatedSolutionOverview {
+    <#
+        .SYNOPSIS
+        Returns VMware Validated Solution Overview.
+
+        .DESCRIPTION
+        The Request-ValidatedSolutionOverview cmdlet returns an overview of VMware Validated Solutions deployed.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Collects the VMware Validated Solution details
+
+        .EXAMPLE
+        Request-ValidatedSolutionOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will return an overview of VMware Validated Solutions.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allVvsObject = New-Object System.Collections.ArrayList
+
+                # Validate IAM Deployment
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domainType MANAGEMENT)) {
+                    if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                            if ((Get-NsxtVidm).vidm_enable -eq "True") {
+                                $iamEnabled = "Enabled"
+                            } else {
+                                $iamEnabled = "Not Enabled"
+                            }
+                        }
+                    }
+                }
+
+                $customObject = New-Object -TypeName psobject
+                $customObject | Add-Member -notepropertyname "Name" -notepropertyvalue "Identity and Access Management"
+                $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $iamEnabled
+                $allVvsObject += $customObject
+
+                # Validate DRI Deployment
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allNetworkingObject = New-Object System.Collections.ArrayList
+                foreach ($domain in $allWorkloadDomains) {
+                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain.name)) {
+                        if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                            if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                foreach ($cluster in Get-Cluster -Server $vcfVcenterDetails.fqdn ) {
+                                    if (Get-WMCluster -Server $vcfVcenterDetails.fqdn) {
+                                        $driEnabled = "Enabled"
+                                    } else {
+                                        $driEnabled = "Not Enabled"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                $customObject = New-Object -TypeName psobject
+                $customObject | Add-Member -notepropertyname "Name" -notepropertyvalue "Developer Ready Infrastructure"
+                $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $driEnabled
+                $allVvsObject += $customObject
+
+                # Validate ILA Deployment
+                if ((Get-VCFvRLI).status -eq "ACTIVE") {
+                    if (($vcfVrliDetails = Get-vRLIServerDetail -fqdn $server -username $user -password $pass)) {
+                        if (Test-vRLIConnection -server $vcfVrliDetails.fqdn) {
+                            if (Test-vRLIAuthentication -server $vcfVrliDetails.fqdn -user $vcfVrliDetails.adminUser -pass $vcfVrliDetails.adminPass) {
+                                if (Get-vRLISmtpConfiguration) {
+                                    $ilaEnabled = "Enabled"
+                                } else {
+                                    $ilaEnabled = "Not Enabled"
+                                }
+                            }
+                        }
+                    }
+                }
+                $customObject = New-Object -TypeName psobject
+                $customObject | Add-Member -notepropertyname "Name" -notepropertyvalue "Intelligent Logging and Analytics"
+                $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $ilaEnabled
+                $allVvsObject += $customObject
+
+                # Validate IOM Deployment
+                if ((Get-VCFvROPS).status -eq "ACTIVE") {
+                    if (($vcfVropsDetails = Get-vROPsServerDetail -fqdn $server -username $user -password $pass)) {
+                        if (Test-vROPSConnection -server $vcfVropsDetails.loadBalancerFqdn) {
+                            if (Test-vROPSAuthentication -server $vcfVropsDetails.loadBalancerFqdn -user $vcfVropsDetails.adminUser -pass $vcfVropsDetails.adminPass) {
+                                if ((Get-vROPSCollectorGroup).Count -gt 1 ) {
+                                    $iomEnabled = "Enabled"
+                                } else {
+                                    $iomEnabled = "Not Enabled"
+                                }
+                            }
+                        }
+                    }
+                }
+                $customObject = New-Object -TypeName psobject
+                $customObject | Add-Member -notepropertyname "Name" -notepropertyvalue "Intelligent Operations Management"
+                $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $iomEnabled
+                $allVvsObject += $customObject
+
+                # Validate PCA Deployment
+                # TODO: Extract configadmin user and password from vRSLCM to check config in vRA
+                if ((Get-VCFvRA).status -eq "ACTIVE") {
+                    $vraEnabled = "Enabled"
+                } else {
+                    $vraEnabled = "Not Enabled"
+                }
+                $customObject = New-Object -TypeName psobject
+                $customObject | Add-Member -notepropertyname "Name" -notepropertyvalue "Private Cloud Automation"
+                $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $vraEnabled
+                $allVvsObject += $customObject
+
+                # Validate PDR Deployment
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            if (((Get-View -Id 'ExtensionManager-ExtensionManager').ExtensionList | Where-Object {$_.Key -eq "com.vmware.vcDr"}) -and ((Get-View -Id 'ExtensionManager-ExtensionManager').ExtensionList | Where-Object {$_.Key -eq "com.vmware.vcHms"})) {
+                                $pdrEnabled = "Enabled"
+                            } else {
+                                $pdrEnabled = "Not Enabled"
+                            }
+                        }
+                    }
+                }
+                Disconnect-VIServer $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue
+
+                $customObject = New-Object -TypeName psobject
+                $customObject | Add-Member -notepropertyname "Name" -notepropertyvalue "Site Protection and Disaster Recovery"
+                $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $pdrEnabled
+                $allVvsObject += $customObject
+
+                $allVvsObject | Sort-Object Name
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-ValidatedSolutionOverview
 
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
