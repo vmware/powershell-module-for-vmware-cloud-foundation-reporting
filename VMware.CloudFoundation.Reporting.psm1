@@ -3446,8 +3446,8 @@ Function Request-NsxtComputeManagerStatus {
                                     $alert = 'RED' # Critical; registered and not up
                                     $message = "$($computeManager.server) is registered but unhealthy." # Critical; registered and not up
                                 } elseif ($status -eq 'ROGUE') {
-                                    $alert = 'RED' # Critical; rouge addition detected
-                                    $message = "$($computeManager.server) has been detected as a rouge addition." # Critical; rouge addition detected
+                                    $alert = 'RED' # Critical; rogue addition detected
+                                    $message = "$($computeManager.server) has been detected as a rogue addition." # Critical; rogue addition detected
                                 } else {
                                     $alert = 'RED' # Critical; not registered
                                     $message = "$($computeManager.server) is not registered." # Critical; not registered
