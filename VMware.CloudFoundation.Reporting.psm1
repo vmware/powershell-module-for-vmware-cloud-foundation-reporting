@@ -205,6 +205,21 @@ Function Invoke-VcfHealthReport {
             $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
 
+        # Generating the NSX Transport Node Tunnel Health Data Using PowerShell Request Functions
+        Write-LogMessage -type INFO -Message "Generating the NSX Transport Node Tunnel Report for $workflowMessage."
+        if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+            $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+        }
+        elseif ($PsBoundParameters.ContainsKey('allDomains')) {
+            $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+        }
+        if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+            $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        }
+        elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
+            $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+        }
+
         # Generating the NSX Tier-0 Gateway BGP Health Data Using PowerShell Request Functions
         Write-LogMessage -type INFO -Message "Generating the NSX Tier-0 Gateway BGP Report for $workflowMessage."
         if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
@@ -253,6 +268,7 @@ Function Invoke-VcfHealthReport {
         $reportData += $nsxtEdgeClusterHtml
         $reportData += $nsxtEdgeNodeHtml
         $reportData += $nsxTransportNodeHtml
+        $reportData += $nsxTransportNodeTunnelHtml
         $reportData += $nsxTier0BgpHtml
         $reportData += $storageCapacityHealthHtml
 
@@ -2308,6 +2324,85 @@ Function Publish-NsxtTransportNodeStatus {
     }
 }
 Export-ModuleMember -Function Publish-NsxtTransportNodeStatus
+
+Function Publish-NsxtTransportNodeTunnelStatus {
+    <#
+		.SYNOPSIS
+        Request and publish the status of NSX transport node tunnels.
+
+        .DESCRIPTION
+        The Publish-NsxtTransportNodeStatus cmdlet checks the status NSX transport node tunnels and prepares the data
+        to be published to an HTML report. The cmdlet connects to SDDC Manager using the -server, -user, and password
+        values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Performs checks on the NSX transport node tunnel status and outputs the results
+
+        .EXAMPLE
+        Publish-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will publish the status of all NSX transport node tunnels in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will publish thestatus of all NSX transport node tunnels in a VMware Cloud Foundation instance but only reports issues.
+
+        .EXAMPLE
+        Publish-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will publish the BGP status for the NSX transport node tunnels in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
+    #>
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allNsxtTransportNodeTunnelStatusObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
+                        }
+                    }
+                    else {
+                        $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
+                    }
+                }
+                else {
+                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
+                        }
+                    }
+                    else {
+                        $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
+                    }
+                }
+
+                if ($allNsxtTransportNodeTunnelStatusObject.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $allNsxtTransportNodeTunnelStatusObject = $allNsxtTransportNodeTunnelStatusObject | Sort-Object Domain, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn-tunnel"></a><h3>NSX Transport Node Tunnel Status</h3>' -PostContent '<p>No issues found.</p>' 
+                }
+                else {
+                    $allNsxtTransportNodeTunnelStatusObject = $allNsxtTransportNodeTunnelStatusObject | Sort-Object Domain, Resource, Element  | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn-tunnel"></a><h3>NSX Transport Node Tunnel Status</h3>' -As Table
+                }
+                $allNsxtTransportNodeTunnelStatusObject = Convert-CssClass -htmlData $allNsxtTransportNodeTunnelStatusObject
+                $allNsxtTransportNodeTunnelStatusObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-NsxtTransportNodeTunnelStatus
 
 Function Publish-NsxtTier0BgpStatus {
     <#
@@ -4941,32 +5036,25 @@ Function Request-NsxtTransportNodeStatus {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -First 1) -pass ($vcfNsxDetails.adminPass | Select-Object -First 1)) {
                             $customObject = New-Object System.Collections.ArrayList
-                            
                             # NSX Transport Nodes
                             $types = @("edge","host")
                             foreach ($type in $types) {
-                                $component = 'NSX Transport Node' # Define the component name
                                 $resource = $vcfNsxDetails.fqdn # Define the resource name
                                 $transportNodeStatus = (Get-NsxtTransportNodeStatus -type $type) # Get the status of the transport nodes
                                 $nodeType = (Get-Culture).textinfo.ToTitleCase($type.ToLower()) # Convert the type to title case
-
                                 # Set the alert and message based on the status of the transport node
                                 if ($downCount -ge 0 -or $unknownCount -ge 0) {
                                     $alert = 'Red' # Critical, transport node(s) down or unknown
                                     $message = $nodeType + ' transport node(s) in down or unknown state.' # Set the alert message
-                                }
-                                elseif ($degradedCount -ge 0) {
+                                } elseif ($degradedCount -ge 0) {
                                     $alert = 'Yellow' # Warning, transport node(s) degraded
                                     $message = $nodeType + ' transport node(s) in degraded state.' #
-                                }
-                                else {
+                                } else {
                                     $alert = 'Green' # OK, transport node(s)  up
                                     $message = $nodeType + ' transport node(s) in up state.' # Set the alert message
                                 }
-
                                 # Add the properties to the element object
                                 $elementObject = New-Object -TypeName psobject
-                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
                                 $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $nodeType # Set the node type
                                 $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the message
@@ -4980,8 +5068,7 @@ Function Request-NsxtTransportNodeStatus {
                                     if ($elementObject.alert -eq 'RED') {
                                         $customObject += $elementObject
                                     }
-                                }
-                                else {
+                                } else {
                                     $customObject += $elementObject
                                 }
                             }
@@ -4997,6 +5084,103 @@ Function Request-NsxtTransportNodeStatus {
     }
 }
 Export-ModuleMember -Function Request-NsxtTransportNodeStatus
+
+Function Request-NsxtTransportNodeTunnelStatus {
+    <#
+        .SYNOPSIS
+        Returns the status of NSX transport node tunnels.
+
+        .DESCRIPTION
+        The Request-NsxtTransportNodeTunnelStatus cmdlet returns the status NSX transport nodes tunnels.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates network connectivity and authentication to the SDDC Manager instanc
+        - Gathers the details for the NSX Manager cluster from the SDDC Manager
+        - Validates network connectivity and authentication to the NSX Local Manager cluster
+        - Collects the status of the transport node tunnels
+
+        .EXAMPLE
+        Request-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example will return the status of the NSX transport node tunnels for a workload domain.
+
+        .EXAMPLE
+        Request-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+        This example will return the status of the NSX transport node tunnels for a workload domain but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                    if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -First 1) -pass ($vcfNsxDetails.adminPass | Select-Object -First 1)) {
+                            $customObject = New-Object System.Collections.ArrayList
+                            # NSX Transport Nodes
+                            $types = @("edge","host")
+                            foreach ($type in $types) {
+                                $transportNodes = Get-NsxtTransportNode -type $type
+                                foreach ($transportNode in $transportNodes) {
+                                    $resource = $vcfNsxDetails.fqdn # Define the resource name
+                                    $nodeType = (Get-Culture).textinfo.ToTitleCase($type.ToLower()) # Convert the type to title case
+                                    $tunnels = (Get-NsxtTransportNodeTunnel -id $transportNode.id).tunnels # Get the tunnels for the transport node
+                                    foreach ($tunnel in $tunnels) {
+                                        # Set the alert and message based on the status of the tunnel
+                                        if ($tunnel.status -eq 'UP') {
+                                            $alert = 'Green' # OK, transport node up
+                                            $message = $nodeType + ' transport node tunnel is up.' # Set the alert message
+                                        } else {
+                                            $alert = 'Red' # Critical, transport node down or unknown
+                                            $message = $nodeType + ' transport node tunnel is down or in unknown state.' # Set the alert message
+                                        }
+                                        # Update the alert and message based on the status of BFD
+                                        if ($tunnel.bfd.state -ne 'UP') {
+                                            $alert = 'YELLOW' # WARNING, BFD down or unknown
+                                            $message = "Bidirectional forwarding is down or in unknown state. Run '(Get-NsxtTransportNodeTunnelStatus -id $($transportNode.id)).tunnels' for more information." # Set the alert message
+                                        }
+                                        # Add the properties to the element object
+                                        $elementObject = New-Object -TypeName psobject
+                                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                                        $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $nodeType # Set the element name
+                                        $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
+                                        $elementObject | Add-Member -NotePropertyName 'Source IP' -NotePropertyValue $tunnel.local_ip # Set the source IP
+                                        $elementObject | Add-Member -NotePropertyName 'Remote IP' -NotePropertyValue $tunnel.remote_ip # Set the remote IP
+                                        $elementObject | Add-Member -NotePropertyName 'Source Node' -NotePropertyValue $transportNode.display_name # Set the source name
+                                        $elementObject | Add-Member -NotePropertyName 'Remote Node' -NotePropertyValue $tunnel.remote_node_display_name # Set the source name
+                                        $elementObject | Add-Member -NotePropertyName 'Interface' -NotePropertyValue $tunnel.egress_interface # Set the egress interface
+                                        $elementObject | Add-Member -NotePropertyName 'Status' -NotePropertyValue $tunnel.status # Set the status
+                                        $elementObject | Add-Member -NotePropertyName 'BFD' -NotePropertyValue $tunnel.bfd.state # Set the BFD status
+                                        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                                        $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
+                                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                            if ($elementObject.alert -eq 'RED' -or $elementObject.alert -eq 'YELLOW') {
+                                                $customObject += $elementObject
+                                            }
+                                        } else {
+                                            $customObject += $elementObject
+                                        }
+                                    }
+                                }
+                                $outputObject += $customObject
+                            }
+                        }
+                        $outputObject | Sort-Object Domain, Resource, Element, 'Local Transport Node', Interface
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-NsxtTransportNodeTunnelStatus
 
 Function Request-NsxtTier0BgpStatus {
     <#
@@ -7661,6 +7845,7 @@ Function Get-ClarityReportNavigation {
                         <li><a class="nav-link" href="#nsx-edge-cluster">NSX Edge Cluster</a></li>
                         <li><a class="nav-link" href="#nsx-edge">NSX Edge Nodes</a></li>
                         <li><a class="nav-link" href="#nsx-tn">NSX Transport Nodes</a></li>
+                        <li><a class="nav-link" href="#nsx-tn-tunnel">NSX Transport Node Tunnels</a></li>
                         <li><a class="nav-link" href="#nsx-t0-bgp">NSX Tier-0 Gateway BGP</a></li>
                     </ul>
                 </section>
@@ -8562,6 +8747,50 @@ Function Get-NsxtVidmStatus {
 }
 Export-ModuleMember -Function Get-NsxtVidmStatus
 
+Function Get-NsxtTransportNode {
+    <#
+        .SYNOPSIS
+        Returns information about all transport nodes with host or edge details.
+
+        .DESCRIPTION
+        The Get-NsxtTransportNode cmdlet returns information about all transport nodes with host or edge details.
+
+        .EXAMPLE
+        Get-NsxtTransportNode
+        This example returns information about all transport nodes with host or edge details.
+
+        .EXAMPLE
+        Get-NsxtTransportNode -type edge
+        This example returns information about all edge transport nodes with details.
+
+        .EXAMPLE
+        Get-NsxtTransportNode -type host
+        This example returns information about all host transport nodes with details.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $false)] [ValidateSet('host', 'edge')][ValidateNotNullOrEmpty()] [String]$type
+    )
+
+    Try {
+        if ($PsBoundParameters.ContainsKey('type')) {
+            if ($type -eq 'host') {
+                $uri = "https://$nsxtManager/api/v1/transport-nodes?node_types=HostNode"
+            } else {
+                $uri = "https://$nsxtManager/api/v1/transport-nodes?node_types=EdgeNode"
+            }
+        } else {
+            $uri = "https://$nsxtManager/api/v1/transport-nodes"
+        }
+        $response = Invoke-RestMethod $uri -Method 'GET' -Headers $nsxtHeaders
+        $response.results
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Get-NsxtTransportNode
+
 Function Get-NsxtTransportNodeStatus {
     <#
         .SYNOPSIS
@@ -8601,6 +8830,62 @@ Function Get-NsxtTransportNodeStatus {
     }
 }
 Export-ModuleMember -Function Get-NsxtTransportNodeStatus
+
+Function Get-NsxtTransportNodeTunnel {
+    <#
+        .SYNOPSIS
+        Returns a list of tunnel connections to transport node.
+
+        .DESCRIPTION
+        The Get-NsxtTransportNodeTunnel cmdlet returns a list of tunnel connections to transport node.
+
+        .EXAMPLE
+        Get-NsxtTransportNodeTunnel -id <guid>
+        This example returns a list of tunnel connections to transport node.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$id
+    )
+
+    Try {
+        $uri = "https://$nsxtManager/api/v1/transport-nodes/$id/tunnels"
+        $response = Invoke-RestMethod $uri -Method 'GET' -Headers $nsxtHeaders
+        $response
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Get-NsxtTransportNodeTunnel
+
+Function Get-NsxtTransportNodeTunnelStatus {
+    <#
+        .SYNOPSIS
+        Returns the status of all transport nodes with tunnel connections to transport node.
+
+        .DESCRIPTION
+        The Get-NsxtTransportNodeTunnelStatus cmdlet returns the status of all transport nodes with tunnel connections to transport node.
+
+        .EXAMPLE
+        Get-NsxtTransportNodeTunnelStatus -id <guid>
+        This example returns the status of all transport nodes with tunnel connections to transport node.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$id
+    )
+
+    Try {
+        $uri = "https://$nsxtManager/api/v1/transport-nodes/$id/remote-transport-node-status"
+        $response = Invoke-RestMethod $uri -Method 'GET' -Headers $nsxtHeaders
+        $response.results
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Get-NsxtTransportNodeTunnelStatus
 
 Function Get-NsxtComputeManagerStatus {
     <#
