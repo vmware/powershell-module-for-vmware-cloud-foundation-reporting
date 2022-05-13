@@ -125,6 +125,21 @@ Function Invoke-VcfHealthReport {
             $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html
         }
 
+        # Generating the ESXi Connection Health Data Using PowerShell Request Functions
+        Write-LogMessage -type INFO -Message "Generating the ESXi Connection Health Data report for $workflowMessage."
+        if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+            $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+        }
+        elseif ($PsBoundParameters.ContainsKey('allDomains')) {
+            $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+        }
+        if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+            $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+        }
+        elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
+            $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+        }
+
         # Generating the NSX Manager Health Data Using SoS output and Supplimental PowerShell Request Functions
         Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report using the SoS output for $workflowMessage."
         if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
@@ -243,7 +258,15 @@ Function Invoke-VcfHealthReport {
         if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
             $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
         } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-                $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain
+            $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain
+        }
+
+        # Generating the Virtual Machines with Connected CD-ROM Health Data Using PowerShell Request Functions
+        Write-LogMessage -type INFO -Message "Generating the Virtual Machines with Connected CD-ROM Report for $workflowMessage."
+        if ($PsBoundParameters.ContainsKey('allDomains')) {
+            $vmConnectedCdromHtml = Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains     
+        } else {
+            $vmConnectedCdromHtml = Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
 
         # Combine all information gathered into a single HTML report
@@ -262,6 +285,7 @@ Function Invoke-VcfHealthReport {
         $reportData += $ntpHtml
         $reportData += $vcenterHtml
         $reportData += $esxiHtml
+        $reportData += $esxiConnectionHtml
         $reportData += $vsanHtml
         $reportData += $vsanPolicyHtml
         $reportData += $nsxtHtml
@@ -271,6 +295,7 @@ Function Invoke-VcfHealthReport {
         $reportData += $nsxTransportNodeTunnelHtml
         $reportData += $nsxTier0BgpHtml
         $reportData += $storageCapacityHealthHtml
+        $reportData += $vmConnectedCdromHtml
 
         if ($PsBoundParameters.ContainsKey("darkMode")) {
             $reportHeader = Get-ClarityReportHeader -dark 
@@ -5308,6 +5333,269 @@ Function Request-NsxtTier0BgpStatus {
 }
 Export-ModuleMember -Function Request-NsxtTier0BgpStatus
 
+Function Publish-VmConnectedCdrom {
+    <#
+        .SYNOPSIS
+        Publish the status of virtual machines with connected CD-ROMs in a workload domain in HTML format.
+
+        .DESCRIPTION
+        The Publish-VmConnectedCdrom cmdlet returns the status of virtual machines with connected CD-ROMS in a workload
+        domain in HTML format. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates the authentication to vCenter Server with credentials from SDDC Manager
+        - Publishes information
+
+        .EXAMPLE
+        Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will returns the status of virtual machines with connected CD-ROMs in all workload domains.
+
+        .EXAMPLE
+        Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will returns the status of virtual machines with connected CD-ROMs in a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allHealthObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $allWorkloadDomains = Get-VCFWorkloadDomain
+                    foreach ($domain in $allWorkloadDomains ) {
+                        $vmConnectedCdrom = Request-VmConnectedCdrom -server  $server -user $user -pass $pass -domain $domain.name; $allHealthObject += $vmConnectedCdrom
+                    }
+                } else {
+                    $vmConnectedCdrom = Request-VmConnectedCdrom -server  $server -user $user -pass $pass -domain $workloadDomain; $allHealthObject += $vmConnectedCdrom
+                }
+
+                if ($allHealthObject.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+
+                if ($addNoIssues) {
+                    $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -PostContent '<p>No issues found.</p>' 
+                } else {
+                    $allHealthObject = $allHealthObject | Sort-Object Cluster, 'VM Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -As Table
+                }
+                $allHealthObject = Convert-CssClass -htmlData $allHealthObject
+                $allHealthObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-VmConnectedCdrom
+
+Function Request-VmConnectedCdrom {
+    <#
+		.SYNOPSIS
+        Returns the status of virtual machines with connected CD-ROMs in a workload domain.
+
+        .DESCRIPTION
+        The Request-VmConnectedCdrom cmdlet returns the status of virtual machines with connected CD-ROMs in a workload
+        domain. The cmdlet connects to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the status of virtual machines with connected CD-ROMs in a workload domain.
+
+        .EXAMPLE
+        Request-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example returns the status of virtual machines with connected CD-ROMs in a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            $allClustersObject = New-Object System.Collections.ArrayList
+                            $allClusters = Get-Cluster -Server $vcfVcenterDetails.fqdn
+                            foreach ($cluster in $allClusters) {
+                                $allVms = Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object { $_ | Get-CDDrive | Where-Object { $_.ConnectionState.Connected -eq 'true' } } | Select-Object Name, @{Name = 'ISO Path'; Expression = { (Get-CDDrive $_).isopath } }
+                                foreach ($vm in $allVms) {
+                                    # Set the alert and message based on the CD-ROM connection
+                                    $alert = 'YELLOW' # Warning, connected CD-ROM
+                                    $message = 'A virtual CD-ROM is connected.' # Set the status message
+                                    # Set the object properties
+                                    $customObject = New-Object -TypeName psobject
+                                    $customObject | Add-Member -NotePropertyName 'Cluster' -NotePropertyValue $cluster.Name
+                                    $customObject | Add-Member -NotePropertyName 'VM Name' -NotePropertyValue $vm.Name
+                                    $customObject | Add-Member -NotePropertyName 'ISO Path' -NotePropertyValue $vm.'ISO Path'
+                                    $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                                    $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                                    $allClustersObject += $customObject
+                                }
+                            }
+                            $allClustersObject | Sort-Object Cluster, 'VM Name', 'ISO Path'
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-VmConnectedCdrom
+
+Function Publish-EsxiConnectionHealth {
+    <#
+        .SYNOPSIS
+        Publish the connection status of ESXi hosts in a workload domain in HTML format.
+
+        .DESCRIPTION
+        The Publish-EsxiConnectionHealth cmdlet returns the status of virtual machines with connected CD-ROMS in a workload
+        domain in HTML format. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Validates the authentication to vCenter Server with credentials from SDDC Manager
+        - Publishes information
+
+        .EXAMPLE
+        Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example will publish the connection status of ESXi hosts in all workload domains.
+
+        .EXAMPLE
+        Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example will publish the connection status of ESXi hosts in a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allHealthObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $allWorkloadDomains = Get-VCFWorkloadDomain
+                    foreach ($domain in $allWorkloadDomains ) {
+                        $esxiConnectionStatus = Request-EsxiConnectionHealth -server  $server -user $user -pass $pass -domain $domain.name; $allHealthObject += $esxiConnectionStatus
+                    }
+                }
+                else {
+                    $esxiConnectionStatus = Request-EsxiConnectionHealth -server  $server -user $user -pass $pass -domain $workloadDomain; $allHealthObject += $esxiConnectionStatus
+                }
+
+                if ($allHealthObject.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+
+                if ($addNoIssues) {
+                    $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-connection"></a><h3>ESXi Connection Health</h3>' -PostContent '<p>No issues found.</p>' 
+                }
+                else {
+                    $allHealthObject = $allHealthObject | Sort-Object Resource, Cluster | ConvertTo-Html -Fragment -PreContent '<a id="esxi-connection"></a><h3>ESXi Connection Health</h3>' -As Table
+                }
+                $allHealthObject = Convert-CssClass -htmlData $allHealthObject
+                $allHealthObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-EsxiConnectionHealth
+
+Function Request-EsxiConnectionHealth {
+    <#
+		.SYNOPSIS
+        Returns the connection status of ESXi hosts in a workload domain.
+
+        .DESCRIPTION
+        The Request-EsxiConnectionHealth cmdlet returns the connection status of ESXi hosts in a workload domain.
+        The cmdlet connects to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the vCenter Server instance
+        - Gathers the connection status of ESXi hosts in a workload domain.
+
+        .EXAMPLE
+        Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+        This example returns the connection status of ESXi hosts in a workload domain.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
+                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                            $allClustersObject = New-Object System.Collections.ArrayList
+                            $allClusters = Get-Cluster -Server $vcfVcenterDetails.fqdn
+                            foreach ($cluster in $allClusters) {
+                                $esxihosts = Get-VMHost -Server $vcfVcenterDetails.fqdn
+                                foreach ($esxiHost in $esxiHosts) {
+                                    $component = "ESXi"
+                                    # Set the alert and message based on the CD-ROM connection
+                                    if ($esxiHost.ConnectionState -eq 'Connected') {
+                                        $alert = 'GREEN' # Ok, connected 
+                                        $message = 'Host is connected.' # Set the status message
+                                    } elseif ($esxiHost.ConnectionState -eq 'Maintenance') {
+                                        $alert = 'YELLOW' # Warning, maintenance
+                                        $message = 'Host is in maintenance mode.' # Set the status message
+                                    } elseif ($esxiHost.ConnectionState -eq 'Disconnected') {
+                                        $alert = 'RED' # Critical, disconnected
+                                        $message = 'Host is disconnected.' # Set the status message
+                                    } else {
+                                        $alert = 'RED' # Critical, unknown state
+                                        $message = 'Host is in an unknown state.' # Set the status message
+                                    }
+                                    # Set the object properties
+                                    $customObject = New-Object -TypeName psobject
+                                    $customObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                                    $customObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $esxiHost.Name
+                                    $customObject | Add-Member -NotePropertyName 'Cluster' -NotePropertyValue $cluster.Name
+                                    $customObject | Add-Member -NotePropertyName 'Connection' -NotePropertyValue $esxiHost.ConnectionState
+                                    $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                                    $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                                    $allClustersObject += $customObject
+                                }
+                            }
+                            $allClustersObject | Sort-Object Resource, Cluster
+                        }
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                    }
+                }
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-EsxiConnectionHealth
+
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
 
@@ -8432,6 +8720,7 @@ Function Get-ClarityReportNavigation {
                     <label for="esxi">ESXi</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#esxi-overall">Overall Health</a></li>
+                        <li><a class="nav-link" href="#esxi-connection">Connection Health</a></li>
                         <li><a class="nav-link" href="#esxi-coredump">Core Dump Health</a></li>
                         <li><a class="nav-link" href="#esxi-disk">Disk Health</a></li>
                         <li><a class="nav-link" href="#esxi-license">Licensing Health</a></li>
@@ -8465,6 +8754,7 @@ Function Get-ClarityReportNavigation {
                         <li><a class="nav-link" href="#storage-vcenter">vCenter Server</a></li>
                         <li><a class="nav-link" href="#storage-esxi">ESXi</a></li>
                         <li><a class="nav-link" href="#storage-datastore">Datastores</a></li>
+                        <li><a class="nav-link" href="#storage-vm-cdrom">Connected CD-ROMs</a></li>
                     </ul>
                 </section>
             </section>
