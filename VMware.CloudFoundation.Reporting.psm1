@@ -178,6 +178,14 @@ Function Invoke-VcfHealthReport {
         } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
             $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
         }
+
+        # Generating the Free Pool Health Data Using PowerShell Request Functions
+        Write-LogMessage -type INFO -Message "Generating the SDDC Manager Free Pool Health for $workflowMessage."
+        if ($PsBoundParameters.ContainsKey("failureOnly")) {
+            $freePoolHtml = Publish-SddcManagerFreePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -failureOnly
+        } else {
+            $freePoolHtml = Publish-SddcManagerFreePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
+        }
         
         # Generating the Snapshot Status Health Data Using PowerShell Request Functions
         Write-LogMessage -type INFO -Message "Generating the Snapshots Report for $workflowMessage."
@@ -286,6 +294,7 @@ Function Invoke-VcfHealthReport {
         $reportData += $vcenterHtml
         $reportData += $esxiHtml
         $reportData += $esxiConnectionHtml
+        $reportData += $freePoolHtml
         $reportData += $vsanHtml
         $reportData += $vsanPolicyHtml
         $reportData += $nsxtHtml
@@ -5596,6 +5605,167 @@ Function Request-EsxiConnectionHealth {
 }
 Export-ModuleMember -Function Request-EsxiConnectionHealth
 
+Function Publish-SddcManagerFreePool {
+    <#
+        .SYNOPSIS
+        Publish SDDC Manager free pool health information in HTML format.
+
+        .DESCRIPTION
+        The Publish-SddcManagerFreePool cmdlet returns SDDC Manager free pool information in HTML format.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates the network connectivity and authentication to the SDDC Manager instance
+        - Publishes information
+
+        .EXAMPLE
+        Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will return the free pool health from SDDC Manager.
+
+        .EXAMPLE
+        Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+        This example will return the free pool health from SDDC Manager and return the failures only.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+    
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allConfigurationObject = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    $allConfigurationObject = Request-SddcManagerFreePool -server $server -user $user -pass $pass -failureOnly
+                }
+                else {
+                    $allConfigurationObject = Request-SddcManagerFreePool -server $server -user $user -pass $pass
+                }
+
+                if ($allConfigurationObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table -PostContent '<p>No issues found.</p>'
+                } else {
+                    $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table
+                }
+                
+                $allConfigurationObject = Convert-CssClass -htmldata $allConfigurationObject
+                $allConfigurationObject
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-SddcManagerFreePool
+
+Function Request-SddcManagerFreePool {
+    <#
+        .SYNOPSIS
+        Returns the status of the ESXi hosts in the free pool.
+
+        .DESCRIPTION
+        The Request-SddcManagerFreePool cmdlet returns status of the ESXi hosts in the free pool. The cmdlet connects
+        to SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity and authencitation is possible o the SDDC Manager instance
+        - Gathers the details for the ESXi hosts in the free pool
+
+        .EXAMPLE
+        Request-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will return the ESXi hosts in the free pool managed by SDDC Manager for a workload domain.
+
+        .EXAMPLE
+        Request-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+        This example will return the ESXi hosts in the free pool managed by SDDC Manager for a workload domain but only reports issues.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $versionList = New-Object System.Collections.ArrayList
+                $customObject = New-Object System.Collections.ArrayList
+                $assignedEsxiHost = (Get-VCFHost | Where-Object {$_.status -eq "ASSIGNED"})
+                foreach ($esxiHost in $assignedEsxiHost) {
+                    if ($versionList -notcontains $esxiHost.esxiVersion ) {
+                        $versionList += $esxiHost.esxiVersion
+                    }
+                }
+
+                $unassignedEsxiHosts = (Get-VCFHost | Where-Object {$_.status -eq "UNASSIGNED_USEABLE"})
+                foreach ($esxiHost in $unassignedEsxiHosts) {
+                    if ($esxiHost.status -eq "UNASSIGNED_USEABLE") {
+                        foreach ($version in $versionList) {
+                            if ($esxiHost.esxiVersion -eq $version) {  
+                                $alert = "GREEN"
+                                $message = "Current ESXi Host version $($esxiHost.esxiVersion) matches supported version(s)."
+                            } else {
+                                $alert = "RED"
+                                $message = "Current ESXi Host version $($esxiHost.esxiVersion), does not match supported version(s)."
+                            }
+                        }
+                        $elementObject = New-Object -TypeName psobject
+                        $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'ESXi Version'
+                        $elementObject | Add-Member -NotePropertyName 'ESXi FQDN' -NotePropertyValue $esxiHost.fqdn
+                        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                        $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                            if ($alert -eq "RED") {
+                                $customObject += $elementObject
+                            }
+                        } else {
+                            $customObject += $elementObject
+                        }
+
+                        $esxiCreds = Get-VCFCredential | Where-Object {$_.resource.resourceName -eq $esxiHost.fqdn -and $_.username -eq "root"}
+                        Connect-VIServer -Server $esxiHost.fqdn -User $esxiCreds.username -Password $esxiCreds.password | Out-Null
+                        $licenseManager = Get-View -Id "LicenseManager-ha-license-manager"
+                        foreach ($properties in $licenseManager.Evaluation.Properties) {
+                            if ($properties.key -eq "expirationDate") {
+                                $expirationDate = $properties.value
+                            }
+                        }
+                        $expiryDate = [math]::Ceiling((([DateTime]$expirationDate) - (Get-Date)).TotalDays)
+                        if ($expiryDate -gt "0") {  
+                            $alert = "GREEN"
+                            $message = "No expired license running on the host."
+                        } else {
+                            $alert = "RED"
+                            $message = "License installed on the ESXi host has expired."
+                        }
+                        $elementObject = New-Object -TypeName psobject
+                        $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'Evaluation License'
+                        $elementObject | Add-Member -NotePropertyName 'ESXi FQDN' -NotePropertyValue $esxiHost.fqdn
+                        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                        $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                            if ($alert -eq "RED") {
+                                $customObject += $elementObject
+                            }
+                        } else {
+                            $customObject += $elementObject
+                        }
+                    }
+                }
+                $customObject | Sort-Object Component, 'ESXi FQDN'
+            }
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-SddcManagerFreePool
+
 ##########################################  E N D   O F   F U N C T I O N S  ##########################################
 #######################################################################################################################
 
@@ -8724,6 +8894,7 @@ Function Get-ClarityReportNavigation {
                         <li><a class="nav-link" href="#esxi-coredump">Core Dump Health</a></li>
                         <li><a class="nav-link" href="#esxi-disk">Disk Health</a></li>
                         <li><a class="nav-link" href="#esxi-license">Licensing Health</a></li>
+                        <li><a class="nav-link" href="#esxi-free-pool">Free Pool Health</a></li>
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
