@@ -2078,6 +2078,8 @@ Function Publish-VsanStoragePolicy {
         $jsonInputData = $targetContent.vSAN # Extract Data from the provided SOS JSON
         $jsonInputData.PSObject.Properties.Remove('Host vSAN Status')
         $jsonInputData.PSObject.Properties.Remove('Host Disk Status')
+        $jsonInputData.PSObject.Properties.Remove('Cluster vSAN Status')
+        $jsonInputData.PSObject.Properties.Remove('Cluster Disk Status')
         $jsonInputData.PSObject.Properties.Remove('vCenter HCL Status')
         $jsonInputData.PSObject.Properties.Remove('Cluster Data Compression Status')
         $jsonInputData.PSObject.Properties.Remove('Cluster Data Encryption Status')
