@@ -8886,10 +8886,10 @@ Function Get-ClarityReportNavigation {
                     <label for="esxi">ESXi</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#esxi-overall">Overall Health</a></li>
-                        <li><a class="nav-link" href="#esxi-connection">Connection Health</a></li>
                         <li><a class="nav-link" href="#esxi-coredump">Core Dump Health</a></li>
-                        <li><a class="nav-link" href="#esxi-disk">Disk Health</a></li>
                         <li><a class="nav-link" href="#esxi-license">Licensing Health</a></li>
+                        <li><a class="nav-link" href="#esxi-disk">Disk Health</a></li>
+                        <li><a class="nav-link" href="#esxi-connection">Connection Health</a></li>
                         <li><a class="nav-link" href="#esxi-free-pool">Free Pool Health</a></li>
                     </ul>
                 </section>
