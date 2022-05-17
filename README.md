@@ -4,7 +4,9 @@ A PowerShell module for VMware Cloud Foundation reporting.
 
 ## Overview
 
-`VMware.CloudFoundation.Reporting` is a PowerShell module that has been written to support the ability to provide insight to the operational state of VMware Cloud Foundation through the use of PowerShell cmdlets. These cmdlets provide quick access to information from the PowerShell console as well as the ability to publish the following HTML reports.
+`VMware.CloudFoundation.Reporting` is a PowerShell module that has been written to support the ability to provide insight to the operational state of VMware Cloud Foundation through the use of PowerShell cmdlets. These cmdlets provide quick access to information from the PowerShell console as well as the ability to publish pre-defined HTML reports.
+
+The PowerShell Module provides customers the ability to generate the following reports:
 
 - [Overview Report](#generating-system-overview-report-tasks)
 - [Health Report](#generating-health-report-tasks)
@@ -21,17 +23,21 @@ Example:
 
 ## Requirements
 
-**Supported Platforms**
+### Supported Platforms
+
 - VMware Cloud Foundation 4.2.1 and later
 
-**Operating System**
+### Operating System
+
 - Microsoft Windows Server 2019 or later.
 - Microsoft Windows 10 or later.
 
-**PowerShell**
+### PowerShell
+
 - Microsoft Windows PowerShell 5.1
 
-**Browser**
+### Browser
+
 - Microsoft Edge
 - Google Chrome
 - Mozilla Firefox
@@ -86,6 +92,8 @@ Get-Help -Name Invoke-VcfHealthReport -Examples
 
 ### Generating System Overview Report Tasks
 
+The `Invoke-VcfOverviewReport` cmdlet generates a system overview report. This report contains high-level information about the VMware Cloud Foundation system.
+
 #### Generate a System Overview Report for a VMware Cloud Foundation Instance
 
 1. Start Windows PowerShell.
@@ -109,8 +117,9 @@ Get-Help -Name Invoke-VcfHealthReport -Examples
 
 4. Review the generated HTML report.
 
-
 ### Generating Health Report Tasks
+
+The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combines the SoS Utility health checks with additional health checks not presently available in the SoS Utility for previous VMware Cloud Foundation releases. The report contains detailed information about the health of the VMware Cloud Foundation system and its components.
 
 #### Generate a Health Report for a VMware Cloud Foundation Instance (Display Only Issues)
 
@@ -208,6 +217,8 @@ Get-Help -Name Invoke-VcfHealthReport -Examples
 
 ### Generating System Alert Report Tasks
 
+The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This report collects information about the system alerts that are currently active in the VMware Cloud Foundation system for the platform components. This report reduces the need to login to multiple product interfaces to collect information about the system alerts.
+
 #### Generate a System Alert Report for a VMware Cloud Foundation Instance (Display Only Issues)
 
 1. Start Windows PowerShell.
@@ -300,6 +311,8 @@ Get-Help -Name Invoke-VcfHealthReport -Examples
 
 ### Generating Password Policy Report Tasks
 
+The `Invoke-VcfPasswordPolicyReport` cmdlet generates a password policy report. This report collects information about the password policy settings in a VMware Cloud Foundation system for the platform components. This report reduces the need to login to multiple product interfaces and endpoints to collect information about the password policy.
+
 #### Generate a Password Policy Report for a VMware Cloud Foundation Instance
 
 1. Start Windows PowerShell.
@@ -349,6 +362,8 @@ Get-Help -Name Invoke-VcfHealthReport -Examples
 
 ### Generating Configuration Report Tasks
 
+The `Invoke-VcfConfigurationReport` cmdlet generates a configuration report. This report collects information about the configuration settings in a VMware Cloud Foundation system for the platform components. This report reduces the need to login to multiple product interfaces and endpoints to collect information about the configuration.
+
 #### Generate a Configuration Report for a VMware Cloud Foundation Instance
 
 1. Start Windows PowerShell.
@@ -396,6 +411,8 @@ Get-Help -Name Invoke-VcfHealthReport -Examples
 
 ### Generating Upgrade Precheck Report Tasks
 
+The upgrade precheck report, initiates an upgrade precheck of a workload domain using the REST API and presents the results in an HTML report. This allows you to start the precheck from the PowerShell console.
+
 #### Perform an Upgrade Precheck for a Workload Domain
 
 1. Start Windows PowerShell.
@@ -422,6 +439,12 @@ Get-Help -Name Invoke-VcfHealthReport -Examples
 ## Support
 
 This module is not supported by VMware Support.
+
+## References
+
+- [VMware PowerCLI](https://developer.vmware.com/powercli)
+- [PowerVCF](https://github.com/powervcf/powervcf/)
+- [PowerValidatedSolutions](https://github.com/vmware-samples/power-validated-solutions-for-cloud-foundation)
 
 ## License
 
