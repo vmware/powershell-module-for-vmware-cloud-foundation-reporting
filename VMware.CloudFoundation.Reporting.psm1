@@ -3146,35 +3146,31 @@ Function Request-NsxtManagerUserExpiry {
                             if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
                                 if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {    
                                     $customObject = New-Object System.Collections.ArrayList
-                                    foreach ($nsxtManagerNode in $vcfNsxDetails.nodes) {
-                                        $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password | Select-Object -first 1
-                                        $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser admin
-                                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                            if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                                $customObject += $elementObject
-                                            }
-                                        }
-                                        else {
+                                    $nsxtManagerNode = ($vcfNsxDetails.nodes | Select-Object -First 1)
+                                    $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password | Select-Object -First 1
+                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser admin
+                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                             $customObject += $elementObject
                                         }
-                                        $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser audit
-                                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                            if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                                $customObject += $elementObject
-                                            }
-                                        }
-                                        else {
+                                    } else {
+                                        $customObject += $elementObject
+                                    }
+                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser audit
+                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                             $customObject += $elementObject
                                         }
-                                        $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser root
-                                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                            if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                                $customObject += $elementObject
-                                            }
-                                        }
-                                        else {
+                                    } else {
+                                        $customObject += $elementObject
+                                    }
+                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser root
+                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                             $customObject += $elementObject
                                         }
+                                    } else {
+                                        $customObject += $elementObject
                                     }
                                     $customObject | Sort-Object Component, Resource # Output Results
                                 }
