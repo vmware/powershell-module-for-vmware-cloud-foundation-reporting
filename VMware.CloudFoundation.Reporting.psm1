@@ -2547,15 +2547,17 @@ Function Publish-NsxtTier0BgpStatus {
                     }
                 }
 
-                if ($allNsxtTier0BgpStatusObject.Count -eq 0) {
-                    $addNoIssues = $true 
-                }
-                if ($addNoIssues) {
-                    $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No issues found.</p>' 
+                if ($allNsxtTier0BgpStatusObject.Count -eq 0) { $addNoIssues = $true }
+                if ($nsxtTier0BgpStatus.Count -gt 0) {
+                    if ($addNoIssues) {
+                        $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No issues found.</p>' 
+                    } else {
+                        $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
+                    }
+                    $allNsxtTier0BgpStatusObject = Convert-CssClass -htmldata $allNsxtTier0BgpStatusObject
                 } else {
-                    $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
+                    $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No BGP configuration found on NSX Tier-0 Gateway(s).</p>' -As Table
                 }
-                $allNsxtTier0BgpStatusObject = Convert-CssClass -htmldata $allNsxtTier0BgpStatusObject
                 $allNsxtTier0BgpStatusObject
             }
         }
@@ -5302,43 +5304,44 @@ Function Request-NsxtTier0BgpStatus {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                             $customObject = New-Object System.Collections.ArrayList
-                            $tier0s = Get-NsxtTier0Gateway
-                            foreach ($tier0 in $tier0s) {
-                                $bgpStatus = Get-NsxtTier0BgpStatus -id $tier0.id | Where-Object {$_.type -eq 'USER'}
-                                $localAsn = (Get-NsxtTier0LocaleServiceBgp -id $tier0.id).local_as_num
-                                foreach ($element in $bgpStatus) {
-                                    if ($element.connection_state -eq 'ESTABLISHED') {  
-                                        $alert = "GREEN"
-                                        $message = "BGP is established."
-                                    } else {
-                                        $alert = "RED"
-                                        $message = "BGP is not established. Please check the configuration."
-                                    }
-                                    $elementObject = New-Object -TypeName psobject
-                                    # NSX Tier-0 BGP Status Properties
-                                    $elementObject | Add-Member -NotePropertyName 'NSX Manager' -NotePropertyValue $vcfNsxDetails.fqdn
-                                    $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
-                                    $elementObject | Add-Member -NotePropertyName 'Tier-0 ID' -NotePropertyValue $tier0.id
-                                    $elementObject | Add-Member -NotePropertyName 'Connection' -NotePropertyValue $element.connection_state
-                                    $elementObject | Add-Member -NotePropertyName 'Source Address' -NotePropertyValue $element.source_address
-                                    $elementObject | Add-Member -NotePropertyName 'Neighbor Address' -NotePropertyValue $element.neighbor_address
-                                    $elementObject | Add-Member -NotePropertyName 'Local ASN' -NotePropertyValue $localAsn
-                                    $elementObject | Add-Member -NotePropertyName 'Remote ASN' -NotePropertyValue $element.remote_as_number
-                                    $elementObject | Add-Member -NotePropertyName 'Hold' -NotePropertyValue $element.hold_time
-                                    $elementObject | Add-Member -NotePropertyName 'Keep Alive ' -NotePropertyValue $element.keep_alive_interval
-                                    $elementObject | Add-Member -NotePropertyName 'Established Time (sec)' -NotePropertyValue $element.time_since_established
-                                    $elementObject | Add-Member -NotePropertyName 'Total In Prefix' -NotePropertyValue $element.total_in_prefix_count
-                                    $elementObject | Add-Member -NotePropertyName 'Total Out Prefix' -NotePropertyValue $element.total_out_prefix_count
-                                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
-                                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
-                                    
-                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                        if ($element.connection_state -ne 'ESTABLISHED') {
-                                            $customObject += $elementObject
+                            if ($tier0s = Get-NsxtTier0Gateway) {
+                                foreach ($tier0 in $tier0s) {
+                                    $bgpStatus = Get-NsxtTier0BgpStatus -id $tier0.id | Where-Object {$_.type -eq 'USER'}
+                                    $localAsn = (Get-NsxtTier0LocaleServiceBgp -id $tier0.id).local_as_num
+                                    foreach ($element in $bgpStatus) {
+                                        if ($element.connection_state -eq 'ESTABLISHED') {  
+                                            $alert = "GREEN"
+                                            $message = "BGP is established."
+                                        } else {
+                                            $alert = "RED"
+                                            $message = "BGP is not established. Please check the configuration."
                                         }
-                                    } else {
-                                        $customObject += $elementObject
-                                    }  
+                                        $elementObject = New-Object -TypeName psobject
+                                        # NSX Tier-0 BGP Status Properties
+                                        $elementObject | Add-Member -NotePropertyName 'NSX Manager' -NotePropertyValue $vcfNsxDetails.fqdn
+                                        $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
+                                        $elementObject | Add-Member -NotePropertyName 'Tier-0 ID' -NotePropertyValue $tier0.id
+                                        $elementObject | Add-Member -NotePropertyName 'Connection' -NotePropertyValue $element.connection_state
+                                        $elementObject | Add-Member -NotePropertyName 'Source Address' -NotePropertyValue $element.source_address
+                                        $elementObject | Add-Member -NotePropertyName 'Neighbor Address' -NotePropertyValue $element.neighbor_address
+                                        $elementObject | Add-Member -NotePropertyName 'Local ASN' -NotePropertyValue $localAsn
+                                        $elementObject | Add-Member -NotePropertyName 'Remote ASN' -NotePropertyValue $element.remote_as_number
+                                        $elementObject | Add-Member -NotePropertyName 'Hold' -NotePropertyValue $element.hold_time
+                                        $elementObject | Add-Member -NotePropertyName 'Keep Alive ' -NotePropertyValue $element.keep_alive_interval
+                                        $elementObject | Add-Member -NotePropertyName 'Established Time (sec)' -NotePropertyValue $element.time_since_established
+                                        $elementObject | Add-Member -NotePropertyName 'Total In Prefix' -NotePropertyValue $element.total_in_prefix_count
+                                        $elementObject | Add-Member -NotePropertyName 'Total Out Prefix' -NotePropertyValue $element.total_out_prefix_count
+                                        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                                        $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                                        
+                                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                            if ($element.connection_state -ne 'ESTABLISHED') {
+                                                $customObject += $elementObject
+                                            }
+                                        } else {
+                                            $customObject += $elementObject
+                                        }  
+                                    }
                                 }
                             }
                             $customObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address'             
