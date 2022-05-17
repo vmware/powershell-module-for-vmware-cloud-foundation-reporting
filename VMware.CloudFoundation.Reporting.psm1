@@ -3717,7 +3717,7 @@ Function Request-VcenterSnapshotStatus {
                                 if (Get-SnapshotConsolidation -vm ($vcenter.fqdn.Split('.')[0])) {
                                     $alert = 'RED' # Critical; Consolidation is required
                                     $consolidationRequired = $true
-                                    $messageConsolidation += 'Snapshot consolidation is required.'
+                                    $messageConsolidation = 'Snapshot consolidation is required.'
                                 }
                                 else {
                                     $consolidationRequired = $false
