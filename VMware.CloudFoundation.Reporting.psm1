@@ -5396,12 +5396,10 @@ Function Publish-VmConnectedCdrom {
                     $vmConnectedCdrom = Request-VmConnectedCdrom -server  $server -user $user -pass $pass -domain $workloadDomain; $allHealthObject += $vmConnectedCdrom
                 }
 
-                if ($allHealthObject.Count -eq 0) {
-                    $addNoIssues = $true 
-                }
+                if ($allHealthObject.Count -eq 0) { $addNoIssues = $true }
 
                 if ($addNoIssues) {
-                    $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -PostContent '<p>No issues found.</p>' 
+                    $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -PostContent '<p>No virtual machines with connected CD-ROMs found.</p>' 
                 } else {
                     $allHealthObject = $allHealthObject | Sort-Object Cluster, 'VM Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -As Table
                 }
