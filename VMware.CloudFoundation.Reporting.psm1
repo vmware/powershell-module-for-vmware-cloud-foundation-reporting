@@ -1514,6 +1514,7 @@ Function Publish-NsxtEdgeNodeHealth {
         foreach ($nsxtVip in $nsxtClusters.vipFqdn) {
             $jsonInputData.PSObject.Properties.Remove($nsxtVip)
         }
+        $jsonInputData = $jsonInputData | ? {$_ -ne ""}
         foreach ($element in $jsonInputData.PsObject.Properties.Value) {
             $elementObject = New-Object -TypeName psobject
             $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'NSX Edge'
@@ -1531,14 +1532,18 @@ Function Publish-NsxtEdgeNodeHealth {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) { 
-            if ($customObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+            if ($jsonInputData.Count -gt 0) {
+                if ($customObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+                } else {
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -As Table
+                }
+                $customObject = Convert-CssClass -htmldata $customObject
             } else {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -As Table
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p>No NSX Edge Node(s) present.</p>' -As Table
             }
-            $customObject = Convert-CssClass -htmldata $customObject
-            $customObject
+                $customObject
         } else {
             $customObject | Sort-Object Component, Resource
         }
@@ -1592,6 +1597,11 @@ Function Publish-NsxtEdgeClusterHealth {
         foreach ($nsxtEdgeNodes in $nsxtEdgeClusters.edgeNodes.hostname) {
             $jsonInputData.PSObject.Properties.Remove($nsxtEdgeNodes)
         }
+        $nsxtClusters = Get-VCFNsxtCluster
+        foreach ($nsxtCluster in $nsxtClusters) {
+            $jsonInputData.PSObject.Properties.Remove($nsxtCluster.vipFqdn)
+        }
+        $jsonInputData = $jsonInputData | ? {$_ -ne ""}
         foreach ($element in $jsonInputData.PsObject.Properties.Value) {
             foreach ($cluster in $element.PsObject.Properties.Value) {
                 $elementObject = New-Object -TypeName psobject
@@ -1610,14 +1620,18 @@ Function Publish-NsxtEdgeClusterHealth {
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey('html')) { 
-            if ($customObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+        if ($PsBoundParameters.ContainsKey('html')) {
+            if ($jsonInputData.Count -gt 0) {
+                if ($customObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+                } else {
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -As Table
+                }
+                $customObject = Convert-CssClass -htmldata $customObject
             } else {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -As Table
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -PostContent '<p>No NSX Edge Cluster(s) present.</p>' -As Table
             }
-            $customObject = Convert-CssClass -htmldata $customObject
             $customObject
         } else {
             $customObject | Sort-Object Component, Resource
