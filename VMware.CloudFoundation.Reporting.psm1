@@ -7789,24 +7789,24 @@ Function Publish-NsxtPolicy {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $allNsxtPolicyObject = New-Object System.Collections.ArrayList
                 $allNsxtManagerPasswordPolicyObject = New-Object System.Collections.ArrayList
-                $allNsxtEdgePassordPolicyObject = New-Object System.Collections.ArrayList
+                $allNsxtEdgePasswordPolicyObject = New-Object System.Collections.ArrayList
                 if ($PsBoundParameters.ContainsKey('allDomains')) {
                     $allWorkloadDomains = Get-VCFWorkloadDomain
                     foreach ($domain in $allWorkloadDomains ) {
                         $nsxtManagerPasswordPolicy = Request-NsxtManagerPasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allNsxtManagerPasswordPolicyObject += $nsxtManagerPasswordPolicy
-                        $nsxtEdgePasswordPolicy = Request-NsxtEdgePasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allNsxtEdgePassordPolicyObject += $nsxtEdgePasswordPolicy
+                        $nsxtEdgePasswordPolicy = Request-NsxtEdgePasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allNsxtEdgePasswordPolicyObject += $nsxtEdgePasswordPolicy
                     }
                 }
                 else {
                     $nsxtManagerPasswordPolicy = Request-NsxtManagerPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtManagerPasswordPolicyObject += $nsxtManagerPasswordPolicy
-                    $nsxtEdgePasswordPolicy = Request-NsxtEdgePasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtEdgePassordPolicyObject += $nsxtEdgePasswordPolicy
+                    $nsxtEdgePasswordPolicy = Request-NsxtEdgePasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtEdgePasswordPolicyObject += $nsxtEdgePasswordPolicy
                 }
                 $allNsxtManagerPasswordPolicyObject = $allNsxtManagerPasswordPolicyObject | Sort-Object Cluster, 'NSX Manager FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-manager"></a><h3>NSX Manager Password Policy</h3>' -As Table
                 $allNsxtManagerPasswordPolicyObject = Convert-CssClass -htmldata $allNsxtManagerPasswordPolicyObject
-                $allNsxtEdgePassordPolicyObject = $allNsxtEdgePassordPolicyObject | Sort-Object Cluster, 'NSX Edge' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-edge"></a><h3>NSX Edge Password Policy</h3>' -As Table
-                $allNsxtEdgePassordPolicyObject = Convert-CssClass -htmldata $allNsxtEdgePassordPolicyObject
+                $allNsxtEdgePasswordPolicyObject = $allNsxtEdgePasswordPolicyObject | Sort-Object Cluster, 'NSX Edge' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-edge"></a><h3>NSX Edge Password Policy</h3>' -As Table
+                $allNsxtEdgePasswordPolicyObject = Convert-CssClass -htmldata $allNsxtEdgePasswordPolicyObject
                 $allNsxtPolicyObject += $allNsxtManagerPasswordPolicyObject
-                $allNsxtPolicyObject += $allNsxtEdgePassordPolicyObject
+                $allNsxtPolicyObject += $allNsxtEdgePasswordPolicyObject
                 $allNsxtPolicyObject
             }
         }
