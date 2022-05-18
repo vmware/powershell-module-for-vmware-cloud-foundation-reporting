@@ -3581,7 +3581,7 @@ Function Request-SddcManagerSnapshotStatus {
                             $resource = 'SDDC Manager Snapshot'
                             $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ','
                             $snapshotStatus = Get-SnapshotStatus -vm ($server.Split('.')[0])
-                            $snapshotCount = ($snapshotStatus | measure).count
+                            $snapshotCount = ($snapshotStatus | Measure-Object).count
                             $snapshotLast = $snapshotStatus.Created | select -Last 1
                             $snapshotAge = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshotLast)).TotalDays)
                             
@@ -3707,7 +3707,7 @@ Function Request-VcenterSnapshotStatus {
                             foreach ($vcenter in $allVcenters) {
                                 $domain = (Get-VCFWorkloadDomain | Where-Object {$_.vcenters.fqdn -eq $vcenter.fqdn}).name
                                 $snapshotStatus = Get-SnapshotStatus -vm ($vcenter.fqdn.Split('.')[0])
-                                $snapshotCount = ($snapshotStatus | measure).count
+                                $snapshotCount = ($snapshotStatus | Measure-Object).count
                                 $snapshotLast = $snapshotStatus.Created | select -Last 1
                                 $snapshotAge = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshotLast)).TotalDays)
 
@@ -3787,7 +3787,7 @@ Function Request-VcenterSnapshotStatus {
                             $resource = 'vCenter Server Snapshot'
                             $domain = (Get-VCFWorkloadDomain | Where-Object { $_.vcenters.fqdn -eq $vcenter.fqdn }).name
                             $snapshotStatus = Get-SnapshotStatus -vm ($vcenter.fqdn.Split('.')[0])
-                            $snapshotCount = ($snapshotStatus | measure).count
+                            $snapshotCount = ($snapshotStatus | Measure-Object).count
                             $snapshotLast = $snapshotStatus.Created | select -Last 1
                             $snapshotAge = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshotLast)).TotalDays)
 
@@ -3918,7 +3918,7 @@ Function Request-NsxtEdgeSnapshotStatus {
                                             $resource = 'NSX Edge Node Snapshot'
                                             $domain = $nsxtManager.domains.name
                                             $snapshotStatus = Get-SnapshotStatus -vm ($nsxtEdgeNode.hostName.Split('.')[0])
-                                            $snapshotCount = ($snapshotStatus | measure).count
+                                            $snapshotCount = ($snapshotStatus | Measure-Object).count
                                             $snapshotLast = $snapshotStatus.Created | select -Last 1
                                             $snapshotAge = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshotLast)).TotalDays)
 
@@ -4001,7 +4001,7 @@ Function Request-NsxtEdgeSnapshotStatus {
                                     $resource = 'NSX Edge Node Snapshot'
                                     $domain = $nsxtManager.domains.name
                                     $snapshotStatus = Get-SnapshotStatus -vm ($nsxtEdgeNode.hostName.Split('.')[0])
-                                    $snapshotCount = ($snapshotStatus | measure).count
+                                    $snapshotCount = ($snapshotStatus | Measure-Object).count
                                     $snapshotLast = $snapshotStatus.Created | select -Last 1
                                     $snapshotAge = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshotLast)).TotalDays)
 
@@ -8197,7 +8197,7 @@ Function Request-HardwareOverview {
                 $customObject | Add-Member -Type NoteProperty -Name "Hardware Platform" -Value ($harwdareModelObject -join ':-: ')
                 $customObject | Add-Member -notepropertyname "CPUs Sockets Deployed" -notepropertyvalue $totalSockets
                 $customObject | Add-Member -notepropertyname "Hosts Deployed" -notepropertyvalue (Get-VCFHost).Count
-                $customObject | Add-Member -notepropertyname "Workload Domains" -notepropertyvalue (Get-VCFWorkloadDomain | Measure).Count
+                $customObject | Add-Member -notepropertyname "Workload Domains" -notepropertyvalue (Get-VCFWorkloadDomain | Measure-Object).Count
                 $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue $totalVms
                 $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue $totalPoweredOnVms
                 $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue $totalPoweredOffVms
