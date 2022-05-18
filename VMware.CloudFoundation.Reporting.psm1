@@ -14,6 +14,8 @@
 
 if ($PSEdition -eq 'Core') {
     $PSDefaultParameterValues.Add("Invoke-RestMethod:SkipCertificateCheck", $true)
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
+    Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -Confirm:$false | Out-Null
 }
 
 if ($PSEdition -eq 'Desktop') {
@@ -74,7 +76,7 @@ Function Invoke-VcfHealthReport {
 
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
         if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
         } else {
@@ -370,7 +372,7 @@ Function Invoke-VcfAlertReport {
 
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType alert # Setup Report Location and Report File
         if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
         } else {
@@ -499,7 +501,7 @@ Function Invoke-VcfConfigReport {
 
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType config # Setup Report Location and Report File
         if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
         } else {
@@ -622,7 +624,7 @@ Function Invoke-VcfUpgradePrecheck {
 
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType upgrade # Setup Report Location and Report File
         if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
         $workflowMessage = "Workload Domain ($workloadDomain)"
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the Process of Running an Upgrade Precheck for $workflowMessage." -Colour Yellow
@@ -747,7 +749,7 @@ Function Invoke-VcfPasswordPolicy {
 
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType policy # Setup Report Location and Report File
         if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
         } else {
@@ -852,7 +854,7 @@ Function Invoke-VcfOverviewReport {
 
         Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType overview # Setup Report Location and Report File
         if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfHealthPrereq) {Write-Warning $message; Write-Host ""; Break }
+        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
         $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
         Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
         Write-LogMessage -Type INFO -Message "Starting the Process of Creating a System Overview Report for $workflowMessage." -Colour Yellow
@@ -8608,16 +8610,16 @@ Export-ModuleMember -Function Request-ValidatedSolutionOverview
 #########################################################################################
 #############################  Start Supporting Functions  ##############################
 
-Function Test-VcfHealthPrereq {
+Function Test-VcfReportingPrereq {
     <#
 		.SYNOPSIS
         Validate prerequisites to run the PowerShell module.
 
         .DESCRIPTION
-        The Test-VcfHealthPrereq cmdlet checks that all the prerequisites have been met to run the PowerShell module.
+        The Test-VcfReportingPrereq cmdlet checks that all the prerequisites have been met to run the PowerShell module.
 
         .EXAMPLE
-        Test-VcfHealthPrereq
+        Test-VcfReportingPrereq
         This example runs the prerequisite validation.
     #>
 
@@ -8629,10 +8631,20 @@ Function Test-VcfHealthPrereq {
             @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.7")}
         )
         foreach ($module in $modules ) {
-            if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
-                $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding"
-                $message
-                Break
+            if ($PSEdition -eq "Desktop") {
+                if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
+                    $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding"
+                    $message
+                    Break
+                }
+            } else {
+                if (!$module -eq "VMware.PowerCLI") {
+                    if ((Get-Module -Name $module.Name).Version -lt $module.Version) {
+                        $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding"
+                        $message
+                        Break
+                    }
+                }
             }
             
         }
@@ -8641,7 +8653,7 @@ Function Test-VcfHealthPrereq {
         Write-Error $_.Exception.Message
     }
 }
-Export-ModuleMember -Function Test-VcfHealthPrereq
+Export-ModuleMember -Function Test-VcfReportingPrereq
 
 Function Start-CreateReportDirectory {
     Param (
