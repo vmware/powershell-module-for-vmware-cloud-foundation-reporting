@@ -5510,6 +5510,10 @@ Function Publish-EsxiConnectionHealth {
         .EXAMPLE
         Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will publish the connection status of ESXi hosts in a workload domain.
+
+        .EXAMPLE
+        Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example will publish the connection status of ESXi hosts in all workload domains but only for failures.
     #>
 
     Param (
@@ -5517,31 +5521,35 @@ Function Publish-EsxiConnectionHealth {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
     
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $allHealthObject = New-Object System.Collections.ArrayList
-                if ($PsBoundParameters.ContainsKey('allDomains')) {
-                    $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+                    foreach ($domain in $allWorkloadDomains ) {
+                        $esxiConnectionStatus = Request-EsxiConnectionHealth -server  $server -user $user -pass $pass -domain $domain.name -failureOnly; $allHealthObject += $esxiConnectionStatus
+                    }
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
                     foreach ($domain in $allWorkloadDomains ) {
                         $esxiConnectionStatus = Request-EsxiConnectionHealth -server  $server -user $user -pass $pass -domain $domain.name; $allHealthObject += $esxiConnectionStatus
                     }
                 }
-                else {
+
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+                    $esxiConnectionStatus = Request-EsxiConnectionHealth -server  $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allHealthObject += $esxiConnectionStatus
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
                     $esxiConnectionStatus = Request-EsxiConnectionHealth -server  $server -user $user -pass $pass -domain $workloadDomain; $allHealthObject += $esxiConnectionStatus
                 }
 
-                if ($allHealthObject.Count -eq 0) {
-                    $addNoIssues = $true 
-                }
-
+                if ($allHealthObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
                     $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-connection"></a><h3>ESXi Connection Health</h3>' -PostContent '<p>No issues found.</p>' 
-                }
-                else {
+                } else {
                     $allHealthObject = $allHealthObject | Sort-Object Resource, Cluster | ConvertTo-Html -Fragment -PreContent '<a id="esxi-connection"></a><h3>ESXi Connection Health</h3>' -As Table
                 }
                 $allHealthObject = Convert-CssClass -htmlData $allHealthObject
@@ -5570,13 +5578,18 @@ Function Request-EsxiConnectionHealth {
         .EXAMPLE
         Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example returns the connection status of ESXi hosts in a workload domain.
+
+        .EXAMPLE
+        Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+        This example returns the connection status of ESXi hosts in a workload domain but only reports issues.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     Try {
@@ -5613,7 +5626,14 @@ Function Request-EsxiConnectionHealth {
                                     $customObject | Add-Member -NotePropertyName 'Connection' -NotePropertyValue $esxiHost.ConnectionState
                                     $customObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
                                     $customObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
-                                    $allClustersObject += $customObject
+
+                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                        if ($esxiHost.ConnectionState -ne 'Connected' ) {
+                                            $allClustersObject += $customObject
+                                        }
+                                    } else {
+                                        $allClustersObject += $customObject
+                                    }  
                                 }
                             }
                             $allClustersObject | Sort-Object Resource, Cluster
