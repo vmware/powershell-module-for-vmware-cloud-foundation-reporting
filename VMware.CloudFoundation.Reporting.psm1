@@ -8197,7 +8197,7 @@ Function Request-HardwareOverview {
                 $customObject | Add-Member -Type NoteProperty -Name "Hardware Platform" -Value ($harwdareModelObject -join ':-: ')
                 $customObject | Add-Member -notepropertyname "CPUs Sockets Deployed" -notepropertyvalue $totalSockets
                 $customObject | Add-Member -notepropertyname "Hosts Deployed" -notepropertyvalue (Get-VCFHost).Count
-                $customObject | Add-Member -notepropertyname "Workload Domains" -notepropertyvalue (Get-VCFWorkloadDomain).Count
+                $customObject | Add-Member -notepropertyname "Workload Domains" -notepropertyvalue (Get-VCFWorkloadDomain | Measure).Count
                 $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue $totalVms
                 $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue $totalPoweredOnVms
                 $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue $totalPoweredOffVms
