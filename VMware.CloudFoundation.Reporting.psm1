@@ -5681,18 +5681,23 @@ Function Publish-SddcManagerFreePool {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $allConfigurationObject = New-Object System.Collections.ArrayList
-                if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                    $allConfigurationObject = Request-SddcManagerFreePool -server $server -user $user -pass $pass -failureOnly
-                }
-                else {
-                    $allConfigurationObject = Request-SddcManagerFreePool -server $server -user $user -pass $pass
-                }
-
-                if ($allConfigurationObject.Count -eq 0) { $addNoIssues = $true }
-                if ($addNoIssues) {
-                    $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table -PostContent '<p>No issues found.</p>'
+                $unassignedEsxiHosts = (Get-VCFHost | Where-Object {$_.status -eq "UNASSIGNED_USEABLE"})
+                if ($unassignedEsxiHosts.Count -gt 0) {
+                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                        $allConfigurationObject = Request-SddcManagerFreePool -server $server -user $user -pass $pass -failureOnly
+                    }
+                    else {
+                        $allConfigurationObject = Request-SddcManagerFreePool -server $server -user $user -pass $pass
+                    }
+                
+                    if ($allConfigurationObject.Count -eq 0) { $addNoIssues = $true }
+                    if ($addNoIssues) {
+                        $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table -PostContent '<p>No issues found.</p>'
+                    } else {
+                        $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table
+                    }
                 } else {
-                    $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table
+                    $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table -PostContent '<p>No ESXi hosts present in the free pool.</p>'
                 }
                 
                 $allConfigurationObject = Convert-CssClass -htmldata $allConfigurationObject
