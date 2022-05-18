@@ -832,6 +832,10 @@ Function Invoke-VcfOverviewReport {
         .EXAMPLE
         Invoke-VcfOverviewReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting
         This example generates the system overview report for a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Invoke-VcfOverviewReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -anonymized
+        This example generates the system overview report for a VMware Cloud Foundation instance, but will anonymize the output.
     #>
 
     Param (
@@ -839,7 +843,8 @@ Function Invoke-VcfOverviewReport {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
 
     Try {
@@ -854,9 +859,14 @@ Function Invoke-VcfOverviewReport {
         Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
         Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
-        Write-LogMessage -Type INFO -Message "Generating System Overview Report for $workflowMessage."
-        $vcfOverviewHtml = Publish-VcfSystemOverview -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
-        
+        if ($PsBoundParameters.ContainsKey("anonymized")) {
+            Write-LogMessage -Type INFO -Message "Generating Anonymized System Overview Report for $workflowMessage."
+            $vcfOverviewHtml = Publish-VcfSystemOverview -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -anonymized
+        } else {
+            Write-LogMessage -Type INFO -Message "Generating System Overview Report for $workflowMessage."
+            $vcfOverviewHtml = Publish-VcfSystemOverview -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
+        }
+
         $reportData += $vcfOverviewHtml
 
         if ($PsBoundParameters.ContainsKey("darkMode")) {
@@ -7957,26 +7967,40 @@ Function Publish-VcfSystemOverview {
         .EXAMPLE
         Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will return system overview report for SDDC Manager for a all workload domains.
+
+        .EXAMPLE
+        Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
+        This example will return system overview report for SDDC Manager for a all workload domains, but with anonymized data.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
     
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $allOverviewObject = New-Object System.Collections.ArrayList
-                $vcfOverview = Request-VcfOverview -server $server -user $user -pass $pass
-                $hardwareOverview = Request-HardwareOverview -server $server -user $user -pass $pass
-                $vcenterOverview = Request-VcenterOverview -server $server -user $user -pass $pass
-                $clusterOverview = Request-ClusterOverview -server $server -user $user -pass $pass
-                $networkingOverview = Request-NetworkOverview -server $server -user $user -pass $pass
-                $vrealizeOverview = Request-VrealizeOverview -server $server -user $user -pass $pass
-                $vvsOverview = Request-ValidatedSolutionOverview -server $server -user $user -pass $pass
-
+                if ($PsBoundParameters.ContainsKey('anonymized')) {
+                    $vcfOverview = Request-VcfOverview -server $server -user $user -pass $pass -anonymized
+                    $hardwareOverview = Request-HardwareOverview -server $server -user $user -pass $pass
+                    $vcenterOverview = Request-VcenterOverview -server $server -user $user -pass $pass -anonymized
+                    $clusterOverview = Request-ClusterOverview -server $server -user $user -pass $pass -anonymized
+                    $networkingOverview = Request-NetworkOverview -server $server -user $user -pass $pass -anonymized
+                    $vrealizeOverview = Request-VrealizeOverview -server $server -user $user -pass $pass -anonymized
+                    $vvsOverview = Request-ValidatedSolutionOverview -server $server -user $user -pass $pass
+                } else {
+                    $vcfOverview = Request-VcfOverview -server $server -user $user -pass $pass
+                    $hardwareOverview = Request-HardwareOverview -server $server -user $user -pass $pass
+                    $vcenterOverview = Request-VcenterOverview -server $server -user $user -pass $pass
+                    $clusterOverview = Request-ClusterOverview -server $server -user $user -pass $pass
+                    $networkingOverview = Request-NetworkOverview -server $server -user $user -pass $pass
+                    $vrealizeOverview = Request-VrealizeOverview -server $server -user $user -pass $pass
+                    $vvsOverview = Request-ValidatedSolutionOverview -server $server -user $user -pass $pass
+                }
 
                 $vcfOverview = $vcfOverview | ConvertTo-Html -Fragment -PreContent '<h4>VMware Cloud Foundation Overview</h4>'
                 $vcfOverview = Convert-CssClass -htmldata $vcfOverview
@@ -8028,12 +8052,17 @@ Function Request-VcfOverview {
         .EXAMPLE
         Request-VcfOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will return an overview of the SDDC Manager instance.
+
+        .EXAMPLE
+        Request-VcfOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
+        This example will return an overview of the SDDC Manager instance, but will anonymize the output.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
 
     Try {
@@ -8048,14 +8077,21 @@ Function Request-VcfOverview {
                         }
                     }
                 }
-
                 $systemObject = New-Object -TypeName psobject    
-                $systemObject | Add-Member -notepropertyname "SDDC Manager UUID" -notepropertyvalue (Get-VCFManager).id
-                $systemObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFManager).version
-                $systemObject | Add-Member -notepropertyname "Architecture" -notepropertyvalue $vcfArchitecture
-                $systemObject | Add-Member -notepropertyname "CEIP Status" -notepropertyvalue (Get-Culture).TextInfo.ToTitleCase((Get-VCFCeip).status.ToLower())
-                $systemObject | Add-Member -notepropertyname "Customer Connect User" -notepropertyvalue (Get-VCFDepotCredential).username.ToLower()
-                $systemObject | Add-Member -notepropertyname "Customer Connect Status" -notepropertyvalue ((Get-VCFDepotCredential).message -Split ": ")[-1]
+                if ($PsBoundParameters.ContainsKey('anonymized')) {
+                    $systemObject | Add-Member -notepropertyname "SDDC Manager UUID" -notepropertyvalue (Get-VCFManager).id
+                    $systemObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFManager).version
+                    $systemObject | Add-Member -notepropertyname "Architecture" -notepropertyvalue $vcfArchitecture
+                    $systemObject | Add-Member -notepropertyname "CEIP Status" -notepropertyvalue (Get-Culture).TextInfo.ToTitleCase((Get-VCFCeip).status.ToLower())
+                    $systemObject | Add-Member -notepropertyname "Customer Connect Status" -notepropertyvalue ((Get-VCFDepotCredential).message -Split ": ")[-1]
+                } else {
+                    $systemObject | Add-Member -notepropertyname "SDDC Manager FQDN" -notepropertyvalue (Get-VCFManager).fqdn
+                    $systemObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFManager).version
+                    $systemObject | Add-Member -notepropertyname "Architecture" -notepropertyvalue $vcfArchitecture
+                    $systemObject | Add-Member -notepropertyname "CEIP Status" -notepropertyvalue (Get-Culture).TextInfo.ToTitleCase((Get-VCFCeip).status.ToLower())
+                    $systemObject | Add-Member -notepropertyname "Customer Connect User" -notepropertyvalue (Get-VCFDepotCredential).username.ToLower()
+                    $systemObject | Add-Member -notepropertyname "Customer Connect Status" -notepropertyvalue ((Get-VCFDepotCredential).message -Split ": ")[-1]
+                }
                 $systemObject
             }
         }
@@ -8163,12 +8199,17 @@ Function Request-VcenterOverview {
         .EXAMPLE
         Request-VcenterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will return an overview of the vSphere environment managed by the SDDC Manager instance.
+
+        .EXAMPLE
+        Request-VcenterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -aanonymized
+        This example will return an overview of the vSphere environment managed by the SDDC Manager instance, but will anonymize the output.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
 
     Try {
@@ -8181,15 +8222,27 @@ Function Request-VcenterOverview {
                         if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                             if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                                 $customObject = New-Object -TypeName psobject
-                                $customObject | Add-Member -notepropertyname "vCenter Server UUID" -notepropertyvalue $domain.vcenters.id
-                                $customObject | Add-Member -notepropertyname "vCenter Server Version" -notepropertyvalue (Get-VCFvCenter -id $domain.vcenters.id).version
-                                $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
-                                $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
-                                $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-Cluster -Server $vcfVcenterDetails.fqdn).Count
-                                $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VMHost -Server $vcfVcenterDetails.fqdn).Count
-                                $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
-                                $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
-                                $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
+                                if ($PsBoundParameters.ContainsKey('anonymized')) {
+                                    $customObject | Add-Member -notepropertyname "vCenter Server UUID" -notepropertyvalue $domain.vcenters.id
+                                    $customObject | Add-Member -notepropertyname "vCenter Server Version" -notepropertyvalue (Get-VCFvCenter -id $domain.vcenters.id).version
+                                    $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
+                                    $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
+                                    $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-Cluster -Server $vcfVcenterDetails.fqdn).Count
+                                    $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VMHost -Server $vcfVcenterDetails.fqdn).Count
+                                    $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
+                                    $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
+                                    $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
+                                } else {
+                                    $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $domain.vcenters.fqdn
+                                    $customObject | Add-Member -notepropertyname "vCenter Server Version" -notepropertyvalue (Get-VCFvCenter -id $domain.vcenters.id).version
+                                    $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
+                                    $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
+                                    $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-Cluster -Server $vcfVcenterDetails.fqdn).Count
+                                    $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VMHost -Server $vcfVcenterDetails.fqdn).Count
+                                    $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
+                                    $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
+                                    $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
+                                }
                                 Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                             }
                         }
@@ -8225,12 +8278,17 @@ Function Request-ClusterOverview {
         .EXAMPLE
         Request-ClusterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will return an overview of the vSphere environment managed by the SDDC Manager instance.
+
+        .EXAMPLE
+        Request-ClusterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -aanonymized
+        This example will return an overview of the vSphere environment managed by the SDDC Manager instance, but will anonymize the output.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
 
     Try {
@@ -8241,10 +8299,17 @@ Function Request-ClusterOverview {
                 foreach ($domain in $allWorkloadDomains) {
                     foreach ($cluster in $domain.clusters) {
                         $customObject = New-Object -TypeName psobject
-                        $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
-                        $customObject | Add-Member -notepropertyname "Cluster UUID" -notepropertyvalue $cluster.id
-                        $customObject | Add-Member -notepropertyname "Principal Storage" -notepropertyvalue  (Get-VCFCluster -id $cluster.id).primaryDatastoreType
-                        $customObject | Add-Member -notepropertyname "Stretched Cluster" -notepropertyvalue  (Get-VCFCluster -id $cluster.id).isStretched
+                        if ($PsBoundParameters.ContainsKey('anonymized')) {
+                            $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
+                            $customObject | Add-Member -notepropertyname "Cluster UUID" -notepropertyvalue $cluster.id
+                            $customObject | Add-Member -notepropertyname "Principal Storage" -notepropertyvalue (Get-VCFCluster -id $cluster.id).primaryDatastoreType
+                            $customObject | Add-Member -notepropertyname "Stretched Cluster" -notepropertyvalue (Get-VCFCluster -id $cluster.id).isStretched
+                        } else {
+                            $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
+                            $customObject | Add-Member -notepropertyname "Cluster Name" -notepropertyvalue (Get-VCFCluster -id $cluster.id).name
+                            $customObject | Add-Member -notepropertyname "Principal Storage" -notepropertyvalue (Get-VCFCluster -id $cluster.id).primaryDatastoreType
+                            $customObject | Add-Member -notepropertyname "Stretched Cluster" -notepropertyvalue (Get-VCFCluster -id $cluster.id).isStretched
+                        }
                     }
                     $allClusterObject += $customObject
                 }
@@ -8272,12 +8337,17 @@ Function Request-NetworkOverview {
         .EXAMPLE
         Request-NetworkOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will return an overview of the networking managed by the SDDC Manager instance.
+
+        .EXAMPLE
+        Request-NetworkOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
+        This example will return an overview of the networking managed by the SDDC Manager instance, but will anonymize the output.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
 
     Try {
@@ -8290,13 +8360,23 @@ Function Request-NetworkOverview {
                         if (Get-VCFEdgeCluster | Where-Object {$_.nsxtCluster.id -eq $domain.nsxtCluster.id}) { $edgeCluster = "True" } else { $edgeCluster = "False" }
                         if ($domain.type -eq "MANAGEMENT" -and (Get-VCFApplicationVirtualNetwork)) { $avnStatus = "True"} else { $avnStatus = "False" }
                         $customObject = New-Object -TypeName psobject
-                        $customObject | Add-Member -notepropertyname "NSX Manager UUID" -notepropertyvalue $domain.nsxtCluster.id
-                        $customObject | Add-Member -notepropertyname "NSX Manager Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
-                        $customObject | Add-Member -notepropertyname "NSX Stretched" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
-                        $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
-                        $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
-                        $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
-                        $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
+                        if ($PsBoundParameters.ContainsKey('anonymized')) {
+                            $customObject | Add-Member -notepropertyname "NSX Manager UUID" -notepropertyvalue $domain.nsxtCluster.id
+                            $customObject | Add-Member -notepropertyname "NSX Manager Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
+                            $customObject | Add-Member -notepropertyname "NSX Stretched" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
+                            $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
+                            $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
+                            $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
+                            $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
+                        } else {
+                            $customObject | Add-Member -notepropertyname "NSX Manager FQDN" -notepropertyvalue $domain.nsxtCluster.vipFqdn
+                            $customObject | Add-Member -notepropertyname "NSX Manager Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
+                            $customObject | Add-Member -notepropertyname "NSX Stretched" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
+                            $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
+                            $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
+                            $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
+                            $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
+                        }
                     }
                     $allNetworkingObject += $customObject 
                 }
@@ -8324,12 +8404,17 @@ Function Request-VrealizeOverview {
         .EXAMPLE
         Request-VrealizeOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will return an overview of vRealize Suite managed by the SDDC Manager instance.
+
+        .EXAMPLE
+        Request-VrealizeOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
+        This example will return an overview of vRealize Suite managed by the SDDC Manager instance, but will anonymize the output.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
 
     Try {
@@ -8340,12 +8425,21 @@ Function Request-VrealizeOverview {
                 foreach ($apiCmdlet in $vcfApiCmdlet) {
                     if ((Invoke-Expression $apiCmdlet).status -eq "ACTIVE") {
                         if ($apiCmdlet -eq "Get-VCFvRSLCM") {$nodeCount = "1" } else { ($nodeCount = ((Invoke-Expression $apiCmdlet).nodes).Count)}
-                        $customObject = New-Object -TypeName psobject
+                        $customObject = New-Object -TypeName psobject  
                         $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue ((Get-Help -Name $apiCmdlet).synopsis -Split ("Get the existing ") | Select-Object -Last 1)
-                        $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Invoke-Expression $apiCmdlet).id
+                        if ($PsBoundParameters.ContainsKey('anonymized')) {
+                            $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Invoke-Expression $apiCmdlet).id
+                        } else {
+                            if ($apiCmdlet -eq "Get-VCFvRSLCM") {
+                                $customObject | Add-Member -notepropertyname "FQDN" -notepropertyvalue (Invoke-Expression $apiCmdlet).fqdn
+                            } else {
+                                $customObject | Add-Member -notepropertyname "FQDN" -notepropertyvalue (Invoke-Expression $apiCmdlet).loadBalancerFqdn
+                            }
+                        }
                         $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Invoke-Expression $apiCmdlet).version
                         $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Invoke-Expression $apiCmdlet).status
                         $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue $nodeCount
+
                         $allVrealizeObject += $customObject
                     }
                 }

@@ -92,13 +92,13 @@ Get-Help -Name Invoke-VcfHealthReport -Examples
 
 ### Generating System Overview Report Tasks
 
-The `Invoke-VcfOverviewReport` cmdlet generates a system overview report. This report contains high-level information about the VMware Cloud Foundation system.
+The `Invoke-VcfOverviewReport` cmdlet generates a system overview report. This report contains high-level information about the VMware Cloud Foundation system. This report may be used to provide a quick system overview of the system to your VMware representative.
 
 #### Generate a System Overview Report for a VMware Cloud Foundation Instance
 
 1. Start Windows PowerShell.
 
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system overview report for SDDC Manager instance and run the commands in the PowerShell console.
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
@@ -113,6 +113,12 @@ The `Invoke-VcfOverviewReport` cmdlet generates a system overview report. This r
 
     ```powershell
     Invoke-VcfOverviewReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath
+    ```
+
+    If you prefer to anonymize the data, you can use the `-anonymize` parameter.
+
+    ```powershell
+    Invoke-VcfOverviewReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -anonymize
     ```
 
 4. Review the generated HTML report.
@@ -223,7 +229,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
 
 1. Start Windows PowerShell.
 
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system alert report for SDDC Manager instance and run the commands in the PowerShell console.
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
@@ -245,7 +251,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
 
 1. Start Windows PowerShell.
 
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system alert report for SDDC Manager instance and run the commands in the PowerShell console.
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
@@ -268,7 +274,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
 
 1. Start Windows PowerShell.
 
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system alert report for SDDC Manager instance and run the commands in the PowerShell console.
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
@@ -290,7 +296,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
 
 1. Start Windows PowerShell.
 
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system alert report for SDDC Manager instance and run the commands in the PowerShell console.
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
@@ -317,7 +323,7 @@ The `Invoke-VcfPasswordPolicyReport` cmdlet generates a password policy report. 
 
 1. Start Windows PowerShell.
 
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a password policy report for SDDC Manager instance and run the commands in the PowerShell console.
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
@@ -340,7 +346,7 @@ The `Invoke-VcfPasswordPolicyReport` cmdlet generates a password policy report. 
 
 1. Start Windows PowerShell.
 
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a password policy report for SDDC Manager instance and run the commands in the PowerShell console.
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
@@ -368,7 +374,7 @@ The `Invoke-VcfConfigurationReport` cmdlet generates a configuration report. Thi
 
 1. Start Windows PowerShell.
 
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a configuration report for SDDC Manager instance and run the commands in the PowerShell console.
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
@@ -390,7 +396,7 @@ The `Invoke-VcfConfigurationReport` cmdlet generates a configuration report. Thi
 
 1. Start Windows PowerShell.
 
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a configuration report for SDDC Manager instance and run the commands in the PowerShell console.
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
@@ -417,7 +423,7 @@ The upgrade precheck report, initiates an upgrade precheck of a workload domain 
 
 1. Start Windows PowerShell.
 
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
+2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate an upgrade precheck report for SDDC Manager instance and run the commands in the PowerShell console.
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
