@@ -2309,8 +2309,8 @@ Function Publish-BackupStatus {
                         if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
                             $sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass -failureOnly; $allBackupStatusObject += $sddcManagerBackupStatus
                         }
-                        $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $vcenterBackupStatus
-                        $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allBackupStatusObject += $nsxtManagerBackupStatus
+                        $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allBackupStatusObject += $vcenterBackupStatus
+                        $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allBackupStatusObject += $nsxtManagerBackupStatus
                     }
                 } else {
                     if ($PsBoundParameters.ContainsKey("allDomains")) { 
@@ -2390,7 +2390,7 @@ Function Publish-NsxtTransportNodeStatus {
                         }
                     }
                     else {
-                        $nsxtTransportNodeStatus = Request-NsxtTransportNodeStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTransportNodeStatusObject += $nsxtTransportNodeStatus
+                        $nsxtTransportNodeStatus = Request-NsxtTransportNodeStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtTransportNodeStatusObject += $nsxtTransportNodeStatus
                     }
                 }
                 else {
@@ -2469,7 +2469,7 @@ Function Publish-NsxtTransportNodeTunnelStatus {
                         }
                     }
                     else {
-                        $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
+                        $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
                     }
                 }
                 else {
@@ -2547,7 +2547,7 @@ Function Publish-NsxtTier0BgpStatus {
                             $nsxtTier0BgpStatus = Request-NsxtTier0BgpStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTier0BgpStatusObject += $nsxtTier0BgpStatus
                         }
                     } else {
-                        $nsxtTier0BgpStatus = Request-NsxtTier0BgpStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTier0BgpStatusObject += $nsxtTier0BgpStatus
+                        $nsxtTier0BgpStatus = Request-NsxtTier0BgpStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtTier0BgpStatusObject += $nsxtTier0BgpStatus
                     }
                 } else {
                     if ($PsBoundParameters.ContainsKey('allDomains')) { 
@@ -3884,7 +3884,7 @@ Function Request-NsxtEdgeSnapshotStatus {
         This example will publish the snapshot status for all NSX Edge nodes managed by SDDC Manager in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Request-NsxtEdgeSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains --failureOnly
+        Request-NsxtEdgeSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will publish the snapshot status for all NSX Edge nodes managed by SDDC Manager in a VMware Cloud Foundation instance, but only failed items.
 
         .EXAMPLE
