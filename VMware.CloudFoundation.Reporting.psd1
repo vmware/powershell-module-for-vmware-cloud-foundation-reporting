@@ -33,7 +33,7 @@ Copyright = '(c) 2022 VMware All rights reserved'
 # Description = ''
 
 # Minimum version of the PowerShell engine required by this module
-PowerShellVersion = '5.1, 7.2.1'
+PowerShellVersion = '5.1'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
