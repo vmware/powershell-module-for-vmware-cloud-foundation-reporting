@@ -8562,6 +8562,8 @@ Function Request-ValidatedSolutionOverview {
                             }
                         }
                     }
+                } else {
+                    $ilaEnabled = "Not Enabled"
                 }
                 $customObject = New-Object -TypeName psobject
                 $customObject | Add-Member -notepropertyname "Name" -notepropertyvalue "Intelligent Logging and Analytics"
@@ -8581,6 +8583,8 @@ Function Request-ValidatedSolutionOverview {
                             }
                         }
                     }
+                } else {
+                    $iomEnabled = "Not Enabled"
                 }
                 $customObject = New-Object -TypeName psobject
                 $customObject | Add-Member -notepropertyname "Name" -notepropertyvalue "Intelligent Operations Management"
