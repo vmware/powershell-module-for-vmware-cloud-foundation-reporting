@@ -1906,7 +1906,12 @@ Function Publish-VcenterHealth {
 
         # Ring Topology Health
         $ringTopologyHealth = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.General.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SOS JSON
+        $vcfVersion = ((Get-VCFManager).version -Split ('\.\d{1}\-\d{8}')) -split '\s+' -match '\S'
+        if ($vcfVersion -eq "4.2.1") {
+            $jsonInputData = $targetContent.Connectivity.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SOS JSON
+        } else {
+            $jsonInputData = $targetContent.General.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SOS JSON
+        }
         $elementObject = New-Object -TypeName psobject
         $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($jsonInputData.area -SPlit  ("SDDC:"))[-1].Trim()
         $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $jsonInputData.alert
@@ -1930,7 +1935,7 @@ Function Publish-VcenterHealth {
             $vcenterOverall = Convert-CssClass -htmldata $vcenterOverall
             $vcenterOverall
 
-            if ($ringTopologyHealth.Count -eq 0) { $addNoIssues = $true }
+            if (@($ringTopologyHealth).Count -lt 1) { $addNoIssues = $true }
             if ($addNoIssues) {
                 $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring"></a><h3>vCenter Single Sign-On Ring Topology Health Status</h3>' -PostContent '<p>No issues found.</p>' 
             } else {
