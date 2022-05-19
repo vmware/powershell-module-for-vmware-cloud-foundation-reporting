@@ -5712,11 +5712,9 @@ Function Publish-EsxiAlert {
                     }
                 }
 
-                if ($allAlertObject.Count -eq 0) {
-                    $addNoIssues = $true 
-                }
+                if ($allAlertObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alert</h3>' -PostContent '<p>No issues found.</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alert</h3>' -PostContent '<p>No alerts found.</p>' 
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alerts</h3>' -As Table
                 }
@@ -5791,7 +5789,7 @@ Function Publish-NsxtAlert {
 
                 if ($allAlertObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alert</h3>' -PostContent '<p>No issues found.</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alert</h3>' -PostContent '<p>No alerts found.</p>' 
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alerts</h3>' -As Table
                 }
@@ -5863,11 +5861,9 @@ Function Publish-VcenterAlert {
                     }
                 }
 
-                if ($allAlertObject.Count -eq 0) {
-                    $addNoIssues = $true 
-                }
+                if ($allAlertObject.Count -eq 0) { $addNoIssues = $true  }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alert</h3>' -PostContent '<p>No issues found.</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alert</h3>' -PostContent '<p>No alerts found.</p>' 
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alerts</h3>' -As Table
                 }
@@ -5939,11 +5935,9 @@ Function Publish-VsanAlert {
                     }
                 }
 
-                if ($allAlertObject.Count -eq 0) {
-                    $addNoIssues = $true 
-                }
+                if ($allAlertObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alert</h3>' -PostContent '<p>No issues found.</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alert</h3>' -PostContent '<p>No alerts found.</p>' 
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alerts</h3>' -As Table
                 }
@@ -5978,10 +5972,6 @@ Function Request-NsxtAlert {
         .EXAMPLE
         Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01 -failureOnly
         This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain but only for the failed items
-
-        .EXAMPLE
-        Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01 -html
-        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain and outputs to html.
     #>
 
     Param (
@@ -5989,7 +5979,6 @@ Function Request-NsxtAlert {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -6008,7 +5997,6 @@ Function Request-NsxtAlert {
                                 $alert = "RED"
                             }
                             $elementObject = New-Object -TypeName psobject
-                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'NSX Manager' # Set the component name
                             $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcfNsxDetails.fqdn # Set the resource name
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain
                             $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
@@ -6028,15 +6016,8 @@ Function Request-NsxtAlert {
                             } else {
                                 $customObject += $elementObject
                             }
-                        }
-                        # Return the structured data to the console or format using HTML CSS Styles
-                        if ($PsBoundParameters.ContainsKey('html')) { 
-                            $customObject = $customObject | Sort-Object Component, Resource, Domain, Status | ConvertTo-Html -Fragment -PreContent '<h2>NSX-T Data Center Alarms</h2>' -As Table
-                            $customObject
-                        } else {
                             $customObject | Sort-Object Component, Resource, Domain, Status
                         }
-                        
                     }
                 }
             }
@@ -6064,10 +6045,6 @@ Function Request-VsanAlert {
         .EXAMPLE
         Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
-
-        .EXAMPLE
-        Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -html
-        This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain and outputs to html.
     #>
 
     Param (
@@ -6075,8 +6052,7 @@ Function Request-VsanAlert {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
     if (Test-VCFConnection -server $server) {
@@ -6089,7 +6065,6 @@ Function Request-VsanAlert {
                             $customObject = New-Object System.Collections.ArrayList
                             foreach ($vsanAlarm in $vsanAlarms) {
                                 $elementObject = New-Object -TypeName psobject
-                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'vSAN'
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcfVcenterDetails.fqdn
                                 $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
                                 $elementObject | Add-Member -NotePropertyName 'Cluster' -NotePropertyValue $cluster
@@ -6108,15 +6083,7 @@ Function Request-VsanAlert {
                             }
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                        
-                        # Return the structured data to the console or format using HTML CSS Styles
-                        if ($PsBoundParameters.ContainsKey('html')) { 
-                            $customObject = $customObject | Sort-Object Component, Resource, Domain, Cluster, Alert | ConvertTo-Html -Fragment -PreContent '<h2>vSAN Alarms</h2>' -As Table
-                            $customObject
-                        } else {
-                            $customObject | Sort-Object Component, Resource, Domain, Cluster, Alert
-                        }
-                        
+                        $customObject | Sort-Object Component, Resource, Domain, Cluster, Alert
                     }
                 }
             }
@@ -6148,10 +6115,6 @@ Function Request-VcenterAlert {
         .EXAMPLE
         Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return alarms from vSAN clusters of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
-
-        .EXAMPLE
-        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -html
-        This example will return alarms of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01 and output in html format.
     #>
 
     Param (
@@ -6164,9 +6127,13 @@ Function Request-VcenterAlert {
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
 =======
         [Parameter (Mandatory = $false)] [ValidateSet("hostOnly","vsanOnly")][ValidateNotNullOrEmpty()] [String]$filterOut,
+<<<<<<< HEAD
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html
 >>>>>>> 5ee7fec (Enchace Request-VcenterAlert)
+=======
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+>>>>>>> c16b333 (Update System Alerts)
     )
 
     if (Test-VCFConnection -server $server) {
@@ -6180,7 +6147,6 @@ Function Request-VcenterAlert {
                             [String]$alert = $alarm.Status
                             $alert = $alert.ToUpper()
                             $elementObject = New-Object -TypeName psobject
-                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'vCenter Server'
                             $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcfVcenterDetails.fqdn
                             $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
                             $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
@@ -6233,14 +6199,7 @@ Function Request-VcenterAlert {
                             
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-
-                        # Return the structured data to the console or format using HTML CSS Styles
-                        if ($PsBoundParameters.ContainsKey('html')) { 
-                            $customObject = $customObject | Sort-Object Component, Resource, Domain, 'Entity Type', Alert | ConvertTo-Html -Fragment -PreContent '<h2>vCenter Server Alarms</h2>' -As Table
-                            $customObject
-                        } else {
-                            $customObject | Sort-Object Component, Resource, Domain, 'Entity Type', Alert
-                        }
+                        $customObject | Sort-Object Component, Resource, Domain, 'Entity Type', Alert
                     }
                 }
             }
@@ -6268,10 +6227,6 @@ Function Request-EsxiAlert {
         .EXAMPLE
         Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01 but only for the failed items.
-
-        .EXAMPLE
-        Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -html
-        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01 and output in html format
     #>
 
     Param (
@@ -6279,7 +6234,6 @@ Function Request-EsxiAlert {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
 
@@ -6295,7 +6249,6 @@ Function Request-EsxiAlert {
                                 [String]$alert = $alarm.Status
                                 $alert = $alert.ToUpper()
                                 $elementObject = New-Object -TypeName psobject
-                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'ESXi Host'
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcfVcenterDetails.fqdn
                                 $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain
                                 $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
@@ -6316,14 +6269,7 @@ Function Request-EsxiAlert {
                             }
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-
-                        # Return the structured data to the console or format using HTML CSS Styles
-                        if ($PsBoundParameters.ContainsKey("html")) { 
-                            $customObject = $customObject | Sort-Object Component, Resource, Domain, Entity, Alert | ConvertTo-Html -Fragment -PreContent '<h2>ESXi Alarms</h2>' -As Table
-                            $customObject
-                        } else {
-                            $customObject | Sort-Object Component, Resource, Domain, Entity, Alert
-                        }
+                        $customObject | Sort-Object Component, Resource, Domain, Entity, Alert
                     }
                 }
             }
