@@ -2345,9 +2345,9 @@ Function Publish-BackupStatus {
 
                 if ($allBackupStatusObject.Count -eq 0) { $addNoIssues = $true }
                     if ($addNoIssues) {
-                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -PostContent "<p>No issues found.</p>" 
+                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -PostContent "<p>No issues found.</p><p>Please verify that each successful file-based backup exists on the destination.</p>" 
                     } else {
-                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -As Table
+                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -PostContent "<p>Please verify that each successful file-based backup exists on the destination.</p>" -As Table
                     }
                 $allBackupStatusObject = Convert-CssClass -htmldata $allBackupStatusObject
                 $allBackupStatusObject
@@ -2672,7 +2672,7 @@ Function Publish-SnapshotStatus {
                 if ($addNoIssues) {
                     $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3>' -PostContent '<p>No issues found.</p>' 
                 } else {
-                    $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3><p>Only returns snapshots for SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.<br/>By default, snapshots for NSX Local Manager cluster appliances are disabled and are not recommended.</p>' -As Table
+                    $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3>' -PostContent '<p>Only checks snapshots for SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager. By default, snapshots for NSX Local Manager cluster appliances are disabled and are not recommended.</p>' -As Table
                 }
                 $allSnapshotStatusObject = Convert-CssClass -htmldata $allSnapshotStatusObject
                 $allSnapshotStatusObject
@@ -3953,13 +3953,13 @@ Function Request-SddcManagerBackupStatus {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                $backupTasks = Get-VCFTask | Where-Object { $_.type -eq 'SDDCMANAGER_BACKUP' } | Select-Object -First 1
-                foreach ($backupTask in $backupTasks) {
-                    $customObject = New-Object System.Collections.ArrayList
-                    $component = 'SDDC Manager' # Define the component name
+                $customObject = New-Object System.Collections.ArrayList
+                $component = 'SDDC Manager' # Define the component name
+                $resource = 'SDDC Manager Backup Operation' # Define the resource name
+                $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ',' # Define the domain(s)
+                $backupTask = Get-VCFTask | Where-Object { $_.type -eq 'SDDCMANAGER_BACKUP' } | Select-Object -First 1
+                if ($backupTask) {
                     $date = [DateTime]::ParseExact($backupTask.creationTimestamp, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
-                    $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ',' # Define the domain(s)
-                    $resource = $backupTask.name # Define the resource name
                     $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$date)).TotalDays) # Calculate the number of days since the backup was created
 
                     # Set the status for the backup task
@@ -3990,31 +3990,35 @@ Function Request-SddcManagerBackupStatus {
 
                     $message += $messageBackupAge # Combine the alert message
 
-                    # Set the alert and message if the backup is located on the SDDC Manager.
+                    # Set the alert and message if the backup is located on the SDDC Manager
                     $backupServer = (Get-VCFBackupConfiguration).server # Get the backup server
 
-                    if ($backupServer -eq $server) {
-                        $alert = "RED" # Critical; backup server is located on the SDDC Manager.
-                        $messageBackupServer = "Backup is located on the SDDC Manager. Reconfigure backups to use another location." # Set the alert message
+                    if ($backupServer -eq (Get-VCFManager).fqdn -or $backupServer -eq (Get-VCFManager).ipAddress) {
+                        $alert = "RED" # Critical; backup server is located on the SDDC Manager
+                        $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
                         $message = $messageBackupServer # Override the message
                     }
-                    # Add Backup Status Properties to the element object
-                    $elementObject = New-Object -TypeName psobject
-                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                    $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the name
-                    $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $server # Set the element name
-                    $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
-                    $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $date # Set the timestamp
-                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
-                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                            $customObject += $elementObject
-                        }
-                    } else {
-                        $customObject += $elementObject
-                    }  
+                } else {
+                    $alert = "RED" # Critical; backup is not configured
+                    $message = "Backup is not configured." # Set the alert message
                 }
+
+                # Add Backup Status Properties to the element object
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the name
+                $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $server # Set the element name
+                $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
+                $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $date # Set the timestamp
+                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                        $customObject += $elementObject
+                    }
+                } else {
+                    $customObject += $elementObject
+                }  
                 $customObject | Sort-Object Component, Resource, Element
             }
         }
@@ -4098,7 +4102,7 @@ Function Request-NsxtManagerBackupStatus {
                                 # Set the alert and message if the backup is located on the SDDC Manager.
                                 $backupServer = (Get-NsxtBackupConfiguration -fqdn $vcfNsxDetails.fqdn).remote_file_server.server # Get the backup server
 
-                                if ($backupServer -eq $server) {
+                                if ($backupServer -eq (Get-VCFManager).fqdn -or $backupServer -eq (Get-VCFManager).ipAddress) {
                                     $alert = 'RED' # Critical; backup server is located on the SDDC Manager.
                                     $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
                                     $message = $messageBackupServer # Override the message
@@ -4154,11 +4158,11 @@ Function Request-NsxtManagerBackupStatus {
 
                                 $message += $messageBackupAge # Combine the alert message
 
-                                # Set the alert and message if the backup is located on the SDDC Manager.
+                                # Set the alert and message if the backup is located on the SDDC Manager
                                 $backupServer = (Get-NsxtBackupConfiguration -fqdn $vcfNsxDetails.fqdn).remote_file_server.server # Get the backup server
 
-                                if ($backupServer -eq $server) {
-                                    $alert = 'RED' # Critical; backup server is located on the SDDC Manager.
+                                if ($backupServer -eq (Get-VCFManager).fqdn -or $backupServer -eq (Get-VCFManager).ipAddress) {
+                                    $alert = 'RED' # Critical; backup server is located on the SDDC Manager
                                     $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
                                     $message = $messageBackupServer # Override the message
                                 }
@@ -4213,11 +4217,11 @@ Function Request-NsxtManagerBackupStatus {
 
                                 $message += $messageBackupAge # Combine the alert message
 
-                                # Set the alert and message if the backup is located on the SDDC Manager.
+                                # Set the alert and message if the backup is located on the SDDC Manager
                                 $backupServer = (Get-NsxtBackupConfiguration -fqdn $vcfNsxDetails.fqdn).remote_file_server.server # Get the backup server
 
-                                if ($backupServer -eq $server) {
-                                    $alert = 'RED' # Critical; backup server is located on the SDDC Manager.
+                                if ($backupServer -eq (Get-VCFManager).fqdn -or $backupServer -eq (Get-VCFManager).ipAddress) {
+                                    $alert = 'RED' # Critical; backup server is located on the SDDC Manager
                                     $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
                                     $message = $messageBackupServer # Override the message
                                 }
@@ -4287,60 +4291,66 @@ Function Request-VcenterBackupStatus {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (($vcfVcenterDetails = Get-VcenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
-                    if (Test-VsphereConnection -server $vcfVcenterDetails.fqdn) {
-                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                            Connect-CisServer -server $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
-                            $backupTask = Get-VcenterBackupJobs | Select-Object -First 1 | Get-VcenterBackupStatus
+                    if (Test-vSphereApiConnection -server $vcfVcenterDetails.fqdn) {
+                        if (Test-VsphereApiAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             $customObject = New-Object System.Collections.ArrayList
                             $component = 'vCenter Server' # Define the component name
                             $resource = 'vCenter Server Backup Operation' # Define the resource name
-                            $timestamp = $backupTask.end_time # Define the end timestamp
-                            if ($timestamp) {
-                                $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
-                            }
-
-                            # Set the status for the backup task
-                            if ($backupTask.state -eq 'SUCCEEDED') {                              
-                                $alert = "Green" # Ok; success
-                            } elseif ($backupTask.state -eq 'IN PROGRESS') {                              
-                                $alert = "YELLOW" # Warning; in progress
-                            } else {
-                                $alert = "RED" # Critical; failure
-                            }
-
-                            if ($timestamp) {
-                                # Set the message for the backup task
-                                if ([String]::IsNullOrEmpty($messages)) {
-                                    $Message = "The backup completed without errors. " # Ok; success
+                            if ($backupTask = (Get-VcenterBackupStatus | Select-Object -Last 1).Value) {    
+                                $timestamp = [DateTime]::ParseExact($backupTask.end_time, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
+                                if ($timestamp) {
+                                    $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
                                 } else {
-                                    $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
+                                    $backupAge = 0 # Set the backup age to 0 if not available
                                 }
-                            }
 
-                            # Set the alert and message update for the backup task based on the age of the backup
-                            if ($null -eq $backupAge) {
-                                $alert = "RED" # Critical; 
-                                $messageBackupAge = "Backup has never been run or not configured. " # Set the alert message
-                            } elseif ($backupAge -ge 3) {
-                                $alert = "RED" # Critical; >= 3 days
-                                $messageBackupAge = "Backup is more than 3 days old." # Set the alert message
-                            } elseif ($backupAge -gt 1) {
-                                $alert = "YELLOW" # Warning; > 1 days
-                                $messageBackupAge = "Backup is more than 1 days old." # Set the alert message
+                                # Set the status for the backup task
+                                if ($backupTask.status -eq 'SUCCEEDED') {                              
+                                    $alert = "GREEN" # Ok; success
+                                } elseif ($backupTask.status -eq 'IN PROGRESS') {                              
+                                    $alert = "YELLOW" # Warning; in progress
+                                } else {
+                                    $alert = "RED" # Critical; failure
+                                }
+
+                                if ($timestamp) {
+                                    # Set the message for the backup task
+                                    if ([String]::IsNullOrEmpty($backupTask.messages)) {
+                                        $message = "The backup completed without errors. " # Ok; success
+                                    } else {
+                                        $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
+                                    }
+                                }
+
+                                # Set the alert and message update for the backup task based on the age of the backup
+                                if ($backupAge -eq 0) {
+                                    $alert = "RED" # Critical; 0 days
+                                    $messageBackupAge = "Backup has not completed." # Set the alert message
+                                } elseif ($backupAge -ge 3) {
+                                    $alert = "RED" # Critical; >= 3 days
+                                    $messageBackupAge = "Backup is more than 3 days old." # Set the alert message
+                                } elseif ($backupAge -gt 1) {
+                                    $alert = "YELLOW" # Warning; > 1 days
+                                    $messageBackupAge = "Backup is more than 1 days old." # Set the alert message
+                                } else {
+                                    $alert = "GREEN" # Ok; <= 1 days
+                                    $messageBackupAge = "Backup is less than 1 day old." # Set the alert message
+                                }
+
+                                $message += $messageBackupAge # Combine the alert message
+
+                                # Set the alert and message if the backup is located on the SDDC Manager
+                                $backupLocation = $backupTask.location # Get the backup server
+                                $backupServer = (($backupLocation -Split ('sftp://'))[-1] -Split ('/'))[0]
+
+                                if ($backupServer -eq (Get-VCFManager).fqdn -or $backupServer -eq (Get-VCFManager).ipAddress) { # Compare against the `host` attribute
+                                    $alert = 'RED' # Critical; backup server is located on the SDDC Manager
+                                    $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
+                                    $message = $messageBackupServer # Override the message
+                                }
                             } else {
-                                $alert = "GREEN" # Ok; <= 1 days
-                                $messageBackupAge = "Backup is less than 1 day old." # Set the alert message
-                            }
-
-                            $message += $messageBackupAge # Combine the alert message
-
-                            # Set the alert and message if the backup is located on the SDDC Manager.
-                            $backupServer = (Get-VcenterBackupConfiguration).location # Get the backup server
-
-                            if ($backupServer.host -eq $server) { # Compare against the `host` attribute
-                                $alert = 'RED' # Critical; backup server is located on the SDDC Manager.
-                                $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
-                                $message = $messageBackupServer # Override the message
+                                $alert = "RED" # Critical; backup job no
+                                $message = "Backup is not configured." # Set the alert message
                             }
 
                             # Add Backup Status Properties to the element object
@@ -4359,10 +4369,7 @@ Function Request-VcenterBackupStatus {
                             } else {
                                 $customObject += $elementObject
                             }  
-
                             $customObject | Sort-Object Component, Resource, Element
-
-                            Disconnect-CisServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                         }
                     }
                 }
@@ -4982,13 +4989,13 @@ Function Request-NsxtTransportNodeStatus {
                                 $nodeType = (Get-Culture).textinfo.ToTitleCase($type.ToLower()) # Convert the type to title case
                                 # Set the alert and message based on the status of the transport node
                                 if ($downCount -ge 0 -or $unknownCount -ge 0) {
-                                    $alert = 'Red' # Critical, transport node(s) down or unknown
+                                    $alert = 'RED' # Critical, transport node(s) down or unknown
                                     $message = $nodeType + ' transport node(s) in down or unknown state.' # Set the alert message
                                 } elseif ($degradedCount -ge 0) {
-                                    $alert = 'Yellow' # Warning, transport node(s) degraded
+                                    $alert = 'YELLOW' # Warning, transport node(s) degraded
                                     $message = $nodeType + ' transport node(s) in degraded state.' #
                                 } else {
-                                    $alert = 'Green' # OK, transport node(s)  up
+                                    $alert = 'GREEN' # OK, transport node(s)  up
                                     $message = $nodeType + ' transport node(s) in up state.' # Set the alert message
                                 }
                                 # Add the properties to the element object
@@ -5071,10 +5078,10 @@ Function Request-NsxtTransportNodeTunnelStatus {
                                     foreach ($tunnel in $tunnels) {
                                         # Set the alert and message based on the status of the tunnel
                                         if ($tunnel.status -eq 'UP') {
-                                            $alert = 'Green' # OK, transport node up
+                                            $alert = 'GREEN' # OK, transport node up
                                             $message = $nodeType + ' transport node tunnel is up.' # Set the alert message
                                         } else {
-                                            $alert = 'Red' # Critical, transport node down or unknown
+                                            $alert = 'RED' # Critical, transport node down or unknown
                                             $message = $nodeType + ' transport node tunnel is down or in unknown state.' # Set the alert message
                                         }
                                         # Update the alert and message based on the status of BFD
@@ -9308,101 +9315,23 @@ Function Get-NsxtBackupHistory {
 }
 Export-ModuleMember -Function Get-NsxtBackupHistory
 
-Function Get-VcenterBackupConfiguration {
-    <#
-        .SYNOPSIS
-        Return the backup configuration for a vCenter Server instance.
-
-        .DESCRIPTION
-        The Get-VcenterBackupConfiguration cmdlet returns the backup configuration for a vCenter Server instance.
-
-        .EXAMPLE
-        Get-VcenterBackupConfiguration
-        This example returns the backup configuration for the connected vCenter Server instance.
-    #>
-
-    Try {
-        $backupScheduleAPI = Get-CisService -name 'com.vmware.appliance.recovery.backup.schedules' # Get the backup job API from the vSphere Automation API
-        $backupSchedules = $backupScheduleAPI.list()
-        if ($backupSchedules.count -ge 1) {
-            $customObject = @()
-            foreach ($backupSchedule in $backupSchedules) {
-                $customObject += $backupSchedule.values | Select-Object *, @{N = 'ID'; e = { "$($backupSchedule.keys.value)" } } -ExpandProperty recurrence_info -ExcludeProperty Help | Select-Object * -ExcludeProperty recurrence_info, Help | Select-Object * -ExpandProperty retention_info | Select-Object * -ExcludeProperty retention_info, Help
-            }
-            return $customObject
-        } else {
-            continue
-        }
-    }
-    Catch {
-        Write-Error $_.Exception.Message
-    }
-}
-Export-ModuleMember -Function Get-VcenterBackupConfiguration
-
-Function Get-VcenterBackupJobs {
+Function Get-VcenterBackupStatus {
     <#
         .SYNOPSIS
         Returns a list of all backup jobs performed on a vCenter Server instance.
 
         .DESCRIPTION
-        The Get-VcenterBackupJobs cmdlet returns a list of all performed on a vCenter Server instance.
+        The Get-VcenterBackupStatus cmdlet returns a list of all backups performed on a vCenter Server instance.
 
         .EXAMPLE
-        Get-VcenterBackupJobs -fqdn sfo-m01-vc01.sfo.rainpole.io
-        This example returns a list of all backup jobs performed on the vCenter Server instance sfo-m01-vc01.sfo.rainpole.io.
-
-        .EXAMPLE
-        Get-VcenterBackupJobs -fqdn sfo-m01-vc01.sfo.rainpole.io -latest
-        This example returns the latest backup job performed on the vCenter Server instance sfo-m01-vc01.sfo.rainpole.io.
-
-        .EXAMPLE
-        Get-VcenterBackupJobs | Select -First 1 | Get-VcenterBackupStatus
-        This example demonstrates piping the results of this function into the Get-VcenterBackupStatus function.
+        Get-VcenterBackupStatus | Select-Object -Last 1
+        This example demonstrates piping the results of this function into Select-Object to return the status of the last backup.
     #>
 
-    Param (
-        [Parameter(Mandatory = $false)] [switch]$latest
-    )
-    
-    $backupJobAPI = Get-CisService 'com.vmware.appliance.recovery.backup.job' # Get the backup job API from the vSphere Automation API
-
     Try {
-        if ($PsBoundParameters.ContainsKey('latest')) {
-            $results = $backupJobAPI.list()
-            $results[0] # Return the latest backup job
-        } else {
-            $backupJobAPI.list() # Return all backup jobs
-        }
-    }
-    Catch {
-        Write-Error $_.Exception.Message
-    }
-}
-Export-ModuleMember -Function Get-VcenterBackupJobs
-
-Function Get-VcenterBackupStatus {
-    <#
-        .SYNOPSIS
-        Returns the status of a backup job(s).
-
-        .DESCRIPTION
-        The Get-VcenterBackupStatus cmdlet returns the status of a backup job(s).
-
-        .EXAMPLE
-        Get-VcenterBackupStatus -jobId "YYYYMMDD-hhmmss-buildnumber"
-        This example returns the status of the backup job with the jobId "YYYYMMDD-hhmmss-buildnumber".
-    #>
-
-    Param (
-        [Parameter(Mandatory = $false, ValueFromPipeline = $True)][string[]]$jobId
-    )
-
-    Try {
-        $backupJobAPI = Get-CisService 'com.vmware.appliance.recovery.backup.job' # Get the backup job API from the vSphere Automation API
-        foreach ($id in $jobID) {
-            $backupJobAPI.get("$id") | Select-Object id, progress, state, start_time, end_time, messages
-        }
+        $uri = "https://$vcApiServer/rest/appliance/recovery/backup/job/details"
+        $response = (Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $vcApiHeaders).Value
+        $response
     }
     Catch {
         Write-Error $_.Exception.Message
