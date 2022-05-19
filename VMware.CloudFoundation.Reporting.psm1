@@ -2472,32 +2472,30 @@ Function Publish-NsxtTransportNodeTunnelStatus {
                         foreach ($domain in $allWorkloadDomains ) {
                             $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
                         }
-                    }
-                    else {
+                    } else {
                         $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
                     }
-                }
-                else {
+                } else {
                     if ($PsBoundParameters.ContainsKey('allDomains')) { 
                         foreach ($domain in $allWorkloadDomains ) {
                             $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
                         }
-                    }
-                    else {
+                    } else {
                         $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
                     }
                 }
 
-                if ($allNsxtTransportNodeTunnelStatusObject.Count -eq 0) {
-                    $addNoIssues = $true 
+                if ($allNsxtTransportNodeTunnelStatusObject.Count -eq 0) { $addNoIssues = $true }
+                if ($allNsxtTransportNodeTunnelStatusObject.Count -ne 0) {
+                    if ($addNoIssues) {
+                        $allNsxtTransportNodeTunnelStatusObject = $allNsxtTransportNodeTunnelStatusObject | Sort-Object Domain, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn-tunnel"></a><h3>NSX Transport Node Tunnel Status</h3>' -PostContent '<p>No issues found.</p>' 
+                    } else {
+                        $allNsxtTransportNodeTunnelStatusObject = $allNsxtTransportNodeTunnelStatusObject | Sort-Object Domain, Resource, Element  | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn-tunnel"></a><h3>NSX Transport Node Tunnel Status</h3>' -As Table
+                    }
+                    $allNsxtTransportNodeTunnelStatusObject = Convert-CssClass -htmlData $allNsxtTransportNodeTunnelStatusObject
+                } else {
+                    $allNsxtTransportNodeTunnelStatusObject = $allNsxtTransportNodeTunnelStatusObject | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn-tunnel"></a><h3>NSX Transport Node Tunnel Status</h3>' -PostContent '<p>No NSX Transport Node Tunnels found.</p>'
                 }
-                if ($addNoIssues) {
-                    $allNsxtTransportNodeTunnelStatusObject = $allNsxtTransportNodeTunnelStatusObject | Sort-Object Domain, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn-tunnel"></a><h3>NSX Transport Node Tunnel Status</h3>' -PostContent '<p>No issues found.</p>' 
-                }
-                else {
-                    $allNsxtTransportNodeTunnelStatusObject = $allNsxtTransportNodeTunnelStatusObject | Sort-Object Domain, Resource, Element  | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn-tunnel"></a><h3>NSX Transport Node Tunnel Status</h3>' -As Table
-                }
-                $allNsxtTransportNodeTunnelStatusObject = Convert-CssClass -htmlData $allNsxtTransportNodeTunnelStatusObject
                 $allNsxtTransportNodeTunnelStatusObject
             }
         }
