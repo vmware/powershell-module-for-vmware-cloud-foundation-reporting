@@ -6554,8 +6554,13 @@ Function Publish-ClusterDrsRule {
                 else {
                     $drsRulesConfig = Request-ClusterDrsRule -server  $server -user $user -pass $pass -domain $workloadDomain; $allConfigurationObject += $drsRulesConfig
                 }
-                $allConfigurationObject = $allConfigurationObject | Sort-Object Cluster, 'VM/Host Rule' | ConvertTo-Html -Fragment -PreContent '<a id="cluster-drs-rules"></a><h3>vSphere DRS Rules</h3>' -As Table
-                $allConfigurationObject = Convert-CssClass -htmldata $allConfigurationObject
+
+                if ($allNsxtTransportNodeTunnelStatusObject.Count -ne 0) {
+                    $allConfigurationObject = $allConfigurationObject | Sort-Object Cluster, 'VM/Host Rule' | ConvertTo-Html -Fragment -PreContent '<a id="cluster-drs-rules"></a><h3>vSphere DRS Rules</h3>' -As Table
+                    $allConfigurationObject = Convert-CssClass -htmldata $allConfigurationObject
+                } else {
+                    $allConfigurationObject = $allConfigurationObject | Sort-Object Cluster, 'VM/Host Rule' | ConvertTo-Html -Fragment -PreContent '<a id="cluster-drs-rules"></a><h3>vSphere DRS Rules</h3>' -PostContent '<p>No DRS Rules found.</p>'
+                }
                 $allConfigurationObject
             }
         }
