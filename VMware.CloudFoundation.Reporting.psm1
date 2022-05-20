@@ -4377,7 +4377,7 @@ Function Request-DatastoreStorageCapacity {
                 $vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT
                 if (Test-VsphereConnection -server $($vcenter.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        Connect-VIServer -Server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass | Out-Null
+                        #### Connect-VIServer -Server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass | Out-Null
                         $datastores = Get-Datastore
                         foreach ($datastore in $datastores) {
                             # Calculate datastore usage and capacity
@@ -7342,6 +7342,7 @@ Function Request-VcenterRootPasswordPolicy {
                                 $customObject | Add-Member -notepropertyname "Enabled" -notepropertyvalue $rootPasswordExpiry.enabled
                                 $customObject | Add-Member -notepropertyname "Expires" -notepropertyvalue $rootPasswordExpiry.password_expires_at
                             }
+                            Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                             $customObject | Sort-Object 'vCenter Server FQDN'
                         }
                     }
@@ -7395,10 +7396,10 @@ Function Request-VcenterPasswordPolicy {
                                 $customObject | Add-Member -notepropertyname "Lifetime (min days)" -notepropertyvalue $passwordPolicy.min_days
                                 $customObject | Add-Member -notepropertyname "Warning (days)" -notepropertyvalue $passwordPolicy.warn_days
                             }
+                            Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                             $customObject | Sort-Object 'vCenter Server FQDN'
                         }
                     }
-                    Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                 } else {
                     Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
                 }
@@ -7901,6 +7902,7 @@ Function Request-HardwareOverview {
                                 $totalPoweredOnVms += (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
                                 $totalPoweredOffVms += (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
                             }
+                            Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                         }
                     }
                 }
@@ -8273,6 +8275,7 @@ Function Request-ValidatedSolutionOverview {
                                     }
                                 }
                             }
+                            Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                         }
                     }
                 }
@@ -8346,9 +8349,9 @@ Function Request-ValidatedSolutionOverview {
                                 $pdrEnabled = "Not Enabled"
                             }
                         }
+                        Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
                 }
-                Disconnect-VIServer $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue
 
                 $customObject = New-Object -TypeName psobject
                 $customObject | Add-Member -notepropertyname "Name" -notepropertyvalue "Site Protection and Disaster Recovery"
