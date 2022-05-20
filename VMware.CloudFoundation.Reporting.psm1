@@ -74,258 +74,262 @@ Function Invoke-VcfHealthReport {
     Try {
         Clear-Host; Write-Host ""
 
-        $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
-        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
-            $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
-        } else {
-            $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
-            $workflowMessage = "Workload Domain ($workloadDomain)"
-        }
-        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the process of creating a Health Report for $workflowMessage." -Colour Yellow
-        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
+        if (Test-VCFConnection -server $sddcManagerFqdn) {
+            if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
+                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
+                if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
+                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
+                    $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
+                } else {
+                    $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
+                    $workflowMessage = "Workload Domain ($workloadDomain)"
+                }
+                Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+                Write-LogMessage -Type INFO -Message "Starting the process of creating a Health Report for $workflowMessage." -Colour Yellow
+                Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
+                Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
-        Write-LogMessage -Type INFO -Message "Running an SoS Health Check for $workflowMessage, process takes time."
-        if ($PsBoundParameters.ContainsKey("allDomains")) { 
-            $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
-        }
+                Write-LogMessage -Type INFO -Message "Running an SoS Health Check for $workflowMessage, process takes time."
+                if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                    $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
+                }
 
-        # Generating all SoS Health Data
-        Write-LogMessage -Type INFO -Message "Generating the Service Health Report using the SoS output for $workflowMessage."
-        Write-LogMessage -Type INFO -Message "Generating the DNS Health Report using the SoS output for $workflowMessage."
-        Write-LogMessage -Type INFO -Message "Generating the NTP Health Report using the SoS output for $workflowMessage."
-        Write-LogMessage -Type INFO -Message "Generating the Certificate Health Report using the SoS output for $workflowMessage."
-        Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report using the SoS output for $workflowMessage."
-        Write-LogMessage -Type INFO -Message "Generating the vSAN Health Report using the SoS output for $workflowMessage."
-        Write-LogMessage -Type INFO -Message "Generating the vSAN Storage Policy Health Report using the SoS output for $workflowMessage."
-        Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report using the SoS output for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html -failureOnly
-            $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html -failureOnly
-            $ntpHtml = Publish-NtpHealth -json $jsonFilePath -html -failureOnly
-            $certificateHtml = Publish-CertificateHealth -json $jsonFilePath -html -failureOnly
-            $esxiHtml = Publish-EsxiHealth -json $jsonFilePath -html -failureOnly
-            $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html -failureOnly
-            $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html -failureOnly
-            $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html -failureOnly
-            $nsxtEdgeClusterHtml = Publish-NsxtEdgeClusterHealth -json $jsonFilePath -html -failureOnly
-            $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html -failureOnly
-        } else {
-            $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html
-            $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html
-            $ntpHtml = Publish-NtpHealth -json $jsonFilePath -html
-            $certificateHtml = Publish-CertificateHealth -json $jsonFilePath -html
-            $esxiHtml = Publish-EsxiHealth -json $jsonFilePath -html
-            $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html
-            $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html
-            $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html
-            $nsxtEdgeClusterHtml = Publish-NsxtEdgeClusterHealth -json $jsonFilePath -html
-            $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html
-        }
+                # Generating all SoS Health Data
+                Write-LogMessage -Type INFO -Message "Generating the Service Health Report using the SoS output for $workflowMessage."
+                Write-LogMessage -Type INFO -Message "Generating the DNS Health Report using the SoS output for $workflowMessage."
+                Write-LogMessage -Type INFO -Message "Generating the NTP Health Report using the SoS output for $workflowMessage."
+                Write-LogMessage -Type INFO -Message "Generating the Certificate Health Report using the SoS output for $workflowMessage."
+                Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report using the SoS output for $workflowMessage."
+                Write-LogMessage -Type INFO -Message "Generating the vSAN Health Report using the SoS output for $workflowMessage."
+                Write-LogMessage -Type INFO -Message "Generating the vSAN Storage Policy Health Report using the SoS output for $workflowMessage."
+                Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report using the SoS output for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                    $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html -failureOnly
+                    $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html -failureOnly
+                    $ntpHtml = Publish-NtpHealth -json $jsonFilePath -html -failureOnly
+                    $certificateHtml = Publish-CertificateHealth -json $jsonFilePath -html -failureOnly
+                    $esxiHtml = Publish-EsxiHealth -json $jsonFilePath -html -failureOnly
+                    $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html -failureOnly
+                    $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html -failureOnly
+                    $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html -failureOnly
+                    $nsxtEdgeClusterHtml = Publish-NsxtEdgeClusterHealth -json $jsonFilePath -html -failureOnly
+                    $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html -failureOnly
+                } else {
+                    $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html
+                    $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html
+                    $ntpHtml = Publish-NtpHealth -json $jsonFilePath -html
+                    $certificateHtml = Publish-CertificateHealth -json $jsonFilePath -html
+                    $esxiHtml = Publish-EsxiHealth -json $jsonFilePath -html
+                    $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html
+                    $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html
+                    $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html
+                    $nsxtEdgeClusterHtml = Publish-NsxtEdgeClusterHealth -json $jsonFilePath -html
+                    $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html
+                }
 
-        # Generating the ESXi Connection Health Data Using PowerShell Request Functions
-        Write-LogMessage -type INFO -Message "Generating the ESXi Connection Health Data report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-            $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-        }
-        elseif ($PsBoundParameters.ContainsKey('allDomains')) {
-            $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        }
-        if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-            $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-        }
-        elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
-            $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Generating the ESXi Connection Health Data Using PowerShell Request Functions
+                Write-LogMessage -type INFO -Message "Generating the ESXi Connection Health Data report for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+                    $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+                }
+                elseif ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                }
+                if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+                    $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                }
+                elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
+                    $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Generating the NSX Manager Health Data Using SoS output and Supplimental PowerShell Request Functions
-        Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report using the SoS output for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-            $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
-        }
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
-        }
+                # Generating the NSX Manager Health Data Using SoS output and Supplimental PowerShell Request Functions
+                Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report using the SoS output for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
+                }
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
+                }
 
-        # Generating the Connectivity Health Data Using SoS output and Supplimental PowerShell Request Functions
-        Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report using the SoS output for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
-            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
-        }
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
-            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
-        }
+                # Generating the Connectivity Health Data Using SoS output and Supplimental PowerShell Request Functions
+                Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report using the SoS output for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+                    $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
+                }
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+                    $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
+                }
 
-        # Generating the Backup Status Health Data Using PowerShell Request Functions
-        Write-LogMessage -Type INFO -Message "Generating the Backup Status Report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
-            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        }
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Generating the Backup Status Health Data Using PowerShell Request Functions
+                Write-LogMessage -Type INFO -Message "Generating the Backup Status Report for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+                    $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                }
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Generating the Free Pool Health Data Using PowerShell Request Functions
-        Write-LogMessage -type INFO -Message "Generating the SDDC Manager Free Pool Health for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $freePoolHtml = Publish-SddcManagerFreePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -failureOnly
-        } else {
-            $freePoolHtml = Publish-SddcManagerFreePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
-        }
-        
-        # Generating the Snapshot Status Health Data Using PowerShell Request Functions
-        Write-LogMessage -type INFO -Message "Generating the Snapshots Report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-            $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        }
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Generating the Free Pool Health Data Using PowerShell Request Functions
+                Write-LogMessage -type INFO -Message "Generating the SDDC Manager Free Pool Health for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                    $freePoolHtml = Publish-SddcManagerFreePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -failureOnly
+                } else {
+                    $freePoolHtml = Publish-SddcManagerFreePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
+                }
+                
+                # Generating the Snapshot Status Health Data Using PowerShell Request Functions
+                Write-LogMessage -type INFO -Message "Generating the Snapshots Report for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                }
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Generating the Password Expiry Health Data using PowerShell Request Functions
-        Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
-        }
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
-        }
+                # Generating the Password Expiry Health Data using PowerShell Request Functions
+                Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
+                }
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
+                }
 
-        # Generating the NSX Transport Node Health Data Using PowerShell Request Functions
-        Write-LogMessage -type INFO -Message "Generating the NSX Transport Node Report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-            $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-        }
-        elseif ($PsBoundParameters.ContainsKey('allDomains')) {
-            $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        }
-        if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-            $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-        }
-        elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
-            $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Generating the NSX Transport Node Health Data Using PowerShell Request Functions
+                Write-LogMessage -type INFO -Message "Generating the NSX Transport Node Report for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+                    $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+                }
+                elseif ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                }
+                if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+                    $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                }
+                elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
+                    $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Generating the NSX Transport Node Tunnel Health Data Using PowerShell Request Functions
-        Write-LogMessage -type INFO -Message "Generating the NSX Transport Node Tunnel Report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-            $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-        }
-        elseif ($PsBoundParameters.ContainsKey('allDomains')) {
-            $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        }
-        if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-            $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-        }
-        elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
-            $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Generating the NSX Transport Node Tunnel Health Data Using PowerShell Request Functions
+                Write-LogMessage -type INFO -Message "Generating the NSX Transport Node Tunnel Report for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+                    $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+                }
+                elseif ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                }
+                if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
+                    $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                }
+                elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
+                    $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Generating the NSX Tier-0 Gateway BGP Health Data Using PowerShell Request Functions
-        Write-LogMessage -type INFO -Message "Generating the NSX Tier-0 Gateway BGP Report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-            $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        }
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Generating the NSX Tier-0 Gateway BGP Health Data Using PowerShell Request Functions
+                Write-LogMessage -type INFO -Message "Generating the NSX Tier-0 Gateway BGP Report for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                }
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Generating the Disk Capacity Health Data Using PowerShell Request Functions
-        Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report for $workflowMessage.'"
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-            $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains
-        }
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain
-        }
+                # Generating the Disk Capacity Health Data Using PowerShell Request Functions
+                Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report for $workflowMessage.'"
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains
+                }
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain
+                }
 
-        # Generating the Virtual Machines with Connected CD-ROM Health Data Using PowerShell Request Functions
-        Write-LogMessage -type INFO -Message "Generating the Virtual Machines with Connected CD-ROM Report for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey('allDomains')) {
-            $vmConnectedCdromHtml = Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains     
-        } else {
-            $vmConnectedCdromHtml = Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Generating the Virtual Machines with Connected CD-ROM Health Data Using PowerShell Request Functions
+                Write-LogMessage -type INFO -Message "Generating the Virtual Machines with Connected CD-ROM Report for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
+                    $vmConnectedCdromHtml = Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains     
+                } else {
+                    $vmConnectedCdromHtml = Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Combine all information gathered into a single HTML report
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
-        } else {
-            $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
-        }
-        $reportData += $serviceHtml
-        $reportData += $componentConnectivityHtml
-        $reportData += $localPasswordHtml
-        $reportData += $certificateHtml
-        $reportData += $backupStatusHtml
-        $reportData += $snapshotStatusHtml
-        $reportData += $dnsHtml
-        $reportData += $ntpHtml
-        $reportData += $vcenterHtml
-        $reportData += $esxiHtml
-        $reportData += $esxiConnectionHtml
-        $reportData += $freePoolHtml
-        $reportData += $vsanHtml
-        $reportData += $vsanPolicyHtml
-        $reportData += $nsxtHtml
-        $reportData += $nsxtEdgeClusterHtml
-        $reportData += $nsxtEdgeNodeHtml
-        $reportData += $nsxTransportNodeHtml
-        $reportData += $nsxTransportNodeTunnelHtml
-        $reportData += $nsxTier0BgpHtml
-        $reportData += $storageCapacityHealthHtml
-        $reportData += $vmConnectedCdromHtml
+                # Combine all information gathered into a single HTML report
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
+                } else {
+                    $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
+                }
+                $reportData += $serviceHtml
+                $reportData += $componentConnectivityHtml
+                $reportData += $localPasswordHtml
+                $reportData += $certificateHtml
+                $reportData += $backupStatusHtml
+                $reportData += $snapshotStatusHtml
+                $reportData += $dnsHtml
+                $reportData += $ntpHtml
+                $reportData += $vcenterHtml
+                $reportData += $esxiHtml
+                $reportData += $esxiConnectionHtml
+                $reportData += $freePoolHtml
+                $reportData += $vsanHtml
+                $reportData += $vsanPolicyHtml
+                $reportData += $nsxtHtml
+                $reportData += $nsxtEdgeClusterHtml
+                $reportData += $nsxtEdgeNodeHtml
+                $reportData += $nsxTransportNodeHtml
+                $reportData += $nsxTransportNodeTunnelHtml
+                $reportData += $nsxTier0BgpHtml
+                $reportData += $storageCapacityHealthHtml
+                $reportData += $vmConnectedCdromHtml
 
-        if ($PsBoundParameters.ContainsKey("darkMode")) {
-            $reportHeader = Get-ClarityReportHeader -dark 
-        } else {
-            $reportHeader = Get-ClarityReportHeader
-        }
-        $reportNavigation = Get-ClarityReportNavigation -reportType health
-        $reportFooter = Get-ClarityReportFooter
-        $report = $reportHeader
-        $report += $reportNavigation
-        $report += $reportData
-        $report += $reportFooter
+                if ($PsBoundParameters.ContainsKey("darkMode")) {
+                    $reportHeader = Get-ClarityReportHeader -dark 
+                } else {
+                    $reportHeader = Get-ClarityReportHeader
+                }
+                $reportNavigation = Get-ClarityReportNavigation -reportType health
+                $reportFooter = Get-ClarityReportFooter
+                $report = $reportHeader
+                $report += $reportNavigation
+                $report += $reportData
+                $report += $reportFooter
 
-        # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the final report and saving to ($reportName)."
-        $report | Out-File $reportName
-        Invoke-Item $reportName
+                # Generate the report to an HTML file and then open it in the default browser
+                Write-LogMessage -Type INFO -Message "Generating the final report and saving to ($reportName)."
+                $report | Out-File $reportName
+                Invoke-Item $reportName
+            }
+        }
     }
     Catch {
         Debug-CatchWriter -object $_
@@ -372,100 +376,104 @@ Function Invoke-VcfAlertReport {
     Try {
         Clear-Host; Write-Host ""
 
-        $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType alert # Setup Report Location and Report File
-        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
-            $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
-        } else {
-            $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
-            $workflowMessage = "Workload Domain ($workloadDomain)"
-        }
-        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the process of creating an Alert Report for $workflowMessage." -Colour Yellow
-        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."  
+        if (Test-VCFConnection -server $sddcManagerFqdn) {
+            if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
+                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType alert # Setup Report Location and Report File
+                if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
+                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
+                    $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
+                } else {
+                    $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
+                    $workflowMessage = "Workload Domain ($workloadDomain)"
+                }
+                Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+                Write-LogMessage -Type INFO -Message "Starting the process of creating an Alert Report for $workflowMessage." -Colour Yellow
+                Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
+                Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."  
 
-        # Generate vCenter Server Alerts Using PowerShell Function
-        Write-LogMessage -Type INFO -Message "Generating the vCenter Server alerts for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-            $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
-        }
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Generate vCenter Server Alerts Using PowerShell Function
+                Write-LogMessage -Type INFO -Message "Generating the vCenter Server alerts for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
+                }
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $vCenterAlertHtml = Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Generate ESXi Alerts Using PowerShell Function
-        Write-LogMessage -type INFO -Message "Generating the ESXi host alerts for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-            $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
-        }
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
-        
-        # Generate vSAN Alerts Using PowerShell Function
-        Write-LogMessage -type INFO -Message "Generating the vSAN alerts for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-            $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
-        }
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
-        
-        # Generate NSX-T Data Center Alerts Using PowerShell Function
-        Write-LogMessage -type INFO -Message "Generating the NSX-T Data Center alerts for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-            $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
-        }
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-            $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
-        
-        # Combine all information gathered into a single HTML report
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
-        } else {
-            $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
-        }
-        $reportData += $vCenterAlertHtml
-        $reportData += $esxiAlertHtml
-        $reportData += $vsanAlertHtml
-        $reportData += $nsxtAlertHtml
+                # Generate ESXi Alerts Using PowerShell Function
+                Write-LogMessage -type INFO -Message "Generating the ESXi host alerts for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
+                }
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
+                
+                # Generate vSAN Alerts Using PowerShell Function
+                Write-LogMessage -type INFO -Message "Generating the vSAN alerts for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
+                }
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
+                
+                # Generate NSX-T Data Center Alerts Using PowerShell Function
+                Write-LogMessage -type INFO -Message "Generating the NSX-T Data Center alerts for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -alldomains
+                }
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+                    $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
+                
+                # Combine all information gathered into a single HTML report
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
+                } else {
+                    $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
+                }
+                $reportData += $vCenterAlertHtml
+                $reportData += $esxiAlertHtml
+                $reportData += $vsanAlertHtml
+                $reportData += $nsxtAlertHtml
 
-        if ($PsBoundParameters.ContainsKey("darkMode")) {
-            $reportHeader = Get-ClarityReportHeader -dark 
-        } else {
-            $reportHeader = Get-ClarityReportHeader
+                if ($PsBoundParameters.ContainsKey("darkMode")) {
+                    $reportHeader = Get-ClarityReportHeader -dark 
+                } else {
+                    $reportHeader = Get-ClarityReportHeader
+                }
+                $reportNavigation = Get-ClarityReportNavigation -reportType alert
+                $reportFooter = Get-ClarityReportFooter
+                $report = $reportHeader
+                $report += $reportNavigation
+                $report += $reportData
+                $report += $reportFooter
+                
+                # Generate the report to an HTML file and then open it in the default browser
+                Write-LogMessage -Type INFO -Message "Generating the final report and saving to ($reportName)."
+                $report | Out-File $reportName
+                Invoke-Item $reportName
+            }
         }
-        $reportNavigation = Get-ClarityReportNavigation -reportType alert
-        $reportFooter = Get-ClarityReportFooter
-        $report = $reportHeader
-        $report += $reportNavigation
-        $report += $reportData
-        $report += $reportFooter
-        
-        # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the final report and saving to ($reportName)."
-        $report | Out-File $reportName
-        Invoke-Item $reportName
     }
     Catch {
         Debug-CatchWriter -object $_
@@ -503,98 +511,102 @@ Function Invoke-VcfConfigReport {
     Try {
         Clear-Host; Write-Host ""
 
-        $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType config # Setup Report Location and Report File
-        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
-            $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
-        } else {
-            $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
-            $workflowMessage = "Workload Domain ($workloadDomain)"
-        }
-        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the Process of Creating a Configuration Report for $workflowMessage." -Colour Yellow
-        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
+        if (Test-VCFConnection -server $sddcManagerFqdn) {
+            if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
+                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType config # Setup Report Location and Report File
+                if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
+                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
+                    $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
+                } else {
+                    $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
+                    $workflowMessage = "Workload Domain ($workloadDomain)"
+                }
+                Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+                Write-LogMessage -Type INFO -Message "Starting the Process of Creating a Configuration Report for $workflowMessage." -Colour Yellow
+                Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
+                Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
-        # Collecting Cluster Configuration Using PowerShell Functions
-        Write-LogMessage -Type INFO -Message "Generating the Cluster Configuration for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $clusterConfigHtml = Publish-ClusterConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        } else {
-            $clusterConfigHtml = Publish-ClusterConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Collecting Cluster Configuration Using PowerShell Functions
+                Write-LogMessage -Type INFO -Message "Generating the Cluster Configuration for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $clusterConfigHtml = Publish-ClusterConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                } else {
+                    $clusterConfigHtml = Publish-ClusterConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Collecting Cluster DRS Rules Using PowerShell Functions
-        Write-LogMessage -Type INFO -Message "Generating the DRS Rule Configuration for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $clusterDrsRuleHtml = Publish-ClusterDrsRule -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        } else {
-            $clusterDrsRuleHtml = Publish-ClusterDrsRule -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Collecting Cluster DRS Rules Using PowerShell Functions
+                Write-LogMessage -Type INFO -Message "Generating the DRS Rule Configuration for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $clusterDrsRuleHtml = Publish-ClusterDrsRule -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                } else {
+                    $clusterDrsRuleHtml = Publish-ClusterDrsRule -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Collecting Resource Pool Details  Using PowerShell Functions
-        Write-LogMessage -Type INFO -Message "Generating the Resouce Pool Configuration for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $resourcePoolsHtml = Publish-ResourcePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        } else {
-            $resourcePoolsHtml = Publish-ResourcePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Collecting Resource Pool Details  Using PowerShell Functions
+                Write-LogMessage -Type INFO -Message "Generating the Resouce Pool Configuration for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $resourcePoolsHtml = Publish-ResourcePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                } else {
+                    $resourcePoolsHtml = Publish-ResourcePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Collecting VM Overrides Using PowerShell Functions
-        Write-LogMessage -Type INFO -Message "Generating the VM Override Configuration for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $vmOverridesHtml = Publish-VmOverride -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        } else {
-            $vmOverridesHtml = Publish-VmOverride -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Collecting VM Overrides Using PowerShell Functions
+                Write-LogMessage -Type INFO -Message "Generating the VM Override Configuration for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $vmOverridesHtml = Publish-VmOverride -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                } else {
+                    $vmOverridesHtml = Publish-VmOverride -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Collecting Virtual Networking Using PowerShell Functions
-        Write-LogMessage -Type INFO -Message "Generating the Virtual Networking Configuration for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $vritualNetworkHtml = Publish-VirtualNetwork -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        } else {
-            $vritualNetworkHtml = Publish-VirtualNetwork -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Collecting Virtual Networking Using PowerShell Functions
+                Write-LogMessage -Type INFO -Message "Generating the Virtual Networking Configuration for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $vritualNetworkHtml = Publish-VirtualNetwork -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                } else {
+                    $vritualNetworkHtml = Publish-VirtualNetwork -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Collecting ESXi Security Configuration Using PowerShell Functions
-        Write-LogMessage -Type INFO -Message "Generating the ESXi Security Configuration for $workflowMessage."
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $esxiSecuritykHtml = Publish-EsxiSecurityConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        } else {
-            $esxiSecuritykHtml = Publish-EsxiSecurityConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
-        
-        # Combine all information gathered into a single HTML report
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
-        } else {
-            $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
-        }
-        $reportData += $clusterConfigHtml
-        $reportData += $clusterDrsRuleHtml
-        $reportData += $resourcePoolsHtml
-        $reportData += $vmOverridesHtml
-        $reportData += $vritualNetworkHtml
-        $reportData += $esxiSecuritykHtml
+                # Collecting ESXi Security Configuration Using PowerShell Functions
+                Write-LogMessage -Type INFO -Message "Generating the ESXi Security Configuration for $workflowMessage."
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $esxiSecuritykHtml = Publish-EsxiSecurityConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                } else {
+                    $esxiSecuritykHtml = Publish-EsxiSecurityConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
+                
+                # Combine all information gathered into a single HTML report
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
+                } else {
+                    $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
+                }
+                $reportData += $clusterConfigHtml
+                $reportData += $clusterDrsRuleHtml
+                $reportData += $resourcePoolsHtml
+                $reportData += $vmOverridesHtml
+                $reportData += $vritualNetworkHtml
+                $reportData += $esxiSecuritykHtml
 
-        if ($PsBoundParameters.ContainsKey("darkMode")) {
-            $reportHeader = Get-ClarityReportHeader -dark 
-        } else {
-            $reportHeader = Get-ClarityReportHeader
-        }
-        $reportNavigation = Get-ClarityReportNavigation -reportType config
-        $reportFooter = Get-ClarityReportFooter
-        $report = $reportHeader
-        $report += $reportNavigation
-        $report += $reportData
-        $report += $reportFooter
+                if ($PsBoundParameters.ContainsKey("darkMode")) {
+                    $reportHeader = Get-ClarityReportHeader -dark 
+                } else {
+                    $reportHeader = Get-ClarityReportHeader
+                }
+                $reportNavigation = Get-ClarityReportNavigation -reportType config
+                $reportFooter = Get-ClarityReportFooter
+                $report = $reportHeader
+                $report += $reportNavigation
+                $report += $reportData
+                $report += $reportFooter
 
-        # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
-        $report | Out-File $reportName
-        Invoke-Item $reportName
+                # Generate the report to an HTML file and then open it in the default browser
+                Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
+                $report | Out-File $reportName
+                Invoke-Item $reportName
+            }
+        }
     }
     Catch {
         Debug-CatchWriter -object $_
@@ -628,94 +640,98 @@ Function Invoke-VcfUpgradePrecheck {
 
         Clear-Host; Write-Host ""
 
-        $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType upgrade # Setup Report Location and Report File
-        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
-        $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
-        $workflowMessage = "Workload Domain ($workloadDomain)"
-        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the Process of Running an Upgrade Precheck for $workflowMessage." -Colour Yellow
-        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
-
         if (Test-VCFConnection -server $sddcManagerFqdn) {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
-                $jsonSpec = '{ "resources" : [ { "resourceId" : "'+ (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).id+'", "type" : "DOMAIN" } ] }'
-                $task = Start-VCFSystemPrecheck -json $jsonSpec
-                Write-LogMessage -Type INFO -Message "Waiting for Upgrade Precheck Task ($($task.name)) with Id ($($task.id)) to Complete."
-                Do { $status = Get-VCFSystemPrecheckTask -id $task.id } While ($status.status -eq "IN_PROGRESS")
-                Write-LogMessage -Type INFO -Message "Task ($($task.name)) with Task Id ($($task.id)) completed with status ($($status.status))."
-                $allChecksObject = New-Object System.Collections.ArrayList
-                foreach ($subTask in $status.subTasks) {
-                    $elementObject = New-Object -TypeName psobject
-                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $subTask.resources.type
-                    if ($subTask.resources.type -eq "ESX") {
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFHost -id $subTask.resources.resourceId).fqdn
+                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType upgrade # Setup Report Location and Report File
+                if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
+                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
+                $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
+                $workflowMessage = "Workload Domain ($workloadDomain)"
+                Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+                Write-LogMessage -Type INFO -Message "Starting the Process of Running an Upgrade Precheck for $workflowMessage." -Colour Yellow
+                Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
+                Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
+
+                if (Test-VCFConnection -server $sddcManagerFqdn) {
+                    if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
+                        $jsonSpec = '{ "resources" : [ { "resourceId" : "'+ (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).id+'", "type" : "DOMAIN" } ] }'
+                        $task = Start-VCFSystemPrecheck -json $jsonSpec
+                        Write-LogMessage -Type INFO -Message "Waiting for Upgrade Precheck Task ($($task.name)) with Id ($($task.id)) to Complete."
+                        Do { $status = Get-VCFSystemPrecheckTask -id $task.id } While ($status.status -eq "IN_PROGRESS")
+                        Write-LogMessage -Type INFO -Message "Task ($($task.name)) with Task Id ($($task.id)) completed with status ($($status.status))."
+                        $allChecksObject = New-Object System.Collections.ArrayList
+                        foreach ($subTask in $status.subTasks) {
+                            $elementObject = New-Object -TypeName psobject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $subTask.resources.type
+                            if ($subTask.resources.type -eq "ESX") {
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFHost -id $subTask.resources.resourceId).fqdn
+                            }
+                            elseif ($subTask.resources.type -eq "VCENTER") {
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvCenter -id $subTask.resources.resourceId).fqdn
+                            }
+                            elseif ($subTask.resources.type -eq "CLUSTER") {
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFCluster -id $subTask.resources.resourceId).name
+                            }
+                            elseif ($subTask.resources.type -eq "VSAN") {
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFCluster -id $subTask.resources.resourceId).primaryDatastoreName
+                            }
+                            elseif ($subTask.resources.type -eq "DEPLOYMENT_CONFIGURATION") {
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFManager -id $subTask.resources.resourceId).fqdn
+                            }
+                            elseif ($subTask.resources.type -eq "VRSLCM") {
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRSLCM -id $subTask.resources.resourceId).fqdn
+                            }
+                            elseif ($subTask.resources.type -eq "VROPS") {
+                                $id = $subTask.resources.resourceId + ":vrops"
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvROPS | Where-Object {$_.id -eq $id}).loadBalancerFqdn
+                            }
+                            elseif ($subTask.resources.type -eq "VRLI") {
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRLI -id $subTask.resources.resourceId).loadBalancerFqdn
+                            }
+                            elseif ($subTask.resources.type -eq "VRA") {
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRA -id $subTask.resources.resourceId).loadBalancerFqdn
+                            }
+                            else {
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $subTask.resources.resourceId
+                            }
+                            $elementObject | Add-Member -NotePropertyName 'Precheck Task' -NotePropertyValue $subTask.name
+                            if ($subTask.status -eq "SUCCESSFUL") {
+                                $alert = "GREEN"
+                            } elseif ($subTask.status -eq "WARNING") {
+                                $alert = "YELLOW"
+                            } elseif ($subTask.status -eq "FAILED") {
+                                $alert = "RED"
+                            }
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                            $allChecksObject += $elementObject
+                        }
+                        $allChecksObject = $allChecksObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="upgrade-precheck"></a><h3>Upgrade Precheck</h3>' -As Table
+                        $allChecksObject = Convert-CssClass -htmldata $allChecksObject
                     }
-                    elseif ($subTask.resources.type -eq "VCENTER") {
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvCenter -id $subTask.resources.resourceId).fqdn
-                    }
-                    elseif ($subTask.resources.type -eq "CLUSTER") {
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFCluster -id $subTask.resources.resourceId).name
-                    }
-                    elseif ($subTask.resources.type -eq "VSAN") {
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFCluster -id $subTask.resources.resourceId).primaryDatastoreName
-                    }
-                    elseif ($subTask.resources.type -eq "DEPLOYMENT_CONFIGURATION") {
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFManager -id $subTask.resources.resourceId).fqdn
-                    }
-                    elseif ($subTask.resources.type -eq "VRSLCM") {
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRSLCM -id $subTask.resources.resourceId).fqdn
-                    }
-                    elseif ($subTask.resources.type -eq "VROPS") {
-                        $id = $subTask.resources.resourceId + ":vrops"
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvROPS | Where-Object {$_.id -eq $id}).loadBalancerFqdn
-                    }
-                    elseif ($subTask.resources.type -eq "VRLI") {
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRLI -id $subTask.resources.resourceId).loadBalancerFqdn
-                    }
-                    elseif ($subTask.resources.type -eq "VRA") {
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRA -id $subTask.resources.resourceId).loadBalancerFqdn
-                    }
-                    else {
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $subTask.resources.resourceId
-                    }
-                    $elementObject | Add-Member -NotePropertyName 'Precheck Task' -NotePropertyValue $subTask.name
-                    if ($subTask.status -eq "SUCCESSFUL") {
-                        $alert = "GREEN"
-                    } elseif ($subTask.status -eq "WARNING") {
-                        $alert = "YELLOW"
-                    } elseif ($subTask.status -eq "FAILED") {
-                        $alert = "RED"
-                    }
-                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
-                    $allChecksObject += $elementObject
                 }
-                $allChecksObject = $allChecksObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="upgrade-precheck"></a><h3>Upgrade Precheck</h3>' -As Table
-                $allChecksObject = Convert-CssClass -htmldata $allChecksObject
+
+                # Combine all information gathered into a single HTML report
+                $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
+                $reportData += $allChecksObject
+
+                if ($PsBoundParameters.ContainsKey("darkMode")) {
+                    $reportHeader = Get-ClarityReportHeader -dark 
+                } else {
+                    $reportHeader = Get-ClarityReportHeader
+                }
+                $reportNavigation = Get-ClarityReportNavigation -reportType upgrade
+                $reportFooter = Get-ClarityReportFooter
+                $report = $reportHeader
+                $report += $reportNavigation
+                $report += $reportData
+                $report += $reportFooter
+
+                # Generate the report to an HTML file and then open it in the default browser
+                Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
+                $report | Out-File $reportName
+                Invoke-Item $reportName
             }
         }
-
-        # Combine all information gathered into a single HTML report
-        $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
-        $reportData += $allChecksObject
-
-        if ($PsBoundParameters.ContainsKey("darkMode")) {
-            $reportHeader = Get-ClarityReportHeader -dark 
-        } else {
-            $reportHeader = Get-ClarityReportHeader
-        }
-        $reportNavigation = Get-ClarityReportNavigation -reportType upgrade
-        $reportFooter = Get-ClarityReportFooter
-        $report = $reportHeader
-        $report += $reportNavigation
-        $report += $reportData
-        $report += $reportFooter
-
-        # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
-        $report | Out-File $reportName
-        Invoke-Item $reportName
     }
     Catch {
         Debug-CatchWriter -object $_
@@ -754,77 +770,81 @@ Function Invoke-VcfPasswordPolicy {
 
         Clear-Host; Write-Host ""
 
-        $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType policy # Setup Report Location and Report File
-        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
-            $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
-        } else {
-            $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
-            $workflowMessage = "Workload Domain ($workloadDomain)"
-        }
-        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the Process of Running a Password Policy Report for $workflowMessage." -Colour Yellow
-        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
+        if (Test-VCFConnection -server $sddcManagerFqdn) {
+            if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
+                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType policy # Setup Report Location and Report File
+                if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
+                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
+                    $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
+                } else {
+                    $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
+                    $workflowMessage = "Workload Domain ($workloadDomain)"
+                }
+                Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+                Write-LogMessage -Type INFO -Message "Starting the Process of Running a Password Policy Report for $workflowMessage." -Colour Yellow
+                Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
+                Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
-        # Collect vCenter Server Password Policies
-        if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            Write-LogMessage -Type INFO -Message "Collecting vCenter Server Password Policy Configuration for $workflowMessage."
-            $vcenterPolicyHtml = Publish-VcenterPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        }
-        else {
-            Write-LogMessage -Type INFO -Message "Collecting vCenter Server Policy Configuration for $workflowMessage."
-            $vcenterPolicyHtml = Publish-VcenterPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Collect vCenter Server Password Policies
+                if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                    Write-LogMessage -Type INFO -Message "Collecting vCenter Server Password Policy Configuration for $workflowMessage."
+                    $vcenterPolicyHtml = Publish-VcenterPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                }
+                else {
+                    Write-LogMessage -Type INFO -Message "Collecting vCenter Server Policy Configuration for $workflowMessage."
+                    $vcenterPolicyHtml = Publish-VcenterPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Collect ESXi Password Policies
-        if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for $workflowMessage."
-            $esxiPolicyHtml = Publish-EsxiPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        }
-        else {
-            Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for $workflowMessage."
-            $esxiPolicyHtml = Publish-EsxiPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
+                # Collect ESXi Password Policies
+                if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                    Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for $workflowMessage."
+                    $esxiPolicyHtml = Publish-EsxiPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                }
+                else {
+                    Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for $workflowMessage."
+                    $esxiPolicyHtml = Publish-EsxiPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
 
-        # Collect NSX-T Data Center Password Policies
-        if ($PsBoundParameters.ContainsKey('allDomains')) { 
-            Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage."
-            $nsxtPolicyHtml = Publish-NsxtPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-        }
-        else {
-            Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage."
-            $nsxtPolicyHtml = Publish-NsxtPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-        }
-        
-        # Combine all information gathered into a single HTML report
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
-        } else{
-            $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
-        }
-        $reportData += $vcenterPolicyHtml
-        $reportData += $esxiPolicyHtml
-        $reportData += $nsxtPolicyHtml
+                # Collect NSX-T Data Center Password Policies
+                if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                    Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage."
+                    $nsxtPolicyHtml = Publish-NsxtPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
+                }
+                else {
+                    Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage."
+                    $nsxtPolicyHtml = Publish-NsxtPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
+                }
+                
+                # Combine all information gathered into a single HTML report
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
+                    $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
+                } else{
+                    $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
+                }
+                $reportData += $vcenterPolicyHtml
+                $reportData += $esxiPolicyHtml
+                $reportData += $nsxtPolicyHtml
 
-        if ($PsBoundParameters.ContainsKey("darkMode")) {
-            $reportHeader = Get-ClarityReportHeader -dark 
-        } else {
-            $reportHeader = Get-ClarityReportHeader
-        }
-        $reportNavigation = Get-ClarityReportNavigation -reportType policy
-        $reportFooter = Get-ClarityReportFooter
-        $report = $reportHeader
-        $report += $reportNavigation
-        $report += $reportData
-        $report += $reportFooter
+                if ($PsBoundParameters.ContainsKey("darkMode")) {
+                    $reportHeader = Get-ClarityReportHeader -dark 
+                } else {
+                    $reportHeader = Get-ClarityReportHeader
+                }
+                $reportNavigation = Get-ClarityReportNavigation -reportType policy
+                $reportFooter = Get-ClarityReportFooter
+                $report = $reportHeader
+                $report += $reportNavigation
+                $report += $reportData
+                $report += $reportFooter
 
-        # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
-        $report | Out-File $reportName
-        Invoke-Item $reportName
+                # Generate the report to an HTML file and then open it in the default browser
+                Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
+                $report | Out-File $reportName
+                Invoke-Item $reportName
+            }
+        }
     }
     Catch {
         Debug-CatchWriter -object $_
@@ -861,42 +881,46 @@ Function Invoke-VcfOverviewReport {
     Try {
         Clear-Host; Write-Host ""
 
-        $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType overview # Setup Report Location and Report File
-        if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-        if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
-        $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
-        $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
-        Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-        Write-LogMessage -Type INFO -Message "Starting the Process of Creating a System Overview Report for $workflowMessage." -Colour Yellow
-        Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-        Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
+        if (Test-VCFConnection -server $sddcManagerFqdn) {
+            if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
+                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType overview # Setup Report Location and Report File
+                if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
+                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
+                $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
+                $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
+                Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+                Write-LogMessage -Type INFO -Message "Starting the Process of Creating a System Overview Report for $workflowMessage." -Colour Yellow
+                Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
+                Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
-        if ($PsBoundParameters.ContainsKey("anonymized")) {
-            Write-LogMessage -Type INFO -Message "Generating Anonymized System Overview Report for $workflowMessage."
-            $vcfOverviewHtml = Publish-VcfSystemOverview -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -anonymized
-        } else {
-            Write-LogMessage -Type INFO -Message "Generating System Overview Report for $workflowMessage."
-            $vcfOverviewHtml = Publish-VcfSystemOverview -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
+                if ($PsBoundParameters.ContainsKey("anonymized")) {
+                    Write-LogMessage -Type INFO -Message "Generating Anonymized System Overview Report for $workflowMessage."
+                    $vcfOverviewHtml = Publish-VcfSystemOverview -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -anonymized
+                } else {
+                    Write-LogMessage -Type INFO -Message "Generating System Overview Report for $workflowMessage."
+                    $vcfOverviewHtml = Publish-VcfSystemOverview -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
+                }
+
+                $reportData += $vcfOverviewHtml
+
+                if ($PsBoundParameters.ContainsKey("darkMode")) {
+                    $reportHeader = Get-ClarityReportHeader -dark 
+                } else {
+                    $reportHeader = Get-ClarityReportHeader
+                }
+                $reportNavigation = Get-ClarityReportNavigation -reportType overview
+                $reportFooter = Get-ClarityReportFooter
+                $report = $reportHeader
+                $report += $reportNavigation
+                $report += $reportData
+                $report += $reportFooter
+
+                # Generate the report to an HTML file and then open it in the default browser
+                Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
+                $report | Out-File $reportName
+                Invoke-Item $reportName
+            }
         }
-
-        $reportData += $vcfOverviewHtml
-
-        if ($PsBoundParameters.ContainsKey("darkMode")) {
-            $reportHeader = Get-ClarityReportHeader -dark 
-        } else {
-            $reportHeader = Get-ClarityReportHeader
-        }
-        $reportNavigation = Get-ClarityReportNavigation -reportType overview
-        $reportFooter = Get-ClarityReportFooter
-        $report = $reportHeader
-        $report += $reportNavigation
-        $report += $reportData
-        $report += $reportFooter
-
-        # Generate the report to an HTML file and then open it in the default browser
-        Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
-        $report | Out-File $reportName
-        Invoke-Item $reportName
     }
     Catch {
         Debug-CatchWriter -object $_

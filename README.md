@@ -115,10 +115,10 @@ The `Invoke-VcfOverviewReport` cmdlet generates a system overview report. This r
     Invoke-VcfOverviewReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath
     ```
 
-    If you prefer to anonymize the data, you can use the `-anonymize` parameter.
+    If you prefer to anonymize the data, you can use the `-anonymized` parameter.
 
     ```powershell
-    Invoke-VcfOverviewReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -anonymize
+    Invoke-VcfOverviewReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -anonymized
     ```
 
 4. Review the generated HTML report.
