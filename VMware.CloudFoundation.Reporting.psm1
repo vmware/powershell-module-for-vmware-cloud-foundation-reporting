@@ -2403,8 +2403,7 @@ Function Publish-NsxtTransportNodeStatus {
                         foreach ($domain in $allWorkloadDomains ) {
                             $nsxtTransportNodeStatus = Request-NsxtTransportNodeStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtTransportNodeStatusObject += $nsxtTransportNodeStatus
                         }
-                    }
-                    else {
+                    } else {
                         $nsxtTransportNodeStatus = Request-NsxtTransportNodeStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtTransportNodeStatusObject += $nsxtTransportNodeStatus
                     }
                 }
@@ -2413,8 +2412,7 @@ Function Publish-NsxtTransportNodeStatus {
                         foreach ($domain in $allWorkloadDomains ) {
                             $nsxtTransportNodeStatus = Request-NsxtTransportNodeStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtTransportNodeStatusObject += $nsxtTransportNodeStatus
                         }
-                    }
-                    else {
+                    } else {
                         $nsxtTransportNodeStatus = Request-NsxtTransportNodeStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtTransportNodeStatusObject += $nsxtTransportNodeStatus
                     }
                 }
@@ -2424,8 +2422,7 @@ Function Publish-NsxtTransportNodeStatus {
                 }
                 if ($addNoIssues) {
                     $allNsxtTransportNodeStatusObject = $allNsxtTransportNodeStatusObject | Sort-Object Domain, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn"></a><h3>NSX Transport Node Status</h3>' -PostContent '<p>No issues found.</p>' 
-                }
-                else {
+                } else {
                     $allNsxtTransportNodeStatusObject = $allNsxtTransportNodeStatusObject | Sort-Object Domain, Resource, Element  | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn"></a><h3>NSX Transport Node Status</h3>' -As Table
                 }
                 $allNsxtTransportNodeStatusObject = Convert-CssClass -htmldata $allNsxtTransportNodeStatusObject
@@ -2734,8 +2731,7 @@ Function Publish-LocalUserExpiry {
                     $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
                     $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
                 }
-            }
-            else {
+            } else {
                 if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
                     $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass -failureOnly; $allPasswordExpiryObject += $sddcPasswordExpiry
                     $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass -failureOnly; $allPasswordExpiryObject += $vrslcmPasswordExpiry
@@ -2744,8 +2740,7 @@ Function Publish-LocalUserExpiry {
                 $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
                 $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
             }
-        }
-        else {
+        } else {
             if ($PsBoundParameters.ContainsKey("allDomains")) {
                 $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass; $allPasswordExpiryObject += $sddcPasswordExpiry
                 $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass; $allPasswordExpiryObject += $vrslcmPasswordExpiry
@@ -2755,8 +2750,7 @@ Function Publish-LocalUserExpiry {
                     $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $domain.name; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
                     $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $domain.name; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
                 }
-            }
-            else {
+            } else {
                 if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
                     $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass; $allPasswordExpiryObject += $sddcPasswordExpiry
                     $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass; $allPasswordExpiryObject += $vrslcmPasswordExpiry
@@ -2936,46 +2930,34 @@ Function Publish-StorageCapacityHealth {
                     }
                 }
 
-                if ($sddcManagerStorageHealth.Count -eq 0) {
-                    $addNoIssues = $true 
-                }
+                if ($sddcManagerStorageHealth.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
                     $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -PostContent '<p>No Issues Found.</p>'
-                }
-                else {
+                } else {
                     $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -As Table
                 }
                 $sddcManagerStorageHealth = Convert-CssClass -htmldata $sddcManagerStorageHealth
 
-                if ($allVcenterStorageHealth.Count -eq 0) {
-                    $addNoIssues = $true 
-                }
+                if ($allVcenterStorageHealth.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
                     $allVcenterStorageHealth = $allVcenterStorageHealth | Sort-Object FQDN, Filesystem | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -PostContent '<p>No Issues Found.</p>'
-                }
-                else {
+                } else {
                     $allVcenterStorageHealth = $allVcenterStorageHealth | Sort-Object  FQDN, Filesystem | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -As Table
                 }
                 $allVcenterStorageHealth = Convert-CssClass -htmldata $allVcenterStorageHealth
 
-                if ($allEsxiStorageCapacity.Count -eq 0) {
-                    $addNoIssues = $true 
-                }
+                if ($allEsxiStorageCapacity.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
                     $allEsxiStorageCapacity = $allEsxiStorageCapacity | Sort-Object Domain, 'ESXi FQDN', 'Volume Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -PostContent '<p>No Issues Found.</p>'
-                }
-                else {
+                } else {
                     $allEsxiStorageCapacity = $allEsxiStorageCapacity | Sort-Object Domain, 'ESXi FQDN', 'Volume Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -As Table
                 }
                 $allEsxiStorageCapacity = Convert-CssClass -htmldata $allEsxiStorageCapacity
 
-                if ($allDatastoreStorageCapacity.Count -eq 0) {
-                    $addNoIssues = $true 
-                }
+                if ($allDatastoreStorageCapacity.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
                     $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | Sort-Object 'vCenter Server', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -PostContent '<p>No Issues Found.</p>'
-                }
-                else {
+                } else {
                     $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | Sort-Object 'vCenter Server', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -As Table
                 }
                 $allDatastoreStorageCapacity = Convert-CssClass -htmldata $allDatastoreStorageCapacity
@@ -3036,8 +3018,7 @@ Function Request-SddcManagerUserExpiry {
                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
                                 }
-                            }
-                            else {
+                            } else {
                                 $customObject += $elementObject
                             }
                             $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser root
@@ -3045,8 +3026,7 @@ Function Request-SddcManagerUserExpiry {
                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
                                 }
-                            }
-                            else {
+                            } else {
                                 $customObject += $elementObject
                             }
                             $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser vcf
@@ -3054,8 +3034,7 @@ Function Request-SddcManagerUserExpiry {
                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
                                 }
-                            }
-                            else {
+                            } else {
                                 $customObject += $elementObject
                             }
                             $customObject | Sort-Object Component, Resource # Output Results
@@ -3118,8 +3097,7 @@ Function Request-NsxtEdgeUserExpiry {
                                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                                     $customObject += $elementObject
                                                 }
-                                            }
-                                            else {
+                                            } else {
                                                 $customObject += $elementObject
                                             }
                                             $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser audit
@@ -3127,8 +3105,7 @@ Function Request-NsxtEdgeUserExpiry {
                                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                                     $customObject += $elementObject
                                                 }
-                                            }
-                                            else {
+                                            } else {
                                                 $customObject += $elementObject
                                             }
                                             $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser root
@@ -3136,8 +3113,7 @@ Function Request-NsxtEdgeUserExpiry {
                                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                                     $customObject += $elementObject
                                                 }
-                                            }
-                                            else {
+                                            } else {
                                                 $customObject += $elementObject
                                             }
                                         }
@@ -3451,8 +3427,7 @@ Function Request-NsxtVidmStatus {
                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
                                 }
-                            }
-                            else {
+                            } else {
                                 $customObject += $elementObject
                             }  
                         }
@@ -3609,16 +3584,13 @@ Function Request-SddcManagerSnapshotStatus {
                             if ($snapshotCount -eq 0) {
                                 $alert = 'GREEN' # Ok; = 0 snapshots
                                 $message = 'No snapshots exist.'
-                            }
-                            elseif ($snapshotAge -le 1) {
+                            } elseif ($snapshotAge -le 1) {
                                 $alert = 'GREEN' # OK; <= 1 days
                                 $message = 'Latest snapshot is less than 1 day old. '
-                            }
-                            elseif ($snapshotAge -gt 1 -and $snapshotAge -le 3) {
+                            } elseif ($snapshotAge -gt 1 -and $snapshotAge -le 3) {
                                 $alert = 'YELLOW' # Warning; > 1 days and <= 3 days
                                 $message = 'Latest snapshot is greater than 1 day old. '
-                            }
-                            elseif ($snapshotAge -gt 3) {
+                            } elseif ($snapshotAge -gt 3) {
                                 $alert = 'RED' # Critical; >= 7 days
                                 $message = 'Latest snapshot is greater than 3 days old. '
                             }
@@ -3626,11 +3598,9 @@ Function Request-SddcManagerSnapshotStatus {
                             # Set the alert color based on the number of snapshots.
                             if ($snapshotCount -eq 1) {
                                 $messageCount = 'A single snapshot exists. '
-                            }
-                            elseif ($snapshotCount -gt 1) {
+                            } elseif ($snapshotCount -gt 1) {
                                 $messageCount = 'More than 1 snapshot exist. '
                             }
-
                             $message += $messageCount # Combine the alert message
 
                             # Set the alert message based on the snapshot consolidation status.
@@ -3638,11 +3608,9 @@ Function Request-SddcManagerSnapshotStatus {
                                 $alert = 'RED' # Critical; Consolidation is required
                                 $consolidationRequired = $true
                                 $messageConsolidation += 'Snapshot consolidation is required.'
-                            }
-                            else {
+                            } else {
                                 $consolidationRequired = $false
                             }
-
                             $message += $messageConsolidation
 
                             $elementObject = New-Object -TypeName psobject
@@ -3660,8 +3628,7 @@ Function Request-SddcManagerSnapshotStatus {
                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
                                 }
-                            }
-                            else {
+                            } else {
                                 $customObject += $elementObject
                             }                     
                             $customObject | Sort-Object Component, Resource, Element
@@ -3728,16 +3695,13 @@ Function Request-VcenterSnapshotStatus {
                         if ($snapshotCount -eq 0) {
                             $alert = 'GREEN' # Ok; = 0 snapshots
                             $message = 'No snapshots exist.'
-                        }
-                        elseif ($snapshotAge -le 1) {
+                        } elseif ($snapshotAge -le 1) {
                             $alert = 'GREEN' # OK; <= 1 days
                             $message = 'Latest snapshot is less than 1 day old. '
-                        }
-                        elseif ($snapshotAge -gt 1 -and $snapshotAge -le 3) {
+                        } elseif ($snapshotAge -gt 1 -and $snapshotAge -le 3) {
                             $alert = 'YELLOW' # Warning; > 1 days and <= 3 days
                             $message = 'Latest snapshot is greater than 1 day old. '
-                        }
-                        elseif ($snapshotAge -gt 3) {
+                        } elseif ($snapshotAge -gt 3) {
                             $alert = 'RED' # Critical; >= 7 days
                             $message = 'Latest snapshot is greater than 3 days old. '
                         }
@@ -3745,11 +3709,9 @@ Function Request-VcenterSnapshotStatus {
                         # Set the alert message based on the number of snapshots.
                         if ($snapshotCount -eq 1) {
                             $messageCount = 'A single snapshot exists. '
-                        }
-                        elseif ($snapshotCount -gt 1) {
+                        } elseif ($snapshotCount -gt 1) {
                             $messageCount = 'More than 1 snapshot exist. '
                         }
-
                         $message += $messageCount # Combine the alert message
 
                         # Set the alert message based on the snapshot consolidation status.
@@ -3757,11 +3719,9 @@ Function Request-VcenterSnapshotStatus {
                             $alert = 'RED' # Critical; Consolidation is required
                             $consolidationRequired = $true
                             $messageConsolidation += 'Snapshot consolidation is required.'
-                        }
-                        else {
+                        } else {
                             $consolidationRequired = $false
                         }
-
                         $message += $messageConsolidation
 
                         $elementObject = New-Object -TypeName psobject
@@ -3780,8 +3740,7 @@ Function Request-VcenterSnapshotStatus {
                             if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                 $customObject += $elementObject
                             }
-                        }
-                        else {
+                        } else {
                             $customObject += $elementObject
                         }                              
                         $outputObject += $customObject # Add the custom object to the output object    
@@ -3851,16 +3810,13 @@ Function Request-NsxtEdgeSnapshotStatus {
                                     if ($snapshotCount -eq 0) {
                                         $alert = 'GREEN' # Ok; = 0 snapshots
                                         $message = 'No snapshots exist.' 
-                                    }
-                                    elseif ($snapshotAge -le 1) {
+                                    } elseif ($snapshotAge -le 1) {
                                         $alert = 'GREEN' # OK; <= 1 days
                                         $message = 'Latest snapshot is less than 1 day old. '
-                                    }
-                                    elseif ($snapshotAge -gt 1 -and $snapshotAge -le 3) {
+                                    } elseif ($snapshotAge -gt 1 -and $snapshotAge -le 3) {
                                         $alert = 'YELLOW' # Warning; > 1 days and <= 3 days
                                         $message = 'Latest snapshot is greater than 1 day old. '
-                                    }
-                                    elseif ($snapshotAge -gt 3) {
+                                    } elseif ($snapshotAge -gt 3) {
                                         $alert = 'RED' # Critical; >= 7 days
                                         $message = 'Latest snapshot is greater than 3 days old. '
                                     }
@@ -3868,11 +3824,9 @@ Function Request-NsxtEdgeSnapshotStatus {
                                     # Set the alert message based on the number of snapshots.
                                     if ($snapshotCount -eq 1) {
                                         $messageCount = 'A single snapshot exists. '
-                                    }
-                                    elseif ($snapshotCount -gt 1) {
+                                    } elseif ($snapshotCount -gt 1) {
                                         $messageCount = 'More than 1 snapshot exist. '
                                     }
-
                                     $message += $messageCount # Combine the alert message
 
                                     # Set the alert message based on snapshots consolidation status.
@@ -3880,11 +3834,9 @@ Function Request-NsxtEdgeSnapshotStatus {
                                         $alert = 'RED' # Critical; Consolidation is required
                                         $consolidationRequired = $true
                                         $messageConsolidation += 'Snapshot consolidation is required.'
-                                    }
-                                    else {
+                                    } else {
                                         $consolidationRequired = $false
                                     }
-
                                     $message += $messageConsolidation
 
                                     $elementObject = New-Object -TypeName psobject
@@ -4518,8 +4470,7 @@ Function Request-VcenterStorageHealth {
 
                             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                                 Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $vcenter.fqdn -failureOnly
-                            }
-                            else {
+                            } else {
                                 Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $vcenter.fqdn
                             }
                         }
@@ -4694,19 +4645,16 @@ Function Publish-ComponentConnectivityHealth {
             if ($PsBoundParameters.ContainsKey("allDomains")) {
                 $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -alldomains -failureOnly; $allConnectivityObject += $vcenterConnectivity
                 $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -alldomains -failureOnly; $allConnectivityObject += $NsxtConnectivity
-            }
-            else {
+            } else {
                 $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allConnectivityObject += $vcenterConnectivity
                 $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allConnectivityObject += $NsxtConnectivity
             }
             $connectivityRaw = Publish-ConnectivityHealth -json $json -failureOnly
-        }
-        else {
+        } else {
             if ($PsBoundParameters.ContainsKey("allDomains")) {
                 $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -alldomains; $allConnectivityObject += $vcenterConnectivity
                 $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -alldomains; $allConnectivityObject += $NsxtConnectivity
-            }
-            else {
+            } else {
                 $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allConnectivityObject += $vcenterConnectivity
                 $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allConnectivityObject += $NsxtConnectivity
             }
@@ -4772,8 +4720,7 @@ Function Request-VcenterAuthentication {
                         if (Test-vSphereApiAuthentication -server $domain.vcenters.fqdn -user $account.username -pass $account.password) {
                             $alert = "GREEN"
                             $message = "API Connection check successful!"
-                        }
-                        else {
+                        } else {
                             $alert = "RED"
                             $message = "API Connection check failed!"
                         }
@@ -4787,19 +4734,16 @@ Function Request-VcenterAuthentication {
                             if (($elementObject.alert -eq 'RED')) {
                                 $customObject += $elementObject
                             }
-                        }
-                        else {
+                        } else {
                             $customObject += $elementObject
                         }
                     }
-                }
-                else {
+                } else {
                     $vcenter = (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).vcenters.fqdn
                     if (Test-vSphereApiAuthentication -server $vcenter -user $account.username -pass $account.password) {
                         $alert = "GREEN"
                         $message = "API Connection check successful!"
-                    }
-                    else {
+                    } else {
                         $alert = "RED"
                         $message = "API Connection check failed!"
                     }
@@ -4813,12 +4757,10 @@ Function Request-VcenterAuthentication {
                         if (($elementObject.alert -eq 'RED')) {
                             $customObject += $elementObject
                         }
-                    }
-                    else {
+                    } else {
                         $customObject += $elementObject
                     }
                 }
-
                 $customObject | Sort-Object Component, Resource
             }
         }
@@ -4875,8 +4817,7 @@ Function Request-NsxtAuthentication {
                                 if (Test-NsxtAuthentication -server $node.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                                     $alert = "GREEN"
                                     $message = "API Connection check successful!"
-                                }
-                                else {
+                                } else {
                                     $alert = "RED"
                                     $message = "API Connection check failed!"
                                 }
@@ -4894,22 +4835,19 @@ Function Request-NsxtAuthentication {
                                 if (($elementObject.alert -eq 'RED')) {
                                     $customObject += $elementObject
                                 }
-                            }
-                            else {
+                            } else {
                                 $customObject += $elementObject
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     $vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $workloadDomain -listNodes
                     foreach ($node in $vcfNsxDetails.nodes) {
                         if (Test-NsxtConnection -server $node.fqdn -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage ) {
                             if (Test-NsxtAuthentication -server $node.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                                 $alert = "GREEN"
                                 $message = "API Connection check successful!"
-                            }
-                            else {
+                            } else {
                                 $alert = "RED"
                                 $message = "API Connection check failed!"
                             }
@@ -4927,13 +4865,11 @@ Function Request-NsxtAuthentication {
                             if (($elementObject.alert -eq 'RED')) {
                                 $customObject += $elementObject
                             }
-                        }
-                        else {
+                        } else {
                             $customObject += $elementObject
                         }
                     }  
                 }
-                
                 $customObject | Sort-Object Component, Resource
             }
         }
@@ -5718,8 +5654,7 @@ Function Publish-EsxiAlert {
                     } else {
                         $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $esxiSystemAlert
                     }
-                }
-                else {
+                } else {
                     if ($PsBoundParameters.ContainsKey('allDomains')) { 
                         foreach ($domain in $allWorkloadDomains ) {
                             $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $esxiSystemAlert
@@ -6341,8 +6276,7 @@ Function Publish-ClusterConfiguration {
                         $clusterConfiguration = Request-ClusterConfiguration -server  $server -user $user -pass $pass -domain $domain.name;
                         $allConfigurationObject += $clusterConfiguration
                     }
-                }
-                else {
+                } else {
                     $clusterConfiguration = Request-ClusterConfiguration -server  $server -user $user -pass $pass -domain $workloadDomain; $allConfigurationObject += $clusterConfiguration
                 }
                 $allConfigurationObject = $allConfigurationObject | Sort-Object Cluster | ConvertTo-Html -Fragment -PreContent '<a id="cluster-config"></a><h3>Cluster Configuration</h3>' -As Table
@@ -6550,8 +6484,7 @@ Function Publish-ClusterDrsRule {
                     foreach ($domain in $allWorkloadDomains ) {
                         $drsRulesConfig = Request-ClusterDrsRule -server  $server -user $user -pass $pass -domain $domain.name; $allConfigurationObject += $drsRulesConfig
                     }
-                }
-                else {
+                } else {
                     $drsRulesConfig = Request-ClusterDrsRule -server  $server -user $user -pass $pass -domain $workloadDomain; $allConfigurationObject += $drsRulesConfig
                 }
 
@@ -6673,8 +6606,7 @@ Function Publish-ResourcePool {
                     foreach ($domain in $allWorkloadDomains ) {
                         $resourcePoolConfig = Request-ResourcePool -server  $server -user $user -pass $pass -domain $domain.name; $allConfigurationObject += $resourcePoolConfig
                     }
-                }
-                else {
+                } else {
                     $resourcePoolConfig = Request-ResourcePool -server  $server -user $user -pass $pass -domain $workloadDomain; $allConfigurationObject += $resourcePoolConfig
                 }
                 $allConfigurationObject = $allConfigurationObject | Sort-Object Cluster, 'Resource Pool' | ConvertTo-Html -Fragment -PreContent '<a id="cluster-resource-pools"></a><h3>Resource Pools</h3>' -As Table
@@ -6732,7 +6664,6 @@ Function Request-ResourcePool {
                                         $customObject | Add-Member -notepropertyname "CPU Expandable" -notepropertyvalue $resourcePool.CpuExpandableReservation
                                         $customObject | Add-Member -notepropertyname "Memory Share Level" -notepropertyvalue $resourcePool.MemSharesLevel
                                         $customObject | Add-Member -notepropertyname "Memory Expandable" -notepropertyvalue $resourcePool.MemExpandableReservation
-
                                         $allClustersObject += $customObject
                                     }
                                 } 
@@ -6789,8 +6720,7 @@ Function Publish-VmOverride {
                     foreach ($domain in $allWorkloadDomains ) {
                         $vmOverRideConfig = Request-VmOverride -server  $server -user $user -pass $pass -domain $domain.name; $allConfigurationObject += $vmOverRideConfig
                     }
-                }
-                else {
+                } else {
                     $vmOverRideConfig = Request-VmOverride -server  $server -user $user -pass $pass -domain $workloadDomain; $allConfigurationObject += $vmOverRideConfig
                 }
                 $allConfigurationObject = $allConfigurationObject | Sort-Object Cluster, 'DRS Automation Level', 'VM Name' | ConvertTo-Html -Fragment -PreContent '<a id="cluster-overrides"></a><h3>VM Overrides</h3>' -As Table
@@ -6899,8 +6829,7 @@ Function Publish-VirtualNetwork {
                     foreach ($domain in $allWorkloadDomains ) {
                         $virtualNetworkConfig = Request-VirtualNetwork -server  $server -user $user -pass $pass -domain $domain.name; $allConfigurationObject += $virtualNetworkConfig
                     }
-                }
-                else {
+                } else {
                     $virtualNetworkConfig = Request-VirtualNetwork -server  $server -user $user -pass $pass -domain $workloadDomain; $allConfigurationObject += $virtualNetworkConfig
                 }
                 $allConfigurationObject = $allConfigurationObject | Sort-Object Cluster, 'vSphere Distributed Switch' | ConvertTo-Html -Fragment -PreContent '<a id="cluster-networks"></a><h3>Virtual Networks</h3>' -As Table
@@ -7016,8 +6945,7 @@ Function Publish-EsxiSecurityConfiguration {
                     foreach ($domain in $allWorkloadDomains ) {
                         $esxiSecurityConfig = Request-EsxiSecurityConfiguration -server  $server -user $user -pass $pass -domain $domain.name; $allConfigurationObject += $esxiSecurityConfig
                     }
-                }
-                else {
+                } else {
                     $esxiSecurityConfig = Request-EsxiSecurityConfiguration -server  $server -user $user -pass $pass -domain $workloadDomain; $allConfigurationObject += $esxiSecurityConfig
                 }
                 $allConfigurationObject = $allConfigurationObject | Sort-Object Cluster, 'ESXi FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="esxi-security"></a><h3>Security Configuration</h3>' -As Table
@@ -7138,8 +7066,7 @@ Function Publish-EsxiPolicy {
                         $esxiPasswordPolicy = Request-EsxiPasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allEsxiPasswordPolicyObject += $esxiPasswordPolicy
                         $esxiLockoutPolicy = Request-EsxiLockoutPolicy -server $server -user $user -pass $pass -domain $domain.name; $allEsxiLockoutPolicyObject += $esxiLockoutPolicy
                     }
-                }
-                else {
+                } else {
                     $esxiPasswordPolicy = Request-EsxiPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allEsxiPasswordPolicyObject += $esxiPasswordPolicy
                     $esxiLockoutPolicy = Request-EsxiLockoutPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allEsxiLockoutPolicyObject += $esxiLockoutPolicy
                 }
@@ -7339,8 +7266,7 @@ Function Publish-VcenterPolicy {
                         $ssoPasswordPolicy = Request-SsoPasswordPolicy -server $server -user $user -pass $pass -domain $domain.name; $allSsoPasswordPolicyObject += $ssoPasswordPolicy
                         $ssoLockoutPolicy = Request-SsoLockoutPolicy -server $server -user $user -pass $pass -domain $domain.name; $allSsoLockoutPolicyObject += $ssoLockoutPolicy
                     }
-                }
-                else {
+                } else {
                     $vcenterRootPasswordPolicy = Request-VcenterRootPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allVcenterRootPasswordPolicyObject += $vcenterRootPasswordPolicy
                     $vcenterPasswordPolicy = Request-VcenterPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allVcenterPasswordPolicyObject += $vcenterPasswordPolicy
                     $ssoPasswordPolicy = Request-SsoPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allSsoPasswordPolicyObject += $ssoPasswordPolicy
@@ -8274,7 +8200,6 @@ Function Request-VrealizeOverview {
                         $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Invoke-Expression $apiCmdlet).version
                         $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Invoke-Expression $apiCmdlet).status
                         $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue $nodeCount
-
                         $allVrealizeObject += $customObject
                     }
                 }
@@ -8429,7 +8354,6 @@ Function Request-ValidatedSolutionOverview {
                 $customObject | Add-Member -notepropertyname "Name" -notepropertyvalue "Site Protection and Disaster Recovery"
                 $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $pdrEnabled
                 $allVvsObject += $customObject
-
                 $allVvsObject | Sort-Object Name
             }
         }
@@ -8575,8 +8499,7 @@ Function Read-JsonElement {
             if (($element.status -eq "FAILED")) {
                 $outputData += $elementObject
             }
-        }
-        else {
+        } else {
             $outputData += $elementObject
         }
     }
@@ -9619,7 +9542,6 @@ Function Get-NsxtTier0BgpStatus {
     )
 
     Try {
-
         $uri = "https://$nsxtManager/policy/api/v1/infra/tier-0s/$id/locale-services/default/bgp/neighbors/status"
         $response = Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $nsxtHeaders
         $response.results
