@@ -7644,11 +7644,17 @@ Function Publish-NsxtPolicy {
                     $nsxtManagerPasswordPolicy = Request-NsxtManagerPasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtManagerPasswordPolicyObject += $nsxtManagerPasswordPolicy
                     $nsxtEdgePasswordPolicy = Request-NsxtEdgePasswordPolicy -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtEdgePasswordPolicyObject += $nsxtEdgePasswordPolicy
                 }
+
                 $allNsxtManagerPasswordPolicyObject = $allNsxtManagerPasswordPolicyObject | Sort-Object Cluster, 'NSX Manager FQDN' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-manager"></a><h3>NSX Manager Password Policy</h3>' -As Table
                 $allNsxtManagerPasswordPolicyObject = Convert-CssClass -htmldata $allNsxtManagerPasswordPolicyObject
-                $allNsxtEdgePasswordPolicyObject = $allNsxtEdgePasswordPolicyObject | Sort-Object Cluster, 'NSX Edge' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-edge"></a><h3>NSX Edge Password Policy</h3>' -As Table
-                $allNsxtEdgePasswordPolicyObject = Convert-CssClass -htmldata $allNsxtEdgePasswordPolicyObject
                 $allNsxtPolicyObject += $allNsxtManagerPasswordPolicyObject
+
+                if ($allNsxtEdgePasswordPolicyObject.Count -gt 0) {
+                    $allNsxtEdgePasswordPolicyObject = $allNsxtEdgePasswordPolicyObject | Sort-Object Cluster, 'NSX Edge' | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-edge"></a><h3>NSX Edge Password Policy</h3>' -As Table
+                    $allNsxtEdgePasswordPolicyObject = Convert-CssClass -htmldata $allNsxtEdgePasswordPolicyObject
+                } else {
+                    $allNsxtEdgePasswordPolicyObject = $allNsxtEdgePasswordPolicyObject | ConvertTo-Html -Fragment -PreContent '<a id="policy-password-edge"></a><h3>NSX Edge Password Policy</h3>' -PostContent '<p>No NSX Edge Node(s) present.</p>' -As Table
+                }
                 $allNsxtPolicyObject += $allNsxtEdgePasswordPolicyObject
                 $allNsxtPolicyObject
             }
@@ -7750,7 +7756,6 @@ Function Request-NsxtEdgePasswordPolicy {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
                             $allNsxtEdgeObject = New-Object System.Collections.ArrayList
                             $nsxtEdgeNodes = (Get-NsxtEdgeCluster | Where-Object {$_.member_node_type -eq "EDGE_NODE"})
-                            # if (Test-NSXTAuthentication -server $nsxtManagerNode.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
                             foreach ($nsxtEdgeNode in $nsxtEdgeNodes.members) {
                                 $edgePolicy = Get-NsxtEdgeNodeAuthPolicy -nsxtManager $vcfNsxDetails.fqdn -nsxtEdgeNodeID $nsxtEdgeNode.transport_node_id  
                                 $customObject = New-Object -TypeName psobject
@@ -7759,10 +7764,8 @@ Function Request-NsxtEdgePasswordPolicy {
                                 $customObject | Add-Member -notepropertyname "CLI Failures (max)" -notepropertyvalue $edgePolicy.cli_max_auth_failures
                                 $customObject | Add-Member -notepropertyname "CLI Lockout" -notepropertyvalue $edgePolicy.cli_failed_auth_lockout_period
                                 $allNsxtEdgeObject += $customObject
-                                    
                             }
                             $allNsxtEdgeObject | Sort-Object 'NSX Edge'
-                            # }
                         }
                     }
                 } else {
