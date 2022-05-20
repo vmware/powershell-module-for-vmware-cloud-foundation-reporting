@@ -7396,11 +7396,18 @@ Function Request-VcenterRootPasswordPolicy {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
                     if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
-                        if (Test-vSphereApiConnection -server $($vcfVcenterDetails.fqdn)) {
-                            if (Test-vSphereApiAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                        if (Test-vSphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                            if (Test-vSphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                                 Request-vSphereApiToken -fqdn $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass -admin | Out-Null
                                 $customObject = New-Object System.Collections.ArrayList
-                                $rootPasswordExpiry = Get-VCPasswordExpiry
+                                $vcenterVersion = ((Invoke-GetSystemVersion).version -Split ('\.\d{5}')) -split '\s+' -match '\S'
+                                if ($vcenterVersion -le "7.0.1") {
+                                    $uri = "https://$vcApiAdminServer/rest/appliance/local-accounts/root"
+                                    $rootPasswordExpiry =Invoke-RestMethod -Method GET -Uri $uri -Headers $vcApiAdminHeaders
+                                } else {
+                                    $uri = "https://$vcApiAdminServer/api/appliance/local-accounts/root"
+                                    $rootPasswordExpiry = Invoke-RestMethod -Method GET -Uri $uri -Headers $vcApiAdminHeaders
+                                }                                
                                 $customObject = New-Object -TypeName psobject
                                 $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
                                 $customObject | Add-Member -notepropertyname "Lifetime (days)" -notepropertyvalue $rootPasswordExpiry.max_days_between_password_change
@@ -7453,10 +7460,9 @@ Function Request-VcenterPasswordPolicy {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
                     if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
-                        if (Test-vSphereApiConnection -server $($vcfVcenterDetails.fqdn)) {
-                            if (Test-vSphereApiAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                                Request-vSphereApiToken -fqdn $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
-                                $passwordPolicy = Get-VCPasswordPolicy
+                        if (Test-vSphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                            if (Test-vSphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                $passwordPolicy = Invoke-GetLocalAccountsGlobalPolicy
                                 $customObject = New-Object -TypeName psobject
                                 $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
                                 $customObject | Add-Member -notepropertyname "Lifetime (max days)" -notepropertyvalue $passwordPolicy.max_days
@@ -7466,7 +7472,7 @@ Function Request-VcenterPasswordPolicy {
                             $customObject | Sort-Object 'vCenter Server FQDN'
                         }
                     }
-                    
+                    Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                 } else {
                     Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
                 }
