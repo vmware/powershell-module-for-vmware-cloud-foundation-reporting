@@ -1667,6 +1667,12 @@ Function Publish-NsxtEdgeClusterHealth {
         foreach ($nsxtEdgeNodes in $nsxtEdgeClusters.edgeNodes.hostname) {
             $jsonInputData.PSObject.Properties.Remove($nsxtEdgeNodes)
         }
+        if ($null -eq $nsxtEdgeClusters) {
+            $nsxtClusters = Get-VCFNsxtCluster
+            foreach ($nsxtCluster in $nsxtClusters) {
+                $jsonInputData.PSObject.Properties.Remove($nsxtCluster.vipFqdn)
+            }
+        }
         $jsonInputData = $jsonInputData | Where-Object {$_ -ne ""}
         foreach ($element in $jsonInputData.PsObject.Properties.Value) {
             foreach ($cluster in $element.PsObject.Properties.Value) {
