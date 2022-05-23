@@ -3960,7 +3960,11 @@ Function Request-SddcManagerBackupStatus {
                 $domain = (Get-VCFWorkloadDomain | Sort-Object -Property type, name).name -join ',' # Define the domain(s)
                 $backupTask = Get-VCFTask | Where-Object { $_.type -eq 'SDDCMANAGER_BACKUP' } | Select-Object -First 1
                 if ($backupTask) {
-                    $date = [DateTime]::ParseExact($backupTask.creationTimestamp, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
+                    if ($PSEdition -eq 'Core') {
+                        $date = $backupTask.creationTimestamp
+                    } else {
+                        $date = [DateTime]::ParseExact($backupTask.creationTimestamp, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
+                    }
                     $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$date)).TotalDays) # Calculate the number of days since the backup was created
 
                     # Set the status for the backup task
@@ -4296,9 +4300,13 @@ Function Request-VcenterBackupStatus {
                     $customObject = New-Object System.Collections.ArrayList
                     $component = 'vCenter Server' # Define the component name
                     $resource = 'vCenter Server Backup Operation' # Define the resource name
-                    if ($backupTask = (Get-VcenterBackupStatus | Select-Object -Last 1).Value) {    
-                        $timestamp = [DateTime]::ParseExact($backupTask.end_time, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
-                        if ($timestamp) {
+                    if ($global:backupTask = (Get-VcenterBackupStatus | Select-Object -Last 1).Value) {    
+                        if ($PSEdition -eq 'Core') {
+                            $timestamp = $backupTask.end_time
+                        } else {
+                            $timestamp = [DateTime]::ParseExact($backupTask.end_time, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
+                        }
+                            if ($timestamp) {
                             $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
                         } else {
                             $backupAge = 0 # Set the backup age to 0 if not available
