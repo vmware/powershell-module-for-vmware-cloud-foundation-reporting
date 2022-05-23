@@ -5306,6 +5306,7 @@ Function Request-VmConnectedCdrom {
                                     $message = 'A virtual CD-ROM is connected.' # Set the status message
                                     # Set the object properties
                                     $customObject = New-Object -TypeName psobject
+                                    $customObject | Add-Member -NotePropertyName 'vCenter Server' -NotePropertyValue $vcfVcenterDetails.fqdn
                                     $customObject | Add-Member -NotePropertyName 'Cluster' -NotePropertyValue $cluster.Name
                                     $customObject | Add-Member -NotePropertyName 'VM Name' -NotePropertyValue $vm.Name
                                     $customObject | Add-Member -NotePropertyName 'ISO Path' -NotePropertyValue $vm.'ISO Path'
