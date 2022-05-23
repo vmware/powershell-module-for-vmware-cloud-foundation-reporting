@@ -9021,7 +9021,7 @@ Function Format-DfStorageHealth {
     Try {
         # Define object that will be returned and format input
         $customObject = New-Object System.Collections.ArrayList
-        $formatOutput = ($dfOutput -split '\r?\n').Trim() -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
+        $formatOutput = ($dfOutput.ScriptOutput -split '\r?\n').Trim() -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
 
         # Set Alarms for each partition
         foreach ($partition in $formatOutput) {
