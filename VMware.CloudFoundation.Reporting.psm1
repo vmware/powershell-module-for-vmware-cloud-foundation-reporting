@@ -327,7 +327,11 @@ Function Invoke-VcfHealthReport {
                 # Generate the report to an HTML file and then open it in the default browser
                 Write-LogMessage -Type INFO -Message "Generating the final report and saving to ($reportName)."
                 $report | Out-File $reportName
-                Invoke-Item $reportName
+                if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -ne "Linux") {
+                    Invoke-Item $reportName
+                } elseif ($PSEdition -eq "Desktop") {
+                    Invoke-Item $reportName
+                }
             }
         }
     }
@@ -471,7 +475,11 @@ Function Invoke-VcfAlertReport {
                 # Generate the report to an HTML file and then open it in the default browser
                 Write-LogMessage -Type INFO -Message "Generating the final report and saving to ($reportName)."
                 $report | Out-File $reportName
-                Invoke-Item $reportName
+                if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -ne "Linux") {
+                    Invoke-Item $reportName
+                } elseif ($PSEdition -eq "Desktop") {
+                    Invoke-Item $reportName
+                }
             }
         }
     }
@@ -604,7 +612,11 @@ Function Invoke-VcfConfigReport {
                 # Generate the report to an HTML file and then open it in the default browser
                 Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
                 $report | Out-File $reportName
-                Invoke-Item $reportName
+                if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -ne "Linux") {
+                    Invoke-Item $reportName
+                } elseif ($PSEdition -eq "Desktop") {
+                    Invoke-Item $reportName
+                }
             }
         }
     }
@@ -729,7 +741,11 @@ Function Invoke-VcfUpgradePrecheck {
                 # Generate the report to an HTML file and then open it in the default browser
                 Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
                 $report | Out-File $reportName
-                Invoke-Item $reportName
+                if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -ne "Linux") {
+                    Invoke-Item $reportName
+                } elseif ($PSEdition -eq "Desktop") {
+                    Invoke-Item $reportName
+                }
             }
         }
     }
@@ -842,7 +858,11 @@ Function Invoke-VcfPasswordPolicy {
                 # Generate the report to an HTML file and then open it in the default browser
                 Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
                 $report | Out-File $reportName
-                Invoke-Item $reportName
+                if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -ne "Linux") {
+                    Invoke-Item $reportName
+                } elseif ($PSEdition -eq "Desktop") {
+                    Invoke-Item $reportName
+                }
             }
         }
     }
@@ -918,7 +938,11 @@ Function Invoke-VcfOverviewReport {
                 # Generate the report to an HTML file and then open it in the default browser
                 Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
                 $report | Out-File $reportName
-                Invoke-Item $reportName
+                if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -ne "Linux") {
+                    Invoke-Item $reportName
+                } elseif ($PSEdition -eq "Desktop") {
+                    Invoke-Item $reportName
+                }
             }
         }
     }
@@ -1560,7 +1584,7 @@ Function Publish-NsxtEdgeNodeHealth {
         foreach ($nsxtVip in $nsxtClusters.vipFqdn) {
             $jsonInputData.PSObject.Properties.Remove($nsxtVip)
         }
-        $jsonInputData = $jsonInputData | ? {$_ -ne ""}
+        $jsonInputData = $jsonInputData | Where-Object {$_ -ne ""}
         foreach ($element in $jsonInputData.PsObject.Properties.Value) {
             $elementObject = New-Object -TypeName psobject
             $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'NSX Edge'
@@ -1578,7 +1602,7 @@ Function Publish-NsxtEdgeNodeHealth {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) { 
-            if ($jsonInputData.Count -gt 0) {
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
                 if ($customObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
                     $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p>No issues found.</p>' 
@@ -1589,7 +1613,7 @@ Function Publish-NsxtEdgeNodeHealth {
             } else {
                 $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p>No NSX Edge Node(s) present.</p>' -As Table
             }
-                $customObject
+            $customObject
         } else {
             $customObject | Sort-Object Component, Resource
         }
@@ -1643,11 +1667,7 @@ Function Publish-NsxtEdgeClusterHealth {
         foreach ($nsxtEdgeNodes in $nsxtEdgeClusters.edgeNodes.hostname) {
             $jsonInputData.PSObject.Properties.Remove($nsxtEdgeNodes)
         }
-        $nsxtClusters = Get-VCFNsxtCluster
-        foreach ($nsxtCluster in $nsxtClusters) {
-            $jsonInputData.PSObject.Properties.Remove($nsxtCluster.vipFqdn)
-        }
-        $jsonInputData = $jsonInputData | ? {$_ -ne ""}
+        $jsonInputData = $jsonInputData | Where-Object {$_ -ne ""}
         foreach ($element in $jsonInputData.PsObject.Properties.Value) {
             foreach ($cluster in $element.PsObject.Properties.Value) {
                 $elementObject = New-Object -TypeName psobject
@@ -1667,7 +1687,7 @@ Function Publish-NsxtEdgeClusterHealth {
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) {
-            if ($jsonInputData.Count -gt 0) {
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
                 if ($customObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
                     $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -PostContent '<p>No issues found.</p>' 
@@ -3503,7 +3523,6 @@ Function Request-NsxtComputeManagerStatus {
                 if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
-                            #### $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }).vcenters.fqdn
                             $computeManagers = (Get-NsxtComputeManager)
                             foreach ($computeManager in $computeManagers) {
                                 $customObject = New-Object System.Collections.ArrayList
@@ -4267,87 +4286,84 @@ Function Request-VcenterBackupStatus {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (($vcfVcenterDetails = Get-VcenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
-                    if (Test-vSphereApiConnection -server $vcfVcenterDetails.fqdn) {
-                        if (Test-VsphereApiAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                            $customObject = New-Object System.Collections.ArrayList
-                            $component = 'vCenter Server' # Define the component name
-                            $resource = 'vCenter Server Backup Operation' # Define the resource name
-                            if ($backupTask = (Get-VcenterBackupStatus | Select-Object -Last 1).Value) {    
-                                $timestamp = [DateTime]::ParseExact($backupTask.end_time, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
-                                if ($timestamp) {
-                                    $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
-                                } else {
-                                    $backupAge = 0 # Set the backup age to 0 if not available
-                                }
-
-                                # Set the status for the backup task
-                                if ($backupTask.status -eq 'SUCCEEDED') {                              
-                                    $alert = "GREEN" # Ok; success
-                                } elseif ($backupTask.status -eq 'IN PROGRESS') {                              
-                                    $alert = "YELLOW" # Warning; in progress
-                                } else {
-                                    $alert = "RED" # Critical; failure
-                                }
-
-                                if ($timestamp) {
-                                    # Set the message for the backup task
-                                    if ([String]::IsNullOrEmpty($backupTask.messages)) {
-                                        $message = "The backup completed without errors. " # Ok; success
-                                    } else {
-                                        $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
-                                    }
-                                }
-
-                                # Set the alert and message update for the backup task based on the age of the backup
-                                if ($backupAge -eq 0) {
-                                    $alert = "RED" # Critical; 0 days
-                                    $messageBackupAge = "Backup has not completed." # Set the alert message
-                                } elseif ($backupAge -ge 3) {
-                                    $alert = "RED" # Critical; >= 3 days
-                                    $messageBackupAge = "Backup is more than 3 days old." # Set the alert message
-                                } elseif ($backupAge -gt 1) {
-                                    $alert = "YELLOW" # Warning; > 1 days
-                                    $messageBackupAge = "Backup is more than 1 days old." # Set the alert message
-                                } else {
-                                    $alert = "GREEN" # Ok; <= 1 days
-                                    $messageBackupAge = "Backup is less than 1 day old." # Set the alert message
-                                }
-
-                                $message += $messageBackupAge # Combine the alert message
-
-                                # Set the alert and message if the backup is located on the SDDC Manager
-                                $backupLocation = $backupTask.location # Get the backup server
-                                $backupServer = (($backupLocation -Split ('sftp://'))[-1] -Split ('/'))[0]
-
-                                if ($backupServer -eq (Get-VCFManager).fqdn -or $backupServer -eq (Get-VCFManager).ipAddress) { # Compare against the `host` attribute
-                                    $alert = 'RED' # Critical; backup server is located on the SDDC Manager
-                                    $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
-                                    $message = $messageBackupServer # Override the message
-                                }
-                            } else {
-                                $alert = "RED" # Critical; backup job no
-                                $message = "Backup is not configured." # Set the alert message
-                            }
-
-                            # Add Backup Status Properties to the element object
-                            $elementObject = New-Object -TypeName psobject
-                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
-                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
-                            $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfVcenterDetails.fqdn # Set the element name
-                            $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
-                            $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the timestamp
-                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
-                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
-                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                    $customObject += $elementObject
-                                }
-                            } else {
-                                $customObject += $elementObject
-                            }  
-                            $customObject | Sort-Object Component, Resource, Element
+                    Request-VcenterApiToken -fqdn $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
+                    $customObject = New-Object System.Collections.ArrayList
+                    $component = 'vCenter Server' # Define the component name
+                    $resource = 'vCenter Server Backup Operation' # Define the resource name
+                    if ($backupTask = (Get-VcenterBackupStatus | Select-Object -Last 1).Value) {    
+                        $timestamp = [DateTime]::ParseExact($backupTask.end_time, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
+                        if ($timestamp) {
+                            $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
+                        } else {
+                            $backupAge = 0 # Set the backup age to 0 if not available
                         }
+
+                        # Set the status for the backup task
+                        if ($backupTask.status -eq 'SUCCEEDED') {                              
+                            $alert = "GREEN" # Ok; success
+                        } elseif ($backupTask.status -eq 'IN PROGRESS') {                              
+                            $alert = "YELLOW" # Warning; in progress
+                        } else {
+                            $alert = "RED" # Critical; failure
+                        }
+
+                        if ($timestamp) {
+                            # Set the message for the backup task
+                            if ([String]::IsNullOrEmpty($backupTask.messages)) {
+                                $message = "The backup completed without errors. " # Ok; success
+                            } else {
+                                $message = "The backup failed with errors. Please investigate before proceeding. " # Critical; failure
+                            }
+                        }
+
+                        # Set the alert and message update for the backup task based on the age of the backup
+                        if ($backupAge -eq 0) {
+                            $alert = "RED" # Critical; 0 days
+                            $messageBackupAge = "Backup has not completed." # Set the alert message
+                        } elseif ($backupAge -ge 3) {
+                            $alert = "RED" # Critical; >= 3 days
+                            $messageBackupAge = "Backup is more than 3 days old." # Set the alert message
+                        } elseif ($backupAge -gt 1) {
+                            $alert = "YELLOW" # Warning; > 1 days
+                            $messageBackupAge = "Backup is more than 1 days old." # Set the alert message
+                        } else {
+                            $alert = "GREEN" # Ok; <= 1 days
+                            $messageBackupAge = "Backup is less than 1 day old." # Set the alert message
+                        }
+
+                        $message += $messageBackupAge # Combine the alert message
+
+                        # Set the alert and message if the backup is located on the SDDC Manager
+                        $backupLocation = $backupTask.location # Get the backup server
+                        $backupServer = (($backupLocation -Split ('sftp://'))[-1] -Split ('/'))[0]
+
+                        if ($backupServer -eq (Get-VCFManager).fqdn -or $backupServer -eq (Get-VCFManager).ipAddress) { # Compare against the `host` attribute
+                            $alert = 'RED' # Critical; backup server is located on the SDDC Manager
+                            $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
+                            $message = $messageBackupServer # Override the message
+                        }
+                    } else {
+                        $alert = "RED" # Critical; backup job no
+                        $message = "Backup is not configured." # Set the alert message
                     }
+
+                    # Add Backup Status Properties to the element object
+                    $elementObject = New-Object -TypeName psobject
+                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component # Set the component name
+                    $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $resource # Set the resource name
+                    $elementObject | Add-Member -NotePropertyName 'Element' -NotePropertyValue $vcfVcenterDetails.fqdn # Set the element name
+                    $elementObject | Add-Member -NotePropertyName 'Domain' -NotePropertyValue $domain # Set the domain(s)
+                    $elementObject | Add-Member -NotePropertyName 'Date' -NotePropertyValue $timestamp # Set the timestamp
+                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert # Set the alert
+                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue "$message" # Set the message
+                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
+                            $customObject += $elementObject
+                        }
+                    } else {
+                        $customObject += $elementObject
+                    }  
+                    $customObject | Sort-Object Component, Resource, Element
                 }
             }
         }
@@ -4401,7 +4417,6 @@ Function Request-DatastoreStorageCapacity {
                 $vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT
                 if (Test-VsphereConnection -server $($vcenter.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        #### Connect-VIServer -Server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass | Out-Null
                         $datastores = Get-Datastore
                         foreach ($datastore in $datastores) {
                             # Calculate datastore usage and capacity
@@ -6512,7 +6527,7 @@ Function Publish-ClusterDrsRule {
                     $drsRulesConfig = Request-ClusterDrsRule -server  $server -user $user -pass $pass -domain $workloadDomain; $allConfigurationObject += $drsRulesConfig
                 }
 
-                if ($allNsxtTransportNodeTunnelStatusObject.Count -ne 0) {
+                if ($allConfigurationObject.Count -ne 0) {
                     $allConfigurationObject = $allConfigurationObject | Sort-Object Cluster, 'VM/Host Rule' | ConvertTo-Html -Fragment -PreContent '<a id="cluster-drs-rules"></a><h3>vSphere DRS Rules</h3>' -As Table
                     $allConfigurationObject = Convert-CssClass -htmldata $allConfigurationObject
                 } else {
@@ -7346,31 +7361,18 @@ Function Request-VcenterRootPasswordPolicy {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
                     if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
-                        if (Test-vSphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                            if (Test-vSphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                                Request-vSphereApiToken -fqdn $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass -admin | Out-Null
-                                $customObject = New-Object System.Collections.ArrayList
-                                $vcenterVersion = ((Invoke-GetSystemVersion).version -Split ('\.\d{5}')) -split '\s+' -match '\S'
-                                if ($vcenterVersion -le "7.0.1") {
-                                    $uri = "https://$vcApiAdminServer/rest/appliance/local-accounts/root"
-                                    $rootPasswordExpiry =Invoke-RestMethod -Method GET -Uri $uri -Headers $vcApiAdminHeaders
-                                } else {
-                                    $uri = "https://$vcApiAdminServer/api/appliance/local-accounts/root"
-                                    $rootPasswordExpiry = Invoke-RestMethod -Method GET -Uri $uri -Headers $vcApiAdminHeaders
-                                }                                
-                                $customObject = New-Object -TypeName psobject
-                                $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
-                                $customObject | Add-Member -notepropertyname "Lifetime (days)" -notepropertyvalue $rootPasswordExpiry.max_days_between_password_change
-                                $customObject | Add-Member -notepropertyname "Warning (days)" -notepropertyvalue $rootPasswordExpiry.warn_days_before_password_expiration
-                                $customObject | Add-Member -notepropertyname "Email" -notepropertyvalue $rootPasswordExpiry.email
-                                $customObject | Add-Member -notepropertyname "Enabled" -notepropertyvalue $rootPasswordExpiry.enabled
-                                $customObject | Add-Member -notepropertyname "Expires" -notepropertyvalue $rootPasswordExpiry.password_expires_at
-                            }
-                            Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                            $customObject | Sort-Object 'vCenter Server FQDN'
-                        }
+                        Request-VcenterApiToken -fqdn $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
+                        $customObject = New-Object System.Collections.ArrayList
+                        $rootPasswordExpiry = Get-VCRootPasswordExpiry                   
+                        $customObject = New-Object -TypeName psobject
+                        $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
+                        $customObject | Add-Member -notepropertyname "Lifetime (days)" -notepropertyvalue $rootPasswordExpiry.max_days_between_password_change
+                        $customObject | Add-Member -notepropertyname "Warning (days)" -notepropertyvalue $rootPasswordExpiry.warn_days_before_password_expiration
+                        $customObject | Add-Member -notepropertyname "Email" -notepropertyvalue $rootPasswordExpiry.email
+                        $customObject | Add-Member -notepropertyname "Enabled" -notepropertyvalue $rootPasswordExpiry.enabled
+                        $customObject | Add-Member -notepropertyname "Expires" -notepropertyvalue $rootPasswordExpiry.password_expires_at
                     }
-                    
+                    $customObject | Sort-Object 'vCenter Server FQDN'
                 } else {
                     Write-Error "Unable to find Workload Domain named ($domain) in the inventory of SDDC Manager ($server): PRE_VALIDATION_FAILED"
                 }
@@ -8286,7 +8288,6 @@ Function Request-ValidatedSolutionOverview {
 
                 # Validate DRI Deployment
                 $allWorkloadDomains = Get-VCFWorkloadDomain
-                #### $allNetworkingObject = New-Object System.Collections.ArrayList
                 foreach ($domain in $allWorkloadDomains) {
                     if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain.name)) {
                         if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
@@ -8461,8 +8462,6 @@ Function Start-CreateReportDirectory {
     if (!(Test-Path -Path $reportFolder)) {
         New-Item -Path $reportFolder -ItemType "directory" | Out-Null
     }
-    # $Global:reportName = $reportFolder + $sddcManagerFqdn.Split(".")[0] + "-" + $reportType + "-" + $filetimeStamp + ".htm"
-    # $reportName = $reportFolder + $sddcManagerFqdn.Split(".")[0] + "-" + $reportType + "-" + $filetimeStamp + ".htm"
     $reportName = $reportFolder + $filetimeStamp + "-" + $reportType + ".htm"
     $reportName
 }
@@ -9293,8 +9292,8 @@ Function Get-VcenterBackupStatus {
     #>
 
     Try {
-        $uri = "https://$vcApiServer/rest/appliance/recovery/backup/job/details"
-        $response = (Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $vcApiHeaders).Value
+        $uri = "https://$vcenterApiServer/rest/appliance/recovery/backup/job/details"
+        $response = (Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $vcenterApiHeaders).Value
         $response
     }
     Catch {
@@ -9933,6 +9932,97 @@ Function Set-NsxtApplianceUserPassword {
     }
 }
 Export-ModuleMember -Function Set-NsxtApplianceUserPassword
+
+Function Request-VcenterApiToken {
+    <#
+        .SYNOPSIS
+        Request an authentication token for the vCenter Server REST API
+
+        .DESCRIPTION
+        The Request-VcenterApiToken cmdlet requests an authentication token for the vCenter Server REST API
+
+        .EXAMPLE
+        Request-VcenterApiToken -fqdn sfo-w01-vc01.sfo.rainpole.io -username administrator@vsphere.local -password VMw@re1!
+        This example requests a vCenter Server REST API authentication token for user administrator@vsphere.local from vCenter Server sfo-w01-vc01.sfo.rainpole.io
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$username,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$password
+    )
+
+    if (!$PsBoundParameters.ContainsKey("username") -or (!$PsBoundParameters.ContainsKey("password"))) { # Request Credentials
+        $creds = Get-Credential
+        $username = $creds.UserName.ToString()
+        $password = $creds.GetNetworkCredential().password
+    }
+    if (!$PsBoundParameters.ContainsKey("fqdn")) {
+        $fqdn = Read-Host "vCenter Server FQDN not found. Please enter a value, e.g., sfo-m01-vc01.sfo.rainpole.io"
+    }
+
+    Try {
+        Remove-Item variable:vcenterApiSession -Force -Confirm:$false -ErrorAction Ignore
+        Remove-Item variable:vcenterApiHeaders -Force -Confirm:$false -ErrorAction Ignore
+        Remove-Item variable:response -Force -Confirm:$false -ErrorAction Ignore
+        Remove-Item variable:errorStatus -Force -Confirm:$false -ErrorAction Ignore
+        $vcenterAuthHeaders = createvCenterAuthHeader ($username, $password)
+        $Global:vcenterApiServer = $fqdn
+
+        Try {
+            $uri = "https://$vcenterApiServer/api/session" # Perform the vCenter REST API call to authenticate and retrieve the session token
+            $response = Invoke-WebRequest -Method 'POST' -Uri $uri -Headers $vcenterAuthHeaders
+            
+        } Catch {
+            $errorStatus = $_.Exception
+        }
+        if ($response.StatusCode -eq '201') {
+            $vcenterApiSession = $response | ConvertFrom-Json
+            if ($vcenterApiSession) {
+                $Global:vcenterApiHeaders = @{"vmware-api-session-id" = $vcenterApiSession } # Use the session token to build the header used from here on
+                $vcenterApiHeaders.Add("Content-Type", "application/json")
+                Write-Output "Successfully Requested New API Session Token for vCenter Server: $vcenterApiServer"
+            }
+        }
+        if ($errorStatus -match "401") {
+            Write-Warning "Unable to Obtain an API Session Token from vCenter Server: $vcenterApiServer (401 Unauthorized)"
+        }
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Request-VcenterApiToken
+
+Function createvCenterAuthHeader {
+    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $username, $password)))
+    $vcAuthHeaders = @{"vmware-use-header-authn" = "true" }
+    $vcAuthHeaders.Add("Authorization", "Basic $base64AuthInfo")
+    $vcAuthHeaders
+}
+
+Function Get-VCRootPasswordExpiry {
+    <#
+    .SYNOPSIS
+		Get the vCenter Servver root user password expiry date.
+
+        .DESCRIPTION
+        The Get-VCRootPasswordExpiry cmdlet gets password expiration settings for the vCenter Server root account
+
+        .EXAMPLE
+        Get-VCRootPasswordExpiry
+        This example gets the password policy of the vCenter Server root account
+    #>
+
+    Try {
+        $uri = "https://$vcenterApiServer/rest/appliance/local-accounts/root"
+        (Invoke-RestMethod -Method GET -Uri $uri -Headers $vcenterApiHeaders).Value
+    }
+    Catch {
+        Write-Error $_.Exception.Message
+    }
+}
+Export-ModuleMember -Function Get-VCRootPasswordExpiry
 
 ##############################  End Supporting Functions ###############################
 ########################################################################################
