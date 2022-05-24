@@ -986,10 +986,18 @@ Function Request-SoSHealthJson {
     Try {
         if ($PsBoundParameters.ContainsKey("allDomains")) { 
             $command = "/opt/vmware/sddc-support/sos --health-check --skip-known-host-check --json-output-dir /tmp/jsons --domain-name ALL"
-            $reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json")
+            if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
+                $reportDestination = ($reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json")).split('\') -join '/' | Split-Path -NoQualifier
+            } else {
+                $reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json") 
+            }
         } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
             $command = "/opt/vmware/sddc-support/sos --health-check --skip-known-host-check --json-output-dir /tmp/jsons --domain-name " + $workloadDomain
-            $reportDestination = ($reportPath + "\" + $workloadDomain + "-all-health-results.json")
+            if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
+                $reportDestination = ($reportDestination = ($reportPath + "\" + $workloadDomain + "-all-health-results.json")).split('\') -join '/' | Split-Path -NoQualifier
+            } else {
+                $reportDestination = ($reportPath + "\" + $workloadDomain + "-all-health-results.json")
+            }
         }
         Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command | Out-Null
         if (Test-VCFConnection -server $server) {
@@ -8467,13 +8475,15 @@ Function Start-CreateReportDirectory {
     )
 
     $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
-    # if (($reportType -eq "health") -and ($PSVersionTable.Platform -eq "Win32NT")) { $Global:reportFolder = $path + '\HealthReports\' } else { $Global:reportFolder = $path + '/healthreports/'}
     if ($reportType -eq "health") { $Global:reportFolder = $path + '\HealthReports\' }
     if ($reportType -eq "alert") { $Global:reportFolder = $path + '\AlertReports\' }
     if ($reportType -eq "config") { $Global:reportFolder = $path + '\ConfigReports\' }
     if ($reportType -eq "upgrade") { $Global:reportFolder = $path + '\UpgradeReports\' }
     if ($reportType -eq "policy") { $Global:reportFolder = $path + '\PolicyReports\' }
     if ($reportType -eq "overview") { $Global:reportFolder = $path + '\OverviewReports\' }
+    if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
+        $reportFolder = ($reportFolder).split('\') -join '/' | Split-Path -NoQualifier
+    }
     if (!(Test-Path -Path $reportFolder)) {
         New-Item -Path $reportFolder -ItemType "directory" | Out-Null
     }
