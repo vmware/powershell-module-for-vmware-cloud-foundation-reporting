@@ -9238,6 +9238,7 @@ Function Request-LocalUserExpiry {
 }
 Export-ModuleMember -Function Request-LocalUserExpiry
 
+<<<<<<< HEAD
 Function Get-NsxtBackupConfiguration {
     <#
         .SYNOPSIS
@@ -10069,5 +10070,7 @@ Function Get-VCRootPasswordExpiry {
 }
 Export-ModuleMember -Function Get-VCRootPasswordExpiry
 
+=======
+>>>>>>> 0368962 (Refactor: Move API Sub Functions to PowerValidatedSolutions)
 ##############################  End Supporting Functions ###############################
 ########################################################################################
