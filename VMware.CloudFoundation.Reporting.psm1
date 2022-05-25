@@ -8700,9 +8700,9 @@ Function Get-ClarityReportHeader {
         '
     }
     $clarityCssShared = '
-            .alertOK { color: #78BE20; font-weight: bold }
-            .alertWarning { color: #EC7700; font-weight: bold }
-            .alertCritical { color: #9F2842; font-weight: bold }
+            .alertOK { color: #61B715; font-weight: bold }
+            .alertWarning { color: #FDD008; font-weight: bold }
+            .alertCritical { color: #F55047; font-weight: bold }
             .table th, .table td { text-align: left; }
 
             :root { --cds-global-base: 20; }
