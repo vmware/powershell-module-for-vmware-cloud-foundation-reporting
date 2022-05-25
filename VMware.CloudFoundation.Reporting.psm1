@@ -21,6 +21,7 @@ if ($PSEdition -eq 'Core') {
 if ($PSEdition -eq 'Desktop') {
     # Allow communication with self-signed certificates when using Windows PowerShell
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
+    Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -Confirm:$false | Out-Null
 
     if ("TrustAllCertificatePolicy" -as [type]) {} else {
         Add-Type @"
@@ -7879,8 +7880,7 @@ Function Request-VcfOverview {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                # Gather VCF Architecture
-                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) { # Gather VCF Architecture
                     if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             $vcfArchitecture = (Get-AdvancedSetting -Name "config.SDDC.Deployed.Flavor" -Entity $vcfVcenterDetails.fqdn -Server $vcfVcenterDetails.fqdn).value
@@ -7888,21 +7888,24 @@ Function Request-VcfOverview {
                         }
                     }
                 }
-                $systemObject = New-Object -TypeName psobject    
+                if (Get-VCFDepotCredential) {
+                    $depotUser = (Get-VCFDepotCredential).username.ToLower()
+                    $depotStatus = ((Get-VCFDepotCredential).message -Split ": ")[-1]
+                } else {
+                    $depotUser = "Not Configured"
+                    $depotStatus = "Not Connected"
+                }
+                $systemObject = New-Object -TypeName psobject
                 if ($PsBoundParameters.ContainsKey('anonymized')) {
                     $systemObject | Add-Member -notepropertyname "SDDC Manager UUID" -notepropertyvalue (Get-VCFManager).id
-                    $systemObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFManager).version
-                    $systemObject | Add-Member -notepropertyname "Architecture" -notepropertyvalue $vcfArchitecture
-                    $systemObject | Add-Member -notepropertyname "CEIP Status" -notepropertyvalue (Get-Culture).TextInfo.ToTitleCase((Get-VCFCeip).status.ToLower())
-                    $systemObject | Add-Member -notepropertyname "Customer Connect Status" -notepropertyvalue ((Get-VCFDepotCredential).message -Split ": ")[-1]
                 } else {
                     $systemObject | Add-Member -notepropertyname "SDDC Manager FQDN" -notepropertyvalue (Get-VCFManager).fqdn
-                    $systemObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFManager).version
-                    $systemObject | Add-Member -notepropertyname "Architecture" -notepropertyvalue $vcfArchitecture
-                    $systemObject | Add-Member -notepropertyname "CEIP Status" -notepropertyvalue (Get-Culture).TextInfo.ToTitleCase((Get-VCFCeip).status.ToLower())
-                    $systemObject | Add-Member -notepropertyname "Customer Connect User" -notepropertyvalue (Get-VCFDepotCredential).username.ToLower()
-                    $systemObject | Add-Member -notepropertyname "Customer Connect Status" -notepropertyvalue ((Get-VCFDepotCredential).message -Split ": ")[-1]
                 }
+                $systemObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFManager).version
+                $systemObject | Add-Member -notepropertyname "Architecture" -notepropertyvalue $vcfArchitecture
+                $systemObject | Add-Member -notepropertyname "CEIP Status" -notepropertyvalue (Get-Culture).TextInfo.ToTitleCase((Get-VCFCeip).status.ToLower())
+                $systemObject | Add-Member -notepropertyname "Customer Connect User" -notepropertyvalue $depotUser
+                $systemObject | Add-Member -notepropertyname "Customer Connect Status" -notepropertyvalue $depotStatus
                 $systemObject
             }
         }
@@ -8038,23 +8041,17 @@ Function Request-VcenterOverview {
                                     $customObject | Add-Member -notepropertyname "vCenter Server UUID" -notepropertyvalue $domain.vcenters.id
                                     $customObject | Add-Member -notepropertyname "vCenter Server Version" -notepropertyvalue (Get-VCFvCenter -id $domain.vcenters.id).version
                                     $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
-                                    $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
-                                    $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-Cluster -Server $vcfVcenterDetails.fqdn).Count
-                                    $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VMHost -Server $vcfVcenterDetails.fqdn).Count
-                                    $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
-                                    $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
-                                    $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
                                 } else {
                                     $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $domain.vcenters.fqdn
                                     $customObject | Add-Member -notepropertyname "vCenter Server Version" -notepropertyvalue (Get-VCFvCenter -id $domain.vcenters.id).version
                                     $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
-                                    $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
-                                    $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-Cluster -Server $vcfVcenterDetails.fqdn).Count
-                                    $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VMHost -Server $vcfVcenterDetails.fqdn).Count
-                                    $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
-                                    $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
-                                    $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
                                 }
+                                $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
+                                $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-Cluster -Server $vcfVcenterDetails.fqdn).Count
+                                $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VMHost -Server $vcfVcenterDetails.fqdn).Count
+                                $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
+                                $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
+                                $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
                                 Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                             }
                         }
@@ -8114,14 +8111,12 @@ Function Request-ClusterOverview {
                         if ($PsBoundParameters.ContainsKey('anonymized')) {
                             $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
                             $customObject | Add-Member -notepropertyname "Cluster UUID" -notepropertyvalue $cluster.id
-                            $customObject | Add-Member -notepropertyname "Principal Storage" -notepropertyvalue (Get-VCFCluster -id $cluster.id).primaryDatastoreType
-                            $customObject | Add-Member -notepropertyname "Stretched Cluster" -notepropertyvalue (Get-VCFCluster -id $cluster.id).isStretched
                         } else {
                             $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
                             $customObject | Add-Member -notepropertyname "Cluster Name" -notepropertyvalue (Get-VCFCluster -id $cluster.id).name
-                            $customObject | Add-Member -notepropertyname "Principal Storage" -notepropertyvalue (Get-VCFCluster -id $cluster.id).primaryDatastoreType
-                            $customObject | Add-Member -notepropertyname "Stretched Cluster" -notepropertyvalue (Get-VCFCluster -id $cluster.id).isStretched
                         }
+                        $customObject | Add-Member -notepropertyname "Principal Storage" -notepropertyvalue (Get-VCFCluster -id $cluster.id).primaryDatastoreType
+                        $customObject | Add-Member -notepropertyname "Stretched Cluster" -notepropertyvalue (Get-VCFCluster -id $cluster.id).isStretched
                     }
                     $allClusterObject += $customObject
                 }
@@ -8177,18 +8172,15 @@ Function Request-NetworkOverview {
                             $customObject | Add-Member -notepropertyname "NSX Manager Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
                             $customObject | Add-Member -notepropertyname "NSX Stretched" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
                             $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
-                            $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
-                            $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
-                            $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
                         } else {
                             $customObject | Add-Member -notepropertyname "NSX Manager FQDN" -notepropertyvalue $domain.nsxtCluster.vipFqdn
                             $customObject | Add-Member -notepropertyname "NSX Manager Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
                             $customObject | Add-Member -notepropertyname "NSX Stretched" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
-                            $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
-                            $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
-                            $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
-                            $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
+                            $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name 
                         }
+                        $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
+                        $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
+                        $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
                     }
                     $allNetworkingObject += $customObject 
                 }
