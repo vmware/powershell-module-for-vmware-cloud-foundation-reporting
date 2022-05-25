@@ -9309,12 +9309,13 @@ Function Get-VcenterBackupStatus {
     #>
 
     Try {
-        $uri = "https://$vcenterApiServer/rest/appliance/recovery/backup/job/details"
-        $response = (Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $vcenterApiHeaders).Value
-        $response
+        if ($vcenterApiHeaders) {
+            $uri = "https://$vcenterApiServer/rest/appliance/recovery/backup/job/details"
+            (Invoke-RestMethod -Method 'GET' -Uri $uri -Headers $vcenterApiHeaders).Value
+        }
     }
     Catch {
-        Write-Error $_.Exception.Message
+        $errorStatus = $_.Exception
     }
 }
 Export-ModuleMember -Function Get-VcenterBackupStatus
@@ -9966,7 +9967,8 @@ Function Request-VcenterApiToken {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$username,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$password
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$password,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$skipCertificateCheck
     )
 
     if (!$PsBoundParameters.ContainsKey("username") -or (!$PsBoundParameters.ContainsKey("password"))) { # Request Credentials
@@ -9977,29 +9979,53 @@ Function Request-VcenterApiToken {
     if (!$PsBoundParameters.ContainsKey("fqdn")) {
         $fqdn = Read-Host "vCenter Server FQDN not found. Please enter a value, e.g., sfo-m01-vc01.sfo.rainpole.io"
     }
+    if ($PsBoundParameters.ContainsKey("skipCertificateCheck")) {
+        if (-not("dummy" -as [type])) {
+            add-type -TypeDefinition @"
+using System;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+
+public static class Dummy {
+    public static bool ReturnTrue(object sender,
+        X509Certificate certificate,
+        X509Chain chain,
+        SslPolicyErrors sslPolicyErrors) { return true; }
+
+    public static RemoteCertificateValidationCallback GetDelegate() {
+        return new RemoteCertificateValidationCallback(Dummy.ReturnTrue);
+    }
+}
+"@
+} 
+        [System.Net.ServicePointManager]::ServerCertificateValidationCallback = [dummy]::GetDelegate()
+    }
 
     Try {
         Remove-Item variable:vcenterApiSession -Force -Confirm:$false -ErrorAction Ignore
         Remove-Item variable:vcenterApiHeaders -Force -Confirm:$false -ErrorAction Ignore
         Remove-Item variable:response -Force -Confirm:$false -ErrorAction Ignore
         Remove-Item variable:errorStatus -Force -Confirm:$false -ErrorAction Ignore
-        $vcenterAuthHeaders = createvCenterAuthHeader ($username, $password)
+        $Global:vcenterAuthHeaders = createvCenterAuthHeader ($username, $password)
         $Global:vcenterApiServer = $fqdn
 
         Try {
             $uri = "https://$vcenterApiServer/api/session" # Perform the vCenter REST API call to authenticate and retrieve the session token
-            $response = Invoke-WebRequest -Method 'POST' -Uri $uri -Headers $vcenterAuthHeaders
+            $response = Invoke-WebRequest -Method 'POST' -Uri $uri -Headers $vcenterAuthHeaders -UseBasicParsing
             
         } Catch {
             $errorStatus = $_.Exception
         }
         if ($response.StatusCode -eq '201') {
             $vcenterApiSession = $response | ConvertFrom-Json
-            if ($vcenterApiSession) {
-                $Global:vcenterApiHeaders = @{"vmware-api-session-id" = $vcenterApiSession } # Use the session token to build the header used from here on
-                $vcenterApiHeaders.Add("Content-Type", "application/json")
-                Write-Output "Successfully Requested New API Session Token for vCenter Server: $vcenterApiServer"
-            }
+        } elseif ($response.StatusCode -eq '201') {
+            $vcenterApiSession = ($response | ConvertFrom-Json).Value
+        }
+        if ($vcenterApiSession) {
+            $Global:vcenterApiHeaders = @{"vmware-api-session-id" = $vcenterApiSession } # Use the session token to build the header used from here on
+            $vcenterApiHeaders.Add("Content-Type", "application/json")
+            Write-Output "Successfully Requested New API Session Token for vCenter Server: $vcenterApiServer"
         }
         if ($errorStatus -match "401") {
             Write-Warning "Unable to Obtain an API Session Token from vCenter Server: $vcenterApiServer (401 Unauthorized)"
@@ -10032,8 +10058,10 @@ Function Get-VCRootPasswordExpiry {
     #>
 
     Try {
-        $uri = "https://$vcenterApiServer/rest/appliance/local-accounts/root"
-        (Invoke-RestMethod -Method GET -Uri $uri -Headers $vcenterApiHeaders).Value
+        if ($vcenterApiHeaders) {
+            $uri = "https://$vcenterApiServer/rest/appliance/local-accounts/root"
+            (Invoke-RestMethod -Method GET -Uri $uri -Headers $vcenterApiHeaders).Value
+        }
     }
     Catch {
         Write-Error $_.Exception.Message
