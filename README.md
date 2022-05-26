@@ -27,7 +27,7 @@ A PowerShell module for VMware Cloud Foundation reporting.
 
 - [`VMware.PowerCLI`][module-vmware-powercli] 12.4.1 and later
 - [`VMware.vSphere.SsoAdmin`][module-vmware-vsphere-ssoadmin] 1.3.7 an later
-- [`PowerVCF`][module-powervcf] 2.1.8 and later
+- [`PowerVCF`][module-powervcf] 2.2.0 and later
 - [`PowerValidatedSolutions`][module-powervalidatedsolutions] 1.7.0 and later
 
 ### Browsers
@@ -48,7 +48,7 @@ Install the supporting PowerShell modules from the PowerShell Gallery by running
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 Install-Module -Name VMware.PowerCLI -MinimumVersion 12.4.1
 Install-Module -Name VMware.vSphere.SsoAdmin -MinimumVersion 1.3.7
-Install-Module -Name PowerVCF -MinimumVersion 2.1.8
+Install-Module -Name PowerVCF -MinimumVersion 2.2.0
 Install-Module -Name PowerValidatedSolutions -MinimumVersion 1.7.0
 Install-Module -Name VMware.CloudFoundation.Reporting -RequiredVersion 1.0.0
 ```
@@ -667,7 +667,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 [microsoft-powershell]: https://docs.microsoft.com/en-us/powershell/
 [module-vmware-powercli]: https://www.powershellgallery.com/packages/VMware.PowerCLI/
 [module-vmware-vsphere-ssoadmin]: https://www.powershellgallery.com/packages/VMware.vSphere.SsoAdmin
-[module-powervcf]: https://www.powershellgallery.com/packages/PowerVCF/2.1.7
+[module-powervcf]: https://www.powershellgallery.com/packages/PowerVCF/2.2.0
 [module-powervalidatedsolutions]: https://www.powershellgallery.com/packages/PowerValidatedSolutions
 [vmware-photon]: https://vmware.github.io/photon/
 [vmware-cloud-foundation]: https://docs.vmware.com/en/VMware-Cloud-Foundation/

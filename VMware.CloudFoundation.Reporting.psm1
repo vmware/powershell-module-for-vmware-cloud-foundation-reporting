@@ -8429,7 +8429,7 @@ Function Test-VcfReportingPrereq {
 
     Try {
         $modules = @( 
-            @{ Name=("PowerVCF"); Version=("2.1.7")}
+            @{ Name=("PowerVCF"); Version=("2.2.0")}
             @{ Name=("PowerValidatedSolutions"); Version=("1.6.0")}
             @{ Name=("VMware.PowerCLI"); Version=("12.4.1")}
             @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.7")}
