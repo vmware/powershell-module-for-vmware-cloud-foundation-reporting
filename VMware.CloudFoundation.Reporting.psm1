@@ -8525,6 +8525,52 @@ Function Invoke-SddcCommand {
 }
 Export-ModuleMember -Function Invoke-SddcCommand
 
+Function Copy-FiletoSddc {
+    <#
+		.SYNOPSIS
+        Copy a file to SDDC Manager.
+
+        .DESCRIPTION
+        The Copy-FiletoSddc cmdlet copies files to the SDDC Manager appliance. The cmdlet connects to SDDC
+        Manager using the -server, -user, and -password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Validates that network connectivity is available to the Management Domain vCenter Server instance
+        - Copies the files to the SDDC Manager appliance
+
+        .EXAMPLE
+        Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -source "C:\Temp\foo.txt" -destination "/home/vcf/foo.txt"
+        This example copies a file to the SDDC Manager appliance.
+
+        .EXAMPLE
+        Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -source "C:\Temp\bar" -destination "/home/vcf/"
+        This example copies a file to the SDDC Manager appliance.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vcfPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$source,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$destination
+    )
+
+    if (Test-VCFConnection -server $server) {
+        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                        $output = Copy-VMGuestFile -VM ($server.Split('.')[0]) -LocalToGuest -GuestUser vcf -GuestPassword $vcfPass -Source $source -Destination $destination -Server $vcfVcenterDetails.fqdn
+                        $output
+                    }
+                    Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                }
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Copy-FiletoSddc
+
 Function Read-JsonElement {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [PSCustomObject]$inputData,
