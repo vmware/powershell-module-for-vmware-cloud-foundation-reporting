@@ -50,7 +50,7 @@ Install-Module -Name VMware.PowerCLI -MinimumVersion 12.4.1
 Install-Module -Name VMware.vSphere.SsoAdmin -MinimumVersion 1.3.7
 Install-Module -Name PowerVCF -MinimumVersion 2.2.0
 Install-Module -Name PowerValidatedSolutions -MinimumVersion 1.7.0
-Install-Module -Name VMware.CloudFoundation.Reporting -RequiredVersion 1.0.1.1002
+Install-Module -Name VMware.CloudFoundation.Reporting -RequiredVersion 1.0.2.1003
 ```
 
 To verify the modules are installed, run the following command in the PowerShell console.
