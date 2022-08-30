@@ -93,7 +93,7 @@ Function Invoke-VcfHealthReport {
                 Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
                 Write-LogMessage -Type INFO -Message "Running an SoS Health Check for $workflowMessage, process takes time."
-                if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
                 } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
                     $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
@@ -162,12 +162,12 @@ Function Invoke-VcfHealthReport {
 
                 # Generating the Connectivity Health Data Using SoS output and Supplimental PowerShell Request Functions
                 Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report using the SoS output for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
                     $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
                 } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
                     $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
                 }
-                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
                     $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
                 } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
                     $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
@@ -175,7 +175,7 @@ Function Invoke-VcfHealthReport {
 
                 # Generating the Backup Status Health Data Using PowerShell Request Functions
                 Write-LogMessage -Type INFO -Message "Generating the Backup Status Report for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
                     $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
                 } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
                     $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
@@ -193,7 +193,7 @@ Function Invoke-VcfHealthReport {
                 } else {
                     $freePoolHtml = Publish-SddcManagerFreePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
                 }
-                
+
                 # Generating the Snapshot Status Health Data Using PowerShell Request Functions
                 Write-LogMessage -type INFO -Message "Generating the Snapshots Report for $workflowMessage."
                 if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
@@ -279,7 +279,7 @@ Function Invoke-VcfHealthReport {
                 # Generating the Virtual Machines with Connected CD-ROM Health Data Using PowerShell Request Functions
                 Write-LogMessage -type INFO -Message "Generating the Virtual Machines with Connected CD-ROM Report for $workflowMessage."
                 if ($PsBoundParameters.ContainsKey('allDomains')) {
-                    $vmConnectedCdromHtml = Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains     
+                    $vmConnectedCdromHtml = Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
                 } else {
                     $vmConnectedCdromHtml = Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
                 }
@@ -314,7 +314,7 @@ Function Invoke-VcfHealthReport {
                 $reportData += $vmConnectedCdromHtml
 
                 if ($PsBoundParameters.ContainsKey("darkMode")) {
-                    $reportHeader = Get-ClarityReportHeader -dark 
+                    $reportHeader = Get-ClarityReportHeader -dark
                 } else {
                     $reportHeader = Get-ClarityReportHeader
                 }
@@ -396,7 +396,7 @@ Function Invoke-VcfAlertReport {
                 Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
                 Write-LogMessage -Type INFO -Message "Starting the process of creating an Alert Report for $workflowMessage." -Colour Yellow
                 Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-                Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."  
+                Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
                 # Generate vCenter Server Alerts Using PowerShell Function
                 Write-LogMessage -Type INFO -Message "Generating the vCenter Server alerts for $workflowMessage."
@@ -423,7 +423,7 @@ Function Invoke-VcfAlertReport {
                 } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
                     $esxiAlertHtml = Publish-EsxiAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
                 }
-                
+
                 # Generate vSAN Alerts Using PowerShell Function
                 Write-LogMessage -type INFO -Message "Generating the vSAN alerts for $workflowMessage."
                 if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
@@ -436,7 +436,7 @@ Function Invoke-VcfAlertReport {
                 } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
                     $vsanAlertHtml = Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
                 }
-                
+
                 # Generate NSX-T Data Center Alerts Using PowerShell Function
                 Write-LogMessage -type INFO -Message "Generating the NSX-T Data Center alerts for $workflowMessage."
                 if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
@@ -449,7 +449,7 @@ Function Invoke-VcfAlertReport {
                 } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
                     $nsxtAlertHtml = Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
                 }
-                
+
                 # Combine all information gathered into a single HTML report
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
@@ -462,7 +462,7 @@ Function Invoke-VcfAlertReport {
                 $reportData += $nsxtAlertHtml
 
                 if ($PsBoundParameters.ContainsKey("darkMode")) {
-                    $reportHeader = Get-ClarityReportHeader -dark 
+                    $reportHeader = Get-ClarityReportHeader -dark
                 } else {
                     $reportHeader = Get-ClarityReportHeader
                 }
@@ -472,7 +472,7 @@ Function Invoke-VcfAlertReport {
                 $report += $reportNavigation
                 $report += $reportData
                 $report += $reportFooter
-                
+
                 # Generate the report to an HTML file and then open it in the default browser
                 Write-LogMessage -Type INFO -Message "Generating the final report and saving to ($reportName)."
                 $report | Out-File $reportName
@@ -584,7 +584,7 @@ Function Invoke-VcfConfigReport {
                 } else {
                     $esxiSecuritykHtml = Publish-EsxiSecurityConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
                 }
-                
+
                 # Combine all information gathered into a single HTML report
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
@@ -599,7 +599,7 @@ Function Invoke-VcfConfigReport {
                 $reportData += $esxiSecuritykHtml
 
                 if ($PsBoundParameters.ContainsKey("darkMode")) {
-                    $reportHeader = Get-ClarityReportHeader -dark 
+                    $reportHeader = Get-ClarityReportHeader -dark
                 } else {
                     $reportHeader = Get-ClarityReportHeader
                 }
@@ -728,7 +728,7 @@ Function Invoke-VcfUpgradePrecheck {
                 $reportData += $allChecksObject
 
                 if ($PsBoundParameters.ContainsKey("darkMode")) {
-                    $reportHeader = Get-ClarityReportHeader -dark 
+                    $reportHeader = Get-ClarityReportHeader -dark
                 } else {
                     $reportHeader = Get-ClarityReportHeader
                 }
@@ -805,7 +805,7 @@ Function Invoke-VcfPasswordPolicy {
                 Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
                 # Collect vCenter Server Password Policies
-                if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
                     Write-LogMessage -Type INFO -Message "Collecting vCenter Server Password Policy Configuration for $workflowMessage."
                     $vcenterPolicyHtml = Publish-VcenterPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
                 }
@@ -815,7 +815,7 @@ Function Invoke-VcfPasswordPolicy {
                 }
 
                 # Collect ESXi Password Policies
-                if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
                     Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policy Configuration for $workflowMessage."
                     $esxiPolicyHtml = Publish-EsxiPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
                 }
@@ -825,7 +825,7 @@ Function Invoke-VcfPasswordPolicy {
                 }
 
                 # Collect NSX-T Data Center Password Policies
-                if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                if ($PsBoundParameters.ContainsKey('allDomains')) {
                     Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage."
                     $nsxtPolicyHtml = Publish-NsxtPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
                 }
@@ -833,7 +833,7 @@ Function Invoke-VcfPasswordPolicy {
                     Write-LogMessage -Type INFO -Message "Collecting NSX-T Data Center Password Policy Configuration for $workflowMessage."
                     $nsxtPolicyHtml = Publish-NsxtPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
                 }
-                
+
                 # Combine all information gathered into a single HTML report
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
@@ -845,7 +845,7 @@ Function Invoke-VcfPasswordPolicy {
                 $reportData += $nsxtPolicyHtml
 
                 if ($PsBoundParameters.ContainsKey("darkMode")) {
-                    $reportHeader = Get-ClarityReportHeader -dark 
+                    $reportHeader = Get-ClarityReportHeader -dark
                 } else {
                     $reportHeader = Get-ClarityReportHeader
                 }
@@ -925,7 +925,7 @@ Function Invoke-VcfOverviewReport {
                 $reportData += $vcfOverviewHtml
 
                 if ($PsBoundParameters.ContainsKey("darkMode")) {
-                    $reportHeader = Get-ClarityReportHeader -dark 
+                    $reportHeader = Get-ClarityReportHeader -dark
                 } else {
                     $reportHeader = Get-ClarityReportHeader
                 }
@@ -985,12 +985,12 @@ Function Request-SoSHealthJson {
     )
 
     Try {
-        if ($PsBoundParameters.ContainsKey("allDomains")) { 
+        if ($PsBoundParameters.ContainsKey("allDomains")) {
             $command = "/opt/vmware/sddc-support/sos --health-check --skip-known-host-check --json-output-dir /tmp/jsons --domain-name ALL"
             if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
                 $reportDestination = ($reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json")).split('\') -join '/' | Split-Path -NoQualifier
             } else {
-                $reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json") 
+                $reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json")
             }
         } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
             $command = "/opt/vmware/sddc-support/sos --health-check --skip-known-host-check --json-output-dir /tmp/jsons --domain-name " + $workloadDomain
@@ -1029,7 +1029,7 @@ Function Publish-CertificateHealth {
 
         .DESCRIPTION
         The Publish-CertificateHealth cmdlet formats the Certificate Health data from the SoS JSON output and publishes
-        it as either a standard PowerShell object or an HTML object. 
+        it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-CertificateHealth -json <file-name>
@@ -1060,56 +1060,61 @@ Function Publish-CertificateHealth {
 
         # ESXi Certificate Health
         $outputObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.'Certificates'.'Certificate Status'.ESXi # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        }
-        else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
-        
-        # Certificate Health (Except ESXi)
-        $customObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.'Certificates'.'Certificate Status' # Extract Data from the provided SOS JSON
-        $inputData.PSObject.Properties.Remove('ESXI')
-        foreach ($component in $inputData.PsObject.Properties.Value) { 
-            foreach ($element in $component.PsObject.Properties.Value) { 
-                $elementObject = New-Object -TypeName psobject
-                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
-                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
-                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
-                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
-                if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                    if (($element.status -eq 'FAILED')) {
+        $jsonInputData = $targetContent.'Certificates'.'Certificate Status' # Extract Data from the provided SOS JSON
+        if (($jsonInputData | Measure-Object).Count -lt 1) {
+            Write-Warning 'Certificate Status data not found in the JSON file: SKIPPED'
+        } else {
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            }
+            else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+
+            # Certificate Health (Except ESXi)
+            $customObject = New-Object System.Collections.ArrayList
+            $jsonInputData.PSObject.Properties.Remove('ESXI')
+            foreach ($component in $jsonInputData.PsObject.Properties.Value) {
+                foreach ($element in $component.PsObject.Properties.Value) {
+                    $elementObject = New-Object -TypeName psobject
+                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
+                    $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                        if (($element.status -eq 'FAILED')) {
+                            $customObject += $elementObject
+                        }
+                    }
+                    else {
                         $customObject += $elementObject
                     }
                 }
-                else {
-                    $customObject += $elementObject
-                }
             }
+            $outputObject += $customObject # Combined ESXi Certificate Health with Remaining Components
         }
-
-        $outputObject += $customObject # Combined ESXi Certificate Health with Remaining Components
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey('html')) { 
-            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-certificate"></a><h3>Certificate Health Status</h3>' -PostContent '<p>No issues found.</p>' 
-            } else {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-certificate"></a><h3>Certificate Health Status</h3>' -As Table
-            }
-            $outputObject = Convert-CssClass -htmldata $outputObject
-            $outputObject
+        if ($PsBoundParameters.ContainsKey('html')) {
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+                if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-certificate"></a><h3>Certificate Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-certificate"></a><h3>Certificate Health Status</h3>' -As Table
+                }
+            $outputObject = Convert-CssClass -htmlData $outputObject
+        } else {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-ntp"></a><h3>NTP Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Certificate Status data not found.</p>' -As Table
         }
-        else {
-            $outputObject | Sort-Object Component, Resource 
-        }
+        $outputObject
+    } else {
+        $outputObject | Sort-Object Component, Resource
     }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
+}
+Catch {
+    Debug-CatchWriter -object $_
+}
 }
 Export-ModuleMember -Function Publish-CertificateHealth
 
@@ -1120,7 +1125,7 @@ Function Publish-ConnectivityHealth {
 
         .DESCRIPTION
         The Publish-ConnectivityHealth cmdlet formats the Connectivity Health data from the SoS JSON output and
-        publishes it as either a standard PowerShell object or an HTML object. 
+        publishes it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-ConnectivityHealth -json <file-name>
@@ -1150,51 +1155,61 @@ Function Publish-ConnectivityHealth {
         }
 
         $customObject = New-Object System.Collections.ArrayList
-        # ESXi SSH Status
-        $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi SSH Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        }
-        else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
-        $customObject += $outputObject # Adding individual component to main customObject
+        $jsonInputCheck = $targetContent.Connectivity.'Connectivity Status' # Extract Data from the provided SOS JSON
+        if (($jsonInputCheck | Measure-Object).Count -lt 1) {
+            Write-Warning 'Connectivity Status data not found in the JSON file: SKIPPED'
+        } else {  
 
-        # ESXi API Status
-        $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi API Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        }
-        else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
-        $customObject += $outputObject # Adding individual component to main customObject
+            # ESXi SSH Status
+            $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi SSH Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            }
+            else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
 
-        # Additional Items Status
-        $jsonInputData = $targetContent.Connectivity.'Connectivity Status' # Extract Data from the provided SOS JSON
-        $jsonInputData.PSObject.Properties.Remove('ESXi SSH Status')
-        $jsonInputData.PSObject.Properties.Remove('ESXi API Status')
-        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            # ESXi API Status
+            $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi API Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            }
+            else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
+
+            # Additional Items Status
+            $jsonInputData = $targetContent.Connectivity.'Connectivity Status' # Extract Data from the provided SOS JSON
+            $jsonInputData.PSObject.Properties.Remove('ESXi SSH Status')
+            $jsonInputData.PSObject.Properties.Remove('ESXi API Status')
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            }
+            else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
         }
-        else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
-        $customObject += $outputObject # Adding individual component to main customObject
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) {
-            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+                if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -As Table
+                }
+                $customObject = Convert-CssClass -htmldata $customObject
             } else {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -As Table
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Connectivity Status data not found.</p>' -As Table
             }
-            $customObject = Convert-CssClass -htmldata $customObject
             $customObject
         }
         else {
-            $customObject | Sort-Object Component, Resource 
+            $customObject | Sort-Object Component, Resource
         }
     }
     Catch {
@@ -1210,7 +1225,7 @@ Function Publish-DnsHealth {
 
         .DESCRIPTION
         The Publish-DnsHealth cmdlet formats the DNS Health data from the SoS JSON output and publishes it as
-        either a standard PowerShell object or an HTML object. 
+        either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-DnsHealth -json <file-name>
@@ -1240,39 +1255,56 @@ Function Publish-DnsHealth {
 
         # Forward Lookup Health Status
         $allForwardLookupObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.'DNS lookup Status'.'Forward lookup Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $allForwardLookupObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+        $jsonForwardLookupInput = 'DNS lookup Status'.'Forward lookup Status' # Extract Data from the provided SOS JSON
+        if (($jsonForwardLookupInput | Measure-Object).Count -lt 1) {
+            Write-Warning 'Forward Lookup Status not found in the JSON file: SKIPPED'
         } else {
-            $allForwardLookupObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $allForwardLookupObject = Read-JsonElement -inputData $jsonForwardLookupInput -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $allForwardLookupObject = Read-JsonElement -inputData $jsonForwardLookupInput # Call Function to Structure the Data for Report Output
+            }
         }
 
         # Reverse Lookup Health Status
         $allReverseLookupObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.'DNS lookup Status'.'Reverse lookup Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $allReverseLookupObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+        $jsonReverseLookupInput = $targetContent.'DNS lookup Status'.'Reverse lookup Status' # Extract Data from the provided SOS JSON
+        if (($jsonReverseLookupInput | Measure-Object).Count -lt 1) {
+            Write-Warning 'Reverse Lookup Status not found in the JSON file: SKIPPED'
         } else {
-            $allReverseLookupObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $allReverseLookupObject = Read-JsonElement -inputData $jsonReverseLookupInput -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $allReverseLookupObject = Read-JsonElement -inputData $jsonReverseLookupInput # Call Function to Structure the Data for Report Output
+            }
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            if ($allForwardLookupObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-forward"></a><h3>DNS Forward Lookup Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+        if ($PsBoundParameters.ContainsKey("html")) {
+            if (($jsonForwardLookupInput | Measure-Object).Count -gt 0) {
+                if ($allForwardLookupObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-forward"></a><h3>DNS Forward Lookup Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-forward"></a><h3>DNS Forward Lookup Health Status</h3>' -As Table
+                }
+                $allForwardLookupObject = Convert-CssClass -htmldata $allForwardLookupObject
             } else {
-                $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-forward"></a><h3>DNS Forward Lookup Health Status</h3>' -As Table
+                $allForwardLookupObject = $allForwardLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-forward"></a><h3>DNS Forward Lookup Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Forward Lookup Status data not found.</p>' -As Table
             }
-            $allForwardLookupObject = Convert-CssClass -htmldata $allForwardLookupObject
             $allForwardLookupObject
-            if ($allReverseLookupObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $allReverseLookupObject = $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-reverse"></a><h3>DNS Reverse Lookup Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+
+            if (($jsonReverseLookupInput | Measure-Object).Count -gt 0) {
+                if ($allReverseLookupObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $allReverseLookupObject = $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-reverse"></a><h3>DNS Reverse Lookup Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $allReverseLookupObject = $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-reverse"></a><h3>DNS Reverse Lookup Health Status</h3>' -As Table
+                }
+                $allReverseLookupObject = Convert-CssClass -htmldata $allReverseLookupObject
             } else {
-                $allReverseLookupObject = $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-reverse"></a><h3>DNS Reverse Lookup Health Status</h3>' -As Table
+                $allReverseLookupObject = $allReverseLookupObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-dns-reverse"></a><h3>DNS Reverse Lookup Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Reverse Lookup Status data not found.</p>' -As Table
             }
-            $allReverseLookupObject = Convert-CssClass -htmldata $allReverseLookupObject
             $allReverseLookupObject
         } else {
             $allForwardLookupObject | Sort-Object Component, Resource
@@ -1292,7 +1324,7 @@ Function Publish-EsxiHealth {
 
         .DESCRIPTION
         The Publish-EsxiHealth cmdlet formats the ESXi Health data from the SoS JSON output and publishes it as
-        either a standard PowerShell object or an HTML object. 
+        either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-EsxiHealth -json <file-name>
@@ -1323,85 +1355,113 @@ Function Publish-EsxiHealth {
 
         # ESXi Overall Health Status
         $allOverallHealthObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.Compute.'ESXi Overall Health' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        }
-        else {
-            $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+
+        $jsonGeneralCheck = $targetContent.General # Extract Data from the provided SOS JSON
+        if (($jsonGeneralCheck | Measure-Object).Count -lt 1) {
+            Write-Warning 'General data not found in the JSON file: SKIPPED'
+        } else {
+            # ESXi Core Dump Status
+            $allCoreDumpObject = New-Object System.Collections.ArrayList
+            $jsonInputData = $targetContent.General.'ESXi Core Dump Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            }
+            else {
+                $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Rep
+            }
         }
 
-        # ESXi Core Dump Status
-        $allCoreDumpObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.General.'ESXi Core Dump Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        }
-        else {
-            $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
-        
-        # ESXi License Status
-        $allLicenseObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.Compute.'ESXi License Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            $allLicenseObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        }
-        else {
-            $allLicenseObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
+        $jsonComputeCheck = $targetContent.Compute # Extract Data from the provided SOS JSON
+        if (($jsonComputeCheck | Measure-Object).Count -lt 1) {
+            Write-Warning 'Compute data not found in the JSON file: SKIPPED'
+        } else {  
+            # ESXi Overall Health Status
+            $jsonInputData = $targetContent.Compute.'ESXi Overall Health' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            }
+            else {
+                $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
 
-        # ESXi Disk Status
-        $allDiskObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.Compute.'ESXi Disk Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            $allDiskObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        }
-        else {
-            $allDiskObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            # ESXi License Status
+            $allLicenseObject = New-Object System.Collections.ArrayList
+            $jsonInputData = $targetContent.Compute.'ESXi License Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $allLicenseObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            }
+            else {
+                $allLicenseObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+
+            # ESXi Disk Status
+            $allDiskObject = New-Object System.Collections.ArrayList
+            $jsonInputData = $targetContent.Compute.'ESXi Disk Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $allDiskObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            }
+            else {
+                $allDiskObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) {
-            if ($allOverallHealthObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-overall"></a><h3>ESXi Overall Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+            if (($jsonGeneralCheck | Measure-Object).Count -gt 0) {
+                if ($allCoreDumpObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-coredump"></a><h3>ESXi Core Dump Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-coredump"></a><h3>ESXi Core Dump Health Status</h3>' -As Table
+                }
+                $allCoreDumpObject = Convert-CssClass -htmldata $allCoreDumpObject
             } else {
-                $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-overall"></a><h3>ESXi Overall Health Status</h3>' -As Table
+                $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-coredump"></a><h3>ESXi Core Dump Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: ESXi Core Dump data not found.</p>' -As Table
             }
-            $allOverallHealthObject = Convert-CssClass -htmldata $allOverallHealthObject
-            $allOverallHealthObject
-
-            if ($allCoreDumpObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-coredump"></a><h3>ESXi Core Dump Health Status</h3>' -PostContent '<p>No issues found.</p>' 
-            } else {
-                $allCoreDumpObject = $allCoreDumpObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-coredump"></a><h3>ESXi Core Dump Health Status</h3>' -As Table
-            }
-            $allCoreDumpObject = Convert-CssClass -htmldata $allCoreDumpObject
             $allCoreDumpObject
 
-            if ($allLicenseObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-license"></a><h3>ESXi License Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+            if (($jsonComputeCheck | Measure-Object).Count -gt 0) {
+                if ($allOverallHealthObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-overall"></a><h3>ESXi Overall Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-overall"></a><h3>ESXi Overall Health Status</h3>' -As Table
+                }
+                $allOverallHealthObject = Convert-CssClass -htmldata $allOverallHealthObject
             } else {
-                $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-license"></a><h3>ESXi License Health Status</h3>' -As Table
+                $allOverallHealthObject = $allOverallHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-overall"></a><h3>ESXi Overall Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: ESXi Overall Health data not found.</p>' -As Table
             }
-            $allLicenseObject = Convert-CssClass -htmldata $allLicenseObject
+            $allOverallHealthObject
+
+            if (($jsonComputeCheck | Measure-Object).Count -gt 0) {
+                if ($allLicenseObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-license"></a><h3>ESXi License Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-license"></a><h3>ESXi License Health Status</h3>' -As Table
+                }
+                $allLicenseObject = Convert-CssClass -htmldata $allLicenseObject
+            } else {
+                $allLicenseObject = $allLicenseObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-license"></a><h3>ESXi License Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: ESXi License data not found.</p>' -As Table
+            }
             $allLicenseObject
 
-            if ($allDiskObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-disk"></a><h3>ESXi Disk Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+            if (($jsonComputeCheck | Measure-Object).Count -gt 0) { 
+                if ($allDiskObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-disk"></a><h3>ESXi Disk Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-disk"></a><h3>ESXi Disk Health Status</h3>' -As Table
+                }
+                $allDiskObject = Convert-CssClass -htmldata $allDiskObject
             } else {
-                $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-disk"></a><h3>ESXi Disk Health Status</h3>' -As Table
+                $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-disk"></a><h3>ESXi Disk Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: ESXi Disk data not found.</p>' -As Table
             }
-            $allDiskObject = Convert-CssClass -htmldata $allDiskObject
             $allDiskObject
         }
         else {
-            $allOverallDumpObject | Sort-Object Component, Resource
             $allCoreDumpObject | Sort-Object Component, Resource
+            $allOverallHealthbject | Sort-Object Component, Resource
             $allLicenseObject | Sort-Object Component, Resource
             $allDiskObject | Sort-Object Component, Resource
         }
@@ -1419,7 +1479,7 @@ Function Publish-NsxtHealth {
 
         .DESCRIPTION
         The Publish-NsxtHealth cmdlet formats the NSX Health data from the SoS JSON output and publishes it as
-        either a standard PowerShell object or an HTML object. 
+        either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-NsxtHealth -json <file-name>
@@ -1449,49 +1509,16 @@ Function Publish-NsxtHealth {
         }
 
         $customObject = New-Object System.Collections.ArrayList
-    
-        # NSX Manager Health
-        $component = 'NSX Manager'
-        $inputData = $targetContent.General.'NSX Health'.'NSX Manager'
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
-            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
-            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
-            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                if (($element.status -eq 'FAILED')) {
-                    $customObject += $elementObject
-                }
-            }
-            else {
-                $customObject += $elementObject
-            }
-        }
+        $jsonInputCheck = $targetContent.General.'NSX Health' # Extract Data from the provided SOS JSON
+        if (($jsonInputCheck | Measure-Object).Count -lt 1) {
+            Write-Warning 'NSX Health data not found in the JSON file: SKIPPED'
+        } else {  
 
-        # NSX Container Cluster Health Status
-        $component = 'NSX Container Cluster'
-        $inputData = $targetContent.General.'NSX Health'.'NSX Container Cluster Health Status'
-        foreach ($element in $inputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
-            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
-            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
-            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                if (($element.status -eq 'FAILED')) {
-                    $customObject += $elementObject
-                }
-            }
-            else {
-                $customObject += $elementObject
-            }
-        }
-        # NSX Cluster Status
-        $component = 'NSX Cluster Status'
-        $inputData = $targetContent.General.'NSX Health'.'NSX Cluster Status'
-        foreach ($resource in $inputData.PsObject.Properties.Value) {
-            foreach ($element in $resource.PsObject.Properties.Value) {
+            # NSX Manager Health
+            $component = 'NSX Manager'
+            $inputData = $targetContent.General.'NSX Health'.'NSX Manager'
+
+            foreach ($element in $inputData.PsObject.Properties.Value) {
                 $elementObject = New-Object -TypeName psobject
                 $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
@@ -1506,13 +1533,11 @@ Function Publish-NsxtHealth {
                     $customObject += $elementObject
                 }
             }
-        }
 
-        # NSX Controllers Health
-        $component = 'NSX Controllers'
-        $inputData = $targetContent.General.'NSX Health'.'NSX Controllers'
-        foreach ($resource in $inputData.PsObject.Properties.Value) {
-            foreach ($element in $resource.PsObject.Properties.Value) {
+            # NSX Container Cluster Health Status
+            $component = 'NSX Container Cluster'
+            $inputData = $targetContent.General.'NSX Health'.'NSX Container Cluster Health Status'
+            foreach ($element in $inputData.PsObject.Properties.Value) {
                 $elementObject = New-Object -TypeName psobject
                 $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
@@ -1525,23 +1550,67 @@ Function Publish-NsxtHealth {
                 }
                 else {
                     $customObject += $elementObject
+                }
+            }
+            # NSX Cluster Status
+            $component = 'NSX Cluster Status'
+            $inputData = $targetContent.General.'NSX Health'.'NSX Cluster Status'
+            foreach ($resource in $inputData.PsObject.Properties.Value) {
+                foreach ($element in $resource.PsObject.Properties.Value) {
+                    $elementObject = New-Object -TypeName psobject
+                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                    $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                        if (($element.status -eq 'FAILED')) {
+                            $customObject += $elementObject
+                        }
+                    }
+                    else {
+                        $customObject += $elementObject
+                    }
+                }
+            }
+
+            # NSX Controllers Health
+            $component = 'NSX Controllers'
+            $inputData = $targetContent.General.'NSX Health'.'NSX Controllers'
+            foreach ($resource in $inputData.PsObject.Properties.Value) {
+                foreach ($element in $resource.PsObject.Properties.Value) {
+                    $elementObject = New-Object -TypeName psobject
+                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $component
+                    $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                        if (($element.status -eq 'FAILED')) {
+                            $customObject += $elementObject
+                        }
+                    }
+                    else {
+                        $customObject += $elementObject
+                    }
                 }
             }
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey('html')) {
-            if ($customObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+                if ($customObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $customObject = $customObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $customObject = $customObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -As Table
+                }
+                $customObject = Convert-CssClass -htmldata $customObject
             } else {
-                $customObject = $customObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -As Table
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: NSX Health data not found.</p>' -As Table
             }
-            $customObject = Convert-CssClass -htmldata $customObject
             $customObject
-        }
-        else {
-            $customObject | Sort-Object Resource, Component 
+        } else {
+            $customObject | Sort-Object Resource, Component
         }
     }
     Catch {
@@ -1557,7 +1626,7 @@ Function Publish-NsxtEdgeNodeHealth {
 
         .DESCRIPTION
         The Publish-NsxtEdgeNodeHealth cmdlet formats the NSX Edge Node Health data from the SoS JSON output and
-        publishes it as either a standard PowerShell object or an HTML object. 
+        publishes it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-NsxtEdgeNodeHealth -json <file-name>
@@ -1589,38 +1658,42 @@ Function Publish-NsxtEdgeNodeHealth {
         # NSX Edge Node Health
         $customObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.General.'NSX Health'.'NSX Edge'
-        $nsxtClusters = Get-VCFNsxtCluster
-        foreach ($nsxtVip in $nsxtClusters.vipFqdn) {
-            $jsonInputData.PSObject.Properties.Remove($nsxtVip)
-        }
-        $jsonInputData = $jsonInputData | Where-Object {$_ -ne ""}
-        foreach ($element in $jsonInputData.PsObject.Properties.Value) {
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'NSX Edge'
-            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
-            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
-            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue ($element.message -Split ('Following are the individual health stats'))[0]
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                if (($element.status -eq 'FAILED')) {
+        if (($jsonInputData | Measure-Object).Count -lt 1) {
+            Write-Warning "NSX Health data for NSX Edges not found in the JSON file: SKIPPED"
+        } else {
+            $nsxtClusters = Get-VCFNsxtCluster
+            foreach ($nsxtVip in $nsxtClusters.vipFqdn) {
+                $jsonInputData.PSObject.Properties.Remove($nsxtVip)
+            }
+            $jsonInputData = $jsonInputData | Where-Object {$_ -ne ""}
+            foreach ($element in $jsonInputData.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'NSX Edge'
+                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue ($element.message -Split ('Following are the individual health stats'))[0]
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if (($element.status -eq 'FAILED')) {
+                        $customObject += $elementObject
+                    }
+                } else {
                     $customObject += $elementObject
                 }
-            } else {
-                $customObject += $elementObject
             }
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey('html')) { 
+        if ($PsBoundParameters.ContainsKey('html')) {
             if (($jsonInputData | Measure-Object).Count -gt 0) {
                 if ($customObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p>No issues found.</p>'
                 } else {
                     $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -As Table
                 }
                 $customObject = Convert-CssClass -htmldata $customObject
             } else {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p>No NSX Edge Node(s) present.</p>' -As Table
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge"></a><h3>NSX Edge Node Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: NSX Health data for NSX Edges not found. This warning is safe to ignore if NSX Edges are not managed by SDDC Manager.</p>' -As Table
             }
             $customObject
         } else {
@@ -1640,7 +1713,7 @@ Function Publish-NsxtEdgeClusterHealth {
 
         .DESCRIPTION
         The Publish-NsxtEdgeClusterHealth cmdlet formats the NSX Edge Cluster Health data from the SoS JSON output and
-        publishes it as either a standard PowerShell object or an HTML object. 
+        publishes it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-NsxtEdgeClusterHealth -json <file-name>
@@ -1667,35 +1740,40 @@ Function Publish-NsxtEdgeClusterHealth {
         }
         else {
             $targetContent = Get-Content $json | ConvertFrom-Json
-        }        
+        }
 
         # NSX Edge Cluster Health
         $customObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.General.'NSX Health'.'NSX Edge'
-        $nsxtEdgeClusters = Get-VCFEdgeCluster
-        foreach ($nsxtEdgeNodes in $nsxtEdgeClusters.edgeNodes.hostname) {
-            $jsonInputData.PSObject.Properties.Remove($nsxtEdgeNodes)
+        if (($jsonInputData | Measure-Object).Count -lt 1) {
+            Write-Warning "NSX Health data for NSX Edge Cluster not found in the JSON file: SKIPPED"
         }
-        if ($null -eq $nsxtEdgeClusters) {
-            $nsxtClusters = Get-VCFNsxtCluster
-            foreach ($nsxtCluster in $nsxtClusters) {
-                $jsonInputData.PSObject.Properties.Remove($nsxtCluster.vipFqdn)
+        else {
+            $nsxtEdgeClusters = Get-VCFEdgeCluster
+            foreach ($nsxtEdgeNodes in $nsxtEdgeClusters.edgeNodes.hostname) {
+                $jsonInputData.PSObject.Properties.Remove($nsxtEdgeNodes)
             }
-        }
-        $jsonInputData = $jsonInputData | Where-Object {$_ -ne ""}
-        foreach ($element in $jsonInputData.PsObject.Properties.Value) {
-            foreach ($cluster in $element.PsObject.Properties.Value) {
-                $elementObject = New-Object -TypeName psobject
-                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'NSX Edge Cluster'
-                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($cluster.area -Split (':'))[-1].Trim()
-                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $cluster.alert
-                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $cluster.message
-                if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                    if (($element.status -eq 'FAILED')) {
+            if ($null -eq $nsxtEdgeClusters) {
+                $nsxtClusters = Get-VCFNsxtCluster
+                foreach ($nsxtCluster in $nsxtClusters) {
+                    $jsonInputData.PSObject.Properties.Remove($nsxtCluster.vipFqdn)
+                }
+            }
+            $jsonInputData = $jsonInputData | Where-Object {$_ -ne ""}
+            foreach ($element in $jsonInputData.PsObject.Properties.Value) {
+                foreach ($cluster in $element.PsObject.Properties.Value) {
+                    $elementObject = New-Object -TypeName psobject
+                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'NSX Edge Cluster'
+                    $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($cluster.area -Split (':'))[-1].Trim()
+                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $cluster.alert
+                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $cluster.message
+                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                        if (($element.status -eq 'FAILED')) {
+                            $customObject += $elementObject
+                        }
+                    } else {
                         $customObject += $elementObject
                     }
-                } else {
-                    $customObject += $elementObject
                 }
             }
         }
@@ -1705,13 +1783,13 @@ Function Publish-NsxtEdgeClusterHealth {
             if (($jsonInputData | Measure-Object).Count -gt 0) {
                 if ($customObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -PostContent '<p>No issues found.</p>'
                 } else {
                     $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -As Table
                 }
                 $customObject = Convert-CssClass -htmldata $customObject
             } else {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -PostContent '<p>No NSX Edge Cluster(s) present.</p>' -As Table
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-edge-cluster"></a><h3>NSX Edge Cluster Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: NSX Health data for Edge Cluster not found. This warning is safe to ignore if NSX Edges are not managed by SDDC Manager.</p>' -As Table
             }
             $customObject
         } else {
@@ -1731,7 +1809,7 @@ Function Publish-NtpHealth {
 
         .DESCRIPTION
         The Publish-NtpHealth cmdlet formats the NTP Health data from the SoS JSON output and publishes it as
-        either a standard PowerShell object or an HTML object. 
+        either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-NtpHealth -json <file-name>
@@ -1761,27 +1839,36 @@ Function Publish-NtpHealth {
 
         # NTP Health Status
         $jsonInputData = $targetContent.'NTP' # Extract Data from the provided SOS JSON
-        $jsonInputData.PSObject.Properties.Remove('ESXi HW Time')
-        $jsonInputData.PSObject.Properties.Remove('ESXi Time')
-
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+        if (($jsonInputData | Measure-Object).Count -lt 1) {
+            Write-Warning 'NTP data not found in the JSON file: SKIPPED'
         } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            $jsonInputData.PSObject.Properties.Remove('ESXi HW Time')
+            $jsonInputData.PSObject.Properties.Remove('ESXi Time')
+
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            }
+            else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-ntp"></a><h3>NTP Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+        if ($PsBoundParameters.ContainsKey("html")) {
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+                if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-ntp"></a><h3>NTP Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-ntp"></a><h3>NTP Health Status</h3>' -As Table
+                }
+                $outputObject = Convert-CssClass -htmldata $outputObject
             } else {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-ntp"></a><h3>NTP Health Status</h3>' -As Table
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-ntp"></a><h3>NTP Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: NTP data not found.</p>' -As Table
             }
-            $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         } else {
-            $outputObject | Sort-Object Component, Resource 
+            $outputObject | Sort-Object Component, Resource
         }
     }
     Catch {
@@ -1797,7 +1884,7 @@ Function Publish-PasswordHealth {
 
         .DESCRIPTION
         The Publish-PasswordHealth cmdlet formats the Password Health data from the SoS JSON output and publishes it as
-        either a standard PowerShell object or an HTML object. 
+        either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-PasswordHealth -json <file-name>
@@ -1827,24 +1914,32 @@ Function Publish-PasswordHealth {
 
         # Password Expiry Health
         $jsonInputData = $targetContent.'Password Expiry Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+        if (($jsonInputData | Measure-Object).Count -lt 1) {
+            Write-Warning 'Password Expiry Status not found in the JSON file: SKIPPED'
         } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+        if ($PsBoundParameters.ContainsKey("html")) {
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+                if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -As Table
+                }
+                $outputObject = Convert-CssClass -htmldata $outputObject
             } else {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -As Table
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Password Expiry Status data not found.</p>' -As Table
             }
-            $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         } else {
-            $outputObject | Sort-Object Component, Resource 
+            $outputObject | Sort-Object Component, Resource
         }
     }
     Catch {
@@ -1860,7 +1955,7 @@ Function Publish-ServiceHealth {
 
         .DESCRIPTION
         The Publish-ServiceHealth cmdlet formats the Service Health data from the SoS JSON output and publishes it as
-        either a standard PowerShell object or an HTML object. 
+        either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-ServiceHealth -json <file-name>
@@ -1891,37 +1986,45 @@ Function Publish-ServiceHealth {
 
         $outputObject = New-Object System.Collections.ArrayList
         $inputData = $targetContent.'Services' # Extract Data from the provided SOS JSON
-        foreach ($component in $inputData) {
-            foreach ($element in $component.PsObject.Properties.Value) {
-                $elementObject = New-Object -TypeName psobject
-                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
-                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
-                $elementObject | Add-Member -NotePropertyName 'Service Name' -NotePropertyValue $element.title.ToUpper()
-                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
-                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
-                if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                    if (($element.status -eq 'FAILED')) {
+        if (($inputData | Measure-Object).Count -lt 1) {
+            Write-Warning 'Services data not found in the JSON file: SKIPPED'
+        } else {
+            foreach ($component in $inputData) {
+                foreach ($element in $component.PsObject.Properties.Value) {
+                    $elementObject = New-Object -TypeName psobject
+                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
+                    $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                    $elementObject | Add-Member -NotePropertyName 'Service Name' -NotePropertyValue $element.title.ToUpper()
+                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                        if (($element.status -eq 'FAILED')) {
+                            $outputObject += $elementObject
+                        }
+                    }
+                    else {
                         $outputObject += $elementObject
                     }
-                }
-                else {
-                    $outputObject += $elementObject
                 }
             }
         }
 
-        if ($PsBoundParameters.ContainsKey('html')) { 
-            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-service"></a><h3>Service Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+        if ($PsBoundParameters.ContainsKey('html')) {
+            if (($inputData | Measure-Object).Count -gt 0) {
+                if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-service"></a><h3>Service Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-service"></a><h3>Service Health Status</h3>' -As Table
+                }
+                $outputObject = Convert-CssClass -htmldata $outputObject
             } else {
-                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-service"></a><h3>Service Health Status</h3>' -As Table
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-service"></a><h3>Service Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Services data not found.</p>' -As Table
             }
-            $outputObject = Convert-CssClass -htmldata $outputObject
             $outputObject
         }
         else {
-            $outputObject | Sort-Object Component, Resource 
+            $outputObject | Sort-Object Component, Resource
         }
     }
     Catch {
@@ -1937,7 +2040,7 @@ Function Publish-VcenterHealth {
 
         .DESCRIPTION
         The Publish-VcenterHealth cmdlet formats the vCenter Server Health data from the SoS JSON output and publishes
-        it as either a standard PowerShell object or an HTML object. 
+        it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-VcenterHealth -json <file-name>
@@ -1967,53 +2070,67 @@ Function Publish-VcenterHealth {
 
         # vCenter Overall Health
         $jsonInputData = $targetContent.Compute.'vCenter Overall Health' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            $vcenterOverall = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+        if (($jsonInputData | Measure-Object).Count -lt 1) {
+            Write-Warning "vCenter Server Overall Health data not found in the JSON file: SKIPPED"
         } else {
-            $vcenterOverall = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $vcenterOverall = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $vcenterOverall = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
 
-        # Ring Topology Health
-        $ringTopologyHealth = New-Object System.Collections.ArrayList
-        $vcfVersion = ((Get-VCFManager).version -Split ('\.\d{1}\-\d{8}')) -split '\s+' -match '\S'
-        if ($vcfVersion -eq "4.2.1") {
-            $jsonInputData = $targetContent.Connectivity.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SOS JSON
-        } else {
-            $jsonInputData = $targetContent.General.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SOS JSON
-        }
-        $elementObject = New-Object -TypeName psobject
-        $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($jsonInputData.area -SPlit  ("SDDC:"))[-1].Trim()
-        $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $jsonInputData.alert
-        $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $jsonInputData.message
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            if (($jsonInputData.status -eq "FAILED")) {
+            # Ring Topology Health
+            $ringTopologyHealth = New-Object System.Collections.ArrayList
+            $vcfVersion = ((Get-VCFManager).version -Split ('\.\d{1}\-\d{8}')) -split '\s+' -match '\S'
+            if ($vcfVersion -eq "4.2.1") {
+                $jsonInputData = $targetContent.Connectivity.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SOS JSON
+            } else {
+                $jsonInputData = $targetContent.General.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SOS JSON
+            }
+            $elementObject = New-Object -TypeName psobject
+            $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($jsonInputData.area -SPlit  ("SDDC:"))[-1].Trim()
+            $elementObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $jsonInputData.alert
+            $elementObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $jsonInputData.message
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                if (($jsonInputData.status -eq "FAILED")) {
+                    $ringTopologyHealth += $elementObject
+                }
+            } else {
                 $ringTopologyHealth += $elementObject
             }
-        } else {
-            $ringTopologyHealth += $elementObject
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            if ($vcenterOverall.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $vcenterOverall = $vcenterOverall | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Overall Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+        if ($PsBoundParameters.ContainsKey("html")) {
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+                if ($vcenterOverall.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $vcenterOverall = $vcenterOverall | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Overall Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $vcenterOverall = $vcenterOverall | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Overall Health Status</h3>' -As Table
+                }
+                $vcenterOverall = Convert-CssClass -htmldata $vcenterOverall
             } else {
-                $vcenterOverall = $vcenterOverall | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Overall Health Status</h3>' -As Table
+                $vcenterOverall = $vcenterOverall | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-overall"></a><h3>vCenter Server Overall Health Status</h3>' -PostContent '<p><p><strong>WARNING</strong>: vCenter Server Overall Health data not found.</p>' -As Table
             }
-            $vcenterOverall = Convert-CssClass -htmldata $vcenterOverall
             $vcenterOverall
-
-            if (@($ringTopologyHealth).Count -lt 1) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring"></a><h3>vCenter Single Sign-On Ring Topology Health Status</h3>' -PostContent '<p>No issues found.</p>' 
-            } else {
-                $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring"></a><h3>vCenter Single Sign-On Ring Topology Health Status</h3>' -As Table
-            }
-            $ringTopologyHealth = Convert-CssClass -htmldata $ringTopologyHealth
-            $ringTopologyHealth
         } else {
             $vcenterOverall | Sort-Object Component, Resource
+        }
+
+        if ($PsBoundParameters.ContainsKey('html')) {
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+            if (@($ringTopologyHealth).Count -lt 1) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring-topology"></a><h3>vCenter Server Ring Topology Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring-topology"></a><h3>vCenter Server Ring Topology Health Status</h3>' -As Table
+                }
+                $ringTopologyHealth = Convert-CssClass -htmldata $ringTopologyHealth
+            } else {
+                $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring-topology"></a><h3>vCenter Server Ring Topology Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: vCenter Server Overall Health data not found.</p>' -As Table
+            }
+        } else {
             $ringTopologyHealth | Sort-Object Component, Resource
         }
     }
@@ -2034,7 +2151,7 @@ Function Publish-VsanHealth {
 
         .DESCRIPTION
         The Publish-VsanHealth cmdlet formats the vSAN Health data from the SoS JSON output and publishes it as
-        either a standard PowerShell object or an HTML object. 
+        either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
         Publish-VsanHealth -json <file-name>
@@ -2063,72 +2180,82 @@ Function Publish-VsanHealth {
         }
 
         $customObject = New-Object System.Collections.ArrayList
-        # VSAN Cluster Health Status
-        $jsonInputData = $targetContent.VSAN.'Cluster vSAN Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
-        $customObject += $outputObject # Adding individual component to main customObject
-        
-        # Cluster Disk Status
-        $jsonInputData = $targetContent.VSAN.'Cluster Disk Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
-        $customObject += $outputObject # Adding individual component to main customObject
+        $jsonInputCheck = $targetContent.vSAN # Extract Data from the provided SOS JSON
+        if (($jsonInputCheck | Measure-Object).Count -lt 1) {
+            Write-Warning 'vSAN data not found in the JSON file: SKIPPED'
+        } else {  
 
-        # Cluster Data Compression Status
-        $jsonInputData = $targetContent.VSAN.'Cluster Data Compression Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
-        $customObject += $outputObject # Adding individual component to main customObject
+            # vSAN Cluster Health Status
+            $jsonInputData = $targetContent.vSAN.'Cluster vSAN Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
 
-        # Cluster Data Encryption Status
-        $jsonInputData = $targetContent.VSAN.'Cluster Data Encryption Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
-        $customObject += $outputObject # Adding individual component to main customObject
+            # Cluster Disk Status
+            $jsonInputData = $targetContent.vSAN.'Cluster Disk Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
 
-        # Cluster Data Deduplication Status
-        $jsonInputData = $targetContent.VSAN.'Cluster Data Deduplication Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-        }
-        $customObject += $outputObject # Adding individual component to main customObject
+            # Cluster Data Compression Status
+            $jsonInputData = $targetContent.vSAN.'Cluster Data Compression Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
 
-        # Stretched Cluster Status
-        $jsonInputData = $targetContent.VSAN.'Stretched Cluster Status' # Extract Data from the provided SOS JSON
-        if ($PsBoundParameters.ContainsKey("failureOnly")) {
-            $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-        } else {
-            $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            # Cluster Data Encryption Status
+            $jsonInputData = $targetContent.vSAN.'Cluster Data Encryption Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
+
+            # Cluster Data Deduplication Status
+            $jsonInputData = $targetContent.vSAN.'Cluster Data Deduplication Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
+
+            # Stretched Cluster Status
+            $jsonInputData = $targetContent.vSAN.'Stretched Cluster Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
         }
-        $customObject += $outputObject # Adding individual component to main customObject
 
         # Return the structured data to the console or format using HTML CSS Styles
-        if ($PsBoundParameters.ContainsKey("html")) { 
-            if ($customObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-overall"></a><h3>vSAN Overall Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+        if ($PsBoundParameters.ContainsKey("html")) {
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+                if ($customObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-overall"></a><h3>vSAN Overall Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-overall"></a><h3>vSAN Overall Health Status</h3>' -As Table
+                }
+                $customObject = Convert-CssClass -htmldata $customObject
             } else {
-                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-overall"></a><h3>vSAN Overall Health Status</h3>' -As Table
+                $customObject = $customObject | ConvertTo-Html -Fragment -PreContent '<a id="vsan-overall"></a><h3>vSAN Overall Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: vSAN data not found.</p>'
             }
-            $customObject = Convert-CssClass -htmldata $customObject
             $customObject
         } else {
-            $customObject | Sort-Object Component, Resource 
+            $customObject | Sort-Object Component, Resource
         }
     }
     Catch {
@@ -2146,18 +2273,18 @@ Function Publish-VsanStoragePolicy {
 
         .DESCRIPTION
         The Publish-VsanStoragePolicy cmdlet formats the vSAN Storage Policy data from the SoS JSON output and
-        publishes it as either a standard PowerShell object or an HTML object. 
+        publishes it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-VsanHealth -json <file-name>
+        Publish-VsanStoragePolicy -json <file-name>
         This example extracts and formats the vSAN Storage Policy data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-VsanHealth -json <file-name> -html
+        Publish-VsanStoragePolicy -json <file-name> -html
         This example extracts and formats the vSAN Storage Policy data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-VsanHealth -json <file-name> -failureOnly
+        Publish-VsanStoragePolicy -json <file-name> -failureOnly
         This example extracts and formats the vSAN Storage Policy data as a PowerShell object from the JSON file for only the failed items.
     #>
 
@@ -2176,47 +2303,57 @@ Function Publish-VsanStoragePolicy {
 
         # VSAN Storage Policy
         $jsonInputData = $targetContent.vSAN # Extract Data from the provided SOS JSON
-        $jsonInputData.PSObject.Properties.Remove('Host vSAN Status')
-        $jsonInputData.PSObject.Properties.Remove('Host Disk Status')
-        $jsonInputData.PSObject.Properties.Remove('Cluster vSAN Status')
-        $jsonInputData.PSObject.Properties.Remove('Cluster Disk Status')
-        $jsonInputData.PSObject.Properties.Remove('vCenter HCL Status')
-        $jsonInputData.PSObject.Properties.Remove('Cluster Data Compression Status')
-        $jsonInputData.PSObject.Properties.Remove('Cluster Data Encryption Status')
-        $jsonInputData.PSObject.Properties.Remove('Cluster Data Deduplication Status')
-        $jsonInputData.PSObject.Properties.Remove('Stretched Cluster Status')
-        $jsonInputData.PSObject.Properties.Remove('Stretched Cluster Health Status')
-        $jsonInputData.PSObject.Properties.Remove('Stretched Cluster Tests')
+        if (($jsonInputData | Measure-Object).Count -lt 1) {
+            Write-Warning 'vSAN data not found in the JSON file: SKIPPED'
+        } else {
+            $jsonInputData.PSObject.Properties.Remove('Host vSAN Status')
+            $jsonInputData.PSObject.Properties.Remove('Host Disk Status')
+            $jsonInputData.PSObject.Properties.Remove('Cluster vSAN Status')
+            $jsonInputData.PSObject.Properties.Remove('Cluster Disk Status')
+            $jsonInputData.PSObject.Properties.Remove('vCenter HCL Status')
+            $jsonInputData.PSObject.Properties.Remove('Cluster Data Compression Status')
+            $jsonInputData.PSObject.Properties.Remove('Cluster Data Encryption Status')
+            $jsonInputData.PSObject.Properties.Remove('Cluster Data Deduplication Status')
+            $jsonInputData.PSObject.Properties.Remove('Stretched Cluster Status')
+            $jsonInputData.PSObject.Properties.Remove('Stretched Cluster Health Status')
+            $jsonInputData.PSObject.Properties.Remove('Stretched Cluster Tests')
 
-        $outputObject = New-Object System.Collections.ArrayList
-        foreach ($element in $jsonInputData.PsObject.Properties.Value) { 
-            $elementObject = New-Object -TypeName psobject
-            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "Virtual Machine"
-            $elementObject | Add-Member -NotePropertyName 'vCenter Server' -NotePropertyValue (($element.area -Split (' : '))[-1] -Split (' VM '))[0].Trim()
-            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.Message -Split (" "),2)[0].Trim()
-            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
-            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue ($element.Message -Split (" "),2)[-1].Trim()
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                if (($element.status -eq 'FAILED')) {
+            $outputObject = New-Object System.Collections.ArrayList
+            foreach ($element in $jsonInputData.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "Virtual Machine"
+                $elementObject | Add-Member -NotePropertyName 'vCenter Server' -NotePropertyValue (($element.area -Split (' : '))[-1] -Split (' VM '))[0].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.Message -Split (" "),2)[0].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue ($element.Message -Split (" "),2)[-1].Trim()
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if (($element.status -eq 'FAILED')) {
+                        $outputObject += $elementObject
+                    }
+                }
+                else {
                     $outputObject += $elementObject
                 }
-            }
-            else {
-                $outputObject += $elementObject
             }
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
         if ($PsBoundParameters.ContainsKey("html")) {
-            if ($outputObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $outputObject = $outputObject | Sort-Object Component, 'vCenter Server', Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -PostContent '<p>No issues found.</p>' 
-            } else {
-                $outputObject = $outputObject | Sort-Object Component, 'vCenter Server', Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -As Table
-            }
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+                if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $outputObject = $outputObject | Sort-Object Component, 'vCenter Server', Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $outputObject = $outputObject | Sort-Object Component, 'vCenter Server', Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -As Table
+                }
             $outputObject = Convert-CssClass -htmldata $outputObject
+            }
+            else {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: vSAN data not found.</p>' -As Table
+            }
             $outputObject
         } else {
+<<<<<<< HEAD
 <<<<<<< HEAD
             $outputObject | Sort-Object Component, vCenter, Resource 
 =======
@@ -2299,6 +2436,9 @@ Function Request-SddcManagerStorageHealth {
 =======
             $outputObject | Sort-Object Component, 'vCenter Server', Resource 
 >>>>>>> 6880eb5 (Updated Publish-VsanStoragePolicy)
+=======
+            $outputObject | Sort-Object Component, 'vCenter Server', Resource
+>>>>>>> b4e9126 (feat: add checks for sos json extractions functions)
         }
     }
     Catch {
@@ -2353,7 +2493,7 @@ Function Publish-BackupStatus {
 
         .EXAMPLE
         Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will publish the backup status for the vCenter Server instances, and NSX Local Manager clusters in Workload Domain sfo-w01.  
+        This example will publish the backup status for the vCenter Server instances, and NSX Local Manager clusters in Workload Domain sfo-w01.
     #>
 
     Param (
@@ -2387,7 +2527,7 @@ Function Publish-BackupStatus {
                         $nsxtManagerBackupStatus = Request-NsxtManagerBackupStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allBackupStatusObject += $nsxtManagerBackupStatus
                     }
                 } else {
-                    if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                    if ($PsBoundParameters.ContainsKey("allDomains")) {
                         $sddcManagerBackupStatus = Request-SddcManagerBackupStatus -server $server -user $user -pass $pass; $allBackupStatusObject += $sddcManagerBackupStatus
                         foreach ($domain in $allWorkloadDomains ) {
                             $vcenterBackupStatus = Request-vCenterBackupStatus -server $server -user $user -pass $pass -domain $domain.name; $allBackupStatusObject += $vcenterBackupStatus
@@ -2404,7 +2544,7 @@ Function Publish-BackupStatus {
 
                 if ($allBackupStatusObject.Count -eq 0) { $addNoIssues = $true }
                     if ($addNoIssues) {
-                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -PostContent "<p>No issues found.</p><p>Please verify that each successful file-based backup exists on the destination.</p>" 
+                        $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -PostContent "<p>No issues found.</p><p>Please verify that each successful file-based backup exists on the destination.</p>"
                     } else {
                         $allBackupStatusObject = $allBackupStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-backup"></a><h3>Backups Status</h3>' -PostContent "<p>Please verify that each successful file-based backup exists on the destination.</p>" -As Table
                     }
@@ -2467,7 +2607,7 @@ Function Publish-NsxtTransportNodeStatus {
                     }
                 }
                 else {
-                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
                         foreach ($domain in $allWorkloadDomains ) {
                             $nsxtTransportNodeStatus = Request-NsxtTransportNodeStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtTransportNodeStatusObject += $nsxtTransportNodeStatus
                         }
@@ -2477,10 +2617,10 @@ Function Publish-NsxtTransportNodeStatus {
                 }
 
                 if ($allNsxtTransportNodeStatusObject.Count -eq 0) {
-                    $addNoIssues = $true 
+                    $addNoIssues = $true
                 }
                 if ($addNoIssues) {
-                    $allNsxtTransportNodeStatusObject = $allNsxtTransportNodeStatusObject | Sort-Object Domain, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn"></a><h3>NSX Transport Node Status</h3>' -PostContent '<p>No issues found.</p>' 
+                    $allNsxtTransportNodeStatusObject = $allNsxtTransportNodeStatusObject | Sort-Object Domain, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn"></a><h3>NSX Transport Node Status</h3>' -PostContent '<p>No issues found.</p>'
                 } else {
                     $allNsxtTransportNodeStatusObject = $allNsxtTransportNodeStatusObject | Sort-Object Domain, Resource, Element  | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn"></a><h3>NSX Transport Node Status</h3>' -As Table
                 }
@@ -2542,7 +2682,7 @@ Function Publish-NsxtTransportNodeTunnelStatus {
                         $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
                     }
                 } else {
-                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
                         foreach ($domain in $allWorkloadDomains ) {
                             $nsxtTransportNodeTunnelStatus = Request-NsxtTransportNodeTunnelStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtTransportNodeTunnelStatusObject += $nsxtTransportNodeTunnelStatus
                         }
@@ -2554,7 +2694,7 @@ Function Publish-NsxtTransportNodeTunnelStatus {
                 if ($allNsxtTransportNodeTunnelStatusObject.Count -eq 0) { $addNoIssues = $true }
                 if ($allNsxtTransportNodeTunnelStatusObject.Count -ne 0) {
                     if ($addNoIssues) {
-                        $allNsxtTransportNodeTunnelStatusObject = $allNsxtTransportNodeTunnelStatusObject | Sort-Object Domain, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn-tunnel"></a><h3>NSX Transport Node Tunnel Status</h3>' -PostContent '<p>No issues found.</p>' 
+                        $allNsxtTransportNodeTunnelStatusObject = $allNsxtTransportNodeTunnelStatusObject | Sort-Object Domain, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn-tunnel"></a><h3>NSX Transport Node Tunnel Status</h3>' -PostContent '<p>No issues found.</p>'
                     } else {
                         $allNsxtTransportNodeTunnelStatusObject = $allNsxtTransportNodeTunnelStatusObject | Sort-Object Domain, Resource, Element  | ConvertTo-Html -Fragment -PreContent '<a id="nsx-tn-tunnel"></a><h3>NSX Transport Node Tunnel Status</h3>' -As Table
                     }
@@ -2619,7 +2759,7 @@ Function Publish-NsxtTier0BgpStatus {
                         $nsxtTier0BgpStatus = Request-NsxtTier0BgpStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtTier0BgpStatusObject += $nsxtTier0BgpStatus
                     }
                 } else {
-                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
                         foreach ($domain in $allWorkloadDomains ) {
                             $nsxtTier0BgpStatus = Request-NsxtTier0BgpStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtTier0BgpStatusObject += $nsxtTier0BgpStatus
                         }
@@ -2631,7 +2771,7 @@ Function Publish-NsxtTier0BgpStatus {
                 if ($allNsxtTier0BgpStatusObject.Count -eq 0) { $addNoIssues = $true }
                 if ($nsxtTier0BgpStatus.Count -gt 0) {
                     if ($addNoIssues) {
-                        $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No issues found.</p>' 
+                        $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No issues found.</p>'
                     } else {
                         $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address' | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -As Table
                     }
@@ -2668,7 +2808,7 @@ Function Publish-SnapshotStatus {
 
         .EXAMPLE
         Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.  
+        This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.
 
         .EXAMPLE
         Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
@@ -2696,20 +2836,20 @@ Function Publish-SnapshotStatus {
                 $singleWorkloadDomain = Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}
                 if ($PsBoundParameters.ContainsKey('failureOnly')) {
                     if ($PsBoundParameters.ContainsKey('allDomains')) {
-                        $sddcManagerSnapshotStatus = Request-SddcManagerSnapshotStatus -server $server -user $user -pass $pass -failureOnly; $allSnapshotStatusObject += $sddcManagerSnapshotStatus                      
+                        $sddcManagerSnapshotStatus = Request-SddcManagerSnapshotStatus -server $server -user $user -pass $pass -failureOnly; $allSnapshotStatusObject += $sddcManagerSnapshotStatus
                         foreach ($domain in $allWorkloadDomains ) {
                             $vcenterSnapshotStatus = Request-VcenterSnapshotStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allSnapshotStatusObject += $vcenterSnapshotStatus
                             $nsxtEdgeSnapshotStatus = Request-NsxtEdgeSnapshotStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allSnapshotStatusObject += $nsxtEdgeSnapshotStatus
                         }
                     } else {
                         if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
-                            $sddcManagerSnapshotStatus = Request-SddcManagerSnapshotStatus -server $server -user $user -pass $pass -failureOnly; $allSnapshotStatusObject += $sddcManagerSnapshotStatus                     
+                            $sddcManagerSnapshotStatus = Request-SddcManagerSnapshotStatus -server $server -user $user -pass $pass -failureOnly; $allSnapshotStatusObject += $sddcManagerSnapshotStatus
                         }
                         $vcenterSnapshotStatus = Request-VcenterSnapshotStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allSnapshotStatusObject += $vcenterSnapshotStatus
                         $nsxtEdgeSnapshotStatus = Request-NsxtEdgeSnapshotStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allSnapshotStatusObject += $nsxtEdgeSnapshotStatus
                     }
                 } else {
-                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
                         $sddcManagerSnapshotStatus = Request-SddcManagerSnapshotStatus -server $server -user $user -pass $pass; $allSnapshotStatusObject += $sddcManagerSnapshotStatus
                         foreach ($domain in $allWorkloadDomains ) {
                             $vcenterSnapshotStatus = Request-VcenterSnapshotStatus -server $server -user $user -pass $pass -domain $domain.name; $allSnapshotStatusObject += $vcenterSnapshotStatus
@@ -2726,7 +2866,7 @@ Function Publish-SnapshotStatus {
 
                 if ($allSnapshotStatusObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3>' -PostContent '<p>No issues found.</p>' 
+                    $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3>' -PostContent '<p>No issues found.</p>'
                 } else {
                     $allSnapshotStatusObject = $allSnapshotStatusObject | Sort-Object Component, Resource, Element | ConvertTo-Html -Fragment -PreContent '<a id="infra-snapshot"></a><h3>Snapshot Status</h3>' -PostContent '<p>Only checks snapshots for SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager. By default, snapshots for NSX Local Manager cluster appliances are disabled and are not recommended.</p>' -As Table
                 }
@@ -2822,7 +2962,7 @@ Function Publish-LocalUserExpiry {
 
         if ($allPasswordExpiryObject.Count -eq 0) { $addNoIssues = $true }
         if ($addNoIssues) {
-            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+            $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p>No issues found.</p>'
         } else {
             $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -As Table
         }
@@ -2874,7 +3014,7 @@ Function Publish-NsxtCombinedHealth {
     Try {
         $allNsxtHealthObject = New-Object System.Collections.ArrayList
         $allWorkloadDomains = Get-VCFWorkloadDomain
-        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
             foreach ($domain in $allWorkloadDomains ) {
                 $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtHealthObject += $nsxtVidmStatus
                 $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtHealthObject += $nsxtComputeManagerStatus
@@ -2888,7 +3028,7 @@ Function Publish-NsxtCombinedHealth {
             $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath; $allNsxtHealthObject += $nsxtHtml
         }
 
-        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
             $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtHealthObject += $nsxtVidmStatus
             $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtHealthObject += $nsxtComputeManagerStatus
             $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -failureOnly; $allNsxtHealthObject += $nsxtHtml
@@ -2900,7 +3040,7 @@ Function Publish-NsxtCombinedHealth {
 
         if ($allNsxtHealthObject.Count -eq 0) { $addNoIssues = $true }
         if ($addNoIssues) {
-            $allNsxtHealthObject = $allNsxtHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+            $allNsxtHealthObject = $allNsxtHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -PostContent '<p>No issues found.</p>'
         } else {
             $allNsxtHealthObject = $allNsxtHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status</h3>' -As Table
         }
@@ -2919,7 +3059,7 @@ Function Publish-StorageCapacityHealth {
         Request and publish the storage capacity status.
 
         .DESCRIPTION
-        The Publish-StorageCapacityHealth cmdlet checks the storage usage status for SDDC Manager, vCenter Server, 
+        The Publish-StorageCapacityHealth cmdlet checks the storage usage status for SDDC Manager, vCenter Server,
         Datastores and ESXi hosts, in a VMware Cloud Foundation instance and prepares the data to be published
         to an HTML report or plain text to console. The cmdlet connects to SDDC Manager using the -server, -user, -password and -rootPass values:
         - Validates the network connectivity and authantication to the SDDC Manager instance
@@ -2927,7 +3067,7 @@ Function Publish-StorageCapacityHealth {
 
         .EXAMPLE
         Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -allDomains
-        This example will publish storage usage status for SDDC Manager, vCenter Server instances, ESXi hosts, and datastores in a VMware Cloud Foundation instance  
+        This example will publish storage usage status for SDDC Manager, vCenter Server instances, ESXi hosts, and datastores in a VMware Cloud Foundation instance
 
         .EXAMPLE
         Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -allDomains -failureOnly
@@ -2968,7 +3108,7 @@ Function Publish-StorageCapacityHealth {
                         foreach ($domain in $allWorkloadDomains ) {
                             $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $domain.name; $allVcenterStorageHealth += $vCenterStorageHealth
                             $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $domain.name; $allEsxiStorageCapacity += $esxiStorageCapacity
-                            $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $domain.name; $allDatastoreStorageCapacity += $datastoreStorageCapacity                       
+                            $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $domain.name; $allDatastoreStorageCapacity += $datastoreStorageCapacity
                         }
                     }
                 } else {
@@ -2983,7 +3123,7 @@ Function Publish-StorageCapacityHealth {
                         if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
                             $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass
                         }
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $workloadDomain; $allVcenterStorageHealth += $vCenterStorageHealth 
+                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $workloadDomain; $allVcenterStorageHealth += $vCenterStorageHealth
                         $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain; $allEsxiStorageCapacity += $esxiStorageCapacity
                         $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain; $allDatastoreStorageCapacity += $datastoreStorageCapacity
                     }
@@ -3020,7 +3160,7 @@ Function Publish-StorageCapacityHealth {
                     $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | Sort-Object 'vCenter Server', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -As Table
                 }
                 $allDatastoreStorageCapacity = Convert-CssClass -htmldata $allDatastoreStorageCapacity
-                
+
                 $allStorageCapacityHealth += $sddcManagerStorageHealth
                 $allStorageCapacityHealth += $allVcenterStorageHealth
                 $allStorageCapacityHealth += $allEsxiStorageCapacity
@@ -3146,8 +3286,8 @@ Function Request-NsxtEdgeUserExpiry {
                     if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
-                                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {   
-                                    if (($vcfNsxEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipFQDN -eq $vcfNsxDetails.fqdn })) {   
+                                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                                    if (($vcfNsxEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipFQDN -eq $vcfNsxDetails.fqdn })) {
                                         $customObject = New-Object System.Collections.ArrayList
                                         foreach ($nsxtEdgeNode in $vcfNsxEdgeDetails.edgeNodes) {
                                             $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password
@@ -3182,7 +3322,7 @@ Function Request-NsxtEdgeUserExpiry {
                             }
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                    }    
+                    }
                 }
             }
         }
@@ -3229,7 +3369,7 @@ Function Request-NsxtManagerUserExpiry {
                     if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
-                                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {    
+                                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {
                                     $customObject = New-Object System.Collections.ArrayList
                                     $nsxtManagerNode = ($vcfNsxDetails.nodes | Select-Object -First 1)
                                     $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password | Select-Object -First 1
@@ -3262,7 +3402,7 @@ Function Request-NsxtManagerUserExpiry {
                             }
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                    }    
+                    }
                 }
             }
         }
@@ -3279,7 +3419,7 @@ Function Request-vCenterUserExpiry {
         Checks the local OS user expiry in a vCenter Server instance.
 
         .DESCRIPTION
-        The Request-vCenterUserExpiry cmdlets checks the expiry date of local accounts on vCenter Server. The cmdlet 
+        The Request-vCenterUserExpiry cmdlets checks the expiry date of local accounts on vCenter Server. The cmdlet
         connects to SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
@@ -3316,7 +3456,7 @@ Function Request-vCenterUserExpiry {
                     if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             $customObject = New-Object System.Collections.ArrayList
-                            if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                            if ($PsBoundParameters.ContainsKey("allDomains")) {
                                 $allVcenters = Get-VCFvCenter
                                 foreach ($vcenter in $allVcenters) {
                                     $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn}).password
@@ -3448,14 +3588,14 @@ Function Request-NsxtVidmStatus {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
-                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {        
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
                             $customObject = New-Object System.Collections.ArrayList
                             $component = 'Identity Manager Integration' # Define the component name
                             $resource = $vcfNsxDetails.fqdn # Define the resource name
                             $integration = Get-NsxtVidmStatus
 
                             # Set the alert and message based on the status of the integration
-                            if ($integration.vidm_enable -eq $true) {   
+                            if ($integration.vidm_enable -eq $true) {
                                 $alert = 'GREEN' # Ok; enabled
                                 $message = 'Integration is enabled ' # Set the status message
                             } else {
@@ -3488,7 +3628,7 @@ Function Request-NsxtVidmStatus {
                                 }
                             } else {
                                 $customObject += $elementObject
-                            }  
+                            }
                         }
                         $customObject | Sort-Object Component, Resource
                     }
@@ -3552,7 +3692,7 @@ Function Request-NsxtComputeManagerStatus {
                                 }
 
                                 # Set the alert and message based on the status of the compute manager
-                                if ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -eq 'UP') {   
+                                if ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -eq 'UP') {
                                     $alert = 'GREEN' # Ok; registered and up
                                     $message = "$($computeManager.server) is registered and healthy." # Ok; registered and up
                                 } elseif ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -ne 'UP') {
@@ -3637,7 +3777,7 @@ Function Request-SddcManagerSnapshotStatus {
                             $snapshotCount = ($snapshotStatus | Measure-Object).count
                             $snapshotLast = $snapshotStatus.Created | select -Last 1
                             $snapshotAge = [math]::Ceiling(((Get-Date) - ([DateTime]$snapshotLast)).TotalDays)
-                            
+
                             # Set the alert color based on the age of the snapshot
                             if ($snapshotCount -eq 0) {
                                 $alert = 'GREEN' # Ok; = 0 snapshots
@@ -3688,7 +3828,7 @@ Function Request-SddcManagerSnapshotStatus {
                                 }
                             } else {
                                 $customObject += $elementObject
-                            }                     
+                            }
                             $customObject | Sort-Object Component, Resource, Element
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
@@ -3740,7 +3880,7 @@ Function Request-VcenterSnapshotStatus {
                 $vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT
                 if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        $customObject = New-Object System.Collections.ArrayList    
+                        $customObject = New-Object System.Collections.ArrayList
                         $component = 'vCenter Server'
                         $resource = 'vCenter Server Snapshot'
                         $domain = (Get-VCFWorkloadDomain | Where-Object { $_.vcenters.fqdn -eq $vcenter.fqdn }).name
@@ -3800,8 +3940,8 @@ Function Request-VcenterSnapshotStatus {
                             }
                         } else {
                             $customObject += $elementObject
-                        }                              
-                        $outputObject += $customObject # Add the custom object to the output object    
+                        }
+                        $outputObject += $customObject # Add the custom object to the output object
                     }
                     Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                 }
@@ -3854,7 +3994,7 @@ Function Request-NsxtEdgeSnapshotStatus {
                         if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $nsxtManager.domains.name)) {
                             if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                                 if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                                    $customObject = New-Object System.Collections.ArrayList 
+                                    $customObject = New-Object System.Collections.ArrayList
                                     $message = ''
                                     $component = 'NSX'
                                     $resource = 'NSX Edge Node Snapshot'
@@ -3867,7 +4007,7 @@ Function Request-NsxtEdgeSnapshotStatus {
                                     # Set the alert color based on the age of the snapshot
                                     if ($snapshotCount -eq 0) {
                                         $alert = 'GREEN' # Ok; = 0 snapshots
-                                        $message = 'No snapshots exist.' 
+                                        $message = 'No snapshots exist.'
                                     } elseif ($snapshotAge -le 1) {
                                         $alert = 'GREEN' # OK; <= 1 days
                                         $message = 'Latest snapshot is less than 1 day old. '
@@ -3915,13 +4055,13 @@ Function Request-NsxtEdgeSnapshotStatus {
                                         }
                                     } else {
                                         $customObject += $elementObject
-                                    }  
-                                }                              
-                                $outputObject += $customObject # Add the custom object to the output object    
+                                    }
+                                }
+                                $outputObject += $customObject # Add the custom object to the output object
                             }
                             Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                         }
-                    }                        
+                    }
                 }
             }
         }
@@ -3977,7 +4117,7 @@ Function Request-SddcManagerBackupStatus {
                     $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$date)).TotalDays) # Calculate the number of days since the backup was created
 
                     # Set the status for the backup task
-                    if ($backupTask.status -eq 'Successful') {                              
+                    if ($backupTask.status -eq 'Successful') {
                         $alert = "GREEN" # Ok; success
                     } else {
                         $alert = "RED" # Critical; failure
@@ -4032,7 +4172,7 @@ Function Request-SddcManagerBackupStatus {
                     }
                 } else {
                     $customObject += $elementObject
-                }  
+                }
                 $customObject | Sort-Object Component, Resource, Element
             }
         }
@@ -4091,7 +4231,7 @@ Function Request-NsxtManagerBackupStatus {
                                 $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
 
                                 # Set the alert and message based on the status of the backup
-                                if ($backupTask.node_backup_statuses.success -eq $true) {   
+                                if ($backupTask.node_backup_statuses.success -eq $true) {
                                     $alert = "GREEN" # Ok; success
                                     $message = 'The backup completed without errors. ' # Set the backup status message
                                 } else {
@@ -4137,11 +4277,11 @@ Function Request-NsxtManagerBackupStatus {
                                     }
                                 } else {
                                     $customObject += $elementObject
-                                }  
+                                }
                             }
 
                             $outputObject += $customObject # Add the custom object to the output object
-                            
+
                             # NSX Cluster Backup
                             $component = 'NSX Manager' # Define the component name
                             $resource = 'Cluster Backup Operation' # Define the resource name
@@ -4150,7 +4290,7 @@ Function Request-NsxtManagerBackupStatus {
                                 $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
 
                                 # Set the alert and message based on the status of the backup
-                                if ($backupTask.node_backup_statuses.success -eq $true) {   
+                                if ($backupTask.node_backup_statuses.success -eq $true) {
                                     $alert = 'GREEN' # Ok; success
                                     $message = 'The backup completed without errors. ' # Set the backup status message
                                 } else {
@@ -4196,7 +4336,7 @@ Function Request-NsxtManagerBackupStatus {
                                     }
                                 } else {
                                     $customObject += $elementObject
-                                }  
+                                }
                             }
 
                             $outputObject += $customObject # Add the custom object to the output object
@@ -4209,7 +4349,7 @@ Function Request-NsxtManagerBackupStatus {
                                 $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
 
                                 # Set the alert and message based on the status of the backup
-                                if ($backupTask.node_backup_statuses.success -eq $true) {   
+                                if ($backupTask.node_backup_statuses.success -eq $true) {
                                     $alert = 'GREEN' # Ok; success
                                     $message = 'The backup completed without errors. ' # Set the backup status message
                                 } else {
@@ -4255,9 +4395,9 @@ Function Request-NsxtManagerBackupStatus {
                                     }
                                 } else {
                                     $customObject += $elementObject
-                                }  
+                                }
                             }
-                            $customObject | Sort-Object Domain, Element, Resource                
+                            $customObject | Sort-Object Domain, Element, Resource
                         }
                     }
                 }
@@ -4309,7 +4449,7 @@ Function Request-VcenterBackupStatus {
                     $customObject = New-Object System.Collections.ArrayList
                     $component = 'vCenter Server' # Define the component name
                     $resource = 'vCenter Server Backup Operation' # Define the resource name
-                    if ($global:backupTask = (Get-VcenterBackupStatus | Select-Object -Last 1).Value) {    
+                    if ($global:backupTask = (Get-VcenterBackupStatus | Select-Object -Last 1).Value) {
                         if ($PSEdition -eq 'Core') {
                             $timestamp = $backupTask.end_time
                         } else {
@@ -4322,9 +4462,9 @@ Function Request-VcenterBackupStatus {
                         }
 
                         # Set the status for the backup task
-                        if ($backupTask.status -eq 'SUCCEEDED') {                              
+                        if ($backupTask.status -eq 'SUCCEEDED') {
                             $alert = "GREEN" # Ok; success
-                        } elseif ($backupTask.status -eq 'IN PROGRESS') {                              
+                        } elseif ($backupTask.status -eq 'IN PROGRESS') {
                             $alert = "YELLOW" # Warning; in progress
                         } else {
                             $alert = "RED" # Critical; failure
@@ -4385,7 +4525,7 @@ Function Request-VcenterBackupStatus {
                         }
                     } else {
                         $customObject += $elementObject
-                    }  
+                    }
                     $customObject | Sort-Object Component, Resource, Element
                 }
             }
@@ -4403,13 +4543,13 @@ Function Request-DatastoreStorageCapacity {
         Checks the datastore usage in all vCenter Server instances.
 
         .DESCRIPTION
-        The Request-DatastoreStorageCapacity cmdlet checks the datastore usage in all vCenters. The cmdlet 
+        The Request-DatastoreStorageCapacity cmdlet checks the datastore usage in all vCenters. The cmdlet
         connects to SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the details for each vCenter Server
         - Collects information about datastore usage
-        
+
         .EXAMPLE
         Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will check datastores on all vCenter Servers managed by SDDC Manager in a VMware Cloud Foundation instance but only failed items.
@@ -4419,7 +4559,7 @@ Function Request-DatastoreStorageCapacity {
         This example will check datastore on a vCenter Servers managed by SDDC Manager for a workload domain.
 
     #>
-    
+
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
@@ -4427,7 +4567,7 @@ Function Request-DatastoreStorageCapacity {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
-        
+
     # Define thresholds Green < Yellow < Red
     $greenThreshold = 80
     $redThreshold = 90
@@ -4484,8 +4624,8 @@ Function Request-DatastoreStorageCapacity {
     }
     Catch {
         Debug-CatchWriter -object $_
-    } 
-    
+    }
+
 }
 Export-ModuleMember -Function Request-DatastoreStorageCapacity
 
@@ -4495,7 +4635,7 @@ Function Request-VcenterStorageHealth {
         Checks the disk usage on a vCenter Server instance.
 
         .DESCRIPTION
-        The Request-VcenterStorageHealth cmdlets checks the disk space usage on a vCenter Server. The cmdlet 
+        The Request-VcenterStorageHealth cmdlets checks the disk space usage on a vCenter Server. The cmdlet
         connects to SDDC Manager using the -server, -user, and -password values:
         - Validates network connectivity and authentication to the SDDC Manager instance
         - Validates network connectivity and authentication to the vCenter Server instance
@@ -4554,7 +4694,7 @@ Function Request-SddcManagerStorageHealth {
         Checks the storage health (capacity) in an SDDC Manager appliance.
 
         .DESCRIPTION
-        The Request-SddcManagerStorageHealth cmdlet checks the disk free space on the SDDC Manager appliance. 
+        The Request-SddcManagerStorageHealth cmdlet checks the disk free space on the SDDC Manager appliance.
         The cmdlet connects to SDDC Manager using the -server, -user, and password values:
         - Performs checks on the local storage used space and outputs the results
 
@@ -4574,7 +4714,7 @@ Function Request-SddcManagerStorageHealth {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
-    
+
     Try {
         $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"' # Define Command for Retriveing Disk Information
         $dfOutput = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command # Get Disk Information from SDDC Manager
@@ -4587,7 +4727,7 @@ Function Request-SddcManagerStorageHealth {
     }
     Catch {
         Debug-CatchWriter -object $_
-    } 
+    }
 }
 Export-ModuleMember -Function Request-SddcManagerStorageHealth
 
@@ -4725,7 +4865,7 @@ Function Publish-ComponentConnectivityHealth {
         $allConnectivityObject += $connectivityRaw
         if ($allConnectivityObject.Count -eq 0) { $addNoIssues = $true }
         if ($addNoIssues) {
-            $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p>No issues found.</p>' 
+            $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p>No issues found.</p>'
         } else {
             $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -As Table
         }
@@ -4744,7 +4884,7 @@ Function Request-VcenterAuthentication {
         Checks API authentication to vCenter Server instance.
 
         .DESCRIPTION
-        The Request-VcenterAuthentication cmdlets checks the authentication to vCenter Server instance. The cmdlet 
+        The Request-VcenterAuthentication cmdlets checks the authentication to vCenter Server instance. The cmdlet
         connects to SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
@@ -4776,7 +4916,7 @@ Function Request-VcenterAuthentication {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $account = (Get-VCFCredential | Where-Object {$_.accountType -eq "SYSTEM" -and $_.resource.resourceType -eq "PSC"})
                 $customObject = New-Object System.Collections.ArrayList
-                if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $allWorkloadDomains = Get-VCFWorkloadDomain
                     foreach ($domain in $allWorkloadDomains) {
                         if (Test-vSphereApiAuthentication -server $domain.vcenters.fqdn -user $account.username -pass $account.password) {
@@ -4839,7 +4979,7 @@ Function Request-NsxtAuthentication {
         Checks API authentication to NSX Manager instance.
 
         .DESCRIPTION
-        The Request-NsxtAuthentication cmdlets checks the authentication to NSX Manager instance. The cmdlet 
+        The Request-NsxtAuthentication cmdlets checks the authentication to NSX Manager instance. The cmdlet
         connects to SDDC Manager using the -server, -user, and -password values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the NSX Manager instance
@@ -4870,7 +5010,7 @@ Function Request-NsxtAuthentication {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $customObject = New-Object System.Collections.ArrayList
-                if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $allWorkloadDomains = Get-VCFWorkloadDomain
                     foreach ($domain in $allWorkloadDomains) {
                         $vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain.name -listNodes
@@ -4930,7 +5070,7 @@ Function Request-NsxtAuthentication {
                         } else {
                             $customObject += $elementObject
                         }
-                    }  
+                    }
                 }
                 $customObject | Sort-Object Component, Resource
             }
@@ -5016,7 +5156,7 @@ Function Request-NsxtTransportNodeStatus {
                                 }
                             }
                         }
-                        $customObject | Sort-Object Domain, Resource, Element                
+                        $customObject | Sort-Object Domain, Resource, Element
                     }
                 }
             }
@@ -5167,7 +5307,7 @@ Function Request-NsxtTier0BgpStatus {
                                     $bgpStatus = Get-NsxtTier0BgpStatus -id $tier0.id | Where-Object {$_.type -eq 'USER'}
                                     $localAsn = (Get-NsxtTier0LocaleServiceBgp -id $tier0.id).local_as_num
                                     foreach ($element in $bgpStatus) {
-                                        if ($element.connection_state -eq 'ESTABLISHED') {  
+                                        if ($element.connection_state -eq 'ESTABLISHED') {
                                             $alert = "GREEN"
                                             $message = "BGP is established."
                                         } else {
@@ -5191,18 +5331,18 @@ Function Request-NsxtTier0BgpStatus {
                                         $elementObject | Add-Member -NotePropertyName 'Total Out Prefix' -NotePropertyValue $element.total_out_prefix_count
                                         $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
                                         $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
-                                        
+
                                         if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                             if ($element.connection_state -ne 'ESTABLISHED') {
                                                 $customObject += $elementObject
                                             }
                                         } else {
                                             $customObject += $elementObject
-                                        }  
+                                        }
                                     }
                                 }
                             }
-                            $customObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address'             
+                            $customObject | Sort-Object 'NSX Manager', 'Domain', 'Tier-0 ID', 'Source Address'
                         }
                     }
                 }
@@ -5243,7 +5383,7 @@ Function Publish-VmConnectedCdrom {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -5260,7 +5400,7 @@ Function Publish-VmConnectedCdrom {
                 if ($allHealthObject.Count -eq 0) { $addNoIssues = $true }
 
                 if ($addNoIssues) {
-                    $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -PostContent '<p>No virtual machines with connected CD-ROMs found.</p>' 
+                    $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -PostContent '<p>No virtual machines with connected CD-ROMs found.</p>'
                 } else {
                     $allHealthObject = $allHealthObject | Sort-Object Cluster, 'VM Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -As Table
                 }
@@ -5371,13 +5511,13 @@ Function Publish-EsxiConnectionHealth {
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $allHealthObject = New-Object System.Collections.ArrayList
                 $allWorkloadDomains = Get-VCFWorkloadDomain
-                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
                     foreach ($domain in $allWorkloadDomains ) {
                         $esxiConnectionStatus = Request-EsxiConnectionHealth -server  $server -user $user -pass $pass -domain $domain.name -failureOnly; $allHealthObject += $esxiConnectionStatus
                     }
@@ -5387,7 +5527,7 @@ Function Publish-EsxiConnectionHealth {
                     }
                 }
 
-                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) { 
+                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
                     $esxiConnectionStatus = Request-EsxiConnectionHealth -server  $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allHealthObject += $esxiConnectionStatus
                 } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
                     $esxiConnectionStatus = Request-EsxiConnectionHealth -server  $server -user $user -pass $pass -domain $workloadDomain; $allHealthObject += $esxiConnectionStatus
@@ -5395,7 +5535,7 @@ Function Publish-EsxiConnectionHealth {
 
                 if ($allHealthObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-connection"></a><h3>ESXi Connection Health</h3>' -PostContent '<p>No issues found.</p>' 
+                    $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-connection"></a><h3>ESXi Connection Health</h3>' -PostContent '<p>No issues found.</p>'
                 } else {
                     $allHealthObject = $allHealthObject | Sort-Object Resource, Cluster | ConvertTo-Html -Fragment -PreContent '<a id="esxi-connection"></a><h3>ESXi Connection Health</h3>' -As Table
                 }
@@ -5453,7 +5593,7 @@ Function Request-EsxiConnectionHealth {
                                     $component = "ESXi"
                                     # Set the alert and message based on the CD-ROM connection
                                     if ($esxiHost.ConnectionState -eq 'Connected') {
-                                        $alert = 'GREEN' # Ok, connected 
+                                        $alert = 'GREEN' # Ok, connected
                                         $message = 'Host is connected.' # Set the status message
                                     } elseif ($esxiHost.ConnectionState -eq 'Maintenance') {
                                         $alert = 'YELLOW' # Warning, maintenance
@@ -5480,7 +5620,7 @@ Function Request-EsxiConnectionHealth {
                                         }
                                     } else {
                                         $allClustersObject += $customObject
-                                    }  
+                                    }
                                 }
                             }
                             $allClustersObject | Sort-Object Resource, Cluster
@@ -5523,7 +5663,7 @@ Function Publish-SddcManagerFreePool {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -5536,7 +5676,7 @@ Function Publish-SddcManagerFreePool {
                     else {
                         $allConfigurationObject = Request-SddcManagerFreePool -server $server -user $user -pass $pass
                     }
-                
+
                     if ($allConfigurationObject.Count -eq 0) { $addNoIssues = $true }
                     if ($addNoIssues) {
                         $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table -PostContent '<p>No issues found.</p>'
@@ -5546,7 +5686,7 @@ Function Publish-SddcManagerFreePool {
                 } else {
                     $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table -PostContent '<p>No ESXi hosts present in the free pool.</p>'
                 }
-                
+
                 $allConfigurationObject = Convert-CssClass -htmldata $allConfigurationObject
                 $allConfigurationObject
             }
@@ -5601,7 +5741,7 @@ Function Request-SddcManagerFreePool {
                 foreach ($esxiHost in $unassignedEsxiHosts) {
                     if ($esxiHost.status -eq "UNASSIGNED_USEABLE") {
                         foreach ($version in $versionList) {
-                            if ($esxiHost.esxiVersion -eq $version) {  
+                            if ($esxiHost.esxiVersion -eq $version) {
                                 $alert = "GREEN"
                                 $message = "Current ESXi Host version $($esxiHost.esxiVersion) matches supported version(s)."
                             } else {
@@ -5631,7 +5771,7 @@ Function Request-SddcManagerFreePool {
                             }
                         }
                         $expiryDate = [math]::Ceiling((([DateTime]$expirationDate) - (Get-Date)).TotalDays)
-                        if ($expiryDate -gt "0") {  
+                        if ($expiryDate -gt "0") {
                             $alert = "GREEN"
                             $message = "No expired license running on the host."
                         } else {
@@ -5703,7 +5843,7 @@ Function Publish-EsxiAlert {
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -5718,7 +5858,7 @@ Function Publish-EsxiAlert {
                         $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $esxiSystemAlert
                     }
                 } else {
-                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
                         foreach ($domain in $allWorkloadDomains ) {
                             $esxiSystemAlert = Request-EsxiAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $esxiSystemAlert
                         }
@@ -5729,7 +5869,7 @@ Function Publish-EsxiAlert {
 
                 if ($allAlertObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alert</h3>' -PostContent '<p>No alerts found.</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alert</h3>' -PostContent '<p>No alerts found.</p>'
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-esxi"></a><h3>ESXi Host Alerts</h3>' -As Table
                 }
@@ -5778,7 +5918,7 @@ Function Publish-NsxtAlert {
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -5793,7 +5933,7 @@ Function Publish-NsxtAlert {
                         $nsxtSystemAlert = Request-NsxtAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $nsxtSystemAlert
                     }
                 } else {
-                    if ($PsBoundParameters.ContainsKey("allDomains")) { 
+                    if ($PsBoundParameters.ContainsKey("allDomains")) {
                         foreach ($domain in $allWorkloadDomains ) {
                             $nsxtSystemAlert = Request-NsxtAlert -server $server -user $user -pass $pass -domain $domain.name; $allAlertObject += $nsxtSystemAlert
                         }
@@ -5804,7 +5944,7 @@ Function Publish-NsxtAlert {
 
                 if ($allAlertObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alert</h3>' -PostContent '<p>No alerts found.</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alert</h3>' -PostContent '<p>No alerts found.</p>'
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alerts</h3>' -As Table
                 }
@@ -5852,7 +5992,7 @@ Function Publish-VcenterAlert {
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -5867,7 +6007,7 @@ Function Publish-VcenterAlert {
                         $vcenterSystemAlert = Request-VcenterAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $vcenterSystemAlert
                     }
                 } else {
-                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
                         foreach ($domain in $allWorkloadDomains ) {
                             $vcenterSystemAlert = Request-VcenterAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $vcenterSystemAlert
                         }
@@ -5878,7 +6018,7 @@ Function Publish-VcenterAlert {
 
                 if ($allAlertObject.Count -eq 0) { $addNoIssues = $true  }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alert</h3>' -PostContent '<p>No alerts found.</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alert</h3>' -PostContent '<p>No alerts found.</p>'
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vcenter"></a><h3>vCenter Server Alerts</h3>' -As Table
                 }
@@ -5926,7 +6066,7 @@ Function Publish-VsanAlert {
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -5941,7 +6081,7 @@ Function Publish-VsanAlert {
                         $vsanSystemAlert = Request-VsanAlert -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allAlertObject += $vsanSystemAlert
                     }
                 } else {
-                    if ($PsBoundParameters.ContainsKey('allDomains')) { 
+                    if ($PsBoundParameters.ContainsKey('allDomains')) {
                         foreach ($domain in $allWorkloadDomains ) {
                             $vsanSystemAlert = Request-VsanAlert -server $server -user $user -pass $pass $domain.name; $allAlertObject += $vsanSystemAlert
                         }
@@ -5952,7 +6092,7 @@ Function Publish-VsanAlert {
 
                 if ($allAlertObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alert</h3>' -PostContent '<p>No alerts found.</p>' 
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alert</h3>' -PostContent '<p>No alerts found.</p>'
                 } else {
                     $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-vsan"></a><h3>vSAN Alerts</h3>' -As Table
                 }
@@ -5983,7 +6123,7 @@ Function Request-NsxtAlert {
         .EXAMPLE
         Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
         This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain.
-        
+
         .EXAMPLE
         Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01 -failureOnly
         This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain but only for the failed items
@@ -6023,7 +6163,7 @@ Function Request-NsxtAlert {
                             $elementObject | Add-Member -NotePropertyName 'Severity' -NotePropertyValue $alarm.severity # Set the severity
                             $elementObject | Add-Member -NotePropertyName 'Node Name' -NotePropertyValue $alarm.node_display_name # Set the node_display_name
                             $elementObject | Add-Member -NotePropertyName 'Node IP Address' -NotePropertyValue "$($alarm.node_ip_addresses)" # Set the node_ip_addresses array converted to sting
-                            
+
                             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                     $customObject += $elementObject
@@ -6087,7 +6227,7 @@ Function Request-VsanAlert {
                                 $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $vsanAlarm.TestHealth
                                 $elementObject | Add-Member -NotePropertyName 'GroupName' -NotePropertyValue $vsanAlarm.GroupName
                                 $elementObject | Add-Member -NotePropertyName 'TestName' -NotePropertyValue $vsanAlarm.TestName
-                                
+
                                 if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                     if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
                                         $customObject += $elementObject
@@ -6122,7 +6262,7 @@ Function Request-VcenterAlert {
         .EXAMPLE
         Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return alarms of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
-        
+
         .EXAMPLE
         Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -filterOut hostOnly
         This example will return alarms from ESXi hosts of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
@@ -6169,14 +6309,18 @@ Function Request-VcenterAlert {
                             $elementObject | Add-Member -NotePropertyName 'Entity Type' -NotePropertyValue $alarm.EntityType
                             $elementObject | Add-Member -NotePropertyName 'Alarm' -NotePropertyValue $alarm.Alarm
                             $elementObject | Add-Member -NotePropertyName 'Time' -NotePropertyValue $alarm.Time
-                            $elementObject | Add-Member -NotePropertyName 'Acknowledged' -NotePropertyValue $alarm.Acknowledged 
+                            $elementObject | Add-Member -NotePropertyName 'Acknowledged' -NotePropertyValue $alarm.Acknowledged
                             $elementObject | Add-Member -NotePropertyName 'Acknowledged By' -NotePropertyValue $alarm.AckBy
                             $elementObject | Add-Member -NotePropertyName 'Acknowledged Time' -NotePropertyValue $alarm.AcknowledgedTime
+<<<<<<< HEAD
                             
 <<<<<<< HEAD
                             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                 if ((($elementObject.alert -eq 'RED') -or ($elementObject.Alert -eq 'YELLOW')) -and !($elementObject.Acknowledged)) {
 =======
+=======
+
+>>>>>>> b4e9126 (feat: add checks for sos json extractions functions)
                             $addToCustomObject = $false
 
                             switch ($filterOut) {
@@ -6211,7 +6355,7 @@ Function Request-VcenterAlert {
                                     $customObject += $elementObject
                                 }
                             }
-                            
+
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                         $customObject | Sort-Object Component, Resource, Domain, 'Entity Type', Alert
@@ -6271,7 +6415,7 @@ Function Request-EsxiAlert {
                                 $elementObject | Add-Member -NotePropertyName 'Entity' -NotePropertyValue $alarm.Entity
                                 $elementObject | Add-Member -NotePropertyName 'Alarm' -NotePropertyValue $alarm.Alarm
                                 $elementObject | Add-Member -NotePropertyName 'Time' -NotePropertyValue $alarm.Time
-                                $elementObject | Add-Member -NotePropertyName 'Acknowledged' -NotePropertyValue $alarm.Acknowledged 
+                                $elementObject | Add-Member -NotePropertyName 'Acknowledged' -NotePropertyValue $alarm.Acknowledged
                                 $elementObject | Add-Member -NotePropertyName 'Acknowledged By' -NotePropertyValue $alarm.AckBy
                                 $elementObject | Add-Member -NotePropertyName 'Acknowledged Time' -NotePropertyValue $alarm.AcknowledgedTime
                                 if ($PsBoundParameters.ContainsKey("failureOnly")) {
@@ -6328,7 +6472,7 @@ Function Publish-ClusterConfiguration {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -6392,7 +6536,7 @@ Function Publish-EsxiCoreDumpConfig {
                             if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                                 if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                                     $coreDumpObject = New-Object -TypeName psobject
-                                    $esxiHosts = Get-VMHost 
+                                    $esxiHosts = Get-VMHost
                                     Foreach ($esxiHost in $esxiHosts) {
                                         $coreDumpObject = New-Object -TypeName psobject
                                         $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
@@ -6401,7 +6545,7 @@ Function Publish-EsxiCoreDumpConfig {
                                         $coreDumpObject | Add-Member -notepropertyname 'Host' -notepropertyvalue $esxiHost.Name
                                         $coreDumpObject | Add-Member -notepropertyname 'Active Core Dump' -notepropertyvalue $coreDumpConfig.Active
                                         $coreDumpObject | Add-Member -notepropertyname 'Configured Core Dump' -notepropertyvalue $coreDumpConfig.Configured
-                                        $domainHostObject += $coreDumpObject 
+                                        $domainHostObject += $coreDumpObject
                                     }
                                 }
                             }
@@ -6414,7 +6558,7 @@ Function Publish-EsxiCoreDumpConfig {
                         if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                             if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                                 $coreDumpObject = New-Object -TypeName psobject
-                                $esxiHosts = Get-VMHost 
+                                $esxiHosts = Get-VMHost
                                 Foreach ($esxiHost in $esxiHosts) {
                                     $coreDumpObject = New-Object -TypeName psobject
                                     $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
@@ -6537,7 +6681,7 @@ Function Publish-ClusterDrsRule {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -6607,7 +6751,7 @@ Function Request-ClusterDrsRule {
                                         $vmName = (Get-VM -Id $vm -Server $vcfVcenterDetails.fqdn).Name
                                         $vmList += $vmName
                                     }
-                                    
+
                                     $customObject = New-Object -TypeName psobject
                                     $customObject | Add-Member -notepropertyname "Cluster" -notepropertyvalue $cluster.Name
                                     $customObject | Add-Member -notepropertyname "VM/Host Rule" -notepropertyvalue $drsRule.Name
@@ -6615,7 +6759,7 @@ Function Request-ClusterDrsRule {
                                     $customObject | Add-Member -notepropertyname "Type" -notepropertyvalue $drsRule.Type
                                     $customObject | Add-Member -notepropertyname "VMs" -notepropertyvalue ($vmList -join ':-: ')
                                     $allClustersObject += $customObject
-                                } 
+                                }
                             }
                             $allClustersObject
                         }
@@ -6659,7 +6803,7 @@ Function Publish-ResourcePool {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -6729,7 +6873,7 @@ Function Request-ResourcePool {
                                         $customObject | Add-Member -notepropertyname "Memory Expandable" -notepropertyvalue $resourcePool.MemExpandableReservation
                                         $allClustersObject += $customObject
                                     }
-                                } 
+                                }
                             }
                             $allClustersObject
                         }
@@ -6773,7 +6917,7 @@ Function Publish-VmOverride {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -6882,7 +7026,7 @@ Function Publish-VirtualNetwork {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -6998,7 +7142,7 @@ Function Publish-EsxiSecurityConfiguration {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -7116,7 +7260,7 @@ Function Publish-EsxiPolicy {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -7262,7 +7406,7 @@ Function Request-EsxiLockoutPolicy {
                                         $hostLockoutPolicyObject | Add-Member -notepropertyname "Cluster" -notepropertyvalue $cluster
                                         $hostLockoutPolicyObject | Add-Member -notepropertyname "ESXi FQDN" -notepropertyvalue $esxiHost.Name
                                         $hostLockoutPolicyObject | Add-Member -notepropertyname "Failed Attempts" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountLockFailures" }).Value
-                                        $hostLockoutPolicyObject | Add-Member -notepropertyname "Lockout Time (sec)" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountUnlockTime" }).Value                                        
+                                        $hostLockoutPolicyObject | Add-Member -notepropertyname "Lockout Time (sec)" -notepropertyvalue (Get-VMHost -name $esxiHost | Where-Object { $_.ConnectionState -eq "Connected" } | Get-AdvancedSetting | Where-Object { $_.Name -eq "Security.AccountUnlockTime" }).Value
                                         $esxiLockoutPolicyObject += $hostLockoutPolicyObject
                                     }
                                     $clusterObject += $esxiLockoutPolicyObject
@@ -7312,7 +7456,7 @@ Function Publish-VcenterPolicy {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -7387,7 +7531,7 @@ Function Request-VcenterRootPasswordPolicy {
                     if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
                         Request-VcenterApiToken -fqdn $vcfVcenterDetails.fqdn -username $vcfVcenterDetails.ssoAdmin -password $vcfVcenterDetails.ssoAdminPass | Out-Null
                         $customObject = New-Object System.Collections.ArrayList
-                        $rootPasswordExpiry = Get-VCRootPasswordExpiry                   
+                        $rootPasswordExpiry = Get-VCRootPasswordExpiry
                         $customObject = New-Object -TypeName psobject
                         $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $vcfVcenterDetails.fqdn
                         $customObject | Add-Member -notepropertyname "Lifetime (days)" -notepropertyvalue $rootPasswordExpiry.max_days_between_password_change
@@ -7603,7 +7747,7 @@ Function Publish-NsxtPolicy {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -7734,7 +7878,7 @@ Function Request-NsxtEdgePasswordPolicy {
                             $allNsxtEdgeObject = New-Object System.Collections.ArrayList
                             $nsxtEdgeNodes = (Get-NsxtEdgeCluster | Where-Object {$_.member_node_type -eq "EDGE_NODE"})
                             foreach ($nsxtEdgeNode in $nsxtEdgeNodes.members) {
-                                $edgePolicy = Get-NsxtEdgeNodeAuthPolicy -nsxtManager $vcfNsxDetails.fqdn -nsxtEdgeNodeID $nsxtEdgeNode.transport_node_id  
+                                $edgePolicy = Get-NsxtEdgeNodeAuthPolicy -nsxtManager $vcfNsxDetails.fqdn -nsxtEdgeNodeID $nsxtEdgeNode.transport_node_id
                                 $customObject = New-Object -TypeName psobject
                                 $customObject | Add-Member -notepropertyname "NSX Edge" -notepropertyvalue (Get-NsxtEdgeNode -transportNodeID $nsxtEdgeNode.transport_node_id).display_name
                                 $customObject | Add-Member -notepropertyname "Length (min)" -notepropertyvalue $edgePolicy.minimum_password_length
@@ -7791,7 +7935,7 @@ Function Publish-VcfSystemOverview {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
-    
+
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -8176,13 +8320,13 @@ Function Request-NetworkOverview {
                             $customObject | Add-Member -notepropertyname "NSX Manager FQDN" -notepropertyvalue $domain.nsxtCluster.vipFqdn
                             $customObject | Add-Member -notepropertyname "NSX Manager Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
                             $customObject | Add-Member -notepropertyname "NSX Stretched" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
-                            $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name 
+                            $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
                         }
                         $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
                         $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
                         $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
                     }
-                    $allNetworkingObject += $customObject 
+                    $allNetworkingObject += $customObject
                 }
                 $allNetworkingObject | Sort-Object 'Domain Type'
             }
@@ -8229,7 +8373,7 @@ Function Request-VrealizeOverview {
                 foreach ($apiCmdlet in $vcfApiCmdlet) {
                     if ((Invoke-Expression $apiCmdlet).status -eq "ACTIVE") {
                         if ($apiCmdlet -eq "Get-VCFvRSLCM") {$nodeCount = "1" } else { ($nodeCount = ((Invoke-Expression $apiCmdlet).nodes).Count)}
-                        $customObject = New-Object -TypeName psobject  
+                        $customObject = New-Object -TypeName psobject
                         $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue ((Get-Help -Name $apiCmdlet).synopsis -Split ("Get the existing ") | Select-Object -Last 1)
                         if ($PsBoundParameters.ContainsKey('anonymized')) {
                             $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Invoke-Expression $apiCmdlet).id
@@ -8319,7 +8463,7 @@ Function Request-ValidatedSolutionOverview {
                         }
                     }
                 }
-                
+
                 $customObject = New-Object -TypeName psobject
                 $customObject | Add-Member -notepropertyname "Name" -notepropertyvalue "Developer Ready Infrastructure"
                 $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $driEnabled
@@ -8428,7 +8572,7 @@ Function Test-VcfReportingPrereq {
     #>
 
     Try {
-        $modules = @( 
+        $modules = @(
             @{ Name=("PowerVCF"); Version=("2.2.0")}
             @{ Name=("PowerValidatedSolutions"); Version=("1.6.0")}
             @{ Name=("VMware.PowerCLI"); Version=("12.4.1")}
@@ -8450,7 +8594,7 @@ Function Test-VcfReportingPrereq {
                     }
                 }
             }
-            
+
         }
     }
     Catch {
@@ -8612,7 +8756,7 @@ Function Get-ClarityReportHeader {
     )
 
     # Define the default Clarity Cascading Style Sheets (CSS) for the HTML report Header
-    if ($PsBoundParameters.ContainsKey("dark")) { 
+    if ($PsBoundParameters.ContainsKey("dark")) {
         $clarityCssHeader = '
         <head>
         <style>
@@ -8634,7 +8778,7 @@ Function Get-ClarityReportHeader {
             .sub-nav, .subnav { display: flex; box-shadow: 0 -0.05rem 0 #cccccc inset; justify-content: space-between; align-items: center; background-color: #17242b; height: 1.8rem; }
             .sub-nav .nav, .subnav .nav { flex: 1 1 auto; padding-left: 1.2rem; }
             .sub-nav aside, .subnav aside { flex: 0 0 auto; display: flex; align-items: center; height: 1.8rem; padding: 0 1.2rem; }
-            .sub-nav aside > :last-child, .subnav aside > :last-child { margin-right: 0; padding-right: 0; }  
+            .sub-nav aside > :last-child, .subnav aside > :last-child { margin-right: 0; padding-right: 0; }
             .sidenav { line-height: 1.2rem; max-width: 15.6rem; min-width: 10.8rem; width: 18%; border-right: 0.05rem solid #152228; display: flex; flex-direction: column; }
             .sidenav .sidenav-content { flex: 1 1 auto; overflow-x: hidden; padding-bottom: 1.2rem; }
             .sidenav .sidenav-content .nav-link { border-radius: 0; border-top-left-radius: 0.15rem; border-bottom-left-radius: 0.15rem; display: inline-block; color: inherit; cursor: pointer; text-decoration: none; width: 100%; }
@@ -8657,7 +8801,7 @@ Function Get-ClarityReportHeader {
             .sidenav .collapsible input[type=checkbox]:checked ~ label:after { transform: rotate(-90deg) translateX(-0.35rem) translateY(-0.4rem); }
             body:not([cds-text]) { color: #acbac3; font-weight: 400; font-size: 0.7rem; letter-spacing: normal; line-height: 1.2rem; margin-bottom: 0px; font-family: ClarityCityRegular, "Avenir Next", "Helvetica Neue", Arial, sans-serif; margin-top: 0px !important; }
             html:not([cds-text]) { color: #eaedf0; font-family: ClarityCityRegular, "Avenir Next", "Helvetica Neue", Arial, sans-serif; font-size: 125%; }
-            a:link { color: #4aaed9; text-decoration: none; }            
+            a:link { color: #4aaed9; text-decoration: none; }
             h1:not([cds-text]) { color: #eaedf0; font-weight: 200; font-family: ClarityCityRegular, "Avenir Next", "Helvetica Neue", Arial, sans-serif; font-size: 1.6rem; letter-spacing: normal; line-height: 2.4rem; margin-top: 1.2rem; margin-bottom: 0; }
             h2:not([cds-text]) { color: #eaedf0; font-weight: 200; font-family: ClarityCityRegular, "Avenir Next", "Helvetica Neue", Arial, sans-serif; font-size: 1.4rem; letter-spacing: normal; line-height: 2.4rem; margin-top: 1.2rem; margin-bottom: 0; }
             h3:not([cds-text]) { color: #eaedf0; font-weight: 200; font-family: ClarityCityRegular, "Avenir Next", "Helvetica Neue", Arial, sans-serif; font-size: 1.1rem; letter-spacing: normal; line-height: 1.2rem; margin-top: 1.2rem; margin-bottom: 0; }
@@ -8764,7 +8908,7 @@ Function Get-ClarityReportHeader {
             header .branding .title, .header .branding .title { color: #fafafa; font-weight: 400; font-family: ClarityCityRegular, "Avenir Next", "Helvetica Neue", Arial, sans-serif; font-size: 0.8rem; letter-spacing: 0.01em; line-height: 3rem; text-decoration: none; }
             header .branding > a, header .branding > .nav-link, .header .branding > a, .header .branding > .nav-link { display: inline-flex; align-items: center; height: 3rem; }
             header .branding .clr-icon, header .branding cds-icon, header .branding clr-icon, .header .branding .clr-icon, .header .branding cds-icon, .header .branding clr-icon { flex-grow: 0; flex-shrink: 0; height: 1.8rem; width: 1.8rem; margin-right: 0.45rem; }
-            
+
             ul:not([cds-list]), ol:not([cds-list]) { list-style-position: inside; margin-left: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; }
             a { background-color: transparent; -webkit-text-decoration-skip: objects; }
             h1 { font-size: 2em; margin: 0.67em 0px; }
@@ -8783,7 +8927,7 @@ Function Get-ClarityReportHeader {
 			.table thead th:last-child { border-top-left-radius: 0px; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-top-right-radius: var(--clr-table-cornercellradius, 0.1rem); }
 			.table tbody:last-child tr:last-child td:first-child { border-top-left-radius: 0px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; border-bottom-left-radius: var(--clr-table-cornercellradius, 0.1rem); }
 			.table tbody:last-child tr:last-child td:last-child { border-top-left-radius: 0px; border-top-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom-right-radius: var(--clr-table-cornercellradius, 0.1rem); }
-            
+
             @font-face {font-family: ClarityCityRegular;src: url(data:font/ttf;base64,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AvQAWwLlABkEKwAeBCsAHgQrAB4EKwAeBCsAHgKlABwCoQATAqEAEwKhABMCoQATAqEAEwJlACwCZQAsAmUALAJlACwCLQAkAi0AJAItACQCLQAkAi0AJAItACQCLQAkAi0AJAItACQCLQAkA7IAJAJ7AFcCBwApAgcAKQIHACkCBwApAnsALwJZACsCpQAvAnsALwJHACwCRwAsAkcALAJHACwCRwAsAkcALAJYACwCRwAsAkcALAJYACwCRwAsAT0AGAJ2ACoCdgAqAnYAKgJZAFcA+QBLAPkAVwD5AFcA+f/2APn/7wD5/9IA+f/iAPkAMADv/84A7//OAiUAVwIlAFcA+QBXAPkAVwEWAFcBJwAcA4kAVwJZAFcCWQBXAlkAVwJZAFcCWQBXAmkAKgJpACoCaQAqAmkAKgJpACoCaQAqAmkAKgKBADMCaQAqBCAAKgJ7AFcCfABYAnsALwGMAFcBjABXAYwAVgGMAFcB3gAhAd4AIQHeACEB3gAhAkMAVwFZABUBuQAVAVkAFQJZAEsCWQBLAlkASwJZAEsCWQBLAlkASwJZAEsCWQBLAlkASwIRAAoDHQAQAx0AEAMdABADHQAQAx0AEAH/AAwCGAAJAhgACQIYAAkCGAAJAhgACQHbACEB2wAhAdsAIQHbACECewAvAnsALwJ7AC8CewAvAnsALwJ7AC8CewAvAnsALwJ7AC8CewAvArMAPAFlABQCNQAiAkYAHgJMABsCUQA3AmgAPwIDABYCbQA7AmgAMgFEAGwBOgBlATMAYwE1AGMC1ABsAT0AaAE9AGkCCQAiAgkAMwFBAG0BrgBfAc8AVgKxAC8BtAAAAbQAAAFIADUBSAAaAWIAFgFiABsBcgBpAXIAHQGvAFYCfQBWA64AVgMAAFYB4ABUAeAAUAHgAFQBGABQARgAVAIBACICAAAsATsAIgE6ACwBygBdARYAXQPoAAAB9AAAAPoAAAETAAAApgAAAU0AAAJcAFECkgBGAzkAUAKcAFUC8QA6Ak8AQgLPAIICFgBOAlMARALRAIMCUQBPAlEAOwIbAG0B/AA/A0YAPwS6AD8DqABJAsIAPwKYAD0DrQBKApUAVANBAFMBQgCDAAD/UgAA/10BBwAeAZEANQFbACYBJQAwAVsAJgGxAEsA8QBLAQMAHQHOAB0B4gBWASYAQwFNAD8BxABC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)
         </style>
         </head>
@@ -9110,7 +9254,7 @@ Function Format-DfStorageHealth {
                     $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the partition."
                 }
             }
-            
+
             # Skip population of object if "failureOnly" is selected and alert is "GREEN"
             if (($PsBoundParameters.ContainsKey("failureOnly")) -and ($alert -eq 'GREEN')) { continue }
 
@@ -9129,7 +9273,7 @@ Function Format-DfStorageHealth {
     }
     Catch {
         Debug-CatchWriter -object $_
-    } 
+    }
 }
 Export-ModuleMember -Function Format-DfStorageHealth
 
