@@ -204,6 +204,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
     $sddcManagerRootPass = "VMw@re1!"
+    $workloadDomain = "sfo-w01"
     $reportPath = "F:\Reporting"
     ```
 
@@ -215,6 +216,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
     $sddcManagerRootPass = "VMw@re1!"
+    $workloadDomain = "sfo-w01"
     $reportPath = "/home/vmware/reporting"
     ```
 
@@ -276,6 +278,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
     $sddcManagerRootPass = "VMw@re1!"
+    $workloadDomain = "sfo-w01"
     $reportPath = "F:\Reporting"
     ```
 
@@ -287,6 +290,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
     $sddcManagerRootPass = "VMw@re1!"
+    $workloadDomain = "sfo-w01"
     $reportPath = "/home/vmware/reporting"
     ```
 
@@ -419,6 +423,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
+    $workloadDomain = "sfo-w01"
     $reportPath = "F:\Reporting"
     ```
 
@@ -429,6 +434,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
+    $workloadDomain = "sfo-w01"
     $reportPath = "/home/vmware/reporting"
     ```
 
