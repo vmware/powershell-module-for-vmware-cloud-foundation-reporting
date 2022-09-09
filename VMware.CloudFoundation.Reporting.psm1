@@ -1255,7 +1255,7 @@ Function Publish-DnsHealth {
 
         # Forward Lookup Health Status
         $allForwardLookupObject = New-Object System.Collections.ArrayList
-        $jsonForwardLookupInput = 'DNS lookup Status'.'Forward lookup Status' # Extract Data from the provided SOS JSON
+        $jsonForwardLookupInput = $targetContent.'DNS lookup Status'.'Forward lookup Status' # Extract Data from the provided SOS JSON
         if (($jsonForwardLookupInput | Measure-Object).Count -lt 1) {
             Write-Warning 'Forward Lookup Status not found in the JSON file: SKIPPED'
         } else {
