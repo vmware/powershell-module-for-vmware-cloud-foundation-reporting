@@ -1000,7 +1000,7 @@ Function Request-SoSHealthJson {
                 $reportDestination = ($reportPath + "\" + $workloadDomain + "-all-health-results.json")
             }
         }
-        Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command | Out-Null
+        Invoke-SddcCommand -server $server -user $user -pass $pass -vmUser root -vmPass $rootPass -command $command | Out-Null
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
@@ -4717,7 +4717,7 @@ Function Request-SddcManagerStorageHealth {
 
     Try {
         $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"' # Define Command for Retriveing Disk Information
-        $dfOutput = Invoke-SddcCommand -server $server -user $user -pass $pass -rootPass $rootPass -command $command # Get Disk Information from SDDC Manager
+        $dfOutput = Invoke-SddcCommand -server $server -user $user -pass $pass -vmUser root -vmPass $rootPass -command $command # Get Disk Information from SDDC Manager
 
         if ($PsBoundParameters.ContainsKey("failureOnly")) {
             Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $server -failureOnly
@@ -8641,15 +8641,20 @@ Function Invoke-SddcCommand {
         - Runs the command provided within the SDDC Manager appliance
 
         .EXAMPLE
-        Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -command "chage -l backup"
-        This example runs the command provided on the SDDC Manager appliance.
+        Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser root -vmPass VMw@re1! -command "chage -l backup"
+        This example runs the command provided on the SDDC Manager appliance as the root user.
+
+        .EXAMPLE
+        Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser vcf -vmPass VMw@re1! -command "echo Hello World."
+        This example runs the command provided on the SDDC Manager appliance as the vcf user.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vmUser,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vmPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$command
     )
 
@@ -8658,7 +8663,7 @@ Function Invoke-SddcCommand {
             if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
                 if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        $output = Invoke-VMScript -VM ($server.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass -Server $vcfVcenterDetails.fqdn
+                        $output = Invoke-VMScript -VM ($server.Split(".")[0]) -ScriptText $command -GuestUser $vmUser -GuestPassword $vmPass -Server $vcfVcenterDetails.fqdn
                         $output
                     }
                     Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
@@ -8694,7 +8699,8 @@ Function Copy-FiletoSddc {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vcfPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vmUser,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vmPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$source,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$destination
     )
@@ -8704,7 +8710,7 @@ Function Copy-FiletoSddc {
             if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
                 if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        $output = Copy-VMGuestFile -VM ($server.Split('.')[0]) -LocalToGuest -GuestUser vcf -GuestPassword $vcfPass -Source $source -Destination $destination -Server $vcfVcenterDetails.fqdn
+                        $output = Copy-VMGuestFile -VM ($server.Split('.')[0]) -LocalToGuest -GuestUser $vmUser -GuestPassword $vmPass -Source $source -Destination $destination -Server $vcfVcenterDetails.fqdn
                         $output
                     }
                     Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
@@ -9246,7 +9252,7 @@ Function Format-DfStorageHealth {
                     # TODO: Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
                     # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
                     # As an alternative you could run PowerCLI commandlet:
-                    # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <administrator@vsphere.local> -pass <administrator@vsphere.local_password> -rootPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
+                    # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <administrator@vsphere.local> -pass <administrator@vsphere.local_password> -GuestUser root -vmPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
                 }
                 Default {
                     # TODO: Same as above - add hints on new lines }
