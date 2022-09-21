@@ -95,7 +95,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('VMware', 'Cloud Foundation', 'VMware Cloud Foundation')
 
         # A URL to the license for this module.
         # LicenseUri = ''
@@ -104,7 +104,7 @@ PrivateData = @{
         # ProjectUri = ''
 
         # A URL to an icon representing this module.
-        # IconUri = ''
+        IconUri = 'https://raw.githubusercontent.com/vmware/powershell-module-for-vmware-cloud-foundation/main/.github/icon-85px.svg'
 
         # ReleaseNotes of this module
         # ReleaseNotes = ''
@@ -129,4 +129,3 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
-
