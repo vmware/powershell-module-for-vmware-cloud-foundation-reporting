@@ -8233,7 +8233,7 @@ Function Request-ClusterOverview {
         This example will return an overview of the vSphere environment managed by the SDDC Manager instance.
 
         .EXAMPLE
-        Request-ClusterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -aanonymized
+        Request-ClusterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
         This example will return an overview of the vSphere environment managed by the SDDC Manager instance, but will anonymize the output.
     #>
 
@@ -8261,10 +8261,10 @@ Function Request-ClusterOverview {
                         }
                         $customObject | Add-Member -notepropertyname "Principal Storage" -notepropertyvalue (Get-VCFCluster -id $cluster.id).primaryDatastoreType
                         $customObject | Add-Member -notepropertyname "Stretched Cluster" -notepropertyvalue (Get-VCFCluster -id $cluster.id).isStretched
+                        $allClusterObject += $customObject
                     }
-                    $allClusterObject += $customObject
                 }
-                $allClusterObject
+                $allClusterObject | Sort-Object 'Domain Name','Cluster Name','Domain UUID','Cluster UUID'
             }
         }
     }
