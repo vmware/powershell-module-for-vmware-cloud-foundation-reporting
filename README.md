@@ -110,7 +110,7 @@ The `Invoke-VcfOverviewReport` cmdlet generates a system overview report. This r
 
 #### Generate a System Overview Report for a VMware Cloud Foundation Instance
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system overview report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -156,7 +156,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
 
 #### Generate a Health Report for a VMware Cloud Foundation Instance (Display Only Issues)
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -192,7 +192,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
 
 #### Generate a Health Report for a Workload Domain (Display Only Issues)
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -230,7 +230,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
 
 ### Generate a Health Report for a VMware Cloud Foundation Instance
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -266,7 +266,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
 
 ### Generate a Health Report for a Workload Domain
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a health report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -308,7 +308,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
 
 #### Generate a System Alert Report for a VMware Cloud Foundation Instance (Display Only Issues)
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system alert report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -342,7 +342,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
 
 #### Generate a System Alert Report for a Workload Domain (Display Only Issues)
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system alert report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -378,7 +378,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
 
 #### Generate a System Alert Report for a VMware Cloud Foundation Instance
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system alert report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -412,7 +412,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
 
 #### Generate a System Alert Report for a Workload Domain
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system alert report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -452,7 +452,7 @@ The `Invoke-VcfPasswordPolicyReport` cmdlet generates a password policy report. 
 
 #### Generate a Password Policy Report for a VMware Cloud Foundation Instance
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a password policy report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -488,7 +488,7 @@ The `Invoke-VcfPasswordPolicyReport` cmdlet generates a password policy report. 
 
 #### Generate a Password Policy Report for a Workload Domain
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator)
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a password policy report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -530,7 +530,7 @@ The `Invoke-VcfConfigurationReport` cmdlet generates a configuration report. Thi
 
 #### Generate a Configuration Report for a VMware Cloud Foundation Instance
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a configuration report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -564,7 +564,7 @@ The `Invoke-VcfConfigurationReport` cmdlet generates a configuration report. Thi
 
 #### Generate a Configuration Report for a Workload Domain
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a configuration report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -604,7 +604,7 @@ The upgrade precheck report, initiates an upgrade precheck of a workload domain 
 
 #### Perform an Upgrade Precheck for a Workload Domain
 
-1. Start PowerShell.
+1. Start PowerShell (Run as Administrator).
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate an upgrade precheck report for SDDC Manager instance and run the commands in the PowerShell console.
 
@@ -640,9 +640,18 @@ The upgrade precheck report, initiates an upgrade precheck of a workload domain 
 
 ## Known Issues
 
+- The `Invoke-VcfHealthReport` cmdlets fails to return collected information for NSX Edges on Windows PowerShell. You may receive an error message similar to the following:
+
+    ```powershell
+    Relevant Command: if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+    Error Message: Cannot process argument transformation on parameter 'user'. Cannot convert value to type System.String.
+    ```
+
+    Workaround: Run PowerShell as an Administrator.
+
 - The `Invoke-VcfPasswordPolicy` cmdlet fails to return collected information for the vCenter Server Password Policy Configuration when using PowerShell Core on Linux
 
-    ```console
+    ```powershell
     [00-00-0000_00:00:00] INFO Collecting vCenter Server Password Policy Configuration for VMware Cloud Foundation instance (sfo-vcf01.sfo.rainpole.io).
 
     Connect-SsoAdminServer: One or more errors occurred. (The SSL connection could not be established, see inner exception.)
