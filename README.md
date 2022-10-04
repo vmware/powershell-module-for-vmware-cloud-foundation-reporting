@@ -32,7 +32,7 @@ A PowerShell module for VMware Cloud Foundation reporting.
 
 ### Browsers
 
-For the best expereince, use one of the following browsers to view generated HTML reports.
+For the best experience, use one of the following browsers to view generated HTML reports.
 
 - Microsoft Edge
 - Google Chrome
