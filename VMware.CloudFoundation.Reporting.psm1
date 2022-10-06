@@ -3290,7 +3290,7 @@ Function Request-NsxtEdgeUserExpiry {
                                     if (($vcfNsxEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipFQDN -eq $vcfNsxDetails.fqdn })) {
                                         $customObject = New-Object System.Collections.ArrayList
                                         foreach ($nsxtEdgeNode in $vcfNsxEdgeDetails.edgeNodes) {
-                                            $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password
+                                            $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn -and $_.resource.domainName -eq $domain }).password
                                             $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser admin
                                             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                                 if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
@@ -3372,7 +3372,7 @@ Function Request-NsxtManagerUserExpiry {
                                 if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {
                                     $customObject = New-Object System.Collections.ArrayList
                                     $nsxtManagerNode = ($vcfNsxDetails.nodes | Select-Object -First 1)
-                                    $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn }).password | Select-Object -First 1
+                                    $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn -and $_.resource.domainName -eq $domain }).password
                                     $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser admin
                                     if ($PsBoundParameters.ContainsKey('failureOnly')) {
                                         if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
