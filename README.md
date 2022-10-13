@@ -1,6 +1,9 @@
-# `VMware.CloudFoundation.Reporting`
+<img src=".github/icon-400px.svg" alt="A PowerShell Module for Cloud Foundation Reporting" width="150"></br></br>
 
-A PowerShell module for VMware Cloud Foundation reporting.
+# PowerShell Module for VMware Cloud Foundation Reporting
+
+[<img src="https://img.shields.io/powershellgallery/v/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery">][module-powervcf]&nbsp;&nbsp;
+[<img src="https://img.shields.io/powershellgallery/dt/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery Downloads">][module-powervcf]&nbsp;&nbsp;
 
 ## Overview
 
