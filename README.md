@@ -3,6 +3,7 @@
 # PowerShell Module for VMware Cloud Foundation Reporting
 
 [<img src="https://img.shields.io/powershellgallery/v/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery">][module-reporting]&nbsp;&nbsp;
+[<img src="https://img.shields.io/badge/Changelog-Read-blue?style=for-the-badge&logo=github&logoColor=white" alt="CHANGELOG" >][changelog]&nbsp;&nbsp;
 [<img src="https://img.shields.io/powershellgallery/dt/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery Downloads">][module-reporting]&nbsp;&nbsp;
 
 ## Overview
@@ -664,9 +665,20 @@ The upgrade precheck report, initiates an upgrade precheck of a workload domain 
 
     Workaround: Use PowerShell Core on Windows.
 
+## Contributing
+
+The project team welcomes contributions from the community. Before you start working with PowerValidatedSolutions, please
+read our [Developer Certificate of Origin][vmware-cla-dco]. All contributions to this repository must be
+signed as described on that page. Your signature certifies that you wrote the patch or have the right to pass it on
+as an open-source patch.
+
+For more detailed information, refer to the [contribution guidelines][contributing] to get started.
+
 ## Support
 
-This module is not supported by VMware Support.
+This PowerShell module is not supported by VMware Support.
+
+If you discover a bug or would like to suggest an enhancement, please [open an issue][issues].
 
 ## License
 
@@ -682,6 +694,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 [//]: Links
 
+[changelog]: CHANGELOG.md
+[contributing]: CONTRIBUTING_DCO.md
+[issues]: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/issues
 [microsoft-powershell]: https://docs.microsoft.com/en-us/powershell
 [module-vmware-powercli]: https://www.powershellgallery.com/packages/VMware.PowerCLI
 [module-vmware-vsphere-ssoadmin]: https://www.powershellgallery.com/packages/VMware.vSphere.SsoAdmin
