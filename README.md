@@ -2,8 +2,8 @@
 
 # PowerShell Module for VMware Cloud Foundation Reporting
 
-[<img src="https://img.shields.io/powershellgallery/v/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery">][module-powervcf]&nbsp;&nbsp;
-[<img src="https://img.shields.io/powershellgallery/dt/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery Downloads">][module-powervcf]&nbsp;&nbsp;
+[<img src="https://img.shields.io/powershellgallery/v/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery">][module-reporting]&nbsp;&nbsp;
+[<img src="https://img.shields.io/powershellgallery/dt/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery Downloads">][module-reporting]&nbsp;&nbsp;
 
 ## Overview
 
@@ -682,10 +682,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 [//]: Links
 
-[microsoft-powershell]: https://docs.microsoft.com/en-us/powershell/
-[module-vmware-powercli]: https://www.powershellgallery.com/packages/VMware.PowerCLI/
+[microsoft-powershell]: https://docs.microsoft.com/en-us/powershell
+[module-vmware-powercli]: https://www.powershellgallery.com/packages/VMware.PowerCLI
 [module-vmware-vsphere-ssoadmin]: https://www.powershellgallery.com/packages/VMware.vSphere.SsoAdmin
 [module-powervcf]: https://www.powershellgallery.com/packages/PowerVCF/2.2.0
+[module-reporting]: https://www.powershellgallery.com/packages/VMware.CloudFoundation.Reporting
 [module-powervalidatedsolutions]: https://www.powershellgallery.com/packages/PowerValidatedSolutions
 [vmware-photon]: https://vmware.github.io/photon/
-[vmware-cloud-foundation]: https://docs.vmware.com/en/VMware-Cloud-Foundation/
+[vmware-cloud-foundation]: https://docs.vmware.com/en/VMware-Cloud-Foundation
