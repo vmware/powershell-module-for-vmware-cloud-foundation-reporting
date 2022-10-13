@@ -20,6 +20,7 @@ jobs:
       run: |
         Write-Output $PSVersionTable.PSVersion.Major $PSVersionTable.PSRemotingProtocolVersion.Minor
         Set-PSRepository psgallery -InstallationPolicy trusted
+        Install-Module -Name VMware.PowerCLI -confirm:$false -Force
         Install-Module -Name Pester -confirm:$false -Force
         Invoke-Pester -Path "./.ci/pester.tests.ps1" -EnableExit
       shell: pwsh
