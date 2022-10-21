@@ -12,7 +12,7 @@
 RootModule = '.\VMware.CloudFoundation.Reporting.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.4.1001'
+ModuleVersion = '1.0.5.1001'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -98,16 +98,16 @@ PrivateData = @{
         Tags = @('VMware', 'CloudFoundation', 'VMwareCloudFoundation')
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        LicenseUri = 'https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/blob/main/LICENSE'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting'
 
         # A URL to an icon representing this module.
-        IconUri = 'https://raw.githubusercontent.com/vmware/powershell-module-for-vmware-cloud-foundation/main/.github/icon-85px.svg'
+        IconUri = 'https://raw.githubusercontent.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/main/.github/icon-85px.svg'
 
         # ReleaseNotes of this module
-        # ReleaseNotes = ''
+        ReleaseNotes = 'https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/blob/main/CHANGELOG.md'
 
         # Prerelease string of this module
         # Prerelease = ''
