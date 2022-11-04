@@ -125,7 +125,6 @@ The `Invoke-VcfOverviewReport` cmdlet generates a system overview report. This r
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $sddcManagerRootPass = "VMw@re1!"
     $reportPath = "F:\Reporting"
     ```
 
@@ -136,11 +135,10 @@ The `Invoke-VcfOverviewReport` cmdlet generates a system overview report. This r
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $sddcManagerRootPass = "VMw@re1!"
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfOverviewReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath
@@ -186,7 +184,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report which only displays issues by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerRootPass $sddcManagerRootPass -reportPath $reportPath -allDomains -failureOnly
@@ -224,7 +222,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report which only displays issues by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerRootPass $sddcManagerRootPass -reportPath $reportPath -workloadDomain $workloadDomain -failureOnly
@@ -260,7 +258,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerRootPass $sddcManagerRootPass -reportPath $reportPath -allDomains
@@ -298,7 +296,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerRootPass $sddcManagerRootPass -reportPath $reportPath -workloadDomain $workloadDomain
@@ -336,7 +334,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report which only displays issues by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfAlertReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -allDomains -failureOnly
@@ -372,7 +370,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report which only displays issues by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfAlertReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -workloadDomain $workloadDomain -failureOnly
@@ -406,7 +404,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfAlertReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -allDomains
@@ -442,7 +440,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfAlertReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -workloadDomain $workloadDomain
@@ -482,7 +480,7 @@ The `Invoke-VcfPasswordPolicyReport` cmdlet generates a password policy report. 
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfPasswordPolicy -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -allDomains
@@ -520,7 +518,7 @@ The `Invoke-VcfPasswordPolicyReport` cmdlet generates a password policy report. 
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfPasswordPolicy -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -workloadDomain $workloadDomain
@@ -558,7 +556,7 @@ The `Invoke-VcfConfigurationReport` cmdlet generates a configuration report. Thi
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfConfigReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -allDomains
@@ -594,7 +592,7 @@ The `Invoke-VcfConfigurationReport` cmdlet generates a configuration report. Thi
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfConfigReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -workloadDomain $workloadDomain
@@ -619,7 +617,7 @@ The upgrade precheck report, initiates an upgrade precheck of a workload domain 
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $workloadDomain = "sfo-m01"
+    $workloadDomain = "sfo-w01"
     $reportPath = "F:\Reporting"
     ```
 
@@ -630,11 +628,11 @@ The upgrade precheck report, initiates an upgrade precheck of a workload domain 
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $workloadDomain = "sfo-m01"
+    $workloadDomain = "sfo-w01"
     $reportPath = "/home/vmware/reporting"
     ```
 
-3. Perform the configuration by running the command in the PowerShell console.
+3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
     Invoke-VcfUpgradePrecheck -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -workloadDomain $workloadDomain
@@ -643,15 +641,6 @@ The upgrade precheck report, initiates an upgrade precheck of a workload domain 
 4. Review the generated HTML report.
 
 ## Known Issues
-
-- The `Invoke-VcfHealthReport` cmdlets fails to return collected information for NSX Edges on Windows PowerShell. You may receive an error message similar to the following:
-
-    ```powershell
-    Relevant Command: if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
-    Error Message: Cannot process argument transformation on parameter 'user'. Cannot convert value to type System.String.
-    ```
-
-    Workaround: Run PowerShell as an Administrator.
 
 - The `Invoke-VcfPasswordPolicy` cmdlet fails to return collected information for the vCenter Server Password Policy Configuration when using PowerShell Core on Linux
 
