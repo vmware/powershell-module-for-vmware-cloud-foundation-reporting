@@ -8449,16 +8449,22 @@ Function Test-VcfReportingPrereq {
         foreach ($module in $modules ) {
             if ($PSEdition -eq "Desktop") {
                 if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
-                    $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding"
+                    $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding."
+                    Write-Warning $message; Write-Host ""
+					Exit
+                } else {
+                    $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Found, Supports the minimum required version."
                     $message
-                    Break
                 }
             } else {
                 if (!$module -eq "VMware.PowerCLI") {
                     if ((Get-Module -Name $module.Name).Version -lt $module.Version) {
-                        $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding"
+                        $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding."
+                        Write-Warning $message; Write-Host ""
+					Exit
+                    } else {
+                        $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Found, Supports the minimum required version."
                         $message
-                        Break
                     }
                 }
             }
@@ -8470,7 +8476,6 @@ Function Test-VcfReportingPrereq {
     }
 }
 Export-ModuleMember -Function Test-VcfReportingPrereq
-
 Function Start-CreateReportDirectory {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$path,
