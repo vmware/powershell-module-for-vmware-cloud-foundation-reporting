@@ -8453,7 +8453,8 @@ Function Test-VcfReportingPrereq {
                     Write-Warning $message; Write-Host ""
 					Exit
                 } else {
-                    $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Found, Supports the minimum required version."
+                    $moduleCurrentVersion = (Get-InstalledModule -Name $module.Name).Version
+                    $message = "PowerShell Module: $($module.Name) Version: $($moduleCurrentVersion) Found, Supports the minimum required version."
                     $message
                 }
             } else {
@@ -8463,7 +8464,8 @@ Function Test-VcfReportingPrereq {
                         Write-Warning $message; Write-Host ""
 					Exit
                     } else {
-                        $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Found, Supports the minimum required version."
+                        $moduleCurrentVersion = (Get-InstalledModule -Name $module.Name).Version
+                        $message = "PowerShell Module: $($module.Name) Version: $($moduleCurrentVersion) Found, Supports the minimum required version."
                         $message
                     }
                 }
