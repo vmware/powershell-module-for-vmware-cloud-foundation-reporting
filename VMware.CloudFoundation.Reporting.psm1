@@ -79,7 +79,6 @@ Function Invoke-VcfHealthReport {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
                 $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
                     $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
@@ -385,7 +384,6 @@ Function Invoke-VcfAlertReport {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
                 $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType alert # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
                     $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
@@ -524,7 +522,6 @@ Function Invoke-VcfConfigReport {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
                 $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType config # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
                     $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
@@ -657,7 +654,6 @@ Function Invoke-VcfUpgradePrecheck {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
                 $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType upgrade # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
                 $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
                 $workflowMessage = "Workload Domain ($workloadDomain)"
                 Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
@@ -791,7 +787,6 @@ Function Invoke-VcfPasswordPolicy {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
                 $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType policy # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
                     $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
@@ -906,7 +901,6 @@ Function Invoke-VcfOverviewReport {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
                 $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType overview # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-                if ($message = Test-VcfReportingPrereq) {Write-Warning $message; Write-Host ""; Break }
                 $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
                 $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
                 Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
@@ -8442,7 +8436,7 @@ Function Test-VcfReportingPrereq {
     Try {
         $modules = @(
             @{ Name=("PowerVCF"); Version=("2.2.0")}
-            @{ Name=("PowerValidatedSolutions"); Version=("1.6.0")}
+            @{ Name=("PowerValidatedSolutions"); Version=("1.7.0")}
             @{ Name=("VMware.PowerCLI"); Version=("12.4.1")}
             @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.7")}
         )
