@@ -14,7 +14,7 @@
 
 ### Platforms
 
-- [VMware Cloud Foundation][vmware-cloud-foundation] 4.2.1 and later
+- [VMware Cloud Foundation][vmware-cloud-foundation] 4.2.1 or later
 
 ### Operating Systems
 
@@ -25,14 +25,14 @@
 ### PowerShell Editions and Versions
 
 - [Microsoft Windows PowerShell 5.1][microsoft-powershell]
-- [PowerShell Core 7.2.0 and later][microsoft-powershell]
+- [PowerShell Core 7.2.0 or later][microsoft-powershell]
 
 ### PowerShell Modules
 
-- [`VMware.PowerCLI`][module-vmware-powercli] 12.4.1 and later
-- [`VMware.vSphere.SsoAdmin`][module-vmware-vsphere-ssoadmin] 1.3.7 an later
-- [`PowerVCF`][module-powervcf] 2.2.0 and later
-- [`PowerValidatedSolutions`][module-powervalidatedsolutions] 1.7.0 and later
+- [`VMware.PowerCLI`][module-vmware-powercli] 12.4.1 or later
+- [`VMware.vSphere.SsoAdmin`][module-vmware-vsphere-ssoadmin] 1.3.7 or later
+- [`PowerVCF`][module-powervcf] 2.2.0 or later
+- [`PowerValidatedSolutions`][module-powervalidatedsolutions] 1.7.0 or later
 
 ### Browsers
 
@@ -60,7 +60,7 @@ Install-Module -Name VMware.CloudFoundation.Reporting
 To verify the modules are installed, run the following command in the PowerShell console.
 
 ```powershell
-Get-InstalledModule
+Test-VcfReportingPrereq
 ```
 
 Once installed, any cmdlets associated with `VMware.CloudFoundation.Reporting` and the supporting PowerShell modules will be available for use.
