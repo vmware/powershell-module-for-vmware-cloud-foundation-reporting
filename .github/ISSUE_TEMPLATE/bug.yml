@@ -29,18 +29,7 @@ body:
     attributes:
       label: VMware Cloud Foundation
       description: Please provide the VMware Cloud Foundation version.
-      placeholder: 4.4.1
-    validations:
-      required: true
-  - type: input
-    id: module-version
-    attributes:
-      label: Module Version
-      description: >-
-        Please provide the PowerShell module version.
-        
-        Results of: `Get-InstalledModule PowerValidatedSolutions`
-      placeholder: 1.7.0
+      placeholder: 4.5
     validations:
       required: true
   - type: input
@@ -63,6 +52,28 @@ body:
         
         Results of `Get-InstalledModule VMware.PowerCLI`
       placeholder: 12.7.0
+    validations:
+      required: true
+  - type: input
+    id: module-version
+    attributes:
+      label: Module Version
+      description: >-
+        Please provide the PowerShell module version.
+        
+        Results of: `Get-InstalledModule VMware.CloudFoundation.Reporting`
+      placeholder: 1.0.4
+    validations:
+      required: true
+  - type: input
+    id: version-powervalidatedsolutions
+    attributes:
+      label: PowerValidatedSolutions Version
+      description: >-
+        Please provide the PowerShell module version.
+        
+        Results of: `Get-InstalledModule PowerValidatedSolutions`
+      placeholder: 1.9.0
     validations:
       required: true
   - type: input
@@ -119,7 +130,6 @@ body:
 
         This should be a description of how the functionality you tried to use
         is supposed to work.
-      placeholder: null
     validations:
       required: true
   - type: textarea
