@@ -3474,7 +3474,7 @@ Function Request-NsxtVidmStatus {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
-                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                             $customObject = New-Object System.Collections.ArrayList
                             $component = 'Identity Manager Integration' # Define the component name
                             $resource = $vcfNsxDetails.fqdn # Define the resource name
@@ -3563,7 +3563,7 @@ Function Request-NsxtComputeManagerStatus {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
-                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
+                        if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -First 1) -pass ($vcfNsxDetails.adminPass | Select-Object -First 1)) {
                             $computeManagers = (Get-NsxtComputeManager)
                             foreach ($computeManager in $computeManagers) {
                                 $customObject = New-Object System.Collections.ArrayList
