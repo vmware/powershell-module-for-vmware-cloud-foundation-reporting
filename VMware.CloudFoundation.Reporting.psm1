@@ -9250,7 +9250,7 @@ Function Request-LocalUserExpiry {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$checkUser,
-        [Parameter (Mandatory = $true)] [ValidateSet("SDDC","vCenter","NSX Manager", "NSX Edge", "vRSLCM")] [String]$component
+        [Parameter (Mandatory = $true)] [ValidateSet("SDDC","vCenter","NSX Manager","NSX Edge","vRSLCM","vRLI","vROPS","vRA","WSA")] [String]$component
     )
 
     Try {
