@@ -5592,7 +5592,7 @@ Function Request-SddcManagerFreePool {
         .DESCRIPTION
         The Request-SddcManagerFreePool cmdlet returns status of the ESXi hosts in the free pool. The cmdlet connects
         to SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity and authencitation is possible o the SDDC Manager instance
+        - Validates that network connectivity and authentication is possible to the SDDC Manager instance
         - Gathers the details for the ESXi hosts in the free pool
 
         .EXAMPLE
@@ -5654,9 +5654,11 @@ Function Request-SddcManagerFreePool {
                         foreach ($properties in $licenseManager.Evaluation.Properties) {
                             if ($properties.key -eq "expirationDate") {
                                 $expirationDate = $properties.value
+                                $expiryDate = [math]::Ceiling((([DateTime]$expirationDate) - (Get-Date)).TotalDays)
+                            } elseif ($properties.key -eq "diagnostic") {
+                                $expiryDate = 0
                             }
                         }
-                        $expiryDate = [math]::Ceiling((([DateTime]$expirationDate) - (Get-Date)).TotalDays)
                         if ($expiryDate -gt "0") {
                             $alert = "GREEN"
                             $message = "No expired license running on the host."
@@ -5665,7 +5667,7 @@ Function Request-SddcManagerFreePool {
                             $message = "License installed on the ESXi host has expired."
                         }
                         $elementObject = New-Object -TypeName psobject
-                        $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'Evaluation License'
+                        $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue 'ESXi License'
                         $elementObject | Add-Member -NotePropertyName 'ESXi FQDN' -NotePropertyValue $esxiHost.fqdn
                         $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
                         $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
