@@ -7806,6 +7806,7 @@ Function Publish-VcfSystemOverview {
                     $vcfOverview = Request-VcfOverview -server $server -user $user -pass $pass -anonymized
                     $hardwareOverview = Request-HardwareOverview -server $server -user $user -pass $pass
                     $vcenterOverview = Request-VcenterOverview -server $server -user $user -pass $pass -anonymized
+                    $esxiOverview = Request-EsxiOverview -server $server -user $user -pass $pass -anonymized
                     $clusterOverview = Request-ClusterOverview -server $server -user $user -pass $pass -anonymized
                     $networkingOverview = Request-NetworkOverview -server $server -user $user -pass $pass -anonymized
                     $vrealizeOverview = Request-VrealizeOverview -server $server -user $user -pass $pass -anonymized
@@ -7815,6 +7816,7 @@ Function Publish-VcfSystemOverview {
                     $hardwareOverview = Request-HardwareOverview -server $server -user $user -pass $pass
                     $vcenterOverview = Request-VcenterOverview -server $server -user $user -pass $pass
                     $clusterOverview = Request-ClusterOverview -server $server -user $user -pass $pass
+                    $esxiOverview = Request-EsxiOverview -server $server -user $user -pass $pass
                     $networkingOverview = Request-NetworkOverview -server $server -user $user -pass $pass
                     $vrealizeOverview = Request-VrealizeOverview -server $server -user $user -pass $pass
                     $vvsOverview = Request-ValidatedSolutionOverview -server $server -user $user -pass $pass
@@ -7828,6 +7830,8 @@ Function Publish-VcfSystemOverview {
                 $vcenterOverview = Convert-CssClass -htmldata $vcenterOverview
                 $clusterOverview = $clusterOverview | ConvertTo-Html -Fragment -PreContent '<h4>vSphere Cluster Overview</h4>'
                 $clusterOverview = Convert-CssClass -htmldata $clusterOverview
+                $esxiOverview = $esxiOverview | ConvertTo-Html -Fragment -PreContent '<h4>ESXi Host Overview</h4>'
+                $esxiOverview = Convert-CssClass -htmldata $esxiOverview
                 $networkingOverview = $networkingOverview | ConvertTo-Html -Fragment -PreContent '<h4>Networking Overview</h4>'
                 $networkingOverview = Convert-CssClass -htmldata $networkingOverview
                 if ($vrealizeOverview) {
@@ -7846,6 +7850,7 @@ Function Publish-VcfSystemOverview {
                 $allOverviewObject += $networkingOverview
                 $allOverviewObject += $vrealizeOverview
                 $allOverviewObject += $vvsOverview
+                $allOverviewObject += $esxiOverview
                 $allOverviewObject
             }
         }
@@ -8013,8 +8018,8 @@ Function Request-VcenterOverview {
         .DESCRIPTION
         The Request-VcenterOverview cmdlet returns an overview of the vSphere environment managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity and authantcation to the SDDC Manager instance
-        - Validates that network connectivity and authantcation to the vCenter Server instances
+        - Validates that network connectivity and authentication to the SDDC Manager instance
+        - Validates that network connectivity and authentication to the vCenter Server instances
         - Collects the vSphere overview detail
 
         .EXAMPLE
@@ -8064,7 +8069,7 @@ Function Request-VcenterOverview {
                     }
                     $allVsphereObject += $customObject
                 }
-                $allVsphereObject | Sort-Object 'Domain Type'
+                $allVsphereObject | Sort-Object 'Domain Type', 'Domain Name'
             } else {
                 Write-LogMessage -Type ERROR -Message "$ErrorMessage"
             }
@@ -8078,6 +8083,110 @@ Function Request-VcenterOverview {
 }
 Export-ModuleMember -Function Request-VcenterOverview
 
+Function Request-EsxiOverview {
+    <#
+        .SYNOPSIS
+        Returns overview of ESXi hosts.
+
+        .DESCRIPTION
+        The Request-EsxiOverview cmdlet returns an overview of the ESXi host managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        - Validates that network connectivity and authentication to the SDDC Manager instance
+        - Validates that network connectivity and authentication to the vCenter Server instances
+        - Collects the ESXi host overview detail
+
+        .EXAMPLE
+        Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will return an overview of the ESXi hosts managed by the SDDC Manager instance.
+
+        .EXAMPLE
+        Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
+        This example will return an overview of the ESXi hosts managed by the SDDC Manager instance, but will anonymize the output.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
+    )
+
+    Try {
+        if (Test-VCFConnection -server $server) {
+            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $allEsxiHostObject = New-Object System.Collections.ArrayList
+                foreach ($domain in $allWorkloadDomains) {
+                    foreach ($cluster in $domain.clusters) {
+                        $allAssignedEsxiHosts = (Get-VCFHost | Where-Object {$_.domain.id -eq $domain.id})
+                        foreach ($assignedEsxiHost in $allAssignedEsxiHosts) {
+                            $customObject = New-Object -TypeName psobject
+                            if ($PsBoundParameters.ContainsKey('anonymized')) {
+                                $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
+                                $customObject | Add-Member -notepropertyname "Cluster UUID" -notepropertyvalue $cluster.id
+                                $customObject | Add-Member -notepropertyname "ESXi Host UUID" -notepropertyvalue $assignedEsxiHost.id
+                                $customObject | Add-Member -notepropertyname "ESXi Host Version" -notepropertyvalue $assignedEsxiHost.esxiVersion
+                                $customObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $assignedEsxiHost.hardwareVendor
+                                $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
+                                $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
+                                $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
+                                $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($assignedEsxiHost.memory.totalCapacityMB) / 1024))
+                                $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $assignedEsxiHost.status
+                            } else {
+                                $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
+                                $customObject | Add-Member -notepropertyname "Cluster Name" -notepropertyvalue (Get-VCFCluster -id $cluster.id).name
+                                $customObject | Add-Member -notepropertyname "ESXi Host FQDN" -notepropertyvalue (Get-VCFHost -id $assignedEsxiHost.id).fqdn
+                                $customObject | Add-Member -notepropertyname "ESXi Host Version" -notepropertyvalue $assignedEsxiHost.esxiVersion
+                                $customObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $assignedEsxiHost.hardwareVendor
+                                $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
+                                $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
+                                $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
+                                $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($assignedEsxiHost.memory.totalCapacityMB) / 1024))
+                                $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $assignedEsxiHost.status
+                            }
+                            $allEsxiHostObject += $customObject
+
+                        }
+                    }
+                }
+                $allUnassignedEsxiHosts = (Get-VCFHost | Where-Object {$_.status -eq "UNASSIGNED_USEABLE"})
+                foreach ($unassignedEsxiHost in $allUnassignedEsxiHosts) {
+                    $customObject = New-Object -TypeName psobject
+                    if ($PsBoundParameters.ContainsKey('anonymized')) {
+                        $customObject | Add-Member -NotePropertyName 'Domain UUID' -NotePropertyValue ""
+                        $customObject | Add-Member -notepropertyname "Cluster UUID" -notepropertyvalue ""
+                        $customObject | Add-Member -notepropertyname "ESXi Host UUID" -notepropertyvalue $unassignedEsxiHost.id
+                        $customObject | Add-Member -notepropertyname "ESXi Host Version" -notepropertyvalue $unassignedEsxiHost.esxiVersion
+                        $customObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $assignedEsxiHost.hardwareVendor
+                        $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
+                        $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
+                        $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
+                        $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($unassignedEsxiHost.memory.totalCapacityMB) / 1024))
+                        $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $unassignedEsxiHost.status
+                    } else {
+                        $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue ""
+                        $customObject | Add-Member -notepropertyname "Cluster Name" -notepropertyvalue ""
+                        $customObject | Add-Member -notepropertyname "ESXi Host FQDN" -notepropertyvalue (Get-VCFHost -id $unassignedEsxiHost.id).fqdn
+                        $customObject | Add-Member -notepropertyname "ESXi Host Version" -notepropertyvalue $unassignedEsxiHost.esxiVersion
+                        $customObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $assignedEsxiHost.hardwareVendor
+                        $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
+                        $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
+                        $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
+                        $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($unassignedEsxiHost.memory.totalCapacityMB) / 1024))
+                        $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $unassignedEsxiHost.status
+                    }
+                    $allEsxiHostObject += $customObject
+                }
+                $allEsxiHostObject | Sort-Object -Property Status,  'Domain Name', 'Domain UUID', 'Cluster Name', 'Cluster UUID', 'ESXi Host FQDN', 'ESXi Host UUID'
+            }
+        }
+    }
+	Catch {
+        Debug-ExceptionWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-EsxiOverview
+
 Function Request-ClusterOverview {
     <#
         .SYNOPSIS
@@ -8086,8 +8195,8 @@ Function Request-ClusterOverview {
         .DESCRIPTION
         The Request-ClusterOverview cmdlet returns an overview of the vSphere environment managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity and authantcation to the SDDC Manager instance
-        - Validates that network connectivity and authantcation to the vCenter Server instances
+        - Validates that network connectivity and authentication to the SDDC Manager instance
+        - Validates that network connectivity and authentication to the vCenter Server instances
         - Collects the vSphere overview detail
 
         .EXAMPLE
@@ -8144,7 +8253,7 @@ Function Request-NetworkOverview {
         .DESCRIPTION
         The Request-NetworkOverview cmdlet returns an overview of the networking managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity and authantcation to the SDDC Manager instance
+        - Validates that network connectivity and authentication to the SDDC Manager instance
         - Collects the networking overview detail
 
         .EXAMPLE
@@ -8208,7 +8317,7 @@ Function Request-VrealizeOverview {
         .DESCRIPTION
         The Request-VrealizeOverview cmdlet returns an overview of vRealize Suite managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity and authantcation to the SDDC Manager instance
+        - Validates that network connectivity and authentication to the SDDC Manager instance
         - Collects the networking overview detail
 
         .EXAMPLE
