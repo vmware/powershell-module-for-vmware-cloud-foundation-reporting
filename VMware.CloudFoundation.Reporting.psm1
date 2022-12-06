@@ -3172,7 +3172,7 @@ Function Request-NsxtEdgeUserExpiry {
                     if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
-                                if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                                     if (($vcfNsxEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipFQDN -eq $vcfNsxDetails.fqdn })) {
                                         $customObject = New-Object System.Collections.ArrayList
                                         foreach ($nsxtEdgeNode in $vcfNsxEdgeDetails.edgeNodes) {
@@ -3255,7 +3255,7 @@ Function Request-NsxtManagerUserExpiry {
                     if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
-                                if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {
+                                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {
                                     $customObject = New-Object System.Collections.ArrayList
                                     $nsxtManagerNode = ($vcfNsxDetails.nodes | Select-Object -First 1)
                                     $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn -and $_.resource.domainName -eq $domain }).password
@@ -3472,7 +3472,7 @@ Function Request-NsxtVidmStatus {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                             $customObject = New-Object System.Collections.ArrayList
@@ -3561,7 +3561,7 @@ Function Request-NsxtComputeManagerStatus {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -First 1) -pass ($vcfNsxDetails.adminPass | Select-Object -First 1)) {
                             $computeManagers = (Get-NsxtComputeManager)
@@ -4102,7 +4102,7 @@ Function Request-NsxtManagerBackupStatus {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                             $backupTask = Get-NsxtBackupHistory -fqdn $vcfNsxDetails.fqdn
@@ -4899,7 +4899,7 @@ Function Request-NsxtAuthentication {
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $allWorkloadDomains = Get-VCFWorkloadDomain
                     foreach ($domain in $allWorkloadDomains) {
-                        $vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain.name -listNodes
+                        $vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain.name -listNodes
                         foreach ($node in $vcfNsxDetails.nodes) {
                             if (Test-NsxtConnection -server $node.fqdn -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage ) {
                                 if (Test-NsxtAuthentication -server $node.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
@@ -4929,7 +4929,7 @@ Function Request-NsxtAuthentication {
                         }
                     }
                 } else {
-                    $vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $workloadDomain -listNodes
+                    $vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $workloadDomain -listNodes
                     foreach ($node in $vcfNsxDetails.nodes) {
                         if (Test-NsxtConnection -server $node.fqdn -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage ) {
                             if (Test-NsxtAuthentication -server $node.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
@@ -5001,7 +5001,7 @@ Function Request-NsxtTransportNodeStatus {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -First 1) -pass ($vcfNsxDetails.adminPass | Select-Object -First 1)) {
                             $customObject = New-Object System.Collections.ArrayList
@@ -5087,7 +5087,7 @@ Function Request-NsxtTransportNodeTunnelStatus {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -First 1) -pass ($vcfNsxDetails.adminPass | Select-Object -First 1)) {
                             $customObject = New-Object System.Collections.ArrayList
@@ -5184,7 +5184,7 @@ Function Request-NsxtTier0BgpStatus {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                             $customObject = New-Object System.Collections.ArrayList
@@ -6027,7 +6027,7 @@ Function Request-NsxtAlert {
 
     if (Test-VCFConnection -server $server) {
         if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-            if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
+            if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                 if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                     if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                         $nsxtAlarms = Get-NsxtAlarm -fqdn $vcfNsxDetails.fqdn # Get the NSX-T alarms
@@ -7678,7 +7678,7 @@ Function Request-NsxtManagerPasswordPolicy {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
-                    if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {
+                    if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {
                         $allNsxtManagerObject = New-Object System.Collections.ArrayList
                         foreach ($nsxtManagerNode in $vcfNsxDetails.nodes) {
                             if (Test-NSXTConnection -server $nsxtManagerNode.fqdn) {
@@ -7737,7 +7737,7 @@ Function Request-NsxtEdgePasswordPolicy {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
-                    if ($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes) {
+                    if ($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
                             $allNsxtEdgeObject = New-Object System.Collections.ArrayList
                             $nsxtEdgeNodes = (Get-NsxtEdgeCluster | Where-Object {$_.member_node_type -eq "EDGE_NODE"})
@@ -8401,7 +8401,7 @@ Function Request-ValidatedSolutionOverview {
                 $allVvsObject = New-Object System.Collections.ArrayList
 
                 # Validate IAM Deployment
-                if (($vcfNsxDetails = getNsxtServerDetail -fqdn $server -username $user -password $pass -domainType MANAGEMENT)) {
+                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domainType MANAGEMENT)) {
                     if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                         if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user $vcfNsxDetails.adminUser -pass $vcfNsxDetails.adminPass) {
                             if ((Get-NsxtVidm).vidm_enable -eq "True") {
@@ -8547,16 +8547,16 @@ Function Test-VcfReportingPrereq {
     Try {
         $modules = @(
             @{ Name=("PowerVCF"); Version=("2.2.0")}
-            @{ Name=("PowerValidatedSolutions"); Version=("1.7.0")}
-            @{ Name=("VMware.PowerCLI"); Version=("12.4.1")}
-            @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.7")}
+            @{ Name=("PowerValidatedSolutions"); Version=("1.10.0")}
+            @{ Name=("VMware.PowerCLI"); Version=("12.7.0")}
+            @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.8")}
         )
         foreach ($module in $modules ) {
             if ($PSEdition -eq "Desktop") {
                 if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
                     $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding."
                     Write-Warning $message; Write-Host ""
-					Exit
+					Break
                 } else {
                     $moduleCurrentVersion = (Get-InstalledModule -Name $module.Name).Version
                     $message = "PowerShell Module: $($module.Name) Version: $($moduleCurrentVersion) Found, Supports the minimum required version."
@@ -8567,7 +8567,7 @@ Function Test-VcfReportingPrereq {
                     if ((Get-Module -Name $module.Name).Version -lt $module.Version) {
                         $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding."
                         Write-Warning $message; Write-Host ""
-					Exit
+					Break
                     } else {
                         $moduleCurrentVersion = (Get-InstalledModule -Name $module.Name).Version
                         $message = "PowerShell Module: $($module.Name) Version: $($moduleCurrentVersion) Found, Supports the minimum required version."
@@ -9416,64 +9416,3 @@ Export-ModuleMember -Function Request-LocalUserExpiry
 
 ##############################  End Supporting Functions ###############################
 ########################################################################################
-
-Function getNsxtServerDetail {
-    Param (
-        [Parameter (Mandatory = $false)] [String]$fqdn,
-        [Parameter (Mandatory = $false)] [String]$username,
-        [Parameter (Mandatory = $false)] [String]$password,
-        [Parameter (Mandatory = $false)] [String]$domain,
-        [Parameter( Mandatory = $false)] [ValidateSet('MANAGEMENT', 'VI')] [String]$domainType,
-        [Parameter (Mandatory = $false)] [switch]$listNodes = $false
-    )
-
-    Try {
-        if (!$PsBoundParameters.ContainsKey('username') -or (!$PsBoundParameters.ContainsKey('password'))) {
-            # Request Credentials
-            $creds = Get-Credential
-            $username = $creds.UserName.ToString()
-            $password = $creds.GetNetworkCredential().password
-        }
-        if (!$PsBoundParameters.ContainsKey('fqdn')) {
-            $fqdn = Read-Host 'SDDC Manager access token not found. Please enter the SDDC Manager FQDN, e.g., sfo-vcf01.sfo.rainpole.io'
-        }
-        Request-VCFToken -fqdn $fqdn -username $username -password $password | Out-Null
-
-        if ($accessToken) {
-            if ($PsBoundParameters.ContainsKey('domainType')) {
-                # Dynamically build vCenter Server details based on Cloud Foundation domain type
-                $vcfWorkloadDomainDetails = Get-VCFWorkloadDomain | Where-Object { $_.type -eq $domainType }
-            }
-            if ($PsBoundParameters.ContainsKey('domain')) {
-                # Dynamically build vCenter Server details based on Cloud Foundation domain name
-                $vcfWorkloadDomainDetails = Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }
-            }
-            if ($vcfWorkloadDomainDetails) {
-                $nsxtServerDetails = Get-VCFNsxtCluster | Where-Object { $_.id -eq $($vcfWorkloadDomainDetails.nsxtCluster.id) }
-                $nsxtCreds = Get-VCFCredential | Where-Object { $_.resource.resourceId -eq $($nsxtServerDetails.id) }
-
-                $nsxtCluster = New-Object -TypeName PSCustomObject
-                $nsxtCluster | Add-Member -NotePropertyName 'fqdn' -NotePropertyValue $nsxtServerDetails.vipFqdn
-                $nsxtCluster | Add-Member -NotePropertyName 'adminUser' -NotePropertyValue ($nsxtCreds | Where-Object { ($_.credentialType -eq 'API' -and $_.accountType -eq 'SYSTEM' -and $_.resource.domainName -eq $vcfWorkloadDomainDetails.name) }).username 
-                $nsxtCluster | Add-Member -NotePropertyName 'adminPass' -NotePropertyValue ($nsxtCreds | Where-Object { ($_.credentialType -eq 'API' -and $_.accountType -eq 'SYSTEM' -and $_.resource.domainName -eq $vcfWorkloadDomainDetails.name) }).password
-                $nsxtCluster | Add-Member -NotePropertyName 'rootUser' -NotePropertyValue ($nsxtCreds | Where-Object { ($_.credentialType -eq 'SSH' -and $_.accountType -eq 'SYSTEM' -and $_.resource.domainName -eq $vcfWorkloadDomainDetails.name) }).username
-                $nsxtCluster | Add-Member -NotePropertyName 'rootPass' -NotePropertyValue ($nsxtCreds | Where-Object { ($_.credentialType -eq 'SSH' -and $_.accountType -eq 'SYSTEM' -and $_.resource.domainName -eq $vcfWorkloadDomainDetails.name) }).password
-                if ($listNodes) {
-                    $nsxtCluster | Add-Member -NotePropertyName 'nodes' -NotePropertyValue $nsxtServerDetails.nodes
-                }
-                $nsxtCluster
-            }
-            else {
-                Write-Error 'Workload domainType or domain name does not exist'
-                Break
-            }
-        }
-        else {
-            Write-Error "Unable to obtain access token from SDDC Manager ($server), check credentials"
-            Break
-        }
-    }
-    Catch {
-        Debug-ExceptionWriter -object $_
-    }
-}
