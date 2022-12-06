@@ -117,8 +117,9 @@ body:
       label: Error or Debug Output
       description: |
         Please provide a link to a [GitHub Gist](https://gist.github.com/) containing the complete error or debug output.
-      placeholder:
-        Link to a GitHub Gist. Please do not paste the debug output in the issue.
+      placeholder: >-
+        Link to a GitHub Gist. Please do not paste the debug output in the
+        issue.
     validations:
       required: true
   - type: textarea
