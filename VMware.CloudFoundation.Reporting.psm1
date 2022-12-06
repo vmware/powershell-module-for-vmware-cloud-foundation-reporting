@@ -3570,26 +3570,22 @@ Function Request-NsxtComputeManagerStatus {
                                 $component = 'Compute Manager' # Define the component name
                                 $resource = $vcfNsxDetails.fqdn # Define the resource name
 
-                                # Get the status of the compute manager
-                                if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain -and $_.vcenters.fqdn -ne $computeManager.server }) {
-                                    $status = 'ROGUE'
+                                # Set the alert and message based on the status of the compute manager
+                                if ($computeManager.server -notin (( Get-VCFWorkloadDomain | Where-Object { $_.nsxtCluster.vipFqdn -eq $vcfNsxDetails.fqdn }).vcenters.fqdn) ) {
+                                    $alert = 'RED' # Critical; rogue addition detected
+                                    $message = "$($computeManager.server) has been detected as a rogue addition." # Critical; rogue addition detected
                                 } else {
                                     $status = (Get-NsxtComputeManagerStatus -id $computeManager.id)
-                                }
-
-                                # Set the alert and message based on the status of the compute manager
-                                if ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -eq 'UP') {
+                                    if ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -eq 'UP') {
                                     $alert = 'GREEN' # Ok; registered and up
                                     $message = "$($computeManager.server) is registered and healthy." # Ok; registered and up
                                 } elseif ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -ne 'UP') {
                                     $alert = 'RED' # Critical; registered and not up
                                     $message = "$($computeManager.server) is registered but unhealthy." # Critical; registered and not up
-                                } elseif ($status -eq 'ROGUE') {
-                                    $alert = 'RED' # Critical; rogue addition detected
-                                    $message = "$($computeManager.server) has been detected as a rogue addition." # Critical; rogue addition detected
                                 } else {
                                     $alert = 'RED' # Critical; not registered
                                     $message = "$($computeManager.server) is not registered." # Critical; not registered
+                                }
                                 }
 
                                 # Add the properties to the element object
