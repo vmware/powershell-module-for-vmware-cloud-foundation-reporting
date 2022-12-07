@@ -1047,26 +1047,15 @@ Function Publish-CertificateHealth {
     Try {
         if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
-        # ESXi Certificate Health
-        $outputObject = New-Object System.Collections.ArrayList
+        $customObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.'Certificates'.'Certificate Status' # Extract Data from the provided SOS JSON
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning 'Certificate Status data not found in the JSON file: SKIPPED'
         } else {
-            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-            }
-            else {
-                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
-            }
-
-            # Certificate Health (Except ESXi)
-            $customObject = New-Object System.Collections.ArrayList
             $jsonInputData.PSObject.Properties.Remove('ESXI')
             foreach ($component in $jsonInputData.PsObject.Properties.Value) {
                 foreach ($element in $component.PsObject.Properties.Value) {
@@ -1079,13 +1068,12 @@ Function Publish-CertificateHealth {
                         if (($element.status -eq 'FAILED')) {
                             $customObject += $elementObject
                         }
-                    }
-                    else {
+                    } else {
                         $customObject += $elementObject
                     }
                 }
             }
-            $outputObject += $customObject # Combined ESXi Certificate Health with Remaining Components
+            $outputObject += $customObject
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
@@ -1097,18 +1085,18 @@ Function Publish-CertificateHealth {
                 } else {
                     $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="security-certificate"></a><h3>Certificate Health Status</h3>' -As Table
                 }
-            $outputObject = Convert-CssClass -htmlData $outputObject
-        } else {
+                $outputObject = Convert-CssClass -htmlData $outputObject
+            } else {
                 $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="infra-ntp"></a><h3>NTP Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Certificate Status data not found.</p>' -As Table
+            }
+            $outputObject
+        } else {
+            $outputObject | Sort-Object Component, Resource
         }
-        $outputObject
-    } else {
-        $outputObject | Sort-Object Component, Resource
     }
-}
-Catch {
-    Debug-CatchWriter -object $_
-}
+    Catch {
+        Debug-CatchWriter -object $_
+    }
 }
 Export-ModuleMember -Function Publish-CertificateHealth
 
