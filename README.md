@@ -693,4 +693,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 [module-reporting]: https://www.powershellgallery.com/packages/VMware.CloudFoundation.Reporting
 [module-powervalidatedsolutions]: https://www.powershellgallery.com/packages/PowerValidatedSolutions
 [vmware-photon]: https://vmware.github.io/photon/
+[vmware-cla-dco]: https://cla.vmware.com/dco
 [vmware-cloud-foundation]: https://docs.vmware.com/en/VMware-Cloud-Foundation
