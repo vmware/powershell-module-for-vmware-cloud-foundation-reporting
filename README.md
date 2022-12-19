@@ -1,3 +1,5 @@
+<!-- markdownlint-disable first-line-h1 no-inline-html -->
+
 <img src=".github/icon-400px.svg" alt="A PowerShell Module for Cloud Foundation Reporting" width="150"></br></br>
 
 # PowerShell Module for VMware Cloud Foundation Reporting
@@ -29,10 +31,10 @@
 
 ### PowerShell Modules
 
-- [`VMware.PowerCLI`][module-vmware-powercli] 12.4.1 or later
-- [`VMware.vSphere.SsoAdmin`][module-vmware-vsphere-ssoadmin] 1.3.7 or later
+- [`VMware.PowerCLI`][module-vmware-powercli] 12.7.0 or later
+- [`VMware.vSphere.SsoAdmin`][module-vmware-vsphere-ssoadmin] 1.3.8 or later
 - [`PowerVCF`][module-powervcf] 2.2.0 or later
-- [`PowerValidatedSolutions`][module-powervalidatedsolutions] 1.7.0 or later
+- [`PowerValidatedSolutions`][module-powervalidatedsolutions] 1.10.0 or later
 
 ### Browsers
 
@@ -50,14 +52,14 @@ Install the supporting PowerShell modules from the PowerShell Gallery by running
 
 ```powershell
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-Install-Module -Name VMware.PowerCLI -MinimumVersion 12.4.1
-Install-Module -Name VMware.vSphere.SsoAdmin -MinimumVersion 1.3.7
+Install-Module -Name VMware.PowerCLI -MinimumVersion 12.7.0
+Install-Module -Name VMware.vSphere.SsoAdmin -MinimumVersion 1.3.8
 Install-Module -Name PowerVCF -MinimumVersion 2.2.0
-Install-Module -Name PowerValidatedSolutions -MinimumVersion 1.7.0
+Install-Module -Name PowerValidatedSolutions -MinimumVersion 1.10.0
 Install-Module -Name VMware.CloudFoundation.Reporting
 ```
 
-If using VMware Photon OS, import the modules before proceeding: 
+If using VMware Photon OS, import the modules before proceeding:
 
 ```powershell
 Import-Module -Name PowerValidatedSolutions
