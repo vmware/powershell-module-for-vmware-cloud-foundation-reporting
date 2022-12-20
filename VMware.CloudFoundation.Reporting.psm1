@@ -8657,9 +8657,10 @@ Function Request-ClusterOverview {
                             $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
                             $customObject | Add-Member -notepropertyname "Cluster UUID" -notepropertyvalue $cluster.id
                         } else {
-                            $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
+                            $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name  
                             $customObject | Add-Member -notepropertyname "Cluster Name" -notepropertyvalue (Get-VCFCluster -id $cluster.id).name
                         }
+                        $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue ((Get-VCFCluster -id $cluster.id).hosts | Measure-Object).Count
                         $customObject | Add-Member -notepropertyname "Principal Storage" -notepropertyvalue (Get-VCFCluster -id $cluster.id).primaryDatastoreType
                         $customObject | Add-Member -notepropertyname "Stretched Cluster" -notepropertyvalue (Get-VCFCluster -id $cluster.id).isStretched
                         $allClusterObject += $customObject
