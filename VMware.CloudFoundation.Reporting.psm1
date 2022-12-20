@@ -7352,7 +7352,7 @@ Function Publish-SddcManagerAccountLockout {
         Debug-CatchWriter -object $_
     }
 }
-Export-ModuleMember -Function Publish-SddcManagerPasswordComplexity
+Export-ModuleMember -Function Publish-SddcManagerAccountLockout
 
 Function Publish-SsoPasswordExpiration {
     <#
