@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [v1.0.6]
+
+Enhancement:
+
+- Updated `Invoke-VcfPasswordPolicy` cmdlet with new password expiration, complexity and account lockout details.
+
 ## [v1.0.5](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.0.5)
 
 > Release Date: 2022-12-20
