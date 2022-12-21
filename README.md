@@ -61,8 +61,10 @@ Install-Module -Name VMware.CloudFoundation.Reporting
 
 If using VMware Photon OS, import the modules before proceeding:
 
+For example:
+
 ```powershell
-Import-Module -Name PowerValidatedSolutions
+Import-Module -Name VMware.CloudFoundation.Reporting
 ```
 
 To verify the modules are installed, run the following command in the PowerShell console.
@@ -89,6 +91,30 @@ Get-Help -Name Invoke-VcfHealthReport
 
 ```powershell
 Get-Help -Name Invoke-VcfHealthReport -Examples
+```
+
+## Updating the Module
+
+Update the PowerShell module and its dependencies from the PowerShell Gallery by running the following commands:
+
+```powershell
+Update-Module -Name VMware.PowerCLI
+Update-Module -Name VMware.vSphere.SsoAdmin
+Update-Module -Name PowerVCF
+Update-Module -Name PowerValidatedSolutions
+Update-Module -Name VMware.CloudFoundation.Reporting
+```
+
+To verify that the PowerShell module is updated, run the following command in the PowerShell console.
+
+```powershell
+Get-InstalledModule -Name VMware.CloudFoundation.Reporting
+```
+
+To verify the dependencies are updated and meet the minimum requirements, run the following command in the PowerShell console.
+
+```powershell
+Test-VcfReportingPrereq
 ```
 
 ## User Access
