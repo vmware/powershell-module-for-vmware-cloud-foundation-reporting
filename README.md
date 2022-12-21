@@ -95,13 +95,9 @@ Get-Help -Name Invoke-VcfHealthReport -Examples
 
 ## Updating the Module
 
-Update the PowerShell module and its dependencies from the PowerShell Gallery by running the following commands:
+Update the PowerShell module from the PowerShell Gallery by running the following commands:
 
 ```powershell
-Update-Module -Name VMware.PowerCLI
-Update-Module -Name VMware.vSphere.SsoAdmin
-Update-Module -Name PowerVCF
-Update-Module -Name PowerValidatedSolutions
 Update-Module -Name VMware.CloudFoundation.Reporting
 ```
 
@@ -111,10 +107,19 @@ To verify that the PowerShell module is updated, run the following command in th
 Get-InstalledModule -Name VMware.CloudFoundation.Reporting
 ```
 
-To verify the dependencies are updated and meet the minimum requirements, run the following command in the PowerShell console.
+To verify that the dependencies meet the minimum requirements, run the following command in the PowerShell console.
 
 ```powershell
 Test-VcfReportingPrereq
+```
+
+If a dependency does not meet the minimum requirements, run the appropriate `Update-Module` command for the dependency in the PowerShell console.
+
+```powershell
+Update-Module -Name VMware.PowerCLI
+Update-Module -Name VMware.vSphere.SsoAdmin
+Update-Module -Name PowerVCF
+Update-Module -Name PowerValidatedSolutions
 ```
 
 ## User Access
