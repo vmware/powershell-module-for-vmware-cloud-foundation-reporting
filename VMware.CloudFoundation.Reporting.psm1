@@ -511,7 +511,7 @@ Function Invoke-VcfConfigReport {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
 
@@ -524,10 +524,14 @@ Function Invoke-VcfConfigReport {
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
+                    $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
                     $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
+                    $commandSwitch = "-allDomains"
                 } else {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
+                    $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
                     $workflowMessage = "Workload Domain ($workloadDomain)"
+                    $commandSwitch = "-workloadDomain $workloadDomain"
                 }
                 Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
                 Write-LogMessage -Type INFO -Message "Starting the Process of Creating a Configuration Report for $workflowMessage." -Colour Yellow
@@ -536,64 +540,27 @@ Function Invoke-VcfConfigReport {
 
                 # Collecting Cluster Configuration Using PowerShell Functions
                 Write-LogMessage -Type INFO -Message "Generating the Cluster Configuration for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $clusterConfigHtml = Publish-ClusterConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                } else {
-                    $clusterConfigHtml = Publish-ClusterConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
+                $clusterConfigHtml = Invoke-Expression "Publish-ClusterConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $clusterConfigHtml
 
                 # Collecting Cluster DRS Rules Using PowerShell Functions
                 Write-LogMessage -Type INFO -Message "Generating the DRS Rule Configuration for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $clusterDrsRuleHtml = Publish-ClusterDrsRule -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                } else {
-                    $clusterDrsRuleHtml = Publish-ClusterDrsRule -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
+                $clusterDrsRuleHtml = Invoke-Expression "Publish-ClusterDrsRule -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $clusterDrsRuleHtml
 
                 # Collecting Resource Pool Details  Using PowerShell Functions
                 Write-LogMessage -Type INFO -Message "Generating the Resouce Pool Configuration for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $resourcePoolsHtml = Publish-ResourcePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                } else {
-                    $resourcePoolsHtml = Publish-ResourcePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
+                $resourcePoolsHtml = Invoke-Expression "Publish-ResourcePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $resourcePoolsHtml
 
                 # Collecting VM Overrides Using PowerShell Functions
                 Write-LogMessage -Type INFO -Message "Generating the VM Override Configuration for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $vmOverridesHtml = Publish-VmOverride -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                } else {
-                    $vmOverridesHtml = Publish-VmOverride -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
+                $vmOverridesHtml = Invoke-Expression "Publish-VmOverride -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $vmOverridesHtml
 
                 # Collecting Virtual Networking Using PowerShell Functions
                 Write-LogMessage -Type INFO -Message "Generating the Virtual Networking Configuration for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $vritualNetworkHtml = Publish-VirtualNetwork -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                } else {
-                    $vritualNetworkHtml = Publish-VirtualNetwork -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
+                $vritualNetworkHtml = Invoke-Expression "Publish-VirtualNetwork -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $vritualNetworkHtml
 
                 # Collecting ESXi Security Configuration Using PowerShell Functions
                 Write-LogMessage -Type INFO -Message "Generating the ESXi Security Configuration for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $esxiSecuritykHtml = Publish-EsxiSecurityConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                } else {
-                    $esxiSecuritykHtml = Publish-EsxiSecurityConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
-
-                # Combine all information gathered into a single HTML report
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
-                } else {
-                    $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
-                }
-                $reportData += $clusterConfigHtml
-                $reportData += $clusterDrsRuleHtml
-                $reportData += $resourcePoolsHtml
-                $reportData += $vmOverridesHtml
-                $reportData += $vritualNetworkHtml
-                $reportData += $esxiSecuritykHtml
+                $esxiSecurityHtml = Invoke-Expression "Publish-EsxiSecurityConfiguration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $esxiSecurityHtml
 
                 if ($PsBoundParameters.ContainsKey("darkMode")) {
                     $reportHeader = Get-ClarityReportHeader -dark
@@ -617,8 +584,7 @@ Function Invoke-VcfConfigReport {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
