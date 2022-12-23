@@ -86,6 +86,7 @@ Function Invoke-VcfHealthReport {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
                     $workflowMessage = "Workload Domain ($workloadDomain)"
                 }
+
                 Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
                 Write-LogMessage -Type INFO -Message "Starting the process of creating a Health Report for $workflowMessage." -Colour Yellow
                 Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
@@ -2977,23 +2978,23 @@ Function Publish-NsxtCombinedHealth {
                 $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtHealthObject += $nsxtVidmStatus
                 $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtHealthObject += $nsxtComputeManagerStatus
             }
-            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -failureOnly; $allNsxtHealthObject += $nsxtHtml
+            $nsxtHtml = Publish-NsxtHealth -json $json -failureOnly; $allNsxtHealthObject += $nsxtHtml
         } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
             foreach ($domain in $allWorkloadDomains ) {
                 $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtHealthObject += $nsxtVidmStatus
                 $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtHealthObject += $nsxtComputeManagerStatus
             }
-            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath; $allNsxtHealthObject += $nsxtHtml
+            $nsxtHtml = Publish-NsxtHealth -json $json; $allNsxtHealthObject += $nsxtHtml
         }
 
         if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
             $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtHealthObject += $nsxtVidmStatus
             $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtHealthObject += $nsxtComputeManagerStatus
-            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath -failureOnly; $allNsxtHealthObject += $nsxtHtml
+            $nsxtHtml = Publish-NsxtHealth -json $json -failureOnly; $allNsxtHealthObject += $nsxtHtml
         } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
             $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtHealthObject += $nsxtVidmStatus
             $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtHealthObject += $nsxtComputeManagerStatus
-            $nsxtHtml = Publish-NsxtHealth -json $jsonFilePath; $allNsxtHealthObject += $nsxtHtml
+            $nsxtHtml = Publish-NsxtHealth -json $json; $allNsxtHealthObject += $nsxtHtml
         }
 
         if ($allNsxtHealthObject.Count -eq 0) { $addNoIssues = $true }
