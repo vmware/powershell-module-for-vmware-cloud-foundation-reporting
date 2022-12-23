@@ -2810,42 +2810,25 @@ Function Publish-StorageCapacityHealth {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                $allWorkloadDomains = Get-VCFWorkloadDomain
-                $singleWorkloadDomain = Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}
                 $allStorageCapacityHealth = New-Object System.Collections.ArrayList
+                if ($PsBoundParameters.ContainsKey('failureOnly')) { $failureOnlySwitch = "-failureOnly" }
 
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly;
-                        foreach ($domain in $allWorkloadDomains ) {
-                            $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allVcenterStorageHealth += $vCenterStorageHealth
-                            $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allEsxiStorageCapacity += $esxiStorageCapacity
-                            $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allDatastoreStorageCapacity += $datastoreStorageCapacity
-                        }
-                    } else {
-                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass
-                        foreach ($domain in $allWorkloadDomains ) {
-                            $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $domain.name; $allVcenterStorageHealth += $vCenterStorageHealth
-                            $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $domain.name; $allEsxiStorageCapacity += $esxiStorageCapacity
-                            $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $domain.name; $allDatastoreStorageCapacity += $datastoreStorageCapacity
-                        }
+                    $allWorkloadDomains = Get-VCFWorkloadDomain
+                    $sddcManagerStorageHealth = Invoke-Expression "Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass $($failureOnlySwitch)"
+                    foreach ($domain in $allWorkloadDomains ) {
+                        $vCenterStorageHealth = Invoke-Expression "Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $($domain.name) $($failureOnlySwitch)"; $allVcenterStorageHealth += $vCenterStorageHealth
+                        $esxiStorageCapacity = Invoke-Expression "Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $($domain.name) $($failureOnlySwitch)"; $allEsxiStorageCapacity += $esxiStorageCapacity
+                        $datastoreStorageCapacity = Invoke-Expression "Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $($domain.name) $($failureOnlySwitch)"; $allDatastoreStorageCapacity += $datastoreStorageCapacity
                     }
-                } else {
-                    if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                        if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
-                            $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly
-                        }
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allVcenterStorageHealth += $vCenterStorageHealth
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allEsxiStorageCapacity += $esxiStorageCapacity
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allDatastoreStorageCapacity += $datastoreStorageCapacity
-                    } else {
-                        if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
-                            $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass
-                        }
-                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $workloadDomain; $allVcenterStorageHealth += $vCenterStorageHealth
-                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain; $allEsxiStorageCapacity += $esxiStorageCapacity
-                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain; $allDatastoreStorageCapacity += $datastoreStorageCapacity
+                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+                    $singleWorkloadDomain = Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}
+                    if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
+                        $sddcManagerStorageHealth = Invoke-Expression "Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass $($failureOnlySwitch)"
                     }
+                    $vCenterStorageHealth = Invoke-Expression "Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $workloadDomain $($failureOnlySwitch)"; $allVcenterStorageHealth += $vCenterStorageHealth
+                    $esxiStorageCapacity = Invoke-Expression "Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain $($failureOnlySwitch)"; $allEsxiStorageCapacity += $esxiStorageCapacity
+                    $datastoreStorageCapacity = Invoke-Expression "Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain $($failureOnlySwitch)"; $allDatastoreStorageCapacity += $datastoreStorageCapacity
                 }
 
                 if ($sddcManagerStorageHealth.Count -eq 0) { $addNoIssues = $true }
@@ -2854,7 +2837,7 @@ Function Publish-StorageCapacityHealth {
                 } else {
                     $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -As Table
                 }
-                $sddcManagerStorageHealth = Convert-CssClass -htmldata $sddcManagerStorageHealth
+                $sddcManagerStorageHealth = Convert-CssClass -htmldata $sddcManagerStorageHealth; $allStorageCapacityHealth += $sddcManagerStorageHealth
 
                 if ($allVcenterStorageHealth.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
@@ -2862,7 +2845,7 @@ Function Publish-StorageCapacityHealth {
                 } else {
                     $allVcenterStorageHealth = $allVcenterStorageHealth | Sort-Object  FQDN, Filesystem | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -As Table
                 }
-                $allVcenterStorageHealth = Convert-CssClass -htmldata $allVcenterStorageHealth
+                $allVcenterStorageHealth = Convert-CssClass -htmldata $allVcenterStorageHealth; $allStorageCapacityHealth += $allVcenterStorageHealth
 
                 if ($allEsxiStorageCapacity.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
@@ -2870,7 +2853,7 @@ Function Publish-StorageCapacityHealth {
                 } else {
                     $allEsxiStorageCapacity = $allEsxiStorageCapacity | Sort-Object Domain, 'ESXi FQDN', 'Volume Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -As Table
                 }
-                $allEsxiStorageCapacity = Convert-CssClass -htmldata $allEsxiStorageCapacity
+                $allEsxiStorageCapacity = Convert-CssClass -htmldata $allEsxiStorageCapacity; $allStorageCapacityHealth += $allEsxiStorageCapacity
 
                 if ($allDatastoreStorageCapacity.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
@@ -2878,17 +2861,11 @@ Function Publish-StorageCapacityHealth {
                 } else {
                     $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | Sort-Object 'vCenter Server', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -As Table
                 }
-                $allDatastoreStorageCapacity = Convert-CssClass -htmldata $allDatastoreStorageCapacity
-
-                $allStorageCapacityHealth += $sddcManagerStorageHealth
-                $allStorageCapacityHealth += $allVcenterStorageHealth
-                $allStorageCapacityHealth += $allEsxiStorageCapacity
-                $allStorageCapacityHealth += $allDatastoreStorageCapacity
+                $allDatastoreStorageCapacity = Convert-CssClass -htmldata $allDatastoreStorageCapacity; $allStorageCapacityHealth += $allDatastoreStorageCapacity
                 $allStorageCapacityHealth
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
