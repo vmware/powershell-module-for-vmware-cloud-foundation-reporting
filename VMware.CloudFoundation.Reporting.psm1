@@ -556,7 +556,7 @@ Function Invoke-VcfConfigReport {
 
                 # Collecting Virtual Networking Using PowerShell Functions
                 Write-LogMessage -Type INFO -Message "Generating the Virtual Networking Configuration for $workflowMessage."
-                $vritualNetworkHtml = Invoke-Expression "Publish-VirtualNetwork -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $vritualNetworkHtml
+                $virtualNetworkHtml = Invoke-Expression "Publish-VirtualNetwork -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $virtualNetworkHtml
 
                 # Collecting ESXi Security Configuration Using PowerShell Functions
                 Write-LogMessage -Type INFO -Message "Generating the ESXi Security Configuration for $workflowMessage."
