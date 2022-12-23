@@ -58,6 +58,10 @@ Function Invoke-VcfHealthReport {
         .EXAMPLE
         Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
         This example runs a health check for a specific Workload Domain within a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Reporting -allDomains -failureOnly
+        This example runs a health check across a VMware Cloud Foundation instance but only ouputs issues to the HTML report.
     #>
 
     Param (
@@ -67,7 +71,7 @@ Function Invoke-VcfHealthReport {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerRootPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
@@ -81,242 +85,115 @@ Function Invoke-VcfHealthReport {
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
+                    $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
                     $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
+                    $commandSwitch = "-allDomains"
                 } else {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
+                    $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
                     $workflowMessage = "Workload Domain ($workloadDomain)"
+                    $commandSwitch = "-workloadDomain $workloadDomain"
                 }
+                if ($PsBoundParameters.ContainsKey('failureOnly')) { 
+                    $failureOnlySwitch = " -failureOnly"
+                }
+
                 Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
                 Write-LogMessage -Type INFO -Message "Starting the process of creating a Health Report for $workflowMessage." -Colour Yellow
                 Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
                 Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
-
                 Write-LogMessage -Type INFO -Message "Running an SoS Health Check for $workflowMessage, process takes time."
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -allDomains
-                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-                    $jsonFilePath = Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder -workloadDomain $workloadDomain
-                }
+                $jsonFilePath = Invoke-Expression "Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder $($commandSwitch)"
 
-                # Generating all SoS Health Data
+                # Generating the Service Health Data Using the SoS Data
                 Write-LogMessage -Type INFO -Message "Generating the Service Health Report using the SoS output for $workflowMessage."
-                Write-LogMessage -Type INFO -Message "Generating the DNS Health Report using the SoS output for $workflowMessage."
-                Write-LogMessage -Type INFO -Message "Generating the NTP Health Report using the SoS output for $workflowMessage."
-                Write-LogMessage -Type INFO -Message "Generating the Certificate Health Report using the SoS output for $workflowMessage."
-                Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report using the SoS output for $workflowMessage."
-                Write-LogMessage -Type INFO -Message "Generating the vSAN Health Report using the SoS output for $workflowMessage."
-                Write-LogMessage -Type INFO -Message "Generating the vSAN Storage Policy Health Report using the SoS output for $workflowMessage."
-                Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report using the SoS output for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                    $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html -failureOnly
-                    $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html -failureOnly
-                    $ntpHtml = Publish-NtpHealth -json $jsonFilePath -html -failureOnly
-                    $certificateHtml = Publish-CertificateHealth -json $jsonFilePath -html -failureOnly
-                    $esxiHtml = Publish-EsxiHealth -json $jsonFilePath -html -failureOnly
-                    $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html -failureOnly
-                    $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html -failureOnly
-                    $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html -failureOnly
-                    $nsxtEdgeClusterHtml = Publish-NsxtEdgeClusterHealth -json $jsonFilePath -html -failureOnly
-                    $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html -failureOnly
-                } else {
-                    $serviceHtml = Publish-ServiceHealth -json $jsonFilePath -html
-                    $dnsHtml = Publish-DnsHealth -json $jsonFilePath -html
-                    $ntpHtml = Publish-NtpHealth -json $jsonFilePath -html
-                    $certificateHtml = Publish-CertificateHealth -json $jsonFilePath -html
-                    $esxiHtml = Publish-EsxiHealth -json $jsonFilePath -html
-                    $vsanHtml = Publish-VsanHealth -json $jsonFilePath -html
-                    $vsanPolicyHtml = Publish-VsanStoragePolicy -json $jsonFilePath -html
-                    $vcenterHtml = Publish-VcenterHealth -json $jsonFilePath -html
-                    $nsxtEdgeClusterHtml = Publish-NsxtEdgeClusterHealth -json $jsonFilePath -html
-                    $nsxtEdgeNodeHtml = Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html
-                }
+                $serviceHtml = Invoke-Expression "Publish-ServiceHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $serviceHtml
 
-                # Generating the ESXi Connection Health Data Using PowerShell Request Functions
-                Write-LogMessage -type INFO -Message "Generating the ESXi Connection Health Data report for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-                    $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-                }
-                elseif ($PsBoundParameters.ContainsKey('allDomains')) {
-                    $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                }
-                if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-                    $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-                }
-                elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
-                    $esxiConnectionHtml = Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
-
-                # Generating the NSX Manager Health Data Using SoS output and Supplimental PowerShell Request Functions
-                Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report using the SoS output for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
-                }
-                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-                    $nsxtHtml = Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
-                }
-
-                # Generating the Connectivity Health Data Using SoS output and Supplimental PowerShell Request Functions
+                # Generating the Connectivity Health Data Using SoS Data and Supplimental PowerShell Request Functions
                 Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report using the SoS output for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -allDomains
-                }
-                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-                    $componentConnectivityHtml = Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath -workloadDomain $workloadDomain
-                }
+                $componentConnectivityHtml = Invoke-Expression "Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath $($commandSwitch) $($failureOnlySwitch)"; $reportData += $componentConnectivityHtml
+
+                # Generating the Password Expiry Health Data Using PowerShell Request Functions
+                Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report for $workflowMessage."
+                $localPasswordHtml = Invoke-Expression "Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass $($commandSwitch) $($failureOnlySwitch)"; $reportData += $localPasswordHtml
+
+                # Generating the Certificate Health Data Using the SoS Data
+                Write-LogMessage -Type INFO -Message "Generating the Certificate Health Report using the SoS output for $workflowMessage."
+                $certificateHtml = Invoke-Expression "Publish-CertificateHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $certificateHtml
 
                 # Generating the Backup Status Health Data Using PowerShell Request Functions
                 Write-LogMessage -Type INFO -Message "Generating the Backup Status Report for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                }
-                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-                    $backupStatusHtml = Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
-
-                # Generating the Free Pool Health Data Using PowerShell Request Functions
-                Write-LogMessage -type INFO -Message "Generating the SDDC Manager Free Pool Health for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                    $freePoolHtml = Publish-SddcManagerFreePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -failureOnly
-                } else {
-                    $freePoolHtml = Publish-SddcManagerFreePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass
-                }
+                $backupStatusHtml = Invoke-Expression "Publish-BackupStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch) $($failureOnlySwitch)"; $reportData += $backupStatusHtml
 
                 # Generating the Snapshot Status Health Data Using PowerShell Request Functions
                 Write-LogMessage -type INFO -Message "Generating the Snapshots Report for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                }
-                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-                    $snapshotStatusHtml = Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
+                $snapshotStatusHtml = Invoke-Expression "Publish-SnapshotStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch) $($failureOnlySwitch)"; $reportData += $snapshotStatusHtml
 
-                # Generating the Password Expiry Health Data using PowerShell Request Functions
-                Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -allDomains
-                }
-                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-                    $localPasswordHtml = Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -workloadDomain $workloadDomain
-                }
+                # Generating the DNS Health Data Using the SoS Data
+                Write-LogMessage -Type INFO -Message "Generating the DNS Health Report using the SoS output for $workflowMessage."
+                $dnsHtml = Invoke-Expression "Publish-DnsHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $dnsHtml
+
+                # Generating the NTP Health Data Using the SoS Data
+                Write-LogMessage -Type INFO -Message "Generating the NTP Health Report using the SoS output for $workflowMessage."
+                $ntpHtml = Invoke-Expression "Publish-NtpHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $ntpHtml
+                
+                # Generating the vCenter Server Health Data Using the SoS Data
+                Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report using the SoS output for $workflowMessage."
+                $vcenterHtml = Invoke-Expression "Publish-VcenterHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $vcenterHtml
+
+                # Generating the ESXi Health Data Using the SoS Data
+                Write-LogMessage -Type INFO -Message "Generating the ESXi Health Report using the SoS output for $workflowMessage."
+                $esxiHtml = Invoke-Expression "Publish-EsxiHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $esxiHtml
+
+                # Generating the ESXi Connection Health Data Using PowerShell Request Functions
+                Write-LogMessage -type INFO -Message "Generating the ESXi Connection Health Data report for $workflowMessage."
+                $esxiConnectionHtml = Invoke-Expression "Publish-EsxiConnectionHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch) $($failureOnlySwitch)"; $reportData += $esxiConnectionHtml
+
+                # Generating the Free Pool Health Data Using PowerShell Request Functions
+                Write-LogMessage -type INFO -Message "Generating the SDDC Manager Free Pool Health for $workflowMessage."
+                $freePoolHtml = Invoke-Expression "Publish-SddcManagerFreePool -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($failureOnlySwitch)"; $reportData += $freePoolHtml
+
+                # Generating the vSAN Health Data Using the SoS Data
+                Write-LogMessage -Type INFO -Message "Generating the vSAN Health Report using the SoS output for $workflowMessage."
+                $vsanHtml = Invoke-Expression "Publish-VsanHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $vsanHtml
+
+                # Generating the vSAN Storage Policy Health Data Using the SoS Data
+                Write-LogMessage -Type INFO -Message "Generating the vSAN Storage Policy Health Report using the SoS output for $workflowMessage."
+                $vsanPolicyHtml = Invoke-Expression "Publish-VsanStoragePolicy -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $vsanPolicyHtml
+                
+                # Generating the NSX Manager Health Data Using SoS output and Supplimental PowerShell Request Functions
+                Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report using the SoS output for $workflowMessage."
+                $nsxtHtml = Invoke-Expression "Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath $($commandSwitch) $($failureOnlySwitch)"; $reportData += $nsxtHtml
+
+                # Generating the NSX Edge Cluster Health Data Using the SoS Data
+                Write-LogMessage -Type INFO -Message "Generating the NSX Edge Cluster Health Report using the SoS output for $workflowMessage."
+                $nsxtEdgeClusterHtml = Invoke-Expression "Publish-NsxtEdgeClusterHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $nsxtEdgeClusterHtml
+
+                # Generating the NSX Edge Node Health Data Using the SoS Data
+                Write-LogMessage -Type INFO -Message "Generating the NSX Edge Node Health Report using the SoS output for $workflowMessage."
+                $nsxtEdgeNodeHtml = Invoke-Expression "Publish-NsxtEdgeNodeHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $nsxtEdgeNodeHtml
 
                 # Generating the NSX Transport Node Health Data Using PowerShell Request Functions
                 Write-LogMessage -type INFO -Message "Generating the NSX Transport Node Report for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-                    $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-                }
-                elseif ($PsBoundParameters.ContainsKey('allDomains')) {
-                    $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                }
-                if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-                    $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-                }
-                elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
-                    $nsxTransportNodeHtml = Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
+                $nsxTransportNodeHtml = Invoke-Expression "Publish-NsxtTransportNodeStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch) $($failureOnlySwitch)"; $reportData += $nsxTransportNodeHtml
 
                 # Generating the NSX Transport Node Tunnel Health Data Using PowerShell Request Functions
                 Write-LogMessage -type INFO -Message "Generating the NSX Transport Node Tunnel Report for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey('allDomains') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-                    $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-                }
-                elseif ($PsBoundParameters.ContainsKey('allDomains')) {
-                    $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                }
-                if ($PsBoundParameters.ContainsKey('workloadDomain') -and $PsBoundParameters.ContainsKey('failureOnly')) {
-                    $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-                }
-                elseif ($PsBoundParameters.ContainsKey('workloadDomain')) {
-                    $nsxTransportNodeTunnelHtml = Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
+                $nsxTransportNodeTunnelHtml = Invoke-Expression "Publish-NsxtTransportNodeTunnelStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch) $($failureOnlySwitch)"; $reportData += $nsxTransportNodeTunnelHtml
 
                 # Generating the NSX Tier-0 Gateway BGP Health Data Using PowerShell Request Functions
                 Write-LogMessage -type INFO -Message "Generating the NSX Tier-0 Gateway BGP Report for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                }
-                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-                    $nsxTier0BgpHtml = Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
+                $nsxTier0BgpHtml = Invoke-Expression "Publish-NsxtTier0BgpStatus -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch) $($failureOnlySwitch)"; $reportData += $nsxTier0BgpHtml
 
                 # Generating the Disk Capacity Health Data Using PowerShell Request Functions
                 Write-LogMessage -Type INFO -Message "Generating the Disk Capacity Report for $workflowMessage.'"
-                if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -allDomains
-                }
-                if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
-                    $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain -failureOnly
-                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-                    $storageCapacityHealthHtml = Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -workloadDomain $workloadDomain
-                }
+                $storageCapacityHealthHtml = Invoke-Expression "Publish-StorageCapacityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass $($commandSwitch) $($failureOnlySwitch)"; $reportData += $storageCapacityHealthHtml
 
                 # Generating the Virtual Machines with Connected CD-ROM Health Data Using PowerShell Request Functions
                 Write-LogMessage -type INFO -Message "Generating the Virtual Machines with Connected CD-ROM Report for $workflowMessage."
-                if ($PsBoundParameters.ContainsKey('allDomains')) {
-                    $vmConnectedCdromHtml = Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -allDomains
-                } else {
-                    $vmConnectedCdromHtml = Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -workloadDomain $workloadDomain
-                }
+                $vmConnectedCdromHtml = Invoke-Expression "Publish-VmConnectedCdrom -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $vmConnectedCdromHtml
 
-                # Combine all information gathered into a single HTML report
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
-                } else {
-                    $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
-                }
-                $reportData += $serviceHtml
-                $reportData += $componentConnectivityHtml
-                $reportData += $localPasswordHtml
-                $reportData += $certificateHtml
-                $reportData += $backupStatusHtml
-                $reportData += $snapshotStatusHtml
-                $reportData += $dnsHtml
-                $reportData += $ntpHtml
-                $reportData += $vcenterHtml
-                $reportData += $esxiHtml
-                $reportData += $esxiConnectionHtml
-                $reportData += $freePoolHtml
-                $reportData += $vsanHtml
-                $reportData += $vsanPolicyHtml
-                $reportData += $nsxtHtml
-                $reportData += $nsxtEdgeClusterHtml
-                $reportData += $nsxtEdgeNodeHtml
-                $reportData += $nsxTransportNodeHtml
-                $reportData += $nsxTransportNodeTunnelHtml
-                $reportData += $nsxTier0BgpHtml
-                $reportData += $storageCapacityHealthHtml
-                $reportData += $vmConnectedCdromHtml
-
-                if ($PsBoundParameters.ContainsKey("darkMode")) {
-                    $reportHeader = Get-ClarityReportHeader -dark
-                } else {
-                    $reportHeader = Get-ClarityReportHeader
-                }
+                if ($PsBoundParameters.ContainsKey("darkMode")) { $reportHeader = Get-ClarityReportHeader -dark } else { $reportHeader = Get-ClarityReportHeader }
                 $reportNavigation = Get-ClarityReportNavigation -reportType health
                 $reportFooter = Get-ClarityReportFooter
                 $report = $reportHeader
@@ -334,8 +211,7 @@ Function Invoke-VcfHealthReport {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
