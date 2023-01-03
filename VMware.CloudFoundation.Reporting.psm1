@@ -8131,8 +8131,8 @@ Function Request-VcenterOverview {
                                     $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
                                 }
                                 $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
-                                $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-Cluster -Server $vcfVcenterDetails.fqdn).Count
-                                $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VMHost -Server $vcfVcenterDetails.fqdn).Count
+                                $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-VCFWorkloadDomain -id $domain.id).clusters.Count
+                                $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VCFHost | Where-Object {$_.domain.id -eq $domain.id}).Count
                                 $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
                                 $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
                                 $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
