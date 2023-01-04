@@ -27,7 +27,7 @@
     CompanyName = 'VMware Inc.'
     
     # Copyright statement for this module
-    Copyright = '(c) 2022 VMware All rights reserved'
+    Copyright = '(c) 2022-2023 VMware All rights reserved'
     
     # Description of the functionality provided by this module
     Description = 'PowerShell Module for Running Reports on VMware Cloud Foundation'
