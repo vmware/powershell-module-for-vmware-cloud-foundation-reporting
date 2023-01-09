@@ -8617,10 +8617,10 @@ Function Test-VcfReportingPrereq {
 
     Try {
         $modules = @(
-            @{ Name=("PowerVCF"); Version=("2.2.0")}
-            @{ Name=("PowerValidatedSolutions"); Version=("1.10.0")}
             @{ Name=("VMware.PowerCLI"); Version=("12.7.0")}
             @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.8")}
+            @{ Name=("PowerVCF"); Version=("2.2.0")}
+            @{ Name=("PowerValidatedSolutions"); Version=("2.0.0")}
         )
         foreach ($module in $modules ) {
             if ($PSEdition -eq "Desktop") {
