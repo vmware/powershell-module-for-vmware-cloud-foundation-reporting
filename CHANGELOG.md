@@ -1,10 +1,34 @@
 # CHANGELOG
 
-## [v1.0.6]
+## [v1.0.6]()
+
+> Release Date: Pending Release
+
+Bugfix:
+
+- Updates `Request0VcenterOverview` to use the PowerVCF cmdlets to return the workload domain's cluster and host counts from the SDDC Manager inventory versus directly from the vSphere inventory. This will ensure that the host count does not include any HCX nodes. [GH-65](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/65)
+- Updates `Publish-NsxtCombinedHealth` to use `$json` when calling `Publish-NsxtHealth`. [GH-59](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/59)
 
 Enhancement:
 
-- Updated `Invoke-VcfPasswordPolicy` cmdlet with new password expiration, complexity and account lockout details.
+- Updated `Invoke-VcfPasswordPolicy` cmdlet with new password expiration, complexity and account lockout details. [GH-53](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/53)
+
+Documenation:
+
+- Adds a section for **Updating the Module** to the `README.md` documentation. [GH-57](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/57)
+
+Chore:
+
+- Updates `PowerValidatedSolutions` from v1.10.0 to v2.0.0. [GH-35](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/35)
+
+Refactor:
+
+- Refactors `Publish-StorageCapacityHealth` for code efficiency. [GH-64](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/64)
+- Refactors `Invoke-VcfPasswordPolicy` for code efficiency. [GH-63](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/63)
+- Refactors `Invoke-VcfConfigReport` for code efficiency. [GH-62](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/62)
+- Refactors `Invoke-VcfAlertReport` for code efficiency. [GH-61](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/61)
+- Refactors `Invoke-VcfHealthReport` for code efficiency. [GH-60](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/60)
+- Transfers `Publish-EsxiPasswordPolicy` to `PowerValidatedSolutions` module. [GH-55](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/55)
 
 ## [v1.0.5](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.0.5)
 
