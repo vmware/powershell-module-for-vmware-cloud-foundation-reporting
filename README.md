@@ -1,3 +1,5 @@
+<!-- markdownlint-disable first-line-h1 no-inline-html -->
+
 <img src=".github/icon-400px.svg" alt="A PowerShell Module for Cloud Foundation Reporting" width="150"></br></br>
 
 # PowerShell Module for VMware Cloud Foundation Reporting
@@ -29,10 +31,10 @@
 
 ### PowerShell Modules
 
-- [`VMware.PowerCLI`][module-vmware-powercli] 12.4.1 or later
-- [`VMware.vSphere.SsoAdmin`][module-vmware-vsphere-ssoadmin] 1.3.7 or later
+- [`VMware.PowerCLI`][module-vmware-powercli] 12.7.0 or later
+- [`VMware.vSphere.SsoAdmin`][module-vmware-vsphere-ssoadmin] 1.3.8 or later
 - [`PowerVCF`][module-powervcf] 2.2.0 or later
-- [`PowerValidatedSolutions`][module-powervalidatedsolutions] 1.7.0 or later
+- [`PowerValidatedSolutions`][module-powervalidatedsolutions] 2.0.0 or later
 
 ### Browsers
 
@@ -50,11 +52,19 @@ Install the supporting PowerShell modules from the PowerShell Gallery by running
 
 ```powershell
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-Install-Module -Name VMware.PowerCLI -MinimumVersion 12.4.1
-Install-Module -Name VMware.vSphere.SsoAdmin -MinimumVersion 1.3.7
+Install-Module -Name VMware.PowerCLI -MinimumVersion 12.7.0
+Install-Module -Name VMware.vSphere.SsoAdmin -MinimumVersion 1.3.8
 Install-Module -Name PowerVCF -MinimumVersion 2.2.0
-Install-Module -Name PowerValidatedSolutions -MinimumVersion 1.7.0
+Install-Module -Name PowerValidatedSolutions -MinimumVersion 2.0.0
 Install-Module -Name VMware.CloudFoundation.Reporting
+```
+
+If using VMware Photon OS, import the modules before proceeding:
+
+For example:
+
+```powershell
+Import-Module -Name VMware.CloudFoundation.Reporting
 ```
 
 To verify the modules are installed, run the following command in the PowerShell console.
@@ -81,6 +91,35 @@ Get-Help -Name Invoke-VcfHealthReport
 
 ```powershell
 Get-Help -Name Invoke-VcfHealthReport -Examples
+```
+
+## Updating the Module
+
+Update the PowerShell module from the PowerShell Gallery by running the following commands:
+
+```powershell
+Update-Module -Name VMware.CloudFoundation.Reporting
+```
+
+To verify that the PowerShell module is updated, run the following command in the PowerShell console.
+
+```powershell
+Get-InstalledModule -Name VMware.CloudFoundation.Reporting
+```
+
+To verify that the dependencies meet the minimum requirements, run the following command in the PowerShell console.
+
+```powershell
+Test-VcfReportingPrereq
+```
+
+If a dependency does not meet the minimum requirements, run the appropriate `Update-Module` command for the dependency in the PowerShell console.
+
+```powershell
+Update-Module -Name VMware.PowerCLI
+Update-Module -Name VMware.vSphere.SsoAdmin
+Update-Module -Name PowerVCF
+Update-Module -Name PowerValidatedSolutions
 ```
 
 ## User Access
@@ -693,4 +732,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 [module-reporting]: https://www.powershellgallery.com/packages/VMware.CloudFoundation.Reporting
 [module-powervalidatedsolutions]: https://www.powershellgallery.com/packages/PowerValidatedSolutions
 [vmware-photon]: https://vmware.github.io/photon/
+[vmware-cla-dco]: https://cla.vmware.com/dco
 [vmware-cloud-foundation]: https://docs.vmware.com/en/VMware-Cloud-Foundation
