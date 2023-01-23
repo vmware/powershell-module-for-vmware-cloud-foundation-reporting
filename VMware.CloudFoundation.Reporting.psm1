@@ -2659,7 +2659,7 @@ Function Publish-SnapshotStatus {
                 }
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
-                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $snapshotJsonSuffix # Setup json Location and json output File
+                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $snapshotJsonSuffix 
                     $allSnapshotStatusObject | ConvertTo-JSON -depth 10 | Out-File $json
                     Write-Output "JSON Created at $json"
                 } else {
@@ -2818,7 +2818,7 @@ Function Publish-NsxtHealthNonSOS {
 
         .EXAMPLE
         Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reports
-        This example checks NSX Manager health outside SOS Utility for all Workload Domains across the VMware Cloud Foundation instance but only reports issues and
+        This example checks NSX Manager health outside SOS Utility for all Workload Domains across the VMware Cloud Foundation instance and
         saves it as a JSON to file under F:\Reports\<timestamp>-nsxtcombinedhealthnonsos-status.json
 
     #>
