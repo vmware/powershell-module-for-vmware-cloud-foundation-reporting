@@ -41,6 +41,21 @@ if ($PSEdition -eq 'Desktop') {
 }
 
 #######################################################################################################################
+#############################  J S O N   O U T P U T   F I L E N A M E S   ############################################
+
+
+Set-Variable -Name "backupJsonSuffix" -value "backup-status.json" -scope global
+Set-Variable -Name "nsxtTransportJsonSuffix" -value "nsxttransportnode-status.json" -scope global
+Set-Variable -Name "nsxttntunnelJsonSuffix" -value "nsxttntunnel-status.json" -scope global
+Set-Variable -Name "nsxttier0bgpJsonSuffix" -value "nsxttier0bgp-status.json" -scope global
+Set-Variable -Name "snapshotJsonSuffix" -value "snapshot-status.json" -scope global
+Set-Variable -Name "localuserexpiryJsonSuffix" -value "localuserexpiry-status.json" -scope global
+Set-Variable -Name "storageCapacityHealthJsonSuffix" -value "storagecapacityhealth-status.json" -scope global
+Set-Variable -Name "componentConnectivityHealthNonSOSJsonSuffix" -value "componentconnectivityhealthnonsos-status.json" -scope global
+Set-Variable -Name "nsxtCombinedHealthNonSOSJsonSuffix" -value "nsxtcombinedhealthnonsos-status.json" -scope global
+
+
+#######################################################################################################################
 #############################  C O M B I N E D   O P E R A T I O N S   F U N C T I O N S   ############################
 
 Function Invoke-VcfHealthReport {
@@ -94,7 +109,7 @@ Function Invoke-VcfHealthReport {
                     $workflowMessage = "Workload Domain ($workloadDomain)"
                     $commandSwitch = "-workloadDomain $workloadDomain"
                 }
-                if ($PsBoundParameters.ContainsKey('failureOnly')) { 
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
                     $failureOnlySwitch = " -failureOnly"
                 }
 
@@ -136,7 +151,7 @@ Function Invoke-VcfHealthReport {
                 # Generating the NTP Health Data Using the SoS Data
                 Write-LogMessage -Type INFO -Message "Generating the NTP Health Report using the SoS output for $workflowMessage."
                 $ntpHtml = Invoke-Expression "Publish-NtpHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $ntpHtml
-                
+
                 # Generating the vCenter Server Health Data Using the SoS Data
                 Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report using the SoS output for $workflowMessage."
                 $vcenterHtml = Invoke-Expression "Publish-VcenterHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $vcenterHtml
@@ -160,7 +175,7 @@ Function Invoke-VcfHealthReport {
                 # Generating the vSAN Storage Policy Health Data Using the SoS Data
                 Write-LogMessage -Type INFO -Message "Generating the vSAN Storage Policy Health Report using the SoS output for $workflowMessage."
                 $vsanPolicyHtml = Invoke-Expression "Publish-VsanStoragePolicy -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $vsanPolicyHtml
-                
+
                 # Generating the NSX Manager Health Data Using SoS output and Supplimental PowerShell Request Functions
                 Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report using the SoS output for $workflowMessage."
                 $nsxtHtml = Invoke-Expression "Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath $($commandSwitch) $($failureOnlySwitch)"; $reportData += $nsxtHtml
@@ -271,7 +286,7 @@ Function Invoke-VcfAlertReport {
                     $workflowMessage = "Workload Domain ($workloadDomain)"
                     $commandSwitch = "-workloadDomain $workloadDomain"
                 }
-                if ($PsBoundParameters.ContainsKey('failureOnly')) { 
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
                     $commandSwitch = $commandSwitch + " -failureOnly"
                 }
 
@@ -610,7 +625,7 @@ Function Invoke-VcfPasswordPolicy {
                 $sddcManagerPasswordExpirationHtml = Invoke-Expression "Publish-SddcManagerPasswordExpiration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcRootPass $($commandSwitch)"
                 $sddcManagerPasswordComplexityHtml = Invoke-Expression "Publish-SddcManagerPasswordComplexity -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcRootPass $($commandSwitch)"
                 $sddcManagerAccountLockoutHtml = Invoke-Expression "Publish-SddcManagerAccountLockout -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcRootPass $($commandSwitch)"
-                
+
                 Write-LogMessage -Type INFO -Message "Collecting vCenter Single Sign-On Password Policies for $workflowMessage."
                 $ssoPasswordExpirationHtml = Invoke-Expression "Publish-SsoPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -policy PasswordExpiration $($commandSwitch)"
                 $ssoPasswordComplexityHtml = Invoke-Expression "Publish-SsoPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -policy PasswordComplexity $($commandSwitch)"
@@ -2269,7 +2284,7 @@ Function Publish-BackupStatus {
                 }
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
-                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix 'backup-status.json'# Setup json Location and json output File
+                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $backupJsonSuffix
                     $allBackupStatusObject | ConvertTo-JSON -depth 10 | Out-File $json
                     Write-Output "JSON Created at $json"
                 } else {
@@ -2356,7 +2371,7 @@ Function Publish-NsxtTransportNodeStatus {
                 }
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
-                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix 'nsxttransportnode-status.json'
+                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxtTransportJsonSuffix
                     $allNsxtTransportNodeStatusObject | ConvertTo-JSON -depth 10 | Out-File $json
                     Write-Output "JSON Created at $json"
                 } else {
@@ -2445,7 +2460,7 @@ Function Publish-NsxtTransportNodeTunnelStatus {
                     }
                 }
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
-                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix 'nsxttntunnel-status.json'
+                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxttntunnelJsonSuffix
                     $allNsxtTransportNodeTunnelStatusObject | ConvertTo-JSON -depth 10 | Out-File $json
                     Write-Output "JSON Created at $json"
                 } else {
@@ -2496,7 +2511,7 @@ Function Publish-NsxtTier0BgpStatus {
         This example will publish the BGP status for the NSX Tier-0 gateways in a VMware Cloud Foundation instance for a workload domain names sfo-w01.
 
         .EXAMPLE
-        Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains outputJson F:\Reports
+        Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reports
         This example will generate a json for the BGP status for all NSX Tier-0 gateways in a VMware Cloud Foundation instance.
         and save it under F:\Reports with filename <timestamp>-nsxttier0bgp-status.json
 
@@ -2509,7 +2524,6 @@ Function Publish-NsxtTier0BgpStatus {
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
-
     )
 
     Try {
@@ -2535,7 +2549,7 @@ Function Publish-NsxtTier0BgpStatus {
                     }
                 }
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
-                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix 'nsxttier0bgp-status.json'
+                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxttier0bgpJsonSuffix
                     $allNsxtTier0BgpStatusObject | ConvertTo-JSON -depth 10 | Out-File $json
                     Write-Output "JSON Created at $json"
                 } else {
@@ -2645,7 +2659,7 @@ Function Publish-SnapshotStatus {
                 }
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
-                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix 'snapshot-status.json'# Setup json Location and json output File
+                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $snapshotJsonSuffix # Setup json Location and json output File
                     $allSnapshotStatusObject | ConvertTo-JSON -depth 10 | Out-File $json
                     Write-Output "JSON Created at $json"
                 } else {
@@ -2754,7 +2768,9 @@ Function Publish-LocalUserExpiry {
             }
         }
         if ($PsBoundParameters.ContainsKey('outputJson')) {
-            $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix 'localuserexpiry-status.json'# Setup json Location and json output File
+            $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $localuserexpiryJsonSuffix
+			Write-Output $json
+			Write-Output $$allPasswordExpiryObject
             $allPasswordExpiryObject | ConvertTo-JSON -depth 10 | Out-File $json
             Write-Output "JSON Created at $json"
         } else {
@@ -2773,6 +2789,95 @@ Function Publish-LocalUserExpiry {
     }
 }
 Export-ModuleMember -Function Publish-LocalUserExpiry
+
+Function Publish-NsxtHealthNonSOS {
+
+    <#
+		.SYNOPSIS
+        Publish NSX Manager Health only for health checks which are not a part of SOS Utility NSX health. Data obtained is a subset of Publish-NsxtCombinedHealth cmdlet.
+
+        .DESCRIPTION
+        The Publish-NsxtHealthNonSOS cmdlet performs additional checks outside of SOS Utility to get the health of NSX Manager on the VMware Cloud Foundation instance
+        and prepares the data to be published to an HTML report. Data obtained is subset of Publish-NsxtCombinedHealth cmdlet. The cmdlet connects to SDDC Manager using the
+        -server, -user, and password values:
+        - Validates that network connectivity and autehentication is available to SDDC Manager
+        - Validates that network connectivity and autehentication is available to NSX Manager
+        - Performs health checks and outputs the results
+
+        .EXAMPLE
+        Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example checks NSX Manager health outside SOS Utility for all Workload Domains across the VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        This example checks NSX Manager health outside SOS Utility for a single Workload Domain in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example checks NSX Manager health outside SOS Utility for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
+
+        .EXAMPLE
+        Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reports
+        This example checks NSX Manager health outside SOS Utility for all Workload Domains across the VMware Cloud Foundation instance but only reports issues and
+        saves it as a JSON to file under F:\Reports\<timestamp>-nsxtcombinedhealthnonsos-status.json
+
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
+    )
+
+        Try {
+        $allNsxtHealthObject = New-Object System.Collections.ArrayList
+        $allWorkloadDomains = Get-VCFWorkloadDomain
+        if ($PsBoundParameters.ContainsKey("allDomains") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            foreach ($domain in $allWorkloadDomains ) {
+                $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtHealthObject += $nsxtVidmStatus
+                $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allNsxtHealthObject += $nsxtComputeManagerStatus
+            }
+        } elseif ($PsBoundParameters.ContainsKey("allDomains")) {
+            foreach ($domain in $allWorkloadDomains ) {
+                $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtHealthObject += $nsxtVidmStatus
+                $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $domain.name; $allNsxtHealthObject += $nsxtComputeManagerStatus
+            }
+        }
+
+        if ($PsBoundParameters.ContainsKey("workloadDomain") -and $PsBoundParameters.ContainsKey("failureOnly")) {
+            $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtHealthObject += $nsxtVidmStatus
+            $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allNsxtHealthObject += $nsxtComputeManagerStatus
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $nsxtVidmStatus = Request-NsxtVidmStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtHealthObject += $nsxtVidmStatus
+            $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtHealthObject += $nsxtComputeManagerStatus
+        }
+
+        if ($PsBoundParameters.ContainsKey("outputJson")) {
+            $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxtCombinedHealthNonSOSJsonSuffix
+            $allNsxtHealthObject | ConvertTo-JSON -depth 10 | Out-File $json
+            Write-Output "JSON Created at $json"
+        } else {
+            if ($allNsxtHealthObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $allNsxtHealthObject = $allNsxtHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status - Non SOS</h3>' -PostContent '<p>No issues found.</p>'
+            } else {
+                $allNsxtHealthObject = $allNsxtHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status - Non SOS</h3>' -As Table
+            }
+            $allNsxtHealthObject = Convert-CssClass -htmldata $allNsxtHealthObject
+            $allNsxtHealthObject
+        }
+
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-NsxtHealthNonSOS
+
 
 Function Publish-NsxtCombinedHealth {
     <#
@@ -2878,6 +2983,12 @@ Function Publish-StorageCapacityHealth {
         .EXAMPLE
         Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -workloadDomain sfo-w01
         This example will publish storage usage status for a specific Workload Domain in a VMware Cloud Foundation instance
+
+        .EXAMPLE
+        Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -workloadDomain sfo-w01 -outputJson F:\Reports
+        This example will publish storage usage status for a specific Workload Domain in a VMware Cloud Foundation instance
+        and save it as a json under F:\Reports with filename <timestamp>-storagecapacityhealth-status.json
+
     #>
 
     Param (
@@ -2887,68 +2998,105 @@ Function Publish-StorageCapacityHealth {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
     )
 
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
+                $allWorkloadDomains = Get-VCFWorkloadDomain
+                $singleWorkloadDomain = Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}
                 $allStorageCapacityHealth = New-Object System.Collections.ArrayList
-                if ($PsBoundParameters.ContainsKey('failureOnly')) { $failureOnlySwitch = "-failureOnly" }
 
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $allWorkloadDomains = Get-VCFWorkloadDomain
-                    $sddcManagerStorageHealth = Invoke-Expression "Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass $($failureOnlySwitch)"
-                    foreach ($domain in $allWorkloadDomains ) {
-                        $vCenterStorageHealth = Invoke-Expression "Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $($domain.name) $($failureOnlySwitch)"; $allVcenterStorageHealth += $vCenterStorageHealth
-                        $esxiStorageCapacity = Invoke-Expression "Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $($domain.name) $($failureOnlySwitch)"; $allEsxiStorageCapacity += $esxiStorageCapacity
-                        $datastoreStorageCapacity = Invoke-Expression "Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $($domain.name) $($failureOnlySwitch)"; $allDatastoreStorageCapacity += $datastoreStorageCapacity
+                    if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly;
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allVcenterStorageHealth += $vCenterStorageHealth
+                            $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allEsxiStorageCapacity += $esxiStorageCapacity
+                            $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allDatastoreStorageCapacity += $datastoreStorageCapacity
+                        }
+                    } else {
+                        $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass
+                        foreach ($domain in $allWorkloadDomains ) {
+                            $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $domain.name; $allVcenterStorageHealth += $vCenterStorageHealth
+                            $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $domain.name; $allEsxiStorageCapacity += $esxiStorageCapacity
+                            $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $domain.name; $allDatastoreStorageCapacity += $datastoreStorageCapacity
+                        }
                     }
-                } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-                    $singleWorkloadDomain = Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}
-                    if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
-                        $sddcManagerStorageHealth = Invoke-Expression "Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass $($failureOnlySwitch)"
+                } else {
+                    if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                        if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
+                            $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass -failureOnly
+                        }
+                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allVcenterStorageHealth += $vCenterStorageHealth
+                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allEsxiStorageCapacity += $esxiStorageCapacity
+                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allDatastoreStorageCapacity += $datastoreStorageCapacity
+                    } else {
+                        if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
+                            $sddcManagerStorageHealth = Request-SddcManagerStorageHealth -server $server -user $user -pass $pass -rootPass $rootPass
+                        }
+                        $vCenterStorageHealth = Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $workloadDomain; $allVcenterStorageHealth += $vCenterStorageHealth
+                        $esxiStorageCapacity = Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain; $allEsxiStorageCapacity += $esxiStorageCapacity
+                        $datastoreStorageCapacity = Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain; $allDatastoreStorageCapacity += $datastoreStorageCapacity
                     }
-                    $vCenterStorageHealth = Invoke-Expression "Request-VcenterStorageHealth -server $server -user $user -pass $pass -domain $workloadDomain $($failureOnlySwitch)"; $allVcenterStorageHealth += $vCenterStorageHealth
-                    $esxiStorageCapacity = Invoke-Expression "Request-EsxiStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain $($failureOnlySwitch)"; $allEsxiStorageCapacity += $esxiStorageCapacity
-                    $datastoreStorageCapacity = Invoke-Expression "Request-DatastoreStorageCapacity -server $server -user $user -pass $pass -domain $workloadDomain $($failureOnlySwitch)"; $allDatastoreStorageCapacity += $datastoreStorageCapacity
                 }
 
-                if ($sddcManagerStorageHealth.Count -eq 0) { $addNoIssues = $true }
-                if ($addNoIssues) {
-                    $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -PostContent '<p>No Issues Found.</p>'
-                } else {
-                    $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -As Table
-                }
-                $sddcManagerStorageHealth = Convert-CssClass -htmldata $sddcManagerStorageHealth; $allStorageCapacityHealth += $sddcManagerStorageHealth
+                if ($PsBoundParameters.ContainsKey('outputJson')) {
+                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $storageCapacityHealthJsonSuffix
+                    $combinedjson = @{
+                        "sddc-manager" = $sddcManagerStorageHealth
+                        "vcenter" = $allVcenterStorageHealth
+                        "esxi" = $allEsxiStorageCapacity
+                        "datastore" = $allDatastoreStorageCapacity
+                    }
+                    $combinedJson | ConvertTo-JSON -depth 10 | Out-File $json
+					Write-Output "JSON Created at $json"
 
-                if ($allVcenterStorageHealth.Count -eq 0) { $addNoIssues = $true }
-                if ($addNoIssues) {
-                    $allVcenterStorageHealth = $allVcenterStorageHealth | Sort-Object FQDN, Filesystem | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -PostContent '<p>No Issues Found.</p>'
                 } else {
-                    $allVcenterStorageHealth = $allVcenterStorageHealth | Sort-Object  FQDN, Filesystem | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -As Table
-                }
-                $allVcenterStorageHealth = Convert-CssClass -htmldata $allVcenterStorageHealth; $allStorageCapacityHealth += $allVcenterStorageHealth
+                    if ($sddcManagerStorageHealth.Count -eq 0) { $addNoIssues = $true }
+                    if ($addNoIssues) {
+                        $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -PostContent '<p>No Issues Found.</p>'
+                    } else {
+                        $sddcManagerStorageHealth = $sddcManagerStorageHealth | ConvertTo-Html -Fragment -PreContent '<a id="storage-sddcmanager"></a><h3>SDDC Manager Disk Health Status</h3>' -As Table
+                    }
+                    $sddcManagerStorageHealth = Convert-CssClass -htmldata $sddcManagerStorageHealth
 
-                if ($allEsxiStorageCapacity.Count -eq 0) { $addNoIssues = $true }
-                if ($addNoIssues) {
-                    $allEsxiStorageCapacity = $allEsxiStorageCapacity | Sort-Object Domain, 'ESXi FQDN', 'Volume Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -PostContent '<p>No Issues Found.</p>'
-                } else {
-                    $allEsxiStorageCapacity = $allEsxiStorageCapacity | Sort-Object Domain, 'ESXi FQDN', 'Volume Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -As Table
-                }
-                $allEsxiStorageCapacity = Convert-CssClass -htmldata $allEsxiStorageCapacity; $allStorageCapacityHealth += $allEsxiStorageCapacity
+                    if ($allVcenterStorageHealth.Count -eq 0) { $addNoIssues = $true }
+                    if ($addNoIssues) {
+                        $allVcenterStorageHealth = $allVcenterStorageHealth | Sort-Object FQDN, Filesystem | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -PostContent '<p>No Issues Found.</p>'
+                    } else {
+                        $allVcenterStorageHealth = $allVcenterStorageHealth | Sort-Object  FQDN, Filesystem | ConvertTo-Html -Fragment -PreContent '<a id="storage-vcenter"></a><h3>vCenter Server Disk Health</h3>' -As Table
+                    }
+                    $allVcenterStorageHealth = Convert-CssClass -htmldata $allVcenterStorageHealth
 
-                if ($allDatastoreStorageCapacity.Count -eq 0) { $addNoIssues = $true }
-                if ($addNoIssues) {
-                    $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | Sort-Object 'vCenter Server', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -PostContent '<p>No Issues Found.</p>'
-                } else {
-                    $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | Sort-Object 'vCenter Server', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -As Table
+                    if ($allEsxiStorageCapacity.Count -eq 0) { $addNoIssues = $true }
+                    if ($addNoIssues) {
+                        $allEsxiStorageCapacity = $allEsxiStorageCapacity | Sort-Object Domain, 'ESXi FQDN', 'Volume Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -PostContent '<p>No Issues Found.</p>'
+                    } else {
+                        $allEsxiStorageCapacity = $allEsxiStorageCapacity | Sort-Object Domain, 'ESXi FQDN', 'Volume Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-esxi"></a><h3>ESXi Host Local Volume Capacity</h3>' -As Table
+                    }
+                    $allEsxiStorageCapacity = Convert-CssClass -htmldata $allEsxiStorageCapacity
+
+                    if ($allDatastoreStorageCapacity.Count -eq 0) { $addNoIssues = $true }
+                    if ($addNoIssues) {
+                        $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | Sort-Object 'vCenter Server', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -PostContent '<p>No Issues Found.</p>'
+                    } else {
+                        $allDatastoreStorageCapacity = $allDatastoreStorageCapacity | Sort-Object 'vCenter Server', 'Datastore Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-datastore"></a><h3>Datastore Space Usage Report</h3>' -As Table
+                    }
+                    $allDatastoreStorageCapacity = Convert-CssClass -htmldata $allDatastoreStorageCapacity
+
+                    $allStorageCapacityHealth += $sddcManagerStorageHealth
+                    $allStorageCapacityHealth += $allVcenterStorageHealth
+                    $allStorageCapacityHealth += $allEsxiStorageCapacity
+                    $allStorageCapacityHealth += $allDatastoreStorageCapacity
+                    $allStorageCapacityHealth
                 }
-                $allDatastoreStorageCapacity = Convert-CssClass -htmldata $allDatastoreStorageCapacity; $allStorageCapacityHealth += $allDatastoreStorageCapacity
-                $allStorageCapacityHealth
             }
         }
-    } Catch {
+    }
+    Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -4580,6 +4728,88 @@ Function Request-EsxiStorageCapacity {
     }
 }
 Export-ModuleMember -Function Request-EsxiStorageCapacity
+
+Function Publish-ComponentConnectivityHealthNonSOS {
+    <#
+		.SYNOPSIS
+        Request and publish Component Connectivity Health only for health checks which are not a part of SOS Utility NSX health.
+		Data obtained is a subset of Publish-ComponentConnectivityHealth cmdlet.
+
+        .DESCRIPTION
+        The Publish-ComponentConnectivityHealthNonSOS cmdlet checks component connectivity across the VMware Cloud Foundation
+        instance and prepares the data to be published to an HTML report. The cmdlet connects to SDDC Manager using the
+        -server, -user, and password values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Performs connectivityy health checks and outputs the results
+
+        .EXAMPLE
+        Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        This example checks the component connectivity outside of SOS utility for all Workload Domains across the VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!  -workloadDomain sfo-w01
+        This example checks the component connectivity outside of SOS utility for a single Workload Domain in a VMware Cloud Foundation instance.
+
+        .EXAMPLE
+        Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        This example checks the component connectivity outside of SOS utility for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
+
+		.EXAMPLE
+        Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -jsonOutput F:\Reporting
+        This example checks the component connectivity outside of SOS utility for all Workload Domains across the VMware Cloud Foundation instance
+		and saves it as JSON under F:\Reporting\<timestamp>-componentconnectivityhealthnonsos-status.json
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
+    )
+
+    Try {
+        $allConnectivityObject = New-Object System.Collections.ArrayList
+        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+            if ($PsBoundParameters.ContainsKey("allDomains")) {
+                $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -alldomains -failureOnly; $allConnectivityObject += $vcenterConnectivity
+                $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -alldomains -failureOnly; $allConnectivityObject += $NsxtConnectivity
+            } else {
+                $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allConnectivityObject += $vcenterConnectivity
+                $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allConnectivityObject += $NsxtConnectivity
+            }
+        } else {
+            if ($PsBoundParameters.ContainsKey("allDomains")) {
+                $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -alldomains; $allConnectivityObject += $vcenterConnectivity
+                $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -alldomains; $allConnectivityObject += $NsxtConnectivity
+            } else {
+                $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allConnectivityObject += $vcenterConnectivity
+                $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allConnectivityObject += $NsxtConnectivity
+            }
+        }
+
+        if ($PsBoundParameters.ContainsKey("outputJson")) {
+            $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $ComponentConnectivityHealthNonSOSJsonSuffix
+            $allConnectivityObject | ConvertTo-JSON -depth 10 | Out-File $json
+            Write-Output "JSON Created at $json"
+        } else {
+            if ($allConnectivityObject.Count -eq 0) { $addNoIssues = $true }
+            if ($addNoIssues) {
+                $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p>No issues found.</p>'
+            } else {
+                $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -As Table
+            }
+            $allConnectivityObject = Convert-CssClass -htmldata $allConnectivityObject
+            $allConnectivityObject
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-ComponentConnectivityHealthNonSOS
 
 Function Publish-ComponentConnectivityHealth {
     <#
@@ -7623,7 +7853,7 @@ Function Publish-NsxManagerPasswordExpiration {
                         }
                     }
                 }
-                
+
                 $nsxManagerPasswordExpirationObject = $nsxManagerPasswordExpirationObject | Sort-Object 'Workload Domain', 'Virtual Machine', 'Local User' | ConvertTo-Html -Fragment -PreContent '<a id="nsxmanager-password-expiration"></a><h3>NSX Manager - Password Expiration</h3>' -As Table
                 $nsxManagerPasswordExpirationObject = Convert-CssClass -htmldata $nsxManagerPasswordExpirationObject
                 $nsxManagerPasswordExpirationObject
@@ -7676,7 +7906,7 @@ Function Publish-NsxManagerPasswordComplexity {
                         $nsxPasswordComplexity = Request-NsxtManagerPasswordComplexity -server $server -user $user -pass $pass -domain $domain.name; $nsxManagerPasswordComplexityObject += $nsxPasswordComplexity
                     }
                 }
-                
+
                 $nsxManagerPasswordComplexityObject = $nsxManagerPasswordComplexityObject | Sort-Object 'Workload Domain', 'Virtual Machine' | ConvertTo-Html -Fragment -PreContent '<a id="nsxmanager-password-complexity"></a><h3>NSX Manager - Password Complexity</h3>' -As Table
                 $nsxManagerPasswordComplexityObject = Convert-CssClass -htmldata $nsxManagerPasswordComplexityObject
                 $nsxManagerPasswordComplexityObject
@@ -7729,7 +7959,7 @@ Function Publish-NsxManagerAccountLockout {
                         $nsxAccountLockout = Request-NsxtManagerAccountLockout -server $server -user $user -pass $pass -domain $domain.name; $nsxManagerAccountLockoutObject += $nsxAccountLockout
                     }
                 }
-                
+
                 $nsxManagerAccountLockoutObject = $nsxManagerAccountLockoutObject | Sort-Object 'Workload Domain', 'Virtual Machine' | ConvertTo-Html -Fragment -PreContent '<a id="nsxmanager-account-lockout"></a><h3>NSX Manager - Account Lockout</h3>' -As Table
                 $nsxManagerAccountLockoutObject = Convert-CssClass -htmldata $nsxManagerAccountLockoutObject
                 $nsxManagerAccountLockoutObject
@@ -7801,7 +8031,7 @@ Function Publish-NsxEdgePasswordExpiration {
                         }
                     }
                 }
-                
+
                 $nsxEdgePasswordExpirationObject = $nsxEdgePasswordExpirationObject | Sort-Object 'Workload Domain', 'Virtual Machine', 'Local User' | ConvertTo-Html -Fragment -PreContent '<a id="nsxedge-password-expiration"></a><h3>NSX Edge - Password Expiration</h3>' -As Table
                 $nsxEdgePasswordExpirationObject = Convert-CssClass -htmldata $nsxEdgePasswordExpirationObject
                 $nsxEdgePasswordExpirationObject
@@ -7854,7 +8084,7 @@ Function Publish-NsxEdgePasswordComplexity {
                         $nsxEdgePasswordComplexity = Request-NsxtEdgePasswordComplexity -server $server -user $user -pass $pass -domain $domain.name; $nsxEdgePasswordComplexityObject += $nsxEdgePasswordComplexity
                     }
                 }
-                
+
                 $nsxEdgePasswordComplexityObject = $nsxEdgePasswordComplexityObject | Sort-Object 'Workload Domain', 'Virtual Machine', 'Local User' | ConvertTo-Html -Fragment -PreContent '<a id="nsxedge-password-complexity"></a><h3>NSX Edge - Password Complexity</h3>' -As Table
                 $nsxEdgePasswordComplexityObject = Convert-CssClass -htmldata $nsxEdgePasswordComplexityObject
                 $nsxEdgePasswordComplexityObject
@@ -7907,7 +8137,7 @@ Function Publish-NsxEdgeAccountLockout {
                         $nsxEdgeAccountLockout = Request-NsxtEdgeAccountLockout -server $server -user $user -pass $pass -domain $domain.name; $nsxEdgeAccountLockoutObject += $nsxEdgeAccountLockout
                     }
                 }
-                
+
                 $nsxEdgeAccountLockoutObject = $nsxEdgeAccountLockoutObject | Sort-Object 'Workload Domain', 'Virtual Machine', 'Local User' | ConvertTo-Html -Fragment -PreContent '<a id="nsxedge-account-lockout"></a><h3>NSX Edge - Account Lockout</h3>' -As Table
                 $nsxEdgeAccountLockoutObject = Convert-CssClass -htmldata $nsxEdgeAccountLockoutObject
                 $nsxEdgeAccountLockoutObject
@@ -9313,7 +9543,7 @@ Function Get-ClarityReportNavigation {
                         <li><a class="nav-link" href="#sddcmanager-password-complexity">Password Complexity</a></li>
                         <li><a class="nav-link" href="#sddcmanager-account-lockout">Account Lockout</a></li>
                     </ul>
-                </section>           
+                </section>
                 <section class="nav-group collapsible">
                     <input id="sso" type="checkbox"/>
                     <label for="sso">vCenter Single Sign-On</label>
@@ -9397,7 +9627,7 @@ Function Get-ClarityReportNavigation {
                         <li><a class="nav-link" href="#nsxedge-password-expiration">NSX  Edge</a></li>
                         <li><a class="nav-link" href="#esxi-password-expiration">ESXi</a></li>
                     </ul>
-                </section>           
+                </section>
                 <section class="nav-group collapsible">
                     <input id="complexity" type="checkbox"/>
                     <label for="complexity">Password Complexity</label>
