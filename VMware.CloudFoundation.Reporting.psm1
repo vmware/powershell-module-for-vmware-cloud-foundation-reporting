@@ -8623,30 +8623,15 @@ Function Test-VcfReportingPrereq {
             @{ Name=("PowerValidatedSolutions"); Version=("2.0.0")}
         )
         foreach ($module in $modules ) {
-            if ($PSEdition -eq "Desktop") {
-                if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
-                    $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding."
-                    Write-Warning $message; Write-Host ""
-					Break
-                } else {
-                    $moduleCurrentVersion = (Get-InstalledModule -Name $module.Name).Version
-                    $message = "PowerShell Module: $($module.Name) Version: $($moduleCurrentVersion) Found, Supports the minimum required version."
-                    $message
-                }
+            if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
+                $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding."
+                Write-Warning $message; Write-Host ""
+                break
             } else {
-                if (!$module -eq "VMware.PowerCLI") {
-                    if ((Get-Module -Name $module.Name).Version -lt $module.Version) {
-                        $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding."
-                        Write-Warning $message; Write-Host ""
-					Break
-                    } else {
-                        $moduleCurrentVersion = (Get-InstalledModule -Name $module.Name).Version
-                        $message = "PowerShell Module: $($module.Name) Version: $($moduleCurrentVersion) Found, Supports the minimum required version."
-                        $message
-                    }
-                }
+                $moduleCurrentVersion = (Get-InstalledModule -Name $module.Name).Version
+                $message = "PowerShell Module: $($module.Name) Version: $($moduleCurrentVersion) Found, Supports the minimum required version."
+                $message
             }
-
         }
     }
     Catch {
