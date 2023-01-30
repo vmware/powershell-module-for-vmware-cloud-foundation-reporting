@@ -1,13 +1,14 @@
 # CHANGELOG
 
-## [v1.0.6]()
+## [v1.0.6](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.0.6)
 
-> Release Date: Pending Release
+> Release Date: 2023-01-31
 
 Bugfix:
 
 - Updates `Request0VcenterOverview` to use the PowerVCF cmdlets to return the workload domain's cluster and host counts from the SDDC Manager inventory versus directly from the vSphere inventory. This will ensure that the host count does not include any HCX nodes. [GH-65](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/65)
 - Updates `Publish-NsxtCombinedHealth` to use `$json` when calling `Publish-NsxtHealth`. [GH-59](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/59)
+- Updates `Request-NsxtEdgeUserExpiry` to resolve error if an NSX Edge `root` password is different from NSX Manager `root` password. [GH-75](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/75)
 
 Enhancement:
 
