@@ -710,7 +710,7 @@ If you discover a bug or would like to suggest an enhancement, please [open an i
 
 ## License
 
-Copyright 2022 VMware, Inc.
+Copyright 2022-2023 VMware, Inc.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
