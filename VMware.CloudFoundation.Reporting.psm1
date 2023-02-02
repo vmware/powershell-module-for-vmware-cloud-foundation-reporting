@@ -2231,9 +2231,9 @@ Function Publish-BackupStatus {
         This example will publish the backup status for the vCenter Server instances, and NSX Local Manager clusters in Workload Domain sfo-w01.
 
         .EXAMPLE
-        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reports
+        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
         This example will generate a json for the backup status for the vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance
-        and save it under F:\Reports with filename <timestamp>-backup-status.json
+        and saves it under F:\Reporting with filename <timestamp>-backup-status.json
     #>
 
     Param (
@@ -2285,7 +2285,7 @@ Function Publish-BackupStatus {
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $backupJsonSuffix
-                    $allBackupStatusObject | ConvertTo-JSON -depth 10 | Out-File $json
+                    $allBackupStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allBackupStatusObject.Count -eq 0) { $addNoIssues = $true }
@@ -2331,9 +2331,9 @@ Function Publish-NsxtTransportNodeStatus {
         This example will publish the BGP status for the NSX transport nodes in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
 
         .EXAMPLE
-        Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reports
         This example will generate a json for the status of all NSX transport nodes in a VMware Cloud Foundation instance.
-        and save it under F:\Reports with filename <timestamp>-nsxttransportnode-status.json
+        and saves it under F:\Reporting with filename <timestamp>-nsxttransportnode-status.json
     #>
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -2372,7 +2372,7 @@ Function Publish-NsxtTransportNodeStatus {
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxtTransportJsonSuffix
-                    $allNsxtTransportNodeStatusObject | ConvertTo-JSON -depth 10 | Out-File $json
+                    $allNsxtTransportNodeStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allNsxtTransportNodeStatusObject.Count -eq 0) {
@@ -2420,9 +2420,9 @@ Function Publish-NsxtTransportNodeTunnelStatus {
         This example will publish the BGP status for the NSX transport node tunnels in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
 
         .EXAMPLE
-        Publish-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reports
+        Publish-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
         This example will generate a json for the status of all NSX transport node tunnels in a VMware Cloud Foundation instance
-        and save it under F:\Reports with filename <timestamp>-nsxttntunnel-status.json
+        and saves it under F:\Reporting with filename <timestamp>-nsxttntunnel-status.json
 
 
     #>
@@ -2461,7 +2461,7 @@ Function Publish-NsxtTransportNodeTunnelStatus {
                 }
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxttntunnelJsonSuffix
-                    $allNsxtTransportNodeTunnelStatusObject | ConvertTo-JSON -depth 10 | Out-File $json
+                    $allNsxtTransportNodeTunnelStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allNsxtTransportNodeTunnelStatusObject.Count -eq 0) { $addNoIssues = $true }
@@ -2511,9 +2511,9 @@ Function Publish-NsxtTier0BgpStatus {
         This example will publish the BGP status for the NSX Tier-0 gateways in a VMware Cloud Foundation instance for a workload domain names sfo-w01.
 
         .EXAMPLE
-        Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reports
+        Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
         This example will generate a json for the BGP status for all NSX Tier-0 gateways in a VMware Cloud Foundation instance.
-        and save it under F:\Reports with filename <timestamp>-nsxttier0bgp-status.json
+        and saves it under F:\Reporting with filename <timestamp>-nsxttier0bgp-status.json
 
     #>
     Param (
@@ -2550,7 +2550,7 @@ Function Publish-NsxtTier0BgpStatus {
                 }
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxttier0bgpJsonSuffix
-                    $allNsxtTier0BgpStatusObject | ConvertTo-JSON -depth 10 | Out-File $json
+                    $allNsxtTier0BgpStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allNsxtTier0BgpStatusObject.Count -eq 0) { $addNoIssues = $true }
@@ -2605,9 +2605,9 @@ Function Publish-SnapshotStatus {
         This example will publish the snapshot status for the SDDC Manager, vCenter Server instance, and NSX Edge nodes managed by SDDC Manager for a workload domain names sfo-w01.
 
         .EXAMPLE
-        Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reports
+        Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
         This example will generate a json for the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.
-        and save it under F:\Reports with filename <timestamp>-snapshot-status.json
+        and saves it under F:\Reporting with filename <timestamp>-snapshot-status.json
 
     #>
 
@@ -2660,7 +2660,7 @@ Function Publish-SnapshotStatus {
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $snapshotJsonSuffix 
-                    $allSnapshotStatusObject | ConvertTo-JSON -depth 10 | Out-File $json
+                    $allSnapshotStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json
                     Write-Output "JSON Created at $json"
                 } else {
 
@@ -2707,9 +2707,9 @@ Function Publish-LocalUserExpiry {
         This example checks the expiry for local OS users for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
 
         .EXAMPLE
-        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcRootPass VMw@re1! -allDomains -outputJson F:\Reports
+        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcRootPass VMw@re1! -allDomains -outputJson F:\Reporting
         This example checks the expiry for local OS users for all Workload Domains across the VMware Cloud Foundation
-        and save it as a json under F:\Reports with filename <timestamp>-localuserexpiry-status.json
+        and saves it under F:\Reporting with filename <timestamp>-localuserexpiry-status.json
 
     #>
 
@@ -2771,7 +2771,7 @@ Function Publish-LocalUserExpiry {
             $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $localuserexpiryJsonSuffix
 			Write-Output $json
 			Write-Output $$allPasswordExpiryObject
-            $allPasswordExpiryObject | ConvertTo-JSON -depth 10 | Out-File $json
+            $allPasswordExpiryObject | ConvertTo-JSON -Depth 10 | Out-File $json
             Write-Output "JSON Created at $json"
         } else {
             if ($allPasswordExpiryObject.Count -eq 0) { $addNoIssues = $true }
@@ -2817,9 +2817,9 @@ Function Publish-NsxtHealthNonSOS {
         This example checks NSX Manager health outside SOS Utility for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
 
         .EXAMPLE
-        Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reports
+        Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
         This example checks NSX Manager health outside SOS Utility for all Workload Domains across the VMware Cloud Foundation instance and
-        saves it as a JSON to file under F:\Reports\<timestamp>-nsxtcombinedhealthnonsos-status.json
+       and saves it as JSON under F:\Reporting with filename <timestamp>-nsxtcombinedhealthnonsos-status.json
 
     #>
 
@@ -2858,7 +2858,7 @@ Function Publish-NsxtHealthNonSOS {
 
         if ($PsBoundParameters.ContainsKey("outputJson")) {
             $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxtCombinedHealthNonSOSJsonSuffix
-            $allNsxtHealthObject | ConvertTo-JSON -depth 10 | Out-File $json
+            $allNsxtHealthObject | ConvertTo-JSON -Depth 10 | Out-File $json
             Write-Output "JSON Created at $json"
         } else {
             if ($allNsxtHealthObject.Count -eq 0) { $addNoIssues = $true }
@@ -2985,9 +2985,9 @@ Function Publish-StorageCapacityHealth {
         This example will publish storage usage status for a specific Workload Domain in a VMware Cloud Foundation instance
 
         .EXAMPLE
-        Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -workloadDomain sfo-w01 -outputJson F:\Reports
+        Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -workloadDomain sfo-w01 -outputJson F:\Reporting
         This example will publish storage usage status for a specific Workload Domain in a VMware Cloud Foundation instance
-        and save it as a json under F:\Reports with filename <timestamp>-storagecapacityhealth-status.json
+        and saves it as JSON under F:\Reporting with filename <timestamp>-storagecapacityhealth-status.json
 
     #>
 
@@ -3051,7 +3051,7 @@ Function Publish-StorageCapacityHealth {
                         "esxi" = $allEsxiStorageCapacity
                         "datastore" = $allDatastoreStorageCapacity
                     }
-                    $combinedJson | ConvertTo-JSON -depth 10 | Out-File $json
+                    $combinedJson | ConvertTo-JSON -Depth 10 | Out-File $json
 					Write-Output "JSON Created at $json"
 
                 } else {
@@ -4757,7 +4757,7 @@ Function Publish-ComponentConnectivityHealthNonSOS {
 		.EXAMPLE
         Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -jsonOutput F:\Reporting
         This example checks the component connectivity outside of SOS utility for all Workload Domains across the VMware Cloud Foundation instance
-		and saves it as JSON under F:\Reporting\<timestamp>-componentconnectivityhealthnonsos-status.json
+		and saves it under F:\Reporting with filename <timestamp>-componentconnectivityhealthnonsos-status.json
     #>
 
     Param (
@@ -4792,7 +4792,7 @@ Function Publish-ComponentConnectivityHealthNonSOS {
 
         if ($PsBoundParameters.ContainsKey("outputJson")) {
             $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $ComponentConnectivityHealthNonSOSJsonSuffix
-            $allConnectivityObject | ConvertTo-JSON -depth 10 | Out-File $json
+            $allConnectivityObject | ConvertTo-JSON -Depth 10 | Out-File $json
             Write-Output "JSON Created at $json"
         } else {
             if ($allConnectivityObject.Count -eq 0) { $addNoIssues = $true }
@@ -8997,7 +8997,6 @@ Function Start-CreateOutputJsonDirectory {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$jsonFolder,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$jsonFileSuffix
-
     )
 
     $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
@@ -9018,7 +9017,6 @@ Function Start-CreateOutputJsonDirectory {
     $jsonDestination
 }
 
-Export-ModuleMember -Function Start-CreateOutputJsonDirectory
 
 Function Invoke-SddcCommand {
     <#
