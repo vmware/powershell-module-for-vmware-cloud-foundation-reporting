@@ -2331,7 +2331,7 @@ Function Publish-NsxtTransportNodeStatus {
         This example will publish the BGP status for the NSX transport nodes in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
 
         .EXAMPLE
-        Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reports
+        Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
         This example will generate a json for the status of all NSX transport nodes in a VMware Cloud Foundation instance.
         and saves it under F:\Reporting with filename <timestamp>-nsxttransportnode-status.json
     #>
