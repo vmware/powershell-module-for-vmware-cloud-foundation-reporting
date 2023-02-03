@@ -8203,6 +8203,7 @@ Function Request-EsxiOverview {
                                 $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
                                 $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
                                 $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
+                                $customObject | Add-Member -notepropertyname "CPU Cores per Socket" -notepropertyvalue ($assignedEsxiHost.cpu.Cores / $assignedEsxiHost.cpu.cpuCores.Count)
                                 $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($assignedEsxiHost.memory.totalCapacityMB) / 1024))
                                 $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $assignedEsxiHost.status
                             } else {
@@ -8214,6 +8215,7 @@ Function Request-EsxiOverview {
                                 $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
                                 $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
                                 $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
+                                $customObject | Add-Member -notepropertyname "CPU Cores per Socket" -notepropertyvalue ($assignedEsxiHost.cpu.Cores / $assignedEsxiHost.cpu.cpuCores.Count)
                                 $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($assignedEsxiHost.memory.totalCapacityMB) / 1024))
                                 $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $assignedEsxiHost.status
                             }
@@ -8234,6 +8236,7 @@ Function Request-EsxiOverview {
                         $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
                         $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
                         $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
+                        $customObject | Add-Member -notepropertyname "CPU Cores per Socket" -notepropertyvalue ($assignedEsxiHost.cpu.Cores / $assignedEsxiHost.cpu.cpuCores.Count)
                         $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($unassignedEsxiHost.memory.totalCapacityMB) / 1024))
                         $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $unassignedEsxiHost.status
                     } else {
@@ -8245,6 +8248,7 @@ Function Request-EsxiOverview {
                         $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
                         $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
                         $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
+                        $customObject | Add-Member -notepropertyname "CPU Cores per Socket" -notepropertyvalue ($assignedEsxiHost.cpu.Cores / $assignedEsxiHost.cpu.cpuCores.Count)
                         $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($unassignedEsxiHost.memory.totalCapacityMB) / 1024))
                         $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $unassignedEsxiHost.status
                     }
