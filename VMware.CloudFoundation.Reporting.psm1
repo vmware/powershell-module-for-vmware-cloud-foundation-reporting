@@ -8733,21 +8733,38 @@ Function Request-VrealizeOverview {
                 $vcfApiCmdlet = @("Get-VCFvRSLCM","Get-VCFWSA","Get-VCFvRLI","Get-VCFvROPS","Get-VCFvRA")
                 foreach ($apiCmdlet in $vcfApiCmdlet) {
                     if ((Invoke-Expression $apiCmdlet).status -eq "ACTIVE") {
-                        if ($apiCmdlet -eq "Get-VCFvRSLCM") {$nodeCount = "1" } else { ($nodeCount = ((Invoke-Expression $apiCmdlet).nodes).Count)}
+                        if ($apiCmdlet -eq "Get-VCFvRSLCM") {$nodeCount = "1"} else { ($nodeCount = ((Invoke-Expression $apiCmdlet).nodes).Count)}
+
+                        if ($apiCmdlet -eq "Get-VCFvRSLCM") {
+                            $product = "vRealize Suite Lifecycle Manager"
+                        }
+                        elseif ($apiCmdlet -eq "Get-VCFWSA") {
+                            $product = "Workspace ONE Access"
+                        }
+                        elseif ($apiCmdlet -eq "Get-VCFvRLI") {
+                            $product = "vRealize Log Insight"
+                        }
+                        elseif ($apiCmdlet -eq "Get-VCFvROPS") {
+                            $product = "vRealize Operations"
+                        }
+                        elseif ($apiCmdlet -eq "Get-VCFvRA") {
+                            $product = "vRealize Automation"
+                        }
+                        
                         $customObject = New-Object -TypeName psobject
-                        $customObject | Add-Member -notepropertyname "vRealize Product" -notepropertyvalue ((Get-Help -Name $apiCmdlet).synopsis -Split ("Get the existing ") | Select-Object -Last 1)
-                        if ($PsBoundParameters.ContainsKey('anonymized')) {
-                            $customObject | Add-Member -notepropertyname "UUID" -notepropertyvalue (Invoke-Expression $apiCmdlet).id
+                        $customObject | Add-Member -NotePropertyName "vRealize Product" -NotePropertyValue $product
+                        if ($PsBoundParameters.ContainsKey("anonymized")) {
+                            $customObject | Add-Member -NotePropertyName "UUID" -NotePropertyValue (Invoke-Expression $apiCmdlet).id
                         } else {
                             if ($apiCmdlet -eq "Get-VCFvRSLCM") {
-                                $customObject | Add-Member -notepropertyname "FQDN" -notepropertyvalue (Invoke-Expression $apiCmdlet).fqdn
+                                $customObject | Add-Member -NotePropertyName "FQDN" -NotePropertyValue (Invoke-Expression $apiCmdlet).fqdn
                             } else {
-                                $customObject | Add-Member -notepropertyname "FQDN" -notepropertyvalue (Invoke-Expression $apiCmdlet).loadBalancerFqdn
+                                $customObject | Add-Member -NotePropertyName "FQDN" -NotePropertyValue (Invoke-Expression $apiCmdlet).loadBalancerFqdn
                             }
                         }
-                        $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Invoke-Expression $apiCmdlet).version
-                        $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue (Invoke-Expression $apiCmdlet).status
-                        $customObject | Add-Member -notepropertyname "Nodes" -notepropertyvalue $nodeCount
+                        $customObject | Add-Member -NotePropertyName "Version" -NotePropertyValue (Invoke-Expression $apiCmdlet).version
+                        $customObject | Add-Member -NotePropertyName "Status" -NotePropertyValue (Invoke-Expression $apiCmdlet).status
+                        $customObject | Add-Member -NotePropertyName "Nodes" -NotePropertyValue $nodeCount
                         $allVrealizeObject += $customObject
                     }
                 }
@@ -8755,7 +8772,7 @@ Function Request-VrealizeOverview {
             }
         }
     }
-	Catch {
+    Catch {
         Debug-ExceptionWriter -object $_
     }
 }
