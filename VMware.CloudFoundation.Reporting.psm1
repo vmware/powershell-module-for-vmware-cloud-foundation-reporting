@@ -8486,6 +8486,14 @@ Function Request-EsxiOverview {
         This example will return an overview of the ESXi hosts managed by the SDDC Manager instance.
 
         .EXAMPLE
+        Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -subscription
+        This example will return an overview of the ESXi hosts managed by the SDDC Manager instance with the number of cores for VCF+ subscription.
+
+        .EXAMPLE
+        Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -subscription -outputCsv F:\Reporting
+        This example will return an overview of the ESXi hosts managed by the SDDC Manager instance with the number of cores for VCF+ subscription and save as a CSV file to F:\Reporting.
+
+        .EXAMPLE
         Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
         This example will return an overview of the ESXi hosts managed by the SDDC Manager instance, but will anonymize the output.
     #>
@@ -8494,7 +8502,9 @@ Function Request-EsxiOverview {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$subscription,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputCsv
     )
 
     Try {
@@ -8507,6 +8517,16 @@ Function Request-EsxiOverview {
                         $allAssignedEsxiHosts = (Get-VCFHost | Where-Object {$_.domain.id -eq $domain.id})
                         foreach ($assignedEsxiHost in $allAssignedEsxiHosts) {
                             $customObject = New-Object -TypeName psobject
+
+                            $sockets = $assignedEsxiHost.cpu.cpuCores.Count
+                            $coresPerSocket = $assignedEsxiHost.cpu.Cores / $sockets
+
+                            if ($coresPerSocket -le 16) {
+                                $vcfPlusLicenseCount = $sockets * 16
+                            } else {
+                                $vcfPlusLicenseCount = $sockets * $coresPerSocket
+                            }
+
                             if ($PsBoundParameters.ContainsKey('anonymized')) {
                                 $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
                                 $customObject | Add-Member -notepropertyname "Cluster UUID" -notepropertyvalue $cluster.id
@@ -8518,6 +8538,9 @@ Function Request-EsxiOverview {
                                 $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
                                 $customObject | Add-Member -notepropertyname "CPU Cores per Socket" -notepropertyvalue ($assignedEsxiHost.cpu.Cores / $assignedEsxiHost.cpu.cpuCores.Count)
                                 $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($assignedEsxiHost.memory.totalCapacityMB) / 1024))
+                                if ($PsBoundParameters.ContainsKey('subscription')) {
+                                    $customObject | Add-Member -notepropertyname "VCF+ Subscription Core Count" -notepropertyvalue $vcfPlusLicenseCount
+                                }
                                 $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $assignedEsxiHost.status
                             } else {
                                 $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
@@ -8530,16 +8553,28 @@ Function Request-EsxiOverview {
                                 $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
                                 $customObject | Add-Member -notepropertyname "CPU Cores per Socket" -notepropertyvalue ($assignedEsxiHost.cpu.Cores / $assignedEsxiHost.cpu.cpuCores.Count)
                                 $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($assignedEsxiHost.memory.totalCapacityMB) / 1024))
+                                if ($PsBoundParameters.ContainsKey('subscription')) {
+                                    $customObject | Add-Member -notepropertyname "VCF+ Subscription Core Count" -notepropertyvalue $vcfPlusLicenseCount
+                                }
                                 $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $assignedEsxiHost.status
                             }
                             $allEsxiHostObject += $customObject
-
                         }
                     }
                 }
                 $allUnassignedEsxiHosts = (Get-VCFHost | Where-Object {$_.status -eq "UNASSIGNED_USEABLE"})
                 foreach ($unassignedEsxiHost in $allUnassignedEsxiHosts) {
                     $customObject = New-Object -TypeName psobject
+
+                    $sockets = $unassignedEsxiHost.cpu.cpuCores.Count
+                    $coresPerSocket = $unassignedEsxiHost.cpu.Cores / $sockets
+
+                    if ($coresPerSocket -le 16) {
+                        $vcfPlusLicenseCount = $sockets * 16
+                    } else {
+                        $vcfPlusLicenseCount = $sockets * $coresPerSocket
+                    }
+
                     if ($PsBoundParameters.ContainsKey('anonymized')) {
                         $customObject | Add-Member -NotePropertyName 'Domain UUID' -NotePropertyValue ""
                         $customObject | Add-Member -notepropertyname "Cluster UUID" -notepropertyvalue ""
@@ -8551,6 +8586,9 @@ Function Request-EsxiOverview {
                         $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
                         $customObject | Add-Member -notepropertyname "CPU Cores per Socket" -notepropertyvalue ($assignedEsxiHost.cpu.Cores / $assignedEsxiHost.cpu.cpuCores.Count)
                         $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($unassignedEsxiHost.memory.totalCapacityMB) / 1024))
+                        if ($PsBoundParameters.ContainsKey('subscription')) {
+                            $customObject | Add-Member -notepropertyname "VCF+ Subscription Core Count" -notepropertyvalue $vcfPlusLicenseCount
+                        }
                         $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $unassignedEsxiHost.status
                     } else {
                         $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue ""
@@ -8563,11 +8601,22 @@ Function Request-EsxiOverview {
                         $customObject | Add-Member -notepropertyname "CPU Cores" -notepropertyvalue $assignedEsxiHost.cpu.Cores
                         $customObject | Add-Member -notepropertyname "CPU Cores per Socket" -notepropertyvalue ($assignedEsxiHost.cpu.Cores / $assignedEsxiHost.cpu.cpuCores.Count)
                         $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue ([Math]::round(($unassignedEsxiHost.memory.totalCapacityMB) / 1024))
+                        if ($PsBoundParameters.ContainsKey('subscription')) {
+                            $customObject | Add-Member -notepropertyname "VCF+ Subscription Core Count" -notepropertyvalue $vcfPlusLicenseCount
+                        }
                         $customObject | Add-Member -notepropertyname "Status" -notepropertyvalue $unassignedEsxiHost.status
                     }
                     $allEsxiHostObject += $customObject
                 }
-                $allEsxiHostObject | Sort-Object -Property Status,  'Domain Name', 'Domain UUID', 'Cluster Name', 'Cluster UUID', 'ESXi Host FQDN', 'ESXi Host UUID'
+
+                if ($PsBoundParameters.ContainsKey('outputCsv')) {
+                    $csv = Start-CreateOutputCsvDirectory -csvFolder $outputCsv -csvFileSuffix $server
+                    $allEsxiHostObject | ConvertTo-Csv -NoTypeInformation | Out-File $csv
+                    Write-Output "CSV file saved to $csv"
+                } else {
+                    $allEsxiHostObject | Sort-Object -Property Status,  'Domain Name', 'Domain UUID', 'Cluster Name', 'Cluster UUID', 'ESXi Host FQDN', 'ESXi Host UUID'
+                }
+                
             }
         }
     }
@@ -9023,6 +9072,29 @@ Function Start-CreateOutputJsonDirectory {
     $jsonDestination
 }
 
+Function Start-CreateOutputCsvDirectory {
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$csvFolder,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$csvFileSuffix
+    )
+
+    $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
+    $Global:csvFolder = $csvFolder
+    $csvName = $filetimeStamp + "-" + $csvFileSuffix + ".csv"
+
+    if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
+        $csvDestination = ($csvDestination = ($csvFolder + "\" + $csvName)).split('\') -join '/' | Split-Path -NoQualifier
+        $csvFolder = ($csvFolder).split('\') -join '/' | Split-Path -NoQualifier
+    } else {
+        $csvDestination = ($csvFolder + "\" + $csvName)
+    }
+
+    if (!(Test-Path -Path $csvFolder)) {
+        New-Item -Path $csvFolder -ItemType "directory" | Out-Null
+    }
+
+    $csvDestination
+}
 
 Function Invoke-SddcCommand {
     <#
