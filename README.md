@@ -679,20 +679,6 @@ The upgrade precheck report, initiates an upgrade precheck of a workload domain 
 
 4. Review the generated HTML report.
 
-## Known Issues
-
-- The `Invoke-VcfPasswordPolicy` cmdlet fails to return collected information for the vCenter Server Password Policy Configuration when using PowerShell Core on Linux
-
-    ```powershell
-    [00-00-0000_00:00:00] INFO Collecting vCenter Server Password Policy Configuration for VMware Cloud Foundation instance (sfo-vcf01.sfo.rainpole.io).
-
-    Connect-SsoAdminServer: One or more errors occurred. (The SSL connection could not be established, see inner exception.)
-
-    Test-SSOAuthentication: Unable to authenticate to Single-Sign-On Server (sfo-w01-vc01.sfo.rainpole.io), check credentials: PRE_VALIDATION_FAILED
-    ```
-
-    Workaround: Use PowerShell Core on Windows.
-
 ## Contributing
 
 The project team welcomes contributions from the community. Before you start working with PowerValidatedSolutions, please
@@ -706,7 +692,16 @@ For more detailed information, refer to the [contribution guidelines][contributi
 
 This PowerShell module is not supported by VMware Support.
 
-If you discover a bug or would like to suggest an enhancement, please [open an issue][issues].
+We welcome you to use the GitHub [issues][issues] tracker to report bugs or suggest features and enhancements.
+
+When filing an issue, please check existing open, or recently closed, issues to make sure someone else hasn't already
+reported the issue.
+
+Please try to include as much information as you can. Details like these are incredibly useful:
+
+- A reproducible test case or series of steps.
+- Any modifications you've made relevant to the bug.
+- Anything unusual about your environment or deployment.
 
 ## License
 
