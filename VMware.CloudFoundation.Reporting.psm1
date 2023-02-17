@@ -2243,7 +2243,7 @@ Function Publish-BackupStatus {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
 
     Try {
@@ -2285,7 +2285,7 @@ Function Publish-BackupStatus {
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $backupJsonSuffix
-                    $allBackupStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json
+                    $allBackupStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allBackupStatusObject.Count -eq 0) { $addNoIssues = $true }
@@ -2342,7 +2342,7 @@ Function Publish-NsxtTransportNodeStatus {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
 
     )
 
@@ -2372,7 +2372,7 @@ Function Publish-NsxtTransportNodeStatus {
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxtTransportJsonSuffix
-                    $allNsxtTransportNodeStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json
+                    $allNsxtTransportNodeStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allNsxtTransportNodeStatusObject.Count -eq 0) {
@@ -2433,7 +2433,7 @@ Function Publish-NsxtTransportNodeTunnelStatus {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
 
     )
 
@@ -2461,7 +2461,7 @@ Function Publish-NsxtTransportNodeTunnelStatus {
                 }
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxttntunnelJsonSuffix
-                    $allNsxtTransportNodeTunnelStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json
+                    $allNsxtTransportNodeTunnelStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allNsxtTransportNodeTunnelStatusObject.Count -eq 0) { $addNoIssues = $true }
@@ -2523,7 +2523,7 @@ Function Publish-NsxtTier0BgpStatus {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
 
     Try {
@@ -2550,7 +2550,7 @@ Function Publish-NsxtTier0BgpStatus {
                 }
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxttier0bgpJsonSuffix
-                    $allNsxtTier0BgpStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json
+                    $allNsxtTier0BgpStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allNsxtTier0BgpStatusObject.Count -eq 0) { $addNoIssues = $true }
@@ -2618,7 +2618,7 @@ Function Publish-SnapshotStatus {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
 
     )
 
@@ -2660,7 +2660,7 @@ Function Publish-SnapshotStatus {
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $snapshotJsonSuffix 
-                    $allSnapshotStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json
+                    $allSnapshotStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
                 } else {
 
@@ -2721,7 +2721,7 @@ Function Publish-LocalUserExpiry {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
 
     Try {
@@ -2771,7 +2771,7 @@ Function Publish-LocalUserExpiry {
             $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $localuserexpiryJsonSuffix
 			Write-Output $json
 			Write-Output $$allPasswordExpiryObject
-            $allPasswordExpiryObject | ConvertTo-JSON -Depth 10 | Out-File $json
+            $allPasswordExpiryObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
             Write-Output "JSON Created at $json"
         } else {
             if ($allPasswordExpiryObject.Count -eq 0) { $addNoIssues = $true }
@@ -2830,7 +2830,7 @@ Function Publish-NsxtHealthNonSOS {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
 
         Try {
@@ -2858,7 +2858,7 @@ Function Publish-NsxtHealthNonSOS {
 
         if ($PsBoundParameters.ContainsKey("outputJson")) {
             $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxtCombinedHealthNonSOSJsonSuffix
-            $allNsxtHealthObject | ConvertTo-JSON -Depth 10 | Out-File $json
+            $allNsxtHealthObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
             Write-Output "JSON Created at $json"
         } else {
             if ($allNsxtHealthObject.Count -eq 0) { $addNoIssues = $true }
@@ -2999,7 +2999,7 @@ Function Publish-StorageCapacityHealth {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
 
     Try {
@@ -3051,7 +3051,7 @@ Function Publish-StorageCapacityHealth {
                         "esxi" = $allEsxiStorageCapacity
                         "datastore" = $allDatastoreStorageCapacity
                     }
-                    $combinedJson | ConvertTo-JSON -Depth 10 | Out-File $json
+                    $combinedJson | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
 					Write-Output "JSON Created at $json"
 
                 } else {
@@ -4767,7 +4767,7 @@ Function Publish-ComponentConnectivityHealthNonSOS {
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] $outputJson
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
 
     Try {
@@ -4792,7 +4792,7 @@ Function Publish-ComponentConnectivityHealthNonSOS {
 
         if ($PsBoundParameters.ContainsKey("outputJson")) {
             $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $ComponentConnectivityHealthNonSOSJsonSuffix
-            $allConnectivityObject | ConvertTo-JSON -Depth 10 | Out-File $json
+            $allConnectivityObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
             Write-Output "JSON Created at $json"
         } else {
             if ($allConnectivityObject.Count -eq 0) { $addNoIssues = $true }
