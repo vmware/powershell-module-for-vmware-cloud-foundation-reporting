@@ -2285,7 +2285,7 @@ Function Publish-BackupStatus {
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $backupJsonSuffix
-                    $allBackupStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -encoding ASCII
+                    $allBackupStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allBackupStatusObject.Count -eq 0) { $addNoIssues = $true }
@@ -2372,7 +2372,7 @@ Function Publish-NsxtTransportNodeStatus {
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxtTransportJsonSuffix
-                    $allNsxtTransportNodeStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -encoding ASCII
+                    $allNsxtTransportNodeStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allNsxtTransportNodeStatusObject.Count -eq 0) {
@@ -2461,7 +2461,7 @@ Function Publish-NsxtTransportNodeTunnelStatus {
                 }
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxttntunnelJsonSuffix
-                    $allNsxtTransportNodeTunnelStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -encoding ASCII
+                    $allNsxtTransportNodeTunnelStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allNsxtTransportNodeTunnelStatusObject.Count -eq 0) { $addNoIssues = $true }
@@ -2550,7 +2550,7 @@ Function Publish-NsxtTier0BgpStatus {
                 }
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxttier0bgpJsonSuffix
-                    $allNsxtTier0BgpStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -encoding ASCII
+                    $allNsxtTier0BgpStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
                 } else {
                     if ($allNsxtTier0BgpStatusObject.Count -eq 0) { $addNoIssues = $true }
@@ -2660,7 +2660,7 @@ Function Publish-SnapshotStatus {
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $snapshotJsonSuffix 
-                    $allSnapshotStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -encoding ASCII
+                    $allSnapshotStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
                 } else {
 
@@ -2771,7 +2771,7 @@ Function Publish-LocalUserExpiry {
             $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $localuserexpiryJsonSuffix
 			Write-Output $json
 			Write-Output $$allPasswordExpiryObject
-            $allPasswordExpiryObject | ConvertTo-JSON -Depth 10 | Out-File $json -encoding ASCII
+            $allPasswordExpiryObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
             Write-Output "JSON Created at $json"
         } else {
             if ($allPasswordExpiryObject.Count -eq 0) { $addNoIssues = $true }
@@ -2858,7 +2858,7 @@ Function Publish-NsxtHealthNonSOS {
 
         if ($PsBoundParameters.ContainsKey("outputJson")) {
             $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $nsxtCombinedHealthNonSOSJsonSuffix
-            $allNsxtHealthObject | ConvertTo-JSON -Depth 10 | Out-File $json -encoding ASCII
+            $allNsxtHealthObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
             Write-Output "JSON Created at $json"
         } else {
             if ($allNsxtHealthObject.Count -eq 0) { $addNoIssues = $true }
@@ -3051,7 +3051,7 @@ Function Publish-StorageCapacityHealth {
                         "esxi" = $allEsxiStorageCapacity
                         "datastore" = $allDatastoreStorageCapacity
                     }
-                    $combinedJson | ConvertTo-JSON -Depth 10 | Out-File $json -encoding ASCII
+                    $combinedJson | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
 					Write-Output "JSON Created at $json"
 
                 } else {
@@ -4792,7 +4792,7 @@ Function Publish-ComponentConnectivityHealthNonSOS {
 
         if ($PsBoundParameters.ContainsKey("outputJson")) {
             $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $ComponentConnectivityHealthNonSOSJsonSuffix
-            $allConnectivityObject | ConvertTo-JSON -Depth 10 | Out-File $json -encoding ASCII
+            $allConnectivityObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
             Write-Output "JSON Created at $json"
         } else {
             if ($allConnectivityObject.Count -eq 0) { $addNoIssues = $true }
