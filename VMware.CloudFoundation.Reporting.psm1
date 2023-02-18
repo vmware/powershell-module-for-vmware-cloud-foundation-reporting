@@ -1972,6 +1972,7 @@ Function Publish-VcenterHealth {
             } else {
                 $ringTopologyHealth = $ringTopologyHealth | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vcenter-ring-topology"></a><h3>vCenter Server Ring Topology Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: vCenter Server Overall Health data not found.</p>' -As Table
             }
+            $ringTopologyHealth
         } else {
             $ringTopologyHealth | Sort-Object Component, Resource
         }
@@ -9472,7 +9473,7 @@ Function Get-ClarityReportNavigation {
                     <label for="vcenter">vCenter Server</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#vcenter-overall">Overall Health</a></li>
-                        <li><a class="nav-link" href="#vcenter-ring">Single Sign-On Health</a></li>
+                        <li><a class="nav-link" href="#vcenter-ring-topology">Single Sign-On Health</a></li>
                     </ul>
                 </section>
                 <section class="nav-group collapsible">
