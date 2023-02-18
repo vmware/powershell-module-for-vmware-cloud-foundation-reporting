@@ -4426,7 +4426,7 @@ Function Request-VcenterBackupStatus {
 
                         if ($backupServer -eq (Get-VCFManager).fqdn -or $backupServer -eq (Get-VCFManager).ipAddress) { # Compare against the `host` attribute
                             $alert = 'RED' # Critical; backup server is located on the SDDC Manager
-                            $messageBackupServer = "Backup is located on the SDDC Manager ($server). Reconfigure backups to use another location." # Set the alert message
+                            $messageBackupServer = "Backup is located on the SDDC Manager. Reconfigure backups to use another location." # Set the alert message
                             $message = $messageBackupServer # Override the message
                         }
                     } else {
