@@ -59,11 +59,15 @@ Install-Module -Name PowerValidatedSolutions -MinimumVersion 2.0.0
 Install-Module -Name VMware.CloudFoundation.Reporting
 ```
 
-If using VMware Photon OS, import the modules before proceeding:
+If using PowerShell Core, import the modules before proceeding:
 
 For example:
 
 ```powershell
+Import-Module -Name VMware.PowerCLI
+Import-Module -Name VMware.vSphere.SsoAdmin
+Import-Module -Name PowerVCF
+Import-Module -Name PowerValidatedSolutions
 Import-Module -Name VMware.CloudFoundation.Reporting
 ```
 
