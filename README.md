@@ -17,6 +17,8 @@
 ### Platforms
 
 - [VMware Cloud Foundation][vmware-cloud-foundation] 4.2.1 or later
+    - vSAN ReadyNodes
+    - DellEMC VxRail
 
 ### Operating Systems
 
