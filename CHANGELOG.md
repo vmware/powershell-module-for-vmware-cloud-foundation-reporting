@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## [v1.1.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.1.0)
+
+> Release Date: 2023-02-28
+
+Bugfix:
+- Updates `Request-VcenterBackupStatus` backup message to remove the SDDC Manager FQDN when backups are located on the SDDC Manager. Required for Heatlh Monitoring and Reporting solution alerts. [GH-95](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/95)
+- Updates `Publish-vCenerHealth` to correctly link and display the vCenter Server Ring Topology Health from SoS. [GH-94](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/94)
+- Resolves an issue with the display name of the vRealize Log Insight product name in the `Request-VrealizeOverview`due to an upstream error in the `.SYNOPSIS` of `Get-VCFvRLI` in `PowerVCF`. [GH-86](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/86)
+- Updates `Test-VcfReportingPrereq` to return results when run on Photon OS. [GH-82](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/82)
+
+Enhancement:
+- Updates `Publish-*` cmdlets to support JSON generation. Required for Heatlh Monitoring and Reporting solution. [GH-79](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/79)
+    - `Publish-BackupStatus`
+    - `Publish-NsxtTransportNodeStatus`
+    - `Publish-NsxtTier0BgpStatus`
+    - `Publish-SnapshotStatus`
+    - `Publish-LocalUserExpiry`
+    - `Publish-StorageCapacityHealth`
+- Adds `Publish-NsxtHealthNonSOS` and `Publish-ComponentConnectivityHealthNonSOS` cmdlets. Required for Heatlh Monitoring and Reporting solution. [GH-79](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/79)
+- Updates in `Publish-*` cmdlets that support JSON generation to specify encoding needed for Python to read it the content. Required for Heatlh Monitoring and Reporting solution alerts. [GH-93](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/93)
+- Adds CPU Cores per Socket to the ESXi Host Overview on the overview report. [GH-85](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/85)
+- Adds an option to `Request-ESXiOverview` to report on the VCF+ subscription cores and export the results to CSV. [GH-87](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/87)
+
+Documenation:
+- Updates `README.md` to remove the **Known Issues** section and adds references to the GitHub issue tracker for support. [GH-88](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/88)
+- Updates `README.md` documentation to include support for DellEMC VxRAIL. [GH-98](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/98)
+
+Chore:
+- Updates `PowerValidatedSolutions` from v2.0.0 to v2.0.1. [GH-99](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/99)
+
 ## [v1.0.6](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.0.6)
 
 > Release Date: 2023-01-31
