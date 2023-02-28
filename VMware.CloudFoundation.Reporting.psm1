@@ -9004,7 +9004,7 @@ Function Test-VcfReportingPrereq {
             @{ Name=("VMware.PowerCLI"); Version=("12.7.0")}
             @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.8")}
             @{ Name=("PowerVCF"); Version=("2.2.0")}
-            @{ Name=("PowerValidatedSolutions"); Version=("2.0.0")}
+            @{ Name=("PowerValidatedSolutions"); Version=("2.0.1")}
         )
         foreach ($module in $modules ) {
             if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
