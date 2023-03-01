@@ -528,7 +528,7 @@ The `Invoke-VcfPasswordPolicyReport` cmdlet generates a password policy report. 
 3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
-    Invoke-VcfPasswordPolicy -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -allDomains
+    Invoke-VcfPasswordPolicy -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -reportPath $reportPath -allDomains
     ```
 
 4. Review the generated HTML report.
@@ -566,7 +566,7 @@ The `Invoke-VcfPasswordPolicyReport` cmdlet generates a password policy report. 
 3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
-    Invoke-VcfPasswordPolicy -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -reportPath $reportPath -workloadDomain $workloadDomain
+    Invoke-VcfPasswordPolicy -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -reportPath $reportPath -workloadDomain $workloadDomain
     ```
 
 4. Review the generated HTML report.
