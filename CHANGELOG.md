@@ -28,6 +28,7 @@ Documenation:
 - Updates `README.md` documentation to include support for DellEMC VxRAIL. [GH-98](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/98)
 
 Chore:
+- Removes the password policy functions that were moved to `PowerValidatedSolutions` v2.0.0. [GH-100](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/100)
 - Updates `PowerValidatedSolutions` from v2.0.0 to v2.0.1. [GH-99](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/99)
 
 ## [v1.0.6](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.0.6)
