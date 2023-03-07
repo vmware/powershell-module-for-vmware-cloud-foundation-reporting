@@ -118,7 +118,7 @@ Function Invoke-VcfHealthReport {
                 Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
                 Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
                 Write-LogMessage -Type INFO -Message "Running an SoS Health Check for $workflowMessage, process takes time."
-                $jsonFilePath = Invoke-Expression "Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -rootPass $sddcManagerRootPass -reportPath $reportFolder $($commandSwitch)"
+                $jsonFilePath = Invoke-Expression "Request-SoSHealthJson -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -reportPath $reportFolder $($commandSwitch)"
 
                 # Generating the Service Health Data Using the SoS Data
                 Write-LogMessage -Type INFO -Message "Generating the Service Health Report using the SoS output for $workflowMessage."
@@ -824,7 +824,158 @@ Function Request-SoSHealthJson {
         JSON file to the local file system.
 
         .EXAMPLE
-        Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -reportPath F:\Precheck\HealthReports -allDomains
+        Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Precheck\HealthReports -allDomains
+        This example runs an SoS Health collection on all domains on the SDDC and saves the JSON output to the local file system.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
+        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+    )
+
+    # Build Default Health Summary Check POST payload
+    $healthChecksPayload = New-Object -TypeName psobject
+    $healthChecksPayload | Add-Member -notepropertyname 'certificateHealth' -notepropertyvalue $true
+    $healthChecksPayload | Add-Member -notepropertyname 'composabilityHealth' -notepropertyvalue $true
+    $healthChecksPayload | Add-Member -notepropertyname 'computeHealth' -notepropertyvalue $true
+    $healthChecksPayload | Add-Member -notepropertyname 'connectivityHealth' -notepropertyvalue $true
+    $healthChecksPayload | Add-Member -notepropertyname 'dnsHealth' -notepropertyvalue $true
+    $healthChecksPayload | Add-Member -notepropertyname 'generalHealth' -notepropertyvalue $true
+    $healthChecksPayload | Add-Member -notepropertyname 'hardwareCompatibilityHealth' -notepropertyvalue $true
+    $healthChecksPayload | Add-Member -notepropertyname 'ntpHealth' -notepropertyvalue $true
+    $healthChecksPayload | Add-Member -notepropertyname 'passwordHealth' -notepropertyvalue $true
+    $healthChecksPayload | Add-Member -notepropertyname 'servicesHealth' -notepropertyvalue $true
+    $healthChecksPayload | Add-Member -notepropertyname 'storageHealth' -notepropertyvalue $true
+    $healthChecksPayload | Add-Member -notepropertyname 'versionHealth' -notepropertyvalue $true
+    $optionsConfigPayload = New-Object -TypeName psobject
+    $optionsConfigPayload | Add-Member -notepropertyname 'force' -notepropertyvalue $false
+    $optionsConfigPayload | Add-Member -notepropertyname 'skipKnownHostCheck' -notepropertyvalue $true
+    $optionsIncludePayload = New-Object -TypeName psobject
+    $optionsIncludePayload | Add-Member -notepropertyname 'precheckReport' -notepropertyvalue $false
+    $optionsIncludePayload | Add-Member -notepropertyname 'summaryReport' -notepropertyvalue $false
+    $optionsPayload = New-Object -TypeName psobject
+    $optionsPayload | Add-Member -notepropertyname 'config' -notepropertyvalue $optionsConfigPayload
+    $optionsPayload | Add-Member -notepropertyname 'include' -notepropertyvalue $optionsIncludePayload
+    $scopeDomainsPayload = New-Object -TypeName psobject
+    $scopeDomainsPayload | Add-Member -notepropertyname 'clusterNames' -notepropertyvalue @()
+    $scopeDomainsPayload | Add-Member -notepropertyname 'domainName' -notepropertyvalue ""
+    $scopeDomainsPayload.clusterNames += @("")
+    $domainsArray = @()
+    $domainsArray += $scopeDomainsPayload
+    $scopePayload = New-Object -TypeName psobject
+    $scopePayload | Add-Member -notepropertyname 'domains' -notepropertyvalue @()
+    $scopePayload | Add-Member -notepropertyname 'includeAllDomains' -notepropertyvalue $false
+    $scopePayload | Add-Member -notepropertyname 'includeFreeHosts' -notepropertyvalue $false
+    $scopePayload.domains += $domainsArray
+    $healthSummarySpec = New-Object -TypeName psobject
+    $healthSummarySpec | Add-Member -notepropertyname 'healthChecks' -notepropertyvalue $healthChecksPayload
+    $healthSummarySpec | Add-Member -notepropertyname 'options' -notepropertyvalue $optionsPayload
+    $healthSummarySpec | Add-Member -notepropertyname 'scope' -notepropertyvalue $scopePayload
+    
+    # Request VCF Token
+    Request-VCFToken -fqdn $server -Username $user -Password $pass -skipCertificateCheck -ErrorAction SilentlyContinue -ErrorVariable ErrMsg | Out-Null
+
+    # Create VCF REST API Header
+    $vcfHeaders = @{"Content-Type" = "application/json" }
+    $vcfHeaders.Add("Authorization", "Bearer $accessToken")
+
+    Try {
+        if ($PsBoundParameters.ContainsKey("allDomains")) {
+            $healthSummarySpec.scope.includeAllDomains = $true
+            if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
+                $reportDestination = ($reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json")).split('\') -join '/' | Split-Path -NoQualifier
+            } else {
+                $reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json")
+            }
+        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
+            $healthSummarySpec.scope.domains[0].domainName = $workloadDomain
+            if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
+                $reportDestination = ($reportDestination = ($reportPath + "\" + $workloadDomain + "-all-health-results.json")).split('\') -join '/' | Split-Path -NoQualifier
+            } else {
+                $reportDestination = ($reportPath + "\" + $workloadDomain + "-all-health-results.json")
+            }
+        }
+        if (Test-VCFConnection -server $server) {
+            # Use Rest API method to request for health summary
+            $uri = "https://$server/v1/system/health-summary"
+            $healthSummaryPayload = ConvertTo-JSON $healthSummarySpec -depth 10
+            $response = Invoke-RestMethod -Method POST -URI $uri -headers $vcfHeaders -body $healthSummaryPayload
+			if ($response.id -eq "") {
+				write-error "Health Summary request run into issues please rerun the script"
+				return $false
+			}
+			$requestID = $response.id
+			
+            # Pulling request status
+            $uri = "https://$server/v1/system/health-summary/$requestID"
+            $response = Invoke-RestMethod -Method GET -URI $uri -headers $vcfHeaders
+            $escapeCounter = 0
+			while (($escapeCounter -lt 30) -and !($response.status -match "COMPLETED")) {
+				sleep(30)
+				$escapeCounter++
+				$response = Invoke-RestMethod -Method GET -URI $uri -headers $vcfHeaders
+			}
+			if ($escapeCounter -eq 20) {
+				write-error "Health Summary request is taking an unusal amount of time, please check SDDC Manager UI for any issues"
+				return $false
+			}
+
+			# Create a temporary directory under reportDirectory
+            $createPathCounter = 0
+			for ($createPathCounter -lt 4) {
+				$randomOutput = -join (((48..57)+(65..90)+(97..122)) * 80 |Get-Random -Count 6 |%{[char]$_})
+				$outFilePath = $reportPath + "\" + $randomOutput
+				if (!(Test-Path -Path $outFilePath) -and (Test-Path -Path $reportPath)) {
+					break
+				} else {
+					if ($createPathCounter -eq 3) {
+						write-host "unable to write to $reportPath"
+					}
+					$createPathCounter++
+				}
+			}
+			New-Item -Path $outFilePath -ItemType Directory | Out-NULL
+
+            # Downloading summary tar.gz to temporary directory
+            $uri = "https://$server/v1/system/health-summary/$requestID/data"
+			$outFile = $outFilePath + "\health-summary.tar.gz"
+            $response = Invoke-RestMethod -Method GET -URI $uri -headers $vcfHeaders -OutFile $outFile
+
+            # Unzip/untar tar.gz file and extract health-results.json file
+			tar -xzf $outFile -C $outFilePath | Out-NULL
+			$healthSummaryPath = gci -recurse -filter "health-results.json" -Path $outFilePath
+			$healthSummaryFile = $healthSummaryPath.DirectoryName + "\health-results.json"
+			Copy-Item $healthSummaryFile $reportDestination  | Out-NULL
+				
+			# Remove Temporary Directory
+			Remove-Item -Recurse -Force $outFilePath  | Out-NULL
+				
+            # Converting to JSON
+            $temp = Get-Content -Path $reportDestination; $temp = $temp -replace '""', '"-"'; $temp | Out-File $reportDestination
+			return $reportDestination
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Request-SoSHealthJson
+
+Function Request-SoSHealthJsonOld {
+    <#
+        .SYNOPSIS
+        Run SoS and save the JSON output.
+
+        .DESCRIPTION
+        The Request-SoSHealthJsonOld cmdlet connects to SDDC Manager, runs an SoS Health collection to JSON, and saves the
+        JSON file to the local file system.  This cmdlet method is outdated
+
+        .EXAMPLE
+        Request-SoSHealthJsonOld -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -reportPath F:\Precheck\HealthReports -allDomains
         This example runs an SoS Health collection on all domains on the SDDC and saves the JSON output to the local file system.
     #>
 
@@ -874,7 +1025,7 @@ Function Request-SoSHealthJson {
         Debug-CatchWriter -object $_
     }
 }
-Export-ModuleMember -Function Request-SoSHealthJson
+Export-ModuleMember -Function Request-SoSHealthJsonOld
 
 Function Publish-CertificateHealth {
     <#
