@@ -879,10 +879,6 @@ Function Request-SoSHealthJson {
     # Request VCF Token
     Request-VCFToken -fqdn $server -Username $user -Password $pass -skipCertificateCheck -ErrorAction SilentlyContinue -ErrorVariable ErrMsg | Out-Null
 
-    # Create VCF REST API Header
-    $vcfHeaders = @{"Content-Type" = "application/json" }
-    $vcfHeaders.Add("Authorization", "Bearer $accessToken")
-
     Try {
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $healthSummarySpec.scope.includeAllDomains = $true
@@ -900,31 +896,7 @@ Function Request-SoSHealthJson {
             }
         }
         if (Test-VCFConnection -server $server) {
-            # Use Rest API method to request for health summary
-            $uri = "https://$server/v1/system/health-summary"
-            $healthSummaryPayload = ConvertTo-JSON $healthSummarySpec -depth 10
-            $response = Invoke-RestMethod -Method POST -URI $uri -headers $vcfHeaders -body $healthSummaryPayload
-			if ($response.id -eq "") {
-				write-error "Health Summary request run into issues please rerun the script"
-				return $false
-			}
-			$requestID = $response.id
-			
-            # Pulling request status
-            $uri = "https://$server/v1/system/health-summary/$requestID"
-            $response = Invoke-RestMethod -Method GET -URI $uri -headers $vcfHeaders
-            $escapeCounter = 0
-			while (($escapeCounter -lt 30) -and !($response.status -match "COMPLETED")) {
-				sleep(30)
-				$escapeCounter++
-				$response = Invoke-RestMethod -Method GET -URI $uri -headers $vcfHeaders
-			}
-			if ($escapeCounter -eq 20) {
-				write-error "Health Summary request is taking an unusal amount of time, please check SDDC Manager UI for any issues"
-				return $false
-			}
-
-			# Create a temporary directory under reportDirectory
+            # Create a temporary directory under reportDirectory
             $createPathCounter = 0
 			for ($createPathCounter -lt 4) {
 				$randomOutput = -join (((48..57)+(65..90)+(97..122)) * 80 |Get-Random -Count 6 |%{[char]$_})
@@ -933,17 +905,46 @@ Function Request-SoSHealthJson {
 					break
 				} else {
 					if ($createPathCounter -eq 3) {
-						write-host "unable to write to $reportPath"
+						Write-Error "Unable to write to $reportPath."
 					}
 					$createPathCounter++
 				}
 			}
 			New-Item -Path $outFilePath -ItemType Directory | Out-NULL
 
-            # Downloading summary tar.gz to temporary directory
-            $uri = "https://$server/v1/system/health-summary/$requestID/data"
+# Use REST API method to request the health summary.			
+			ConvertTo-JSON $healthSummarySpec -depth 10 | Out-File $outFilePath"\healthSummaryPayload.json"
+            $response = Start-VCFHealthSummary -json $outFilePath"\healthSummaryPayload.json"
+			if ($response.id -eq "") {
+				Write-Error "The Health Summary request encountered an issue. Please try again."
+				Return $false
+			}
+			$requestID = $response.id
+			
+            # Retrieve the request status.
+            $response = Get-VCFHealthSummaryTask -id $requestID
+            $escapeCounter = 0
+			While (($escapeCounter -lt 30) -and !($response.status -match "COMPLETED")) {
+				sleep(30)
+				$escapeCounter++
+                $response = Get-VCFHealthSummaryTask -id $requestID
+			}
+			if ($escapeCounter -eq 20) {
+				Write-Error " The Health Summary request is taking an unusual amount of time to complete."
+				Return $false
+			}
+
+            # Download the summary tar.gz to a temporary directory.
+            Request-VCFHealthSummaryBundle -id $requestID
 			$outFile = $outFilePath + "\health-summary.tar.gz"
-            $response = Invoke-RestMethod -Method GET -URI $uri -headers $vcfHeaders -OutFile $outFile
+			$savedFile = "health-summary-"+$requestID+".tar"
+			if (Test-Path -Path $savedFile) {
+				Copy-Item $savedFile $outFile | Out-NULL
+				Remove-Item -Force $savedFile  | Out-NULL
+			} else {
+				write-error "Encounter issues while downloading HealthSummaryBundle"
+				Return $false
+			}
 
             # Unzip/untar tar.gz file and extract health-results.json file
 			tar -xzf $outFile -C $outFilePath | Out-NULL
@@ -951,12 +952,12 @@ Function Request-SoSHealthJson {
 			$healthSummaryFile = $healthSummaryPath.DirectoryName + "\health-results.json"
 			Copy-Item $healthSummaryFile $reportDestination  | Out-NULL
 				
-			# Remove Temporary Directory
+			# Remove the temporary Directory
 			Remove-Item -Recurse -Force $outFilePath  | Out-NULL
 				
-            # Converting to JSON
+            # Convert to JSON.
             $temp = Get-Content -Path $reportDestination; $temp = $temp -replace '""', '"-"'; $temp | Out-File $reportDestination
-			return $reportDestination
+			Return $reportDestination
         }
     }
     Catch {
