@@ -902,7 +902,7 @@ Function Request-SoSHealthJson {
 				$randomOutput = -join (((48..57)+(65..90)+(97..122)) * 80 |Get-Random -Count 6 |%{[char]$_})
 				$outFilePath = $reportPath + "\" + $randomOutput
 				if (!(Test-Path -Path $outFilePath) -and (Test-Path -Path $reportPath)) {
-					break
+					Break
 				} else {
 					if ($createPathCounter -eq 3) {
 						Write-Error "Unable to write to $reportPath."
@@ -912,7 +912,7 @@ Function Request-SoSHealthJson {
 			}
 			New-Item -Path $outFilePath -ItemType Directory | Out-NULL
 
-# Use REST API method to request the health summary.			
+            # Use REST API method to request the health summary.			
 			ConvertTo-JSON $healthSummarySpec -depth 10 | Out-File $outFilePath"\healthSummaryPayload.json"
             $response = Start-VCFHealthSummary -json $outFilePath"\healthSummaryPayload.json"
 			if ($response.id -eq "") {
@@ -934,7 +934,7 @@ Function Request-SoSHealthJson {
 				Return $false
 			}
 
-            # Download the summary tar.gz to a temporary directory.
+            # Download the health summary bundle file to a temporary directory.
             Request-VCFHealthSummaryBundle -id $requestID
 			$outFile = $outFilePath + "\health-summary.tar.gz"
 			$savedFile = "health-summary-"+$requestID+".tar"
@@ -942,17 +942,17 @@ Function Request-SoSHealthJson {
 				Copy-Item $savedFile $outFile | Out-NULL
 				Remove-Item -Force $savedFile  | Out-NULL
 			} else {
-				write-error "Encounter issues while downloading HealthSummaryBundle"
+				Write-Error "A error was encountered downloading the health summary bundle."
 				Return $false
 			}
 
-            # Unzip/untar tar.gz file and extract health-results.json file
+            # Untar tar.gz file and extract health-results.json file
 			tar -xzf $outFile -C $outFilePath | Out-NULL
 			$healthSummaryPath = gci -recurse -filter "health-results.json" -Path $outFilePath
 			$healthSummaryFile = $healthSummaryPath.DirectoryName + "\health-results.json"
 			Copy-Item $healthSummaryFile $reportDestination  | Out-NULL
 				
-			# Remove the temporary Directory
+			# Remove the temporary directory.
 			Remove-Item -Recurse -Force $outFilePath  | Out-NULL
 				
             # Convert to JSON.
@@ -965,68 +965,6 @@ Function Request-SoSHealthJson {
     }
 }
 Export-ModuleMember -Function Request-SoSHealthJson
-
-Function Request-SoSHealthJsonOld {
-    <#
-        .SYNOPSIS
-        Run SoS and save the JSON output.
-
-        .DESCRIPTION
-        The Request-SoSHealthJsonOld cmdlet connects to SDDC Manager, runs an SoS Health collection to JSON, and saves the
-        JSON file to the local file system.  This cmdlet method is outdated
-
-        .EXAMPLE
-        Request-SoSHealthJsonOld -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -reportPath F:\Precheck\HealthReports -allDomains
-        This example runs an SoS Health collection on all domains on the SDDC and saves the JSON output to the local file system.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
-        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
-    )
-
-    Try {
-        if ($PsBoundParameters.ContainsKey("allDomains")) {
-            $command = "/opt/vmware/sddc-support/sos --health-check --skip-known-host-check --json-output-dir /tmp/jsons --domain-name ALL"
-            if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
-                $reportDestination = ($reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json")).split('\') -join '/' | Split-Path -NoQualifier
-            } else {
-                $reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json")
-            }
-        } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
-            $command = "/opt/vmware/sddc-support/sos --health-check --skip-known-host-check --json-output-dir /tmp/jsons --domain-name " + $workloadDomain
-            if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
-                $reportDestination = ($reportDestination = ($reportPath + "\" + $workloadDomain + "-all-health-results.json")).split('\') -join '/' | Split-Path -NoQualifier
-            } else {
-                $reportDestination = ($reportPath + "\" + $workloadDomain + "-all-health-results.json")
-            }
-        }
-        Invoke-SddcCommand -server $server -user $user -pass $pass -vmUser root -vmPass $rootPass -command $command | Out-Null
-        if (Test-VCFConnection -server $server) {
-            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
-                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                            Copy-VMGuestFile -Source "/tmp/jsons/health-results.json" -Destination $reportDestination -VM $server.Split(".")[0] -GuestToLocal -GuestUser root -GuestPassword $rootPass
-                            $temp = Get-Content -Path $reportDestination; $temp = $temp -replace '""', '"-"'; $temp | Out-File $reportDestination
-                            $reportDestination
-                        }
-                        Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                    }
-                }
-            }
-        }
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Request-SoSHealthJsonOld
 
 Function Publish-CertificateHealth {
     <#
