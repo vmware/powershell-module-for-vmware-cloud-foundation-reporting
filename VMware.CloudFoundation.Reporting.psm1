@@ -916,13 +916,26 @@ Function Publish-CertificateHealth {
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning 'Certificate Status data not found in the JSON file: SKIPPED'
         } else {
-            $jsonInputData.PSObject.Properties.Remove('ESXI')
             foreach ($component in $jsonInputData.PsObject.Properties.Value) {
                 foreach ($element in $component.PsObject.Properties.Value) {
                     $elementObject = New-Object -TypeName psobject
                     $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
                     $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
-                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                    if ($element.title -and $element.title -notcontains "-") {
+                        $current = [DateTime]::Now
+                        $expiry = [DateTime]::ParseExact($element.title[2], "MMM dd HH:mm:ss yyyy 'GMT'", $null).ToUniversalTime()
+                        $expires_in = ($expiry - $current).Days
+                            $alert = "GREEN"
+                            if ([int]$expires_in -le 15) {
+                                $alert = "RED"
+                            } elseif ([int]$expires_in -le 30) {
+                                $alert = "YELLOW"
+                            }
+                        $elementObject | Add-Member -NotePropertyName 'Expires In (Days)' -NotePropertyValue $expires_in
+                        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                    } else {
+                        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                    }
                     $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
                     if ($PsBoundParameters.ContainsKey('failureOnly')) {
                         if (($element.status -eq 'FAILED')) {
@@ -959,6 +972,7 @@ Function Publish-CertificateHealth {
     }
 }
 Export-ModuleMember -Function Publish-CertificateHealth
+
 
 Function Publish-ConnectivityHealth {
     <#
