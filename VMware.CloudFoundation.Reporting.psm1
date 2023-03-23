@@ -942,11 +942,11 @@ Function Request-SoSHealthJson {
 				Copy-Item $savedFile $outFile | Out-NULL
 				Remove-Item -Force $savedFile  | Out-NULL
 			} else {
-				Write-Error "A error was encountered downloading the health summary bundle."
+				Write-Error "An error was encountered downloading the health summary bundle."
 				Return $false
 			}
 
-            # Untar tar.gz file and extract health-results.json file
+            # Untar the tar.gz file and extract health-results.json file.
 			tar -xzf $outFile -C $outFilePath | Out-NULL
 			$healthSummaryPath = gci -recurse -filter "health-results.json" -Path $outFilePath
 			$healthSummaryFile = $healthSummaryPath.DirectoryName + "\health-results.json"
