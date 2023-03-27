@@ -824,11 +824,11 @@ Function Request-SoSHealthJson {
         JSON file to the local file system.
 
         .EXAMPLE
-        Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Precheck\HealthReports -allDomains
+        Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Reporting\HealthReports -allDomains
         This example runs an SoS Health collection for all domains in the SDDC and saves the JSON output to the local file system.
 
         .EXAMPLE
-        Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Precheck\HealthReports -workloadDomain sfo-w01
+        Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Reporting\HealthReports -workloadDomain sfo-w01
         This example runs an SoS Health collection for a workload domain in the SDDC and saves the JSON output to the local file system.
     #>
 
