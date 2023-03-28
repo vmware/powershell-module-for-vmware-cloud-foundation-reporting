@@ -904,7 +904,7 @@ Function Request-SoSHealthJson {
             $createPathCounter = 0
 			for ($createPathCounter -lt 4) {
 				$randomOutput = -join (((48..57)+(65..90)+(97..122)) * 80 |Get-Random -Count 6 |%{[char]$_})
-				$outFilePath = $reportPath + "\" + $randomOutput
+				$outFilePath = Join-Path -Path $reportPath -childPath $randomOutput
 				if (!(Test-Path -Path $outFilePath) -and (Test-Path -Path $reportPath)) {
 					Break
 				} else {
@@ -916,9 +916,10 @@ Function Request-SoSHealthJson {
 			}
 			New-Item -Path $outFilePath -ItemType Directory | Out-NULL
 
-            # Use REST API method to request the health summary.			
-			ConvertTo-JSON $healthSummarySpec -depth 10 | Out-File $outFilePath"\healthSummaryPayload.json"
-            $response = Start-VCFHealthSummary -json $outFilePath"\healthSummaryPayload.json"
+            # Use REST API method to request the health summary.
+            $healthSummaryPayloadJson = Join-Path -Path $outFilePath -childPath "healthSummaryPayload.json"
+			ConvertTo-JSON $healthSummarySpec -depth 10 | Out-File $healthSummaryPayloadJson
+            $response = Start-VCFHealthSummary -json $healthSummaryPayloadJson
 			if ($response.id -eq "") {
 				Write-Error "The Health Summary request encountered an issue. Please try again."
 				Return $false
@@ -940,7 +941,7 @@ Function Request-SoSHealthJson {
 
             # Download the health summary bundle file to a temporary directory.
             Request-VCFHealthSummaryBundle -id $requestID
-			$outFile = $outFilePath + "\health-summary.tar.gz"
+			$outFile = Join-Path -Path $outFilePath  -childPath "health-summary.tar.gz"
 			$savedFile = "health-summary-"+$requestID+".tar"
 			if (Test-Path -Path $savedFile) {
 				Copy-Item $savedFile $outFile | Out-NULL
@@ -953,7 +954,7 @@ Function Request-SoSHealthJson {
             # Untar the tar.gz file and extract health-results.json file.
 			tar -xzf $outFile -C $outFilePath | Out-NULL
 			$healthSummaryPath = gci -recurse -filter "health-results.json" -Path $outFilePath
-			$healthSummaryFile = $healthSummaryPath.DirectoryName + "\health-results.json"
+			$healthSummaryFile = Join-Path -Path $healthSummaryPath.DirectoryName -childPath "health-results.json"
 			Copy-Item $healthSummaryFile $reportDestination  | Out-NULL
 				
 			# Remove the temporary directory.
