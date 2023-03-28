@@ -30,7 +30,7 @@
     Copyright = '(c) 2022-2023 VMware All rights reserved'
     
     # Description of the functionality provided by this module
-    Description       = 'A PowerShell module for VMware Cloud Foundation reporting.'
+    Description = 'A PowerShell module for VMware Cloud Foundation reporting.'
     
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
