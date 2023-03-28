@@ -923,7 +923,7 @@ Function Publish-CertificateHealth {
                     $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
                     if ($element.title -and $element.title -notcontains "-") {
                         $current = [DateTime]::Now
-                        $expiry = [DateTime]::ParseExact($element.title[2], "MMM dd HH:mm:ss yyyy 'GMT'", $null).ToUniversalTime()
+                        $expiry = [DateTime]::ParseExact(($element.title[2] -replace '\s+', ' '), "MMM d HH:mm:ss yyyy 'GMT'", $null).ToUniversalTime()
                         $expires_in = ($expiry - $current).Days
                             $alert = "GREEN"
                             if ([int]$expires_in -le 15) {
