@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [v2.0.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.0)
+
+> Release Date: Unreleased
+
+Refactor:
+- Updates `Request-SoSHealthJson` to use the API to retrieve the SoS Health Summary JSON results. Removes the requirement to provide the SDDC Manager appliance `root` password in the `Invoke-VcfHealthReport` cmdlet. [GH-102](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/102)
+
 ## [v1.1.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.1.0)
 
 > Release Date: 2023-02-28
