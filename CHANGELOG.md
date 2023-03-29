@@ -4,6 +4,11 @@
 
 > Release Date: Unreleased
 
+Enhancement:
+- Updates `Publish-CertificateHealth` with thresholds based on certificate expiration. [GH-107](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/107)
+- Updates `Publish-CertificateHealth` to include an "Expires In (Days)" column. [GH-107](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/107)
+- Updates `Publish-CertificateHealth` to include ESXi host certificates. [GH-107](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/107)
+
 Refactor:
 - Updates `Request-SoSHealthJson` to use the API to retrieve the SoS Health Summary JSON results. Removes the requirement to provide the SDDC Manager appliance `root` password in the `Invoke-VcfHealthReport` cmdlet. [GH-102](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/102), [GH-110](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/110)
 
