@@ -8,9 +8,13 @@ Enhancement:
 - Updates `Publish-CertificateHealth` with thresholds based on certificate expiration. [GH-107](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/107)
 - Updates `Publish-CertificateHealth` to include an "Expires In (Days)" column. [GH-107](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/107)
 - Updates `Publish-CertificateHealth` to include ESXi host certificates. [GH-107](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/107)
+- Updates `Publish-PasswordHealth` to include an "Expires In (Days)" column. [GH-111](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/111)
 
 Refactor:
-- Updates `Request-SoSHealthJson` to use the API to retrieve the SoS Health Summary JSON results. Removes the requirement to provide the SDDC Manager appliance `root` password in the `Invoke-VcfHealthReport` cmdlet. [GH-102](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/102), [GH-110](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/110)
+- Updates `Request-SoSHealthJson` to use the API to retrieve the SoS Health Summary JSON results. [GH-102](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/102)
+- Updates `Publish-PasswordHealth` to return the results from the SoS Health Summary JSON data. [GH-111](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/111)
+- Updates `Invoke-VcfHealthReport` to use the `Publish-PasswordHealth` cmdlet. [GH-111](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/111)
+- Removes `Publish-LocalUserExpiry` in favor of the `Publish-PasswordHealth` cmdlet. [GH-111](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/111)
 
 ## [v1.1.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.1.0)
 

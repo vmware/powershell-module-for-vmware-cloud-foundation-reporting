@@ -67,15 +67,15 @@ Function Invoke-VcfHealthReport {
         The Invoke-VcfHealthReport provides a single cmdlet to perform health checks across a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains
+        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Reporting -allDomains
         This example runs a health check across a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
+        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
         This example runs a health check for a specific Workload Domain within a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains -failureOnly
+        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerRootPass VMw@re1! -reportPath F:\Reporting -allDomains -failureOnly
         This example runs a health check across a VMware Cloud Foundation instance but only ouputs issues to the HTML report.
     #>
 
@@ -83,6 +83,7 @@ Function Invoke-VcfHealthReport {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerRootPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
@@ -129,7 +130,7 @@ Function Invoke-VcfHealthReport {
 
                 # Generating the Password Expiry Health Data Using PowerShell Request Functions
                 Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report for $workflowMessage."
-                $localPasswordHtml = Invoke-Expression "Publish-LocalUserExpiry -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcManagerRootPass $($commandSwitch) $($failureOnlySwitch)"; $reportData += $localPasswordHtml
+                $passwordHtml = Invoke-Expression "Publish-PasswordHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $passwordHtml
 
                 # Generating the Certificate Health Data Using the SoS Data
                 Write-LogMessage -Type INFO -Message "Generating the Certificate Health Report using the SoS output for $workflowMessage."
@@ -1867,11 +1868,25 @@ Function Publish-PasswordHealth {
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning 'Password Expiry Status not found in the JSON file: SKIPPED'
         } else {
-            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-            } else {
-                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            $outputObject = New-Object System.Collections.ArrayList
+            foreach ($element in $jsonInputData.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                $elementObject | Add-Member -NotePropertyName 'User' -NotePropertyValue $element.title.User
+                $elementObject | Add-Member -NotePropertyName 'Expires In (Days)' -NotePropertyValue $element.title.expires_in
+                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if (($element.status -eq 'FAILED')) {
+                        $outputObject += $elementObject
+                    }
+                }
+                else {
+                    $outputObject += $elementObject
+                }
             }
+
         }
 
         # Return the structured data to the console or format using HTML CSS Styles
@@ -2790,114 +2805,6 @@ Function Publish-SnapshotStatus {
     }
 }
 Export-ModuleMember -Function Publish-SnapshotStatus
-
-Function Publish-LocalUserExpiry {
-    <#
-		.SYNOPSIS
-        Request and publish Local User Expiry
-
-        .DESCRIPTION
-        The Publish-LocalUserExpiry cmdlet checks the expiry for local users across the VMware Cloud Foundation
-        instance and prepares the data to be published to an HTML report. The cmdlet connects to SDDC Manager using the
-        -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Performs checks on the local OS users and outputs the results
-
-        .EXAMPLE
-        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcRootPass VMw@re1! -allDomains
-        This example checks the expiry for local OS users for all Workload Domains across the VMware Cloud Foundation instance.
-
-        .EXAMPLE
-        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcRootPass VMw@re1! -workloadDomain sfo-w01
-        This example checks the expiry for local OS users for a single Workload Domain in a VMware Cloud Foundation instance.
-
-        .EXAMPLE
-        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcRootPass VMw@re1! -allDomains -failureOnly
-        This example checks the expiry for local OS users for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
-
-        .EXAMPLE
-        Publish-LocalUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -sddcRootPass VMw@re1! -allDomains -outputJson F:\Reporting
-        This example checks the expiry for local OS users for all Workload Domains across the VMware Cloud Foundation
-        and saves it under F:\Reporting with filename <timestamp>-localuserexpiry-status.json
-
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcRootPass,
-        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
-    )
-
-    Try {
-        $allPasswordExpiryObject = New-Object System.Collections.ArrayList
-        $allWorkloadDomains = Get-VCFWorkloadDomain
-        $singleWorkloadDomain = Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}
-        if ($PsBoundParameters.ContainsKey('failureOnly')) {
-            if ($PsBoundParameters.ContainsKey("allDomains")) {
-                $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass -failureOnly; $allPasswordExpiryObject += $sddcPasswordExpiry
-                $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass -failureOnly; $allPasswordExpiryObject += $vrslcmPasswordExpiry
-                $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -alldomains -failureOnly; $allPasswordExpiryObject += $vcenterPasswordExpiry
-                $allWorkloadDomains = Get-VCFWorkloadDomain
-                foreach ($domain in $allWorkloadDomains ) {
-                    $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
-                    $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $domain.name -failureOnly; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
-                }
-            } else {
-                if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
-                    $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass -failureOnly; $allPasswordExpiryObject += $sddcPasswordExpiry
-                    $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass -failureOnly; $allPasswordExpiryObject += $vrslcmPasswordExpiry
-                }
-                $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allPasswordExpiryObject += $vcenterPasswordExpiry
-                $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
-                $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain -failureOnly; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
-            }
-        } else {
-            if ($PsBoundParameters.ContainsKey("allDomains")) {
-                $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass; $allPasswordExpiryObject += $sddcPasswordExpiry
-                $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass; $allPasswordExpiryObject += $vrslcmPasswordExpiry
-                $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -alldomains; $allPasswordExpiryObject += $vcenterPasswordExpiry
-                $allWorkloadDomains = Get-VCFWorkloadDomain
-                foreach ($domain in $allWorkloadDomains ) {
-                    $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $domain.name; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
-                    $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $domain.name; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
-                }
-            } else {
-                if ($singleWorkloadDomain.type -eq "MANAGEMENT") {
-                    $sddcPasswordExpiry = Request-SddcManagerUserExpiry -server $server -user $user -pass $pass -rootPass $sddcRootPass; $allPasswordExpiryObject += $sddcPasswordExpiry
-                    $vrslcmPasswordExpiry = Request-vRslcmUserExpiry -server $server -user $user -pass $pass; $allPasswordExpiryObject += $vrslcmPasswordExpiry
-                }
-                $vcenterPasswordExpiry = Request-vCenterUserExpiry -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allPasswordExpiryObject += $vcenterPasswordExpiry
-                $nsxtManagerPasswordExpiry = Request-NsxtManagerUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain; $allPasswordExpiryObject += $nsxtManagerPasswordExpiry
-                $nsxtEdgePasswordExpiry = Request-NsxtEdgeUserExpiry -server $server -user $user -pass $pass -domain $workloadDomain; $allPasswordExpiryObject += $nsxtEdgePasswordExpiry
-            }
-        }
-        if ($PsBoundParameters.ContainsKey('outputJson')) {
-            $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $localuserexpiryJsonSuffix
-			Write-Output $json
-			Write-Output $$allPasswordExpiryObject
-            $allPasswordExpiryObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
-            Write-Output "JSON Created at $json"
-        } else {
-            if ($allPasswordExpiryObject.Count -eq 0) { $addNoIssues = $true }
-            if ($addNoIssues) {
-                $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -PostContent '<p>No issues found.</p>'
-            } else {
-                $allPasswordExpiryObject = $allPasswordExpiryObject | Sort-Object Resource, Component | ConvertTo-Html -Fragment -PreContent '<a id="security-password"></a><h3>Password Expiry Health Status</h3>' -As Table
-            }
-            $allPasswordExpiryObject = Convert-CssClass -htmldata $allPasswordExpiryObject
-            $allPasswordExpiryObject
-        }
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Publish-LocalUserExpiry
 
 Function Publish-NsxtHealthNonSOS {
 
