@@ -2961,384 +2961,6 @@ Function Publish-StorageCapacityHealth {
 }
 Export-ModuleMember -Function Publish-StorageCapacityHealth
 
-Function Request-SddcManagerUserExpiry {
-    <#
-		.SYNOPSIS
-        Checks the expiry for additional local OS users in an SDDC Manager appliance.
-
-        .DESCRIPTION
-        The Request-SddcManagerUserExpiry cmdlet checks the expiry for additional local users in the SDDC Manager
-        appliance not reported in the SoS Health Check. The cmdlet connects to SDDC Manager using the -server, -user,
-        and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Performs checks on the local OS users in an SDDC Manager instance and outputs the results
-
-        .EXAMPLE
-        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1!
-        This example checks the expiry for all local OS users in the SDDC Manager appliance.
-
-        .EXAMPLE
-        Request-SddcManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -failureOnly
-        This example checks the expiry for all local OS users in the SDDC Manager appliance but only reports issues.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
-    )
-
-    Try {
-        if (Test-VCFConnection -server $server) {
-            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
-                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                            $customObject = New-Object System.Collections.ArrayList
-                            $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser backup
-                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                    $customObject += $elementObject
-                                }
-                            } else {
-                                $customObject += $elementObject
-                            }
-                            $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser root
-                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                    $customObject += $elementObject
-                                }
-                            } else {
-                                $customObject += $elementObject
-                            }
-                            $elementObject = Request-LocalUserExpiry -fqdn $server -component SDDC -rootPass $rootPass -checkUser vcf
-                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                    $customObject += $elementObject
-                                }
-                            } else {
-                                $customObject += $elementObject
-                            }
-                            $customObject | Sort-Object Component, Resource # Output Results
-                        }
-                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                    }
-                }
-            }
-        }
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Request-SddcManagerUserExpiry
-
-Function Request-NsxtEdgeUserExpiry {
-    <#
-        .SYNOPSIS
-        Checks the expiry for local OS users in an an NSX Edge node appliance.
-
-        .DESCRIPTION
-        The Request-NsxtEdgeUserExpiry cmdlet checks the expiry for additional local OS users for an NSX Edge node.
-        The cmdlet connects to SDDC Manager using the -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Performs checks on the local OS users for NSX Manager appliances and outputs the results
-
-        .EXAMPLE
-        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example checks the expiry for local OS users for the NSX Edge node appliances for a specific workload domain.
-
-        .EXAMPLE
-        Request-NsxtEdgeUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example checks the expiry for local OS users for the NSX Edge node appliances for a specific workload domain but only reports issues.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
-    )
-
-    Try {
-        if (Test-VCFConnection -server $server) {
-            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain)) {
-                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                            if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
-                                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
-                                    if (($vcfNsxEdgeDetails = Get-VCFEdgeCluster | Where-Object { $_.nsxtCluster.vipFQDN -eq $vcfNsxDetails.fqdn })) {
-                                        $customObject = New-Object System.Collections.ArrayList
-                                        foreach ($nsxtEdgeNode in $vcfNsxEdgeDetails.edgeNodes) {
-                                            $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $nsxtEdgeNode.hostname -and $_.resource.domainName -eq $domain }).password
-                                            $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser admin
-                                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                                    $customObject += $elementObject
-                                                }
-                                            } else {
-                                                $customObject += $elementObject
-                                            }
-                                            $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser audit
-                                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                                    $customObject += $elementObject
-                                                }
-                                            } else {
-                                                $customObject += $elementObject
-                                            }
-                                            $elementObject = Request-LocalUserExpiry -fqdn $nsxtEdgeNode.hostname -component 'NSX Edge' -rootPass $rootPass -checkUser root
-                                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                                    $customObject += $elementObject
-                                                }
-                                            } else {
-                                                $customObject += $elementObject
-                                            }
-                                        }
-                                    }
-                                    $customObject | Sort-Object Component, Resource # Output Results
-                                }
-                            }
-                        }
-                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                    }
-                }
-            }
-        }
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Request-NsxtEdgeUserExpiry
-
-Function Request-NsxtManagerUserExpiry {
-    <#
-        .SYNOPSIS
-        Checks the expiry for local OS users in an NSX Manager appliance.
-
-        .DESCRIPTION
-        The Request-NsxtManagerUserExpiry cmdlet checks the expiry for additional local OS users in the NSX Manager
-        cluster appliance. The cmdlet connects to SDDC Manager using the -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Performs checks on the local OS users for NSX Manager appliances and outputs the results
-
-        .EXAMPLE
-        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example checks the expiry for local OS users for the NSX Manager appliances for a specific workload domain.
-
-        .EXAMPLE
-        Request-NsxtManagerUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example checks the expiry for local OS users for the NSX Manager appliances for a specific workload domain but only reports issues.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
-    )
-
-    Try {
-        if (Test-VCFConnection -server $server) {
-            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
-                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                            if (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }) {
-                                if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain -listNodes)) {
-                                    $customObject = New-Object System.Collections.ArrayList
-                                    $nsxtManagerNode = ($vcfNsxDetails.nodes | Select-Object -First 1)
-                                    $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq 'SSH' -and $_.resource.resourceName -eq $vcfNsxDetails.fqdn -and $_.resource.domainName -eq $domain }).password
-                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser admin
-                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                            $customObject += $elementObject
-                                        }
-                                    } else {
-                                        $customObject += $elementObject
-                                    }
-                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser audit
-                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                            $customObject += $elementObject
-                                        }
-                                    } else {
-                                        $customObject += $elementObject
-                                    }
-                                    $elementObject = Request-LocalUserExpiry -fqdn $nsxtManagerNode.fqdn -component 'NSX Manager' -rootPass $rootPass -checkUser root
-                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                            $customObject += $elementObject
-                                        }
-                                    } else {
-                                        $customObject += $elementObject
-                                    }
-                                    $customObject | Sort-Object Component, Resource # Output Results
-                                }
-                            }
-                        }
-                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                    }
-                }
-            }
-        }
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Request-NsxtManagerUserExpiry
-
-Function Request-vCenterUserExpiry {
-    <#
-		.SYNOPSIS
-        Checks the local OS user expiry in a vCenter Server instance.
-
-        .DESCRIPTION
-        The Request-vCenterUserExpiry cmdlets checks the expiry date of local accounts on vCenter Server. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the details for each vCenter Server
-        - Collects information for the local OS 'root' account
-        - Checks when the password will expire and outputs the results
-
-        .EXAMPLE
-        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will check the expiry date of the local OS 'root' account for all vCenter Server instances managed by SDDC Manager.
-
-        .EXAMPLE
-        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will check the expiry date of the local OS 'root' account for a single workload domain
-
-        .EXAMPLE
-        Request-vCenterUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will check the expiry date of the local OS 'root' account for all vCenter Server instances but only reports issues.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
-    )
-
-    Try {
-        if (Test-VCFConnection -server $server) {
-            if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
-                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                            $customObject = New-Object System.Collections.ArrayList
-                            if ($PsBoundParameters.ContainsKey("allDomains")) {
-                                $allVcenters = Get-VCFvCenter
-                                foreach ($vcenter in $allVcenters) {
-                                    $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn}).password
-                                    $elementObject = Request-LocalUserExpiry -fqdn $vcenter.fqdn -component vCenter -rootPass $rootPass -checkUser root
-                                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                        if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                            $customObject += $elementObject
-                                        }
-                                    } else {
-                                        $customObject += $elementObject
-                                    }
-                                }
-                            } else {
-                                $vcenter = (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).vcenters.fqdn
-                                $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter}).password
-                                $elementObject = Request-LocalUserExpiry -fqdn $vcenter -component vCenter -rootPass $rootPass -checkUser root
-                                if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                    if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                        $customObject += $elementObject
-                                    }
-                                } else {
-                                    $customObject += $elementObject
-                                }
-                            }
-                            $customObject | Sort-Object Component, Resource # Output Results
-                        }
-                        Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                    }
-                }
-            }
-        }
-    }
-    Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Request-vCenterUserExpiry
-
-Function Request-vRslcmUserExpiry {
-    <#
-		.SYNOPSIS
-        Checks the local OS user expiry in the vRealize Suite Lifecycle Manager instance.
-
-        .DESCRIPTION
-        The Request-vRslcmUserExpiry cmdlets checks the expiry date of local OS user accounts on vRealize Suite
-        Lifecycle Manager. The cmdlet connects to SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the details for vRealize Suite Lifecycle Manager
-        - Collects information for the local OS 'root' account
-        - Checks when the password will expire and outputs the results
-
-        .EXAMPLE
-        Request-vRslcmUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
-        This example will check the expiry date of the local OS 'root' account on the vRealize Suite Lifecycle Manager instance deployed by SDDC Manager.
-
-        .EXAMPLE
-        Request-vRslcmUserExpiry -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
-        This example will check the expiry date of the local OS 'root' account on the vRealize Suite Lifecycle Manager instance but only reports issues.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
-    )
-
-    if (Test-VCFConnection -server $server) {
-        if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-            if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
-                if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                    if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                        if (Get-VCFvRSLCM) {
-                            $customObject = New-Object System.Collections.ArrayList
-                            $vrslcm = Get-VCFvRSLCM
-                            $rootPass = (Get-VCFCredential | Where-Object {$_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vrslcm.fqdn}).password
-                            $elementObject = Request-LocalUserExpiry -fqdn $vrslcm.fqdn -component vRSLCM -rootPass $rootPass -checkUser root
-                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                                if (($elementObject.alert -eq 'RED') -or ($elementObject.alert -eq 'YELLOW')) {
-                                    $customObject += $elementObject
-                                }
-                            } else {
-                                $customObject += $elementObject
-                            }
-                            $customObject | Sort-Object Component, Resource
-                        }
-                    }
-                    Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
-                }
-            }
-        }
-    }
-}
-Export-ModuleMember -Function Request-vRslcmUserExpiry
-
 Function Request-NsxtVidmStatus {
     <#
         .SYNOPSIS
@@ -3346,7 +2968,7 @@ Function Request-NsxtVidmStatus {
 
         .DESCRIPTION
         The Request-NsxtVidmStatus cmdlet returns the status of the Identity Manager integration for an NSX Manager cluster.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates network connectivity and authentication to the SDDC Manager instanc
         - Gathers the details for the NSX Manager cluster from the SDDC Manager
         - Validates network connectivity and authentication to the NSX Local Manager cluster
@@ -3435,8 +3057,8 @@ Function Request-NsxtComputeManagerStatus {
 
         .DESCRIPTION
         The Request-NsxtComputeManagerStatus cmdlet returns the status of the compute managers attached to an NSX Manager cluster.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
-        - Validates network connectivity and authentication to the SDDC Manager instanc
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates network connectivity and authentication to the SDDC Manager instance
         - Gathers the details for the NSX Manager cluster from the SDDC Manager
         - Validates network connectivity and authentication to the NSX Local Manager cluster
         - Collects the status of the compute managers
@@ -3862,7 +3484,7 @@ Function Request-SddcManagerBackupStatus {
 
         .DESCRIPTION
         The Request-SddcManagerBackupStatus cmdlet returns the status of the latest file-level backup task in an SDDC
-        Manager instance. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        Manager instance. The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates network connectivity and authentication to the SDDC Manager instance
         - Collects the latest file-level backup status details
 
@@ -3972,7 +3594,7 @@ Function Request-NsxtManagerBackupStatus {
 
         .DESCRIPTION
         The Request-NsxtManagerBackupStatus cmdlet returns the status of the latest backup of an NSX Manager cluster.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates network connectivity and authentication to the SDDC Manager instance
         - Gathers the details for the NSX Manager cluster from the SDDC Manager
         - Validates network connectivity and authentication to the NSX Manager cluster
@@ -4199,7 +3821,7 @@ Function Request-VcenterBackupStatus {
 
         .DESCRIPTION
         The Request-VcenterBackupStatus cmdlet returns the status of the latest backup of a vCenter Server instance.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates network connectivity and authentication to the SDDC Manager instance
         - Gathers the details for the NvCenter Server instance from the SDDC Manager
         - Validates network connectivity and authentication to the vCenter Server instance
@@ -4326,7 +3948,7 @@ Function Request-DatastoreStorageCapacity {
 
         .DESCRIPTION
         The Request-DatastoreStorageCapacity cmdlet checks the datastore usage in all vCenters. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -password values:
+        connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the details for each vCenter Server
@@ -4418,7 +4040,7 @@ Function Request-VcenterStorageHealth {
 
         .DESCRIPTION
         The Request-VcenterStorageHealth cmdlets checks the disk space usage on a vCenter Server. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -password values:
+        connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates network connectivity and authentication to the SDDC Manager instance
         - Validates network connectivity and authentication to the vCenter Server instance
         - Collects information for the disk usage
@@ -4521,7 +4143,7 @@ Function Request-EsxiStorageCapacity {
 
         .DESCRIPTION
         The Request-EsxiStorageCapacity cmdlets checks the disk space usage on ESXi hosts. The cmdlet connects to SDDC
-        Manager using the -server, -user, and -password values:
+        Manager using the -server, -user, and -pass values:
         - Validates network connectivity and authentication to the SDDC Manager instance
         - Collects disk usage information for each ESXi host in the Workload Domain
         - Checks disk usage against thresholds and outputs the results
@@ -4750,7 +4372,7 @@ Function Request-VcenterAuthentication {
 
         .DESCRIPTION
         The Request-VcenterAuthentication cmdlets checks the authentication to vCenter Server instance. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -password values:
+        connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
 
@@ -4845,7 +4467,7 @@ Function Request-NsxtAuthentication {
 
         .DESCRIPTION
         The Request-NsxtAuthentication cmdlets checks the authentication to NSX Manager instance. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -password values:
+        connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the NSX Manager instance
 
@@ -4954,8 +4576,8 @@ Function Request-NsxtTransportNodeStatus {
 
         .DESCRIPTION
         The Request-NsxtTransportNodeStatus cmdlet returns the status NSX transport nodes managed by an NSX Manager cluster.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
-        - Validates network connectivity and authentication to the SDDC Manager instanc
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates network connectivity and authentication to the SDDC Manager instance
         - Gathers the details for the NSX Manager cluster from the SDDC Manager
         - Validates network connectivity and authentication to the NSX Local Manager cluster
         - Collects the status of the transport nodes
@@ -5040,8 +4662,8 @@ Function Request-NsxtTransportNodeTunnelStatus {
 
         .DESCRIPTION
         The Request-NsxtTransportNodeTunnelStatus cmdlet returns the status NSX transport nodes tunnels.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
-        - Validates network connectivity and authentication to the SDDC Manager instanc
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates network connectivity and authentication to the SDDC Manager instance
         - Gathers the details for the NSX Manager cluster from the SDDC Manager
         - Validates network connectivity and authentication to the NSX Local Manager cluster
         - Collects the status of the transport node tunnels
@@ -5137,7 +4759,7 @@ Function Request-NsxtTier0BgpStatus {
 
         .DESCRIPTION
         The Request-NsxtTier0BgpStatus cmdlet returns the BGP status for all Tier-0 gateways managed by the NSX Manager
-        cluster. The cmdlet connects to the NSX Local Manager using the -server, -user, and -password values:
+        cluster. The cmdlet connects to the NSX Local Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the NSX Local Manager cluster
         - Gathers the details for the NSX Local Manager cluster
@@ -5227,7 +4849,7 @@ Function Publish-VmConnectedCdrom {
 
         .DESCRIPTION
         The Publish-VmConnectedCdrom cmdlet returns the status of virtual machines with connected CD-ROMS in a workload
-        domain in HTML format. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        domain in HTML format. The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Publishes information
@@ -5287,7 +4909,7 @@ Function Request-VmConnectedCdrom {
 
         .DESCRIPTION
         The Request-VmConnectedCdrom cmdlet returns the status of virtual machines with connected CD-ROMs in a workload
-        domain. The cmdlet connects to SDDC Manager using the -server, -user, and -password values:
+        domain. The cmdlet connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the status of virtual machines with connected CD-ROMs in a workload domain.
@@ -5350,7 +4972,7 @@ Function Publish-EsxiConnectionHealth {
 
         .DESCRIPTION
         The Publish-EsxiConnectionHealth cmdlet returns the status of virtual machines with connected CD-ROMS in a workload
-        domain in HTML format. The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        domain in HTML format. The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Publishes information
@@ -5422,7 +5044,7 @@ Function Request-EsxiConnectionHealth {
 
         .DESCRIPTION
         The Request-EsxiConnectionHealth cmdlet returns the connection status of ESXi hosts in a workload domain.
-        The cmdlet connects to SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the connection status of ESXi hosts in a workload domain.
@@ -5509,7 +5131,7 @@ Function Publish-SddcManagerFreePool {
 
         .DESCRIPTION
         The Publish-SddcManagerFreePool cmdlet returns SDDC Manager free pool information in HTML format.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates the network connectivity and authentication to the SDDC Manager instance
         - Publishes information
 
@@ -5570,7 +5192,7 @@ Function Request-SddcManagerFreePool {
 
         .DESCRIPTION
         The Request-SddcManagerFreePool cmdlet returns status of the ESXi hosts in the free pool. The cmdlet connects
-        to SDDC Manager using the -server, -user, and -password values:
+        to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity and authentication is possible to the SDDC Manager instance
         - Gathers the details for the ESXi hosts in the free pool
 
@@ -5684,7 +5306,7 @@ Function Publish-EsxiAlert {
 
         .DESCRIPTION
         The Publish-EsxiAlert cmdlet returns all alarms from ESXi hosts managed by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Collects the alerts from all ESXi hosts in vCenter Server instance
@@ -5758,7 +5380,7 @@ Function Publish-NsxtAlert {
 
         .DESCRIPTION
         The Publish-NsxtAlert cmdlet returns all alarms from NSX Manager cluster.
-        The cmdlet connects to the NSX Manager using the -server, -user, and -password values:
+        The cmdlet connects to the NSX Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the NSX Manager cluster
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the details for the NSX Manager cluster
@@ -5833,7 +5455,7 @@ Function Publish-VcenterAlert {
 
         .DESCRIPTION
         The Publish-VcenterAlert cmdlet returns all alarms from vCenter Server managed by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Collects the alerts from vCenter Server
@@ -5907,7 +5529,7 @@ Function Publish-VsanAlert {
 
         .DESCRIPTION
         The Publish-VsanAlert cmdlet returns vSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Collects the vSAN Healthcheck alarms from vCenter Server
@@ -5981,7 +5603,7 @@ Function Request-NsxtAlert {
 
         .DESCRIPTION
         The Request-NsxtAlert cmdlet returns all alarms from NSX Manager cluster.
-        The cmdlet connects to the NSX-T Manager using the -server, -user, and -password values:
+        The cmdlet connects to the NSX-T Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the NSX-T Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the details for the NSX Manager cluster
@@ -6055,7 +5677,7 @@ Function Request-VsanAlert {
 
         .DESCRIPTION
         The Request-VsanAlert cmdlet returns vSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Collects the vSAN Healthcheck alarms from vCenter Server
@@ -6121,7 +5743,7 @@ Function Request-VcenterAlert {
 
         .DESCRIPTION
         The Request-VcenterAlert cmdlet returns all alarms from vCenter Server managed by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Collects the alerts from vCenter Server
@@ -6217,7 +5839,7 @@ Function Request-EsxiAlert {
 
         .DESCRIPTION
         The Request-EsxiAlert cmdlet returns all alarms from all ESXi hosts in vCenter Server managed by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Collects the alerts from all ESXi hosts in vCenter Server instance
@@ -6294,7 +5916,7 @@ Function Publish-ClusterConfiguration {
 
         .DESCRIPTION
         The Publish-ClusterConfiguration cmdlet returns cluster configuration information in HTML format.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Publishes information
@@ -6348,7 +5970,7 @@ Function Publish-EsxiCoreDumpConfig {
 
         .DESCRIPTION
         The Publish-EsxiCoreDumpConfig cmdlet generates an ESXi core dump report for a workload domain. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -password values:
+        connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Generates an ESXi core dump report for all ESXi hosts in a workload domain
@@ -6438,7 +6060,7 @@ Function Request-ClusterConfiguration {
 
         .DESCRIPTION
         The Request-ClusterConfiguration cmdlets gets the cluster configuration for a vCenter Server instance. The
-        cmdlet  connects to SDDC Manager using the -server, -user, and -password values:
+        cmdlet  connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the cluster details from vCenter Server
@@ -6503,7 +6125,7 @@ Function Publish-ClusterDrsRule {
 
         .DESCRIPTION
         The Publish-ClusterDrsRule cmdlet returns cluster DRS rule information in HTML format.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Publishes information
@@ -6561,7 +6183,7 @@ Function Request-ClusterDrsRule {
 
         .DESCRIPTION
         The Request-ClusterDrsRule cmdlets gets the cluster DRS rules for a vCenter Server instance. The
-        cmdlet  connects to SDDC Manager using the -server, -user, and -password values:
+        cmdlet  connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the cluster DRS rules from vCenter Server
@@ -6625,7 +6247,7 @@ Function Publish-ResourcePool {
 
         .DESCRIPTION
         The Publish-ResourcePool cmdlet returns resource pool information in HTML format.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Publishes resource pool information
@@ -6678,7 +6300,7 @@ Function Request-ResourcePool {
 
         .DESCRIPTION
         The Request-ResourcePool cmdlets gets the resource pool details for a vCenter Server instance. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -password values:
+        connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the resource pool details from vCenter Server
@@ -6739,7 +6361,7 @@ Function Publish-VmOverride {
 
         .DESCRIPTION
         The Publish-VmOverride cmdlet returns VM Override information in HTML format.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Publishes information
@@ -6792,7 +6414,7 @@ Function Request-VmOverride {
 
         .DESCRIPTION
         The Request-VmOverride cmdlets gets VM Override setting for a vCenter Server instance. The cmdlet connects to
-        SDDC Manager using the -server, -user, and -password values:
+        SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the VM Override settings from vCenter Server
@@ -6848,7 +6470,7 @@ Function Publish-VirtualNetwork {
 
         .DESCRIPTION
         The Publish-VirtualNetwork cmdlet returns vSphere virtual networking information in HTML format.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Publishes information
@@ -6901,7 +6523,7 @@ Function Request-VirtualNetwork {
 
         .DESCRIPTION
         The Request-VirtualNetwork cmdlets gets vSphere virtual networking configuration for a vCenter Server instance.
-        The cmdlet connects to SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the vSphere virtual networking configuration from vCenter Server
@@ -6964,7 +6586,7 @@ Function Publish-EsxiSecurityConfiguration {
 
         .DESCRIPTION
         The Publish-EsxiSecurityConfiguration cmdlet returns ESXi security information in HTML format.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the vCenter Server instance
         - Validates the authentication to vCenter Server with credentials from SDDC Manager
         - Publishes information
@@ -7017,7 +6639,7 @@ Function Request-EsxiSecurityConfiguration {
 
         .DESCRIPTION
         The Request-EsxiSecurityConfiguration cmdlets gets ESXi security configuration for a vCenter Server instance.
-        The cmdlet connects to SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the ESXi security configuration from vCenter Server
@@ -7078,22 +6700,21 @@ Export-ModuleMember -Function Request-EsxiSecurityConfiguration
 Function Publish-VcfSystemOverview {
     <#
         .SYNOPSIS
-        Publish system overview report.
+        Publishs a system overview report.
 
         .DESCRIPTION
-        The Publish-VcfSystemOverview cmdlet returns password policy from NSX-T Data Center by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
-        - Validates that network connectivity is available to the NSX Manager instance
-        - Validates the authentication to NSX Manager with credentials from SDDC Manager
-        - Collects password policy from all ESXi hosts in vCenter Server instance
+        The Publish-VcfSystemOverview cmdlet returns an overview of the Vmware Cloud Foundation instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance
+        - Collects the system overview details from the environment
 
         .EXAMPLE
         Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
-        This example will return system overview report for SDDC Manager for a all workload domains.
+        This example will return system overview report for a all workload domains.
 
         .EXAMPLE
         Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
-        This example will return system overview report for SDDC Manager for a all workload domains, but with anonymized data.
+        This example will return system overview report for a all workload domains, but with anonymized data.
     #>
 
     Param (
@@ -7173,7 +6794,7 @@ Function Request-VcfOverview {
 
         .DESCRIPTION
         The Request-VcfOverview cmdlet returns an overview of the SDDC Manager instance.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Collects the overview detail
 
@@ -7239,7 +6860,7 @@ Function Request-HardwareOverview {
 
         .DESCRIPTION
         The Request-VcfOverview cmdlet returns an overview of the hardware in an SDDC Manager instance.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Collects the hardware details
 
@@ -7322,7 +6943,7 @@ Function Request-VcenterOverview {
 
         .DESCRIPTION
         The Request-VcenterOverview cmdlet returns an overview of the vSphere environment managed by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity and authentication to the SDDC Manager instance
         - Validates that network connectivity and authentication to the vCenter Server instances
         - Collects the vSphere overview detail
@@ -7395,7 +7016,7 @@ Function Request-EsxiOverview {
 
         .DESCRIPTION
         The Request-EsxiOverview cmdlet returns an overview of the ESXi host managed by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity and authentication to the SDDC Manager instance
         - Validates that network connectivity and authentication to the vCenter Server instances
         - Collects the ESXi host overview detail
@@ -7552,7 +7173,7 @@ Function Request-ClusterOverview {
 
         .DESCRIPTION
         The Request-ClusterOverview cmdlet returns an overview of the vSphere environment managed by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity and authentication to the SDDC Manager instance
         - Validates that network connectivity and authentication to the vCenter Server instances
         - Collects the vSphere overview detail
@@ -7610,7 +7231,7 @@ Function Request-NetworkOverview {
 
         .DESCRIPTION
         The Request-NetworkOverview cmdlet returns an overview of the networking managed by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity and authentication to the SDDC Manager instance
         - Collects the networking overview detail
 
@@ -7674,7 +7295,7 @@ Function Request-VrealizeOverview {
 
         .DESCRIPTION
         The Request-VrealizeOverview cmdlet returns an overview of vRealize Suite managed by SDDC Manager.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity and authentication to the SDDC Manager instance
         - Collects the networking overview detail
 
@@ -7753,7 +7374,7 @@ Function Request-ValidatedSolutionOverview {
 
         .DESCRIPTION
         The Request-ValidatedSolutionOverview cmdlet returns an overview of VMware Validated Solutions deployed.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -password values:
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Collects the VMware Validated Solution details
 
@@ -8050,7 +7671,7 @@ Function Invoke-SddcCommand {
 
         .DESCRIPTION
         The Invoke-SddcCommand cmdlet runs a command within the SDDC Manager appliance. The cmdlet connects to SDDC
-        Manager using the -server, -user, and -password values:
+        Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the Management Domain vCenter Server instance
         - Runs the command provided within the SDDC Manager appliance
@@ -8096,17 +7717,17 @@ Function Copy-FiletoSddc {
 
         .DESCRIPTION
         The Copy-FiletoSddc cmdlet copies files to the SDDC Manager appliance. The cmdlet connects to SDDC
-        Manager using the -server, -user, and -password values:
+        Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
         - Validates that network connectivity is available to the Management Domain vCenter Server instance
         - Copies the files to the SDDC Manager appliance
 
         .EXAMPLE
-        Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -source "C:\Temp\foo.txt" -destination "/home/vcf/foo.txt"
+        Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser vcf -vmPass VMw@re1! -source "C:\Temp\foo.txt" -destination "/home/vcf/foo.txt"
         This example copies a file to the SDDC Manager appliance.
 
         .EXAMPLE
-        Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -rootPass VMw@re1! -source "C:\Temp\bar" -destination "/home/vcf/"
+        Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmuser vcf -vmPass VMw@re1! -source "C:\Temp\bar" -destination "/home/vcf/"
         This example copies a file to the SDDC Manager appliance.
     #>
 
@@ -8732,77 +8353,6 @@ Function Format-StorageThreshold {
         Write-Error $_.Exception.Message
     }
 }
-
-Function Request-LocalUserExpiry {
-    <#
-        .SYNOPSIS
-        Check the expiry of a local OS user on the Linux-based appliance.
-
-        .DESCRIPTION
-        The Request-LocalUserExpiry cmdlet checks the expiry details of a local OS user on Linux-based appliance and
-        outputs the results.
-
-        .EXAMPLE
-        Request-LocalUserExpiry -fqdn sfo-vcf01.sfo.rainpole.io -rootPass VMw@re1! -component SDDC -checkUser backup
-        This example runs the command to check the expiration status of the local OS user named 'backup'.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$fqdn,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$rootPass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$checkUser,
-        [Parameter (Mandatory = $true)] [ValidateSet("SDDC","vCenter","NSX Manager","NSX Edge","vRSLCM","vRLI","vROPS","vRA","WSA")] [String]$component
-    )
-
-    Try {
-        if (Get-VM -Name ($fqdn.Split(".")[0])) {
-            $command = 'chage -l ' + $checkUser
-            $output = Invoke-VMScript -VM ($fqdn.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass
-            $formatOutput = ($output.ScriptOutput -split '\r?\n').Trim()
-            $formatOutput = $formatOutput -replace '(^\s+|\s+$)', '' -replace '\s+', ' '
-
-            # Get the current date and expiration date
-            Add-Type  -AssemblyName  Microsoft.VisualBasic
-            $endDate = ($formatOutput[1] -Split (':'))[1].Trim()
-            if ($endDate -ne "never") {
-                $expiryDays = [math]::Ceiling((([DateTime]$endDate) - (Get-Date)).TotalDays)
-            }
-
-            # Set the alet for the local user account based on the expiry date
-            if ($endDate -eq "never") {
-                $alert = 'GREEN'
-                $message = "Password set to never expire. Verified using $command."
-            } else {
-                if ($expiryDays -le 15) {
-                    $alert = 'YELLOW'  # Warning: <= 15 days
-                    $message = "Password will expire in 15 or less days. Verified using $command."
-                }
-                if ($expiryDays -le 5) {
-                    $alert = 'RED'     # Critical: <= 5 days
-                    $message = "Password will expire in less than 5 days or has already expired. Verified using $command."
-                } else {
-                    $alert = 'GREEN'   # OK: > 15 days
-                    $message = "Password will not expire within the next 15 days. Verified using $command."
-                }
-            }
-
-            $userObject = New-Object -TypeName psobject
-            $userObject | Add-Member -notepropertyname 'Component' -notepropertyvalue $component
-            $userObject | Add-Member -notepropertyname 'Resource' -notepropertyvalue $fqdn
-            $userObject | Add-Member -notepropertyname 'User' -notepropertyvalue $checkUser
-            $userObject | Add-Member -notepropertyname 'Alert' -notepropertyvalue $alert
-            $userObject | Add-Member -notepropertyname 'Message' -notepropertyvalue $message
-            $userObject
-        } else {
-            Write-Error "Unable to locate virtual machine ($($fqdn.Split(".")[0])) in the vCenter Server inventory, check details"
-        }
-
-    }
-    Catch {
-        Write-Error $_.Exception.Message
-    }
-}
-Export-ModuleMember -Function Request-LocalUserExpiry
 
 ##############################  End Supporting Functions ###############################
 ########################################################################################
