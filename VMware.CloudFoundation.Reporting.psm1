@@ -570,165 +570,6 @@ Function Invoke-VcfUpgradePrecheck {
 }
 Export-ModuleMember -Function Invoke-VcfUpgradePrecheck
 
-Function Invoke-VcfPasswordPolicy {
-    <#
-        .SYNOPSIS
-        Generate a password policy report
-
-        .DESCRIPTION
-        The Invoke-VcfPasswordPolicy runs a password policy report for a Workload Domain
-
-        .EXAMPLE
-        Invoke-VcfPasswordPolicy -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcRootPass VMw@re1! -reportPath F:\Reporting -allDomains
-        This example runs a password policy report for all Workload Domain within an SDDC Manager instance.
-
-        .EXAMPLE
-        Invoke-VcfPasswordPolicy -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcRootPass VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
-        This example runs a password policy report for a specific Workload Domain within an SDDC Manager instance.
-    #>
-
-    Param (
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcRootPass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
-        [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$policyByProduct
-    )
-
-    Try {
-        Clear-Host; Write-Host ""
-
-        if (Test-VCFConnection -server $sddcManagerFqdn) {
-            if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
-                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType policy # Setup Report Location and Report File
-                if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-                if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
-                    $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
-                    $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
-                    $commandSwitch = "-allDomains"
-                } else {
-                    $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
-                    $reportData = "<h1>Workload Domain: $workloadDomain</h1>"
-                    $workflowMessage = "Workload Domain ($workloadDomain)"
-                    $commandSwitch = "-workloadDomain $workloadDomain"
-                }
-                Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
-                Write-LogMessage -Type INFO -Message "Starting the Process of Running a Password Policy Report for $workflowMessage." -Colour Yellow
-                Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
-                Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
-
-                Write-LogMessage -Type INFO -Message "Collecting SDDC Manager Password Policies for $workflowMessage."
-                $sddcManagerPasswordExpirationHtml = Invoke-Expression "Publish-SddcManagerPasswordExpiration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcRootPass $($commandSwitch)"
-                $sddcManagerPasswordComplexityHtml = Invoke-Expression "Publish-SddcManagerPasswordComplexity -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcRootPass $($commandSwitch)"
-                $sddcManagerAccountLockoutHtml = Invoke-Expression "Publish-SddcManagerAccountLockout -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -sddcRootPass $sddcRootPass $($commandSwitch)"
-
-                Write-LogMessage -Type INFO -Message "Collecting vCenter Single Sign-On Password Policies for $workflowMessage."
-                $ssoPasswordExpirationHtml = Invoke-Expression "Publish-SsoPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -policy PasswordExpiration $($commandSwitch)"
-                $ssoPasswordComplexityHtml = Invoke-Expression "Publish-SsoPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -policy PasswordComplexity $($commandSwitch)"
-                $SsoAccountLockoutHtml = Invoke-Expression "Publish-SsoPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -policy AccountLockout $($commandSwitch)"
-
-                Write-LogMessage -Type INFO -Message "Collecting vCenter Server Password Expiration Policy for $workflowMessage."
-                $vcenterPasswordExpirationHtml = Invoke-Expression "Publish-VcenterPasswordExpiration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"
-
-                Write-LogMessage -Type INFO -Message "Collecting vCenter Server (Local User) Password Policies for $workflowMessage."
-                $vcenterLocalPasswordExpirationHtml = Invoke-Expression "Publish-VcenterLocalPasswordExpiration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"
-                $vcenterLocalPasswordComplexityHtml = Invoke-Expression "Publish-VcenterLocalPasswordComplexity -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"
-                $vcenterLocalAccountLockoutHtml = Invoke-Expression "Publish-VcenterLocalAccountLockout -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"
-
-                Write-LogMessage -Type INFO -Message "Collecting NSX Manager Password Policies for $workflowMessage."
-                $nsxManagerPasswordExpirationHtml = Invoke-Expression "Publish-NsxManagerPasswordExpiration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"
-                $nsxManagerPasswordComplexityHtml = Invoke-Expression "Publish-NsxManagerPasswordComplexity -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"
-                $nsxMangerAccountLockoutHtml = Invoke-Expression "Publish-NsxManagerAccountLockout -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"
-
-                Write-LogMessage -Type INFO -Message "Collecting NSX Edge Password Policies for $workflowMessage."
-                $nsxEdgePasswordExpirationHtml = Invoke-Expression "Publish-NsxEdgePasswordExpiration -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"
-                $nsxEdgePasswordComplexityHtml = Invoke-Expression "Publish-NsxEdgePasswordComplexity -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"
-                $nsxEdgeAccountLockoutHtml = Invoke-Expression "Publish-NsxEdgeAccountLockout -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"
-
-                Write-LogMessage -Type INFO -Message "Collecting ESXi Password Policies for $workflowMessage."
-                $esxiPasswordExpirationHtml = Invoke-Expression "Publish-EsxiPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -policy PasswordExpiration $($commandSwitch)"
-                $esxiPasswordComplexityHtml = Invoke-Expression "Publish-EsxiPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -policy PasswordComplexity $($commandSwitch)"
-                $esxiAccountLockoutHtml = Invoke-Expression "Publish-EsxiPasswordPolicy -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -policy AccountLockout $($commandSwitch)"
-
-                if ($PsBoundParameters.ContainsKey("policyByProduct")) {
-                    $reportData += $sddcManagerPasswordExpirationHtml
-                    $reportData += $sddcManagerPasswordComplexityHtml
-                    $reportData += $sddcManagerAccountLockoutHtml
-                    $reportData += $ssoPasswordExpirationHtml
-                    $reportData += $ssoPasswordComplexityHtml
-                    $reportData += $ssoAccountLockoutHtml
-                    $reportData += $vcenterPasswordExpirationHtml
-                    $reportData += $vcenterLocalPasswordExpirationHtml
-                    $reportData += $vcenterLocalPasswordComplexityHtml
-                    $reportData += $vcenterLocalAccountLockoutHtml
-                    $reportData += $nsxManagerPasswordExpirationHtml
-                    $reportData += $nsxManagerPasswordComplexityHtml
-                    $reportData += $nsxMangerAccountLockoutHtml
-                    $reportData += $nsxEdgePasswordExpirationHtml
-                    $reportData += $nsxEdgePasswordComplexityHtml
-                    $reportData += $nsxEdgeAccountLockoutHtml
-                    $reportData += $esxiPasswordExpirationHtml
-                    $reportData += $esxiPasswordComplexityHtml
-                    $reportData += $esxiAccountLockoutHtml
-                } else {
-                    $reportData += $sddcManagerPasswordExpirationHtml
-                    $reportData += $ssoPasswordExpirationHtml
-                    $reportData += $vcenterPasswordExpirationHtml
-                    $reportData += $vcenterLocalPasswordExpirationHtml
-                    $reportData += $nsxManagerPasswordExpirationHtml
-                    $reportData += $nsxEdgePasswordExpirationHtml
-                    $reportData += $esxiPasswordExpirationHtml
-                    $reportData += $sddcManagerPasswordComplexityHtml
-                    $reportData += $ssoPasswordComplexityHtml
-                    $reportData += $vcenterLocalPasswordComplexityHtml
-                    $reportData += $nsxManagerPasswordComplexityHtml
-                    $reportData += $nsxEdgePasswordComplexityHtml
-                    $reportData += $esxiPasswordComplexityHtml
-                    $reportData += $sddcManagerAccountLockoutHtml
-                    $reportData += $ssoAccountLockoutHtml
-                    $reportData += $vcenterLocalAccountLockoutHtml
-                    $reportData += $nsxMangerAccountLockoutHtml
-                    $reportData += $nsxEdgeAccountLockoutHtml
-                    $reportData += $esxiAccountLockoutHtml
-                }
-
-                if ($PsBoundParameters.ContainsKey("darkMode")) {
-                    $reportHeader = Get-ClarityReportHeader -dark
-                } else {
-                    $reportHeader = Get-ClarityReportHeader
-                }
-                if ($PsBoundParameters.ContainsKey("policyByProduct")) {
-                    $reportNavigation = Get-ClarityReportNavigation -reportType policyByProduct
-                } else {
-                    $reportNavigation = Get-ClarityReportNavigation -reportType policy
-                }
-                $reportFooter = Get-ClarityReportFooter
-                $report = $reportHeader
-                $report += $reportNavigation
-                $report += $reportData
-                $report += $reportFooter
-
-                # Generate the report to an HTML file and then open it in the default browser
-                Write-LogMessage -Type INFO -Message "Generating the Final Report and Saving to ($reportName)."
-                $report | Out-File $reportName
-                if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -ne "Linux") {
-                    Invoke-Item $reportName
-                } elseif ($PSEdition -eq "Desktop") {
-                    Invoke-Item $reportName
-                }
-            }
-        }
-    } Catch {
-        Debug-CatchWriter -object $_
-    }
-}
-Export-ModuleMember -Function Invoke-VcfPasswordPolicy
-
 Function Invoke-VcfOverviewReport {
     <#
         .SYNOPSIS
@@ -8134,7 +7975,7 @@ Function Start-CreateReportDirectory {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$path,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
-        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade","policy","overview")] [String]$reportType
+        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade","overview")] [String]$reportType
     )
 
     $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
@@ -8142,7 +7983,6 @@ Function Start-CreateReportDirectory {
     if ($reportType -eq "alert") { $Global:reportFolder = $path + '\AlertReports\' }
     if ($reportType -eq "config") { $Global:reportFolder = $path + '\ConfigReports\' }
     if ($reportType -eq "upgrade") { $Global:reportFolder = $path + '\UpgradeReports\' }
-    if ($reportType -eq "policy") { $Global:reportFolder = $path + '\PolicyReports\' }
     if ($reportType -eq "overview") { $Global:reportFolder = $path + '\OverviewReports\' }
     if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
         $reportFolder = ($reportFolder).split('\') -join '/' | Split-Path -NoQualifier
@@ -8532,7 +8372,7 @@ Export-ModuleMember -Function Get-ClarityReportHeader
 
 Function Get-ClarityReportNavigation {
     Param (
-        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade","policy","policyByProduct","overview")] [String]$reportType
+        [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade","overview")] [String]$reportType
     )
 
     if ($reportType -eq "health") { # Define the Clarity Cascading Style Sheets (CSS) for a Health Report
@@ -8703,142 +8543,6 @@ Function Get-ClarityReportNavigation {
             </nav>
             <div class="content-container">
             <div class="content-area">'
-        $clarityCssNavigation
-    }
-
-    if ($reportType -eq "policyByProduct") { # Define the Clarity Cascading Style Sheets (CSS) for a Password Policy Report
-        $clarityCssNavigation = '
-                <nav class="subnav">
-                <ul class="nav">
-                <li class="nav-item">
-                    <a class="nav-link active" href="">Password Policy Report</a>
-                </li>
-                </ul>
-            </nav>
-            <div class="content-container">
-            <nav class="sidenav">
-            <section class="sidenav-content">
-                <section class="nav-group collapsible">
-                    <input id="sddcmanager" type="checkbox"/>
-                    <label for="sddcmanager">SDDC Manager</label>
-                    <ul class="nav-list">
-                        <li><a class="nav-link" href="#sddcmanager-password-expiration">Password Expiration</a></li>
-                        <li><a class="nav-link" href="#sddcmanager-password-complexity">Password Complexity</a></li>
-                        <li><a class="nav-link" href="#sddcmanager-account-lockout">Account Lockout</a></li>
-                    </ul>
-                </section>
-                <section class="nav-group collapsible">
-                    <input id="sso" type="checkbox"/>
-                    <label for="sso">vCenter Single Sign-On</label>
-                    <ul class="nav-list">
-                        <li><a class="nav-link" href="#sso-password-expiration">Password Expiration</a></li>
-                        <li><a class="nav-link" href="#sso-password-complexity">Password Complexity</a></li>
-                        <li><a class="nav-link" href="#sso-account-lockout">Account Lockout</a></li>
-                    </ul>
-                </section>
-                <section class="nav-group collapsible">
-                    <input id="vcenter" type="checkbox"/>
-                    <label for="vcenter">vCenter Server</label>
-                    <ul class="nav-list">
-                        <li><a class="nav-link" href="#vcenter-password-expiration">Password Expiration</a></li>
-                    </ul>
-                </section>
-                <section class="nav-group collapsible">
-                    <input id="vcenter-local" type="checkbox"/>
-                    <label for="vcenter-local">vCenter Server (Local Users) </label>
-                    <ul class="nav-list">
-                        <li><a class="nav-link" href="#vcenter-password-expiration-local">Password Expiration</a></li>
-                        <li><a class="nav-link" href="#vcenter-password-complexity-local">Password Complexity</a></li>
-                        <li><a class="nav-link" href="#vcenter-account-lockout-local">Account Lockout</a></li>
-                    </ul>
-                </section>
-                <section class="nav-group collapsible">
-                    <input id="nsxmanager" type="checkbox"/>
-                    <label for="nsxmanager">NSX Manager</label>
-                    <ul class="nav-list">
-                        <li><a class="nav-link" href="#nsxmanager-password-expiration">Password Expiration</a></li>
-                        <li><a class="nav-link" href="#nsxmanager-password-complexity">Password Complexity</a></li>
-                        <li><a class="nav-link" href="#nsxmanager-account-lockout">Account Lockout</a></li>
-                    </ul>
-                </section>
-                <section class="nav-group collapsible">
-                    <input id="nsxedge" type="checkbox"/>
-                    <label for="nsxedge">NSX Edge</label>
-                    <ul class="nav-list">
-                        <li><a class="nav-link" href="#nsxedge-password-expiration">Password Expiration</a></li>
-                        <li><a class="nav-link" href="#nsxedge-password-complexity">Password Complexity</a></li>
-                        <li><a class="nav-link" href="#nsxedge-account-lockout">Account Lockout</a></li>
-                    </ul>
-                </section>
-                <section class="nav-group collapsible">
-                    <input id="esxi" type="checkbox"/>
-                    <label for="esxi">ESXi Server</label>
-                    <ul class="nav-list">
-                        <li><a class="nav-link" href="#esxi-password-expiration">Password Expiration</a></li>
-                        <li><a class="nav-link" href="#esxi-password-complexity">Password Complexity</a></li>
-                        <li><a class="nav-link" href="#esxi-account-lockout">Account Lockout</a></li>
-                    </ul>
-                </section>
-            </section>
-            </nav>
-                <div class="content-area">
-                    <div class="content-area">'
-        $clarityCssNavigation
-    }
-
-    if ($reportType -eq "policy") { # Define the Clarity Cascading Style Sheets (CSS) for a Password Policy Report
-        $clarityCssNavigation = '
-                <nav class="subnav">
-                <ul class="nav">
-                <li class="nav-item">
-                    <a class="nav-link active" href="">Password Policy Report</a>
-                </li>
-                </ul>
-            </nav>
-            <div class="content-container">
-            <nav class="sidenav">
-            <section class="sidenav-content">
-                <section class="nav-group collapsible">
-                    <input id="expiration" type="checkbox"/>
-                    <label for="expiration">Password Expiration</label>
-                    <ul class="nav-list">
-                        <li><a class="nav-link" href="#sddcmanager-password-expiration">SDDC Manager</a></li>
-                        <li><a class="nav-link" href="#sso-password-expiration">vCenter Single Sign-On</a></li>
-                        <li><a class="nav-link" href="#vcenter-password-expiration">vCenter Server</a></li>
-                        <li><a class="nav-link" href="#vcenter-password-expiration-local">vCenter Server (Local)</a></li>
-                        <li><a class="nav-link" href="#nsxmanager-password-expiration">NSX Manager</a></li>
-                        <li><a class="nav-link" href="#nsxedge-password-expiration">NSX  Edge</a></li>
-                        <li><a class="nav-link" href="#esxi-password-expiration">ESXi</a></li>
-                    </ul>
-                </section>
-                <section class="nav-group collapsible">
-                    <input id="complexity" type="checkbox"/>
-                    <label for="complexity">Password Complexity</label>
-                    <ul class="nav-list">
-                        <li><a class="nav-link" href="#sddcmanager-password-complexity">SDDC Manager</a></li>
-                        <li><a class="nav-link" href="#sso-password-complexity">vCenter Single Sign-On</a></li>
-                        <li><a class="nav-link" href="#vcenter-password-complexity-local">vCenter Server (Local)</a></li>
-                        <li><a class="nav-link" href="#nsxmanager-password-complexity">NSX Manager</a></li>
-                        <li><a class="nav-link" href="#nsxedge-password-complexity">NSX Edge</a></li>
-                        <li><a class="nav-link" href="#esxi-password-complexity">ESXi</a></li>
-                    </ul>
-                </section>
-                <section class="nav-group collapsible">
-                    <input id="lockout" type="checkbox"/>
-                    <label for="lockout">Account Lockout</label>
-                    <ul class="nav-list">
-                        <li><a class="nav-link" href="#sddcmanager-account-lockout">SDDC Manager</a></li>
-                        <li><a class="nav-link" href="#sso-account-lockout">vCenter Single Sign-On</a></li>
-                        <li><a class="nav-link" href="#vcenter-account-lockout-local">vCenter Server (Local)</a></li>
-                        <li><a class="nav-link" href="#nsxmanager-account-lockout">NSX Manager</a></li>
-                        <li><a class="nav-link" href="#nsxedge-account-lockout">NSX Edge</a></li>
-                        <li><a class="nav-link" href="#esxi-account-lockout">ESXi</a></li>
-                    </ul>
-                </section>
-            </section>
-            </nav>
-                <div class="content-area">
-                    <div class="content-area">'
         $clarityCssNavigation
     }
 
