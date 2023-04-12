@@ -8072,28 +8072,57 @@ Function Test-VcfReportingPrereq {
         The Test-VcfReportingPrereq cmdlet checks that all the prerequisites have been met to run the PowerShell module.
 
         .EXAMPLE
-        Test-VcfReportingPrereq
+        Test-VcfReportingPrereq -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -logPath F:\Reporting
         This example runs the prerequisite validation.
     #>
 
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$logPath
+    )
+
     Try {
+        Clear-Host; Write-Host ""
+
+        $vcfMinVersion = "4.4.0"
+
         $modules = @(
-            @{ Name=("VMware.PowerCLI"); Version=("12.7.0")}
-            @{ Name=("VMware.vSphere.SsoAdmin"); Version=("1.3.8")}
-            @{ Name=("PowerVCF"); Version=("2.2.0")}
-            @{ Name=("PowerValidatedSolutions"); Version=("2.0.1")}
+            @{ Name=("VMware.PowerCLI"); MinimumVersion=("13.0.0")}
+            @{ Name=("VMware.vSphere.SsoAdmin"); MinimumVersion=("1.3.9")}
+            @{ Name=("PowerVCF"); MinimumVersion=("2.2.0")}
+            @{ Name=("PowerValidatedSolutions"); MinimumVersion=("2.2.0")}
         )
-        foreach ($module in $modules ) {
-            if ((Get-InstalledModule -Name $module.Name).Version -lt $module.Version) {
-                $message = "PowerShell Module: $($module.Name) Version: $($module.Version) Not Installed, Please update before proceeding."
-                Write-Warning $message; Write-Host ""
-                break
-            } else {
-                $moduleCurrentVersion = (Get-InstalledModule -Name $module.Name).Version
-                $message = "PowerShell Module: $($module.Name) Version: $($moduleCurrentVersion) Found, Supports the minimum required version."
-                $message
+
+        if (Test-VCFConnection -server $sddcManagerFqdn) {
+            if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {           
+                Start-SetupLogFile -Path $logPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
+
+                $vcfVersion = ((Get-VCFManager).version).Split('-')[0]
+                if ($vcfVersion -lt $vcfMinVersion) {
+                    $message = "VMware Cloud Foundation: SDDC Manager $vcfVersion ($($sddcManagerFqdn)) is not supported by this module. Minimum required version is $($vcfMinVersion)."
+                    Write-LogMessage -Type ERROR -Message $message -Colour Red
+                    Break
+                } else {
+                    $message = "VMware Cloud Foundation: SDDC Manager $vcfVersion ($($sddcManagerFqdn)) and supports the minimum required version."
+                    Write-LogMessage -Type INFO -Message $message -Colour Green
+                }
+
+                foreach ($module in $modules ) {
+                    if ((Get-InstalledModule -ErrorAction SilentlyContinue -Name $module.Name).Version -lt $module.MinimumVersion) {
+                        $message = "PowerShell Module: $($module.Name) $($module.MinimumVersion) is not installed."
+                        Write-LogMessage -Type ERROR -Message $message -Colour Red
+                        Break
+                    } else {
+                        $moduleCurrentVersion = (Get-InstalledModule -Name $module.Name).Version
+                        $message = "PowerShell Module: $($module.Name) $($moduleCurrentVersion) is installed and supports the minimum required version."
+                        Write-LogMessage -Type INFO -Message $message -Colour Green
+                    }
+                }
             }
         }
+        
     }
     Catch {
         Write-Error $_.Exception.Message
