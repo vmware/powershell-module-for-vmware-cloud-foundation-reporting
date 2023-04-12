@@ -12,12 +12,19 @@ Enhancement:
 
 Refactor:
 - **Breaking**: Updates `Invoke-VcfHealthReport` to use `-localUser` and `localPass` parameters instead of `-SddcManagerRootPass`. Examples use the local `vcf` user account for the SDDC Manager virtual appliance. [GH-113](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/113)
-- **Breaking**: Updates `Publish-StorageCapacityHealth` to use `-localUser` and `localPass` parameters instead of `-rootPass`. Examples use the local `vcf` user account for the SDDC Manager virtual appliance. [GH-113](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/113)
-- **Breaking**: Updates `Request-SddcManagerStorageHealth` to use `-localUser` and `localPass` parameters instead of `-rootPass`. Examples use the local `vcf` user account for the SDDC Manager virtual appliance. [GH-113](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/113)
+- **Breaking**: Updates `Publish-StorageCapacityHealth` to use `-localUser` and `-localPass` parameters instead of `-rootPass`. Examples use the local `vcf` user account for the SDDC Manager virtual appliance. [GH-113](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/113)
+- **Breaking**: Updates `Request-SddcManagerStorageHealth` to use `-localUser` and `-localPass` parameters instead of `-rootPass`. Examples use the local `vcf` user account for the SDDC Manager virtual appliance. [GH-113](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/113)
+- **Breaking**: Removes `Invoke-VcfPasswordPolicy` and supporting functions. Please use the [`VMware.CloudFoundation.PasswordManagement`](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-password-management) module. [GH-118](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/118)
 - Updates `Request-SoSHealthJson` to use the API to retrieve the SoS Health Summary JSON results. [GH-102](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/102)
 - Updates `Publish-PasswordHealth` to return the results from the SoS Health Summary JSON data. [GH-111](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/111)
 - Updates `Invoke-VcfHealthReport` to use the `Publish-PasswordHealth` cmdlet. [GH-111](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/111)
 - Removes `Publish-LocalUserExpiry` in favor of the `Publish-PasswordHealth` cmdlet. [GH-111](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/111)
+
+Chore:
+
+- Updates `PowerValidatedSolutions` from v2.0.1 to v2.2.0. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
+- Updates `VMware.PowerCLI` from v12.7.0 to v13.0.0. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
+- Updates `VMware.vSphere.SsoAdmin` from v1.3.8 to v1.3.9. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
 
 ## [v1.1.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.1.0)
 
