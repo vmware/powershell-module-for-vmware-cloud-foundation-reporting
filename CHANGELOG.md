@@ -11,6 +11,7 @@ Enhancement:
 - Updated `Publish-CertificateHealth` to include ESXi host certificates. [GH-107](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/107)
 - Updated `Publish-PasswordHealth` to include an "Expires In (Days)" column. [GH-111](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/111)
 - Added `Show-ReportingOutput` cmdlet to format output to the console when `PowerVCF` is not installed. [GH-121](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/121)
+- Updated `Publish-VsanHealth` to include the results for capacity utilization and the active resysc of objects.
 
 Refactor:
 
