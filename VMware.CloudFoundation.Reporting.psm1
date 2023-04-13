@@ -7534,15 +7534,14 @@ Function Test-VcfReportingPrereq {
         The Test-VcfReportingPrereq cmdlet checks that all the prerequisites have been met to run the PowerShell module.
 
         .EXAMPLE
-        Test-VcfReportingPrereq -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -logPath F:\Reporting
+        Test-VcfReportingPrereq -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1!
         This example runs the prerequisite validation.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$logPath
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass
     )
 
     Try {
@@ -7559,27 +7558,26 @@ Function Test-VcfReportingPrereq {
 
         if (Test-VCFConnection -server $sddcManagerFqdn) {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {           
-                Start-SetupLogFile -Path $logPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
 
                 $vcfVersion = ((Get-VCFManager).version).Split('-')[0]
                 if ($vcfVersion -lt $vcfMinVersion) {
                     $message = "VMware Cloud Foundation: SDDC Manager $vcfVersion ($($sddcManagerFqdn)) is not supported by this module. Minimum required version is $($vcfMinVersion)."
-                    Write-LogMessage -Type ERROR -Message $message -Colour Red
+                    Show-ReportingOutput -type ERROR -message $message
                     Break
                 } else {
                     $message = "VMware Cloud Foundation: SDDC Manager $vcfVersion ($($sddcManagerFqdn)) and supports the minimum required version."
-                    Write-LogMessage -Type INFO -Message $message -Colour Green
+                    Show-ReportingOutput -Type INFO -Message $message
                 }
 
                 foreach ($module in $modules ) {
                     if ((Get-InstalledModule -ErrorAction SilentlyContinue -Name $module.Name).Version -lt $module.MinimumVersion) {
-                        $message = "PowerShell Module: $($module.Name) $($module.MinimumVersion) is not installed."
-                        Write-LogMessage -Type ERROR -Message $message -Colour Red
+                        $message = "PowerShell Module: $($module.Name) $($module.MinimumVersion) minimum required version is not installed."
+                        Show-ReportingOutput -type ERROR -message $message
                         Break
                     } else {
                         $moduleCurrentVersion = (Get-InstalledModule -Name $module.Name).Version
                         $message = "PowerShell Module: $($module.Name) $($moduleCurrentVersion) is installed and supports the minimum required version."
-                        Write-LogMessage -Type INFO -Message $message -Colour Green
+                        Show-ReportingOutput -Type INFO -Message $message
                     }
                 }
             }
@@ -7591,6 +7589,37 @@ Function Test-VcfReportingPrereq {
     }
 }
 Export-ModuleMember -Function Test-VcfReportingPrereq
+
+Function Show-ReportingOutput {
+    
+    Param (
+        [Parameter (Mandatory = $true)] [AllowEmptyString()] [String]$message,
+        [Parameter (Mandatory = $false)] [ValidateSet("INFO", "ERROR", "WARNING", "EXCEPTION","ADVISORY","NOTE","QUESTION","WAIT")] [String]$type = "INFO",
+        [Parameter (Mandatory = $false)] [Switch]$skipnewline
+    )
+
+    If ($type -eq "INFO") {
+        $messageColour = "92m" #Green
+    } elseIf ($type -in "ERROR","EXCEPTION") {
+        $messageColour = "91m" # Red
+    } elseIf ($type -in "WARNING","ADVISORY","QUESTION") {
+        $messageColour = "93m" #Yellow
+    } elseIf ($type -in "NOTE","WAIT") {
+        $messageColour = "97m" # White
+    }
+
+    $ESC = [char]0x1b
+    $timestampColour = "97m"
+
+    $timeStamp = Get-Date -Format "MM-dd-yyyy_HH:mm:ss"
+
+    If ($skipnewline) {
+        Write-Host -NoNewline "$ESC[${timestampcolour} [$timestamp]$ESC[${threadColour} $ESC[${messageColour} [$type] $message$ESC[0m"
+    } else {
+        Write-Host "$ESC[${timestampcolour} [$timestamp]$ESC[${threadColour} $ESC[${messageColour} [$type] $message$ESC[0m"
+    }
+}
+Export-ModuleMember -Function Show-ReportingOutput
 
 Function Start-CreateReportDirectory {
     Param (
