@@ -2076,7 +2076,7 @@ Function Publish-VsanHealth {
             Write-Warning 'vSAN data not found in the JSON file: SKIPPED'
         } else {
 
-            # vSAN Cluster Health Status
+            # Cluster Health Status
             $jsonInputData = $targetContent.vSAN.'Cluster vSAN Status' # Extract Data from the provided SOS JSON
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
@@ -2087,6 +2087,24 @@ Function Publish-VsanHealth {
 
             # Cluster Disk Status
             $jsonInputData = $targetContent.vSAN.'Cluster Disk Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
+
+            # Cluster Capacity Utilization
+            $jsonInputData = $targetContent.vSAN.'vSAN Capacity Utilization' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
+
+            # Cluster Active ReSync Objects
+            $jsonInputData = $targetContent.vSAN.'Active ReSync Objects' # Extract Data from the provided SOS JSON
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
