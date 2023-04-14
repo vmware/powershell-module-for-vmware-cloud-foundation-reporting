@@ -125,11 +125,15 @@ Function Invoke-VcfHealthReport {
                 Write-LogMessage -Type INFO -Message "Generating the Service Health Report using the SoS output for $workflowMessage."
                 $serviceHtml = Invoke-Expression "Publish-ServiceHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $serviceHtml
 
-                # Generating the Connectivity Health Data Using SoS Data and Supplimental PowerShell Request Functions
+                # Generating the Version Health Data Using the SoS Data
+                Write-LogMessage -Type INFO -Message "Generating the Version Health Report using the SoS output for $workflowMessage."
+                $versionHtml = Invoke-Expression "Publish-VersionHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $versionHtml
+
+                # Generating the Connectivity Health Data Using SoS Data and Supplemental PowerShell Request Functions
                 Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report using the SoS output for $workflowMessage."
                 $componentConnectivityHtml = Invoke-Expression "Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath $($commandSwitch) $($failureOnlySwitch)"; $reportData += $componentConnectivityHtml
 
-                # Generating the Password Expiry Health Data Using PowerShell Request Functions
+                # Generating the Password Expiry Health Data Using the SoS Data
                 Write-LogMessage -Type INFO -Message "Generating the Password Expiry Report for $workflowMessage."
                 $passwordHtml = Invoke-Expression "Publish-PasswordHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $passwordHtml
 
@@ -177,7 +181,7 @@ Function Invoke-VcfHealthReport {
                 Write-LogMessage -Type INFO -Message "Generating the vSAN Storage Policy Health Report using the SoS output for $workflowMessage."
                 $vsanPolicyHtml = Invoke-Expression "Publish-VsanStoragePolicy -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $vsanPolicyHtml
 
-                # Generating the NSX Manager Health Data Using SoS output and Supplimental PowerShell Request Functions
+                # Generating the NSX Manager Health Data Using SoS output and Supplemental PowerShell Request Functions
                 Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report using the SoS output for $workflowMessage."
                 $nsxtHtml = Invoke-Expression "Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath $($commandSwitch) $($failureOnlySwitch)"; $reportData += $nsxtHtml
 
@@ -1754,6 +1758,89 @@ Function Publish-PasswordHealth {
     }
 }
 Export-ModuleMember -Function Publish-PasswordHealth
+
+Function Publish-VersionHealth {
+    <#
+        .SYNOPSIS
+        Formats the Version Health data from the SoS JSON output.
+
+        .DESCRIPTION
+        The Publish-VersionHealth cmdlet formats the Version Health data from the SoS JSON output and publishes it as
+        either a standard PowerShell object or an HTML object.
+
+        .EXAMPLE
+        Publish-VersionHealth -json <file-name>
+        This example extracts and formats the Version Health data as a PowerShell object from the JSON file.
+
+        .EXAMPLE
+        Publish-VersionHealth -json <file-name> -html
+        This example extracts and formats the Version Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-VersionHealth -json <file-name> -failureOnly
+        This example extracts and formats the Version Health data as a PowerShell object from the JSON file for only the failed items.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path -Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        } else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        # Version Health
+        $jsonInputData = $targetContent.'Version Check Status' # Extract Data from the provided SOS JSON
+        if (($jsonInputData | Measure-Object).Count -lt 1) {
+            Write-Warning 'Version Check Status not found in the JSON file: SKIPPED'
+        } else {
+            $outputObject = New-Object System.Collections.ArrayList
+            foreach ($element in $jsonInputData.PsObject.Properties.Value) {
+                $elementObject = New-Object -TypeName psobject
+                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                $elementObject | Add-Member -NotePropertyName 'Version' -NotePropertyValue $element.title[0]
+                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                    if (($element.status -eq 'FAILED')) {
+                        $outputObject += $elementObject
+                    }
+                }
+                else {
+                    $outputObject += $elementObject
+                }
+            }
+        }
+
+        if ($PsBoundParameters.ContainsKey('html')) {
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+                if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-version"></a><h3>Version Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-version"></a><h3>Version Health Status</h3>' -As Table
+                }
+                $outputObject = Convert-CssClass -htmldata $outputObject
+            } else {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-version"></a><h3>Version Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Version data not found.</p>' -As Table
+            }
+            $outputObject
+        }
+        else {
+            $outputObject | Sort-Object Component, Resource
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-VersionHealth
 
 Function Publish-ServiceHealth {
     <#
@@ -8042,6 +8129,7 @@ Function Get-ClarityReportNavigation {
                     <label for="general">General</label>
                     <ul class="nav-list">
                         <li><a class="nav-link" href="#general-service">Service Health</a></li>
+                        <li><a class="nav-link" href="#general-version">Version Health</a></li>
                         <li><a class="nav-link" href="#general-connectivity">Connectivity</a></li>
                     </ul>
                 </section>
