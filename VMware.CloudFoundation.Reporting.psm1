@@ -2147,6 +2147,35 @@ Function Publish-VsanHealth {
                 $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
             }
             $customObject += $outputObject # Adding individual component to main customObject
+
+            # Stretched Cluster Health Status
+            $jsonInputData = $targetContent.vSAN.'Stretched Cluster Health Status' # Extract Data from the provided SOS JSON
+            if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
+            } else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
+            }
+            $customObject += $outputObject # Adding individual component to main customObject
+
+            # Stretched Cluster Tests
+            $jsonInputData = $targetContent.vSAN.'Stretched Cluster Tests' # Extract Data from the provided SOS JSON
+            foreach ($component in $jsonInputData.PsObject.Properties.Value) {
+                foreach ($element in $component.PsObject.Properties.Value) {
+                    $outputObject = New-Object -TypeName psobject
+                    $outputObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
+                    $outputObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                    $outputObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+                    $outputObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $element.message
+                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                        if (($element.status -eq 'FAILED')) {
+                            $customObject += $outputObject
+                        }
+                    } else {
+                        $customObject += $outputObject # Adding individual component to main customObject
+                    }
+                }
+            }
+
         }
 
         # Return the structured data to the console or format using HTML CSS Styles

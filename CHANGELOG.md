@@ -10,16 +10,17 @@ Enhancement:
 - Updated `Publish-CertificateHealth` to include an "Expires In (Days)" column. [GH-107](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/107)
 - Updated `Publish-CertificateHealth` to include ESXi host certificates. [GH-107](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/107)
 - Updated `Publish-PasswordHealth` to include an "Expires In (Days)" column. [GH-111](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/111)
-- Added `Publish-VersionHealth` to return the version health from the SoS Health Summary JSON data.
-- Updated `Invoke-VcfHealthReport` to include the version health using the `Publish-VersionHealth` cmdlet.
+- Added `Publish-VersionHealth` to return the version health from the SoS Health Summary JSON data. [GH-123](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/123)
+- Updated `Invoke-VcfHealthReport` to include the version health using the `Publish-VersionHealth` cmdlet. [GH-123](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/123)
 - Added `Show-ReportingOutput` cmdlet to format output to the console when `PowerVCF` is not installed. [GH-121](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/121)
-- Updated `Publish-VsanHealth` to include the results for capacity utilization and the active resysc of objects.
+- Updated `Publish-VsanHealth` to include the results for capacity utilization and the active resysc of objects [GH-124](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/124)
+- Updated `Publish-VsanHealth` to include the results for stretched cluster health and stretched cluster tests. [GH-126](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/126)
 
 Refactor:
 
 - **Breaking**: Updated `Invoke-VcfReportingPrereq` to:
-    - Use `-sddcManagerFqdn`, `sddcManagerUser`, and `sddcManagerPass` parameters to check the SDDC Manager version. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
-    - Use `Write-LogMessage` to apply colors to the output and log the output to a file using the `-logPath` parameter. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
+  - Use `-sddcManagerFqdn`, `sddcManagerUser`, and `sddcManagerPass` parameters to check the SDDC Manager version. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
+  - Use `Write-LogMessage` to apply colors to the output and log the output to a file using the `-logPath` parameter. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
 - **Breaking**: Updated `Invoke-VcfHealthReport` to use `-sddcManagerLocalUser` and `-sddcManagerLocalPass` parameters instead of `-SddcManagerRootPass`. Examples use the local `vcf` user account for the SDDC Manager virtual appliance. [GH-113](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/113)
 - **Breaking**: Updated `Publish-StorageCapacityHealth` to use `-localUser` and `-localPass` parameters instead of `-rootPass`. Examples use the local `vcf` user account for the SDDC Manager virtual appliance. [GH-113](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/113)
 - **Breaking**: Updated `Request-SddcManagerStorageHealth` to use `-localUser` and `-localPass` parameters instead of `-rootPass`. Examples use the local `vcf` user account for the SDDC Manager virtual appliance. [GH-113](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/113)
@@ -37,6 +38,7 @@ Refactor:
 
 Chore:
 
+- Updated `PowerVCF` from v2.2.0 to v2.3.0. [GH-125](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/125)
 - Updated `PowerValidatedSolutions` from v2.0.1 to v2.2.0. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
 - Updated `VMware.PowerCLI` from v12.7.0 to v13.0.0. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
 - Updated `VMware.vSphere.SsoAdmin` from v1.3.8 to v1.3.9. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
@@ -55,12 +57,12 @@ Bugfix:
 Enhancement:
 
 - Updated `Publish-*` cmdlets to support JSON generation. Required for Heatlh Monitoring and Reporting solution. [GH-79](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/79)
-    - `Publish-BackupStatus`
-    - `Publish-NsxtTransportNodeStatus`
-    - `Publish-NsxtTier0BgpStatus`
-    - `Publish-SnapshotStatus`
-    - `Publish-LocalUserExpiry`
-    - `Publish-StorageCapacityHealth`
+  - `Publish-BackupStatus`
+  - `Publish-NsxtTransportNodeStatus`
+  - `Publish-NsxtTier0BgpStatus`
+  - `Publish-SnapshotStatus`
+  - `Publish-LocalUserExpiry`
+  - `Publish-StorageCapacityHealth`
 - Added `Publish-NsxtHealthNonSOS` and `Publish-ComponentConnectivityHealthNonSOS` cmdlets. Required for Heatlh Monitoring and Reporting solution. [GH-79](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/79)
 - Updated in `Publish-*` cmdlets that support JSON generation to specify encoding needed for Python to read it the content. Required for Heatlh Monitoring and Reporting solution alerts. [GH-93](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/93)
 - Added CPU Cores per Socket to the ESXi Host Overview on the overview report. [GH-85](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/85)
