@@ -129,6 +129,10 @@ Function Invoke-VcfHealthReport {
                 Write-LogMessage -Type INFO -Message "Generating the Version Health Report using the SoS output for $workflowMessage."
                 $versionHtml = Invoke-Expression "Publish-VersionHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $versionHtml
 
+                # Generating the Hardware Compatibility Health Data Using the SoS Data
+                Write-LogMessage -type INFO -Message "Generating the Hardware Compatibility Health Report using the SoS output for $workflowMessage."
+                $hardwareCompatibilityHtml = Invoke-Expression "Publish-HardwareCompatibilityHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $hardwareCompatibilityHtml
+
                 # Generating the Connectivity Health Data Using SoS Data and Supplemental PowerShell Request Functions
                 Write-LogMessage -Type INFO -Message "Generating the Connectivity Health Report using the SoS output for $workflowMessage."
                 $componentConnectivityHtml = Invoke-Expression "Publish-ComponentConnectivityHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath $($commandSwitch) $($failureOnlySwitch)"; $reportData += $componentConnectivityHtml
@@ -1841,6 +1845,102 @@ Function Publish-VersionHealth {
     }
 }
 Export-ModuleMember -Function Publish-VersionHealth
+
+Function Publish-HardwareCompatibilityHealth {
+    <#
+        .SYNOPSIS
+        Formats the Hardware Compatibility data from the SoS JSON output.
+
+        .DESCRIPTION
+        The Publish-HardwareCompatibilityHealth cmdlet formats the Hardware Compatibility data from the SoS JSON output and publishes
+        it as either a standard PowerShell object or an HTML object.
+
+        .EXAMPLE
+        Publish-HardwareCompatibilityHealth -json <file-name>
+        This example extracts and formats the Hardware Compatibility data as a PowerShell object from the JSON file.
+
+        .EXAMPLE
+        Publish-HardwareCompatibilityHealth -json <file-name> -html
+        This example extracts and formats the Hardware Compatibility data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-HardwareCompatibilityHealth -json <file-name> -failureOnly
+        This example extracts and formats the Hardware Compatibility data as a PowerShell object from the JSON file for only the failed items.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path -Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        }
+        else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        # Hardware Compatibility
+        $jsonInputData = $targetContent.'Hardware Compatibility' # Extract Data from the provided SOS JSON
+        if (($jsonInputData | Measure-Object).Count -lt 1) {
+            Write-Warning 'Hardware Compatibility not found in the JSON file: SKIPPED'
+        }
+        else {
+            $outputObject = New-Object System.Collections.ArrayList
+            foreach ($component in $jsonInputData.PsObject.Properties.Value) {
+                foreach ($element in $component.PsObject.Properties.Value) {
+                    if ($element.title -ne '-' -and $element.alert -ne '-') {  
+                        $elementObject = New-Object -TypeName psobject
+                        $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
+                        $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $element.alert
+
+                        $message = $element.message
+                        $fixupMessage = $message.Replace('is Successul', 'is successful')
+
+                        $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $fixupMessage
+                        if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                            if (($element.status -eq 'FAILED')) {
+                                $outputObject += $elementObject
+                            }
+                        }
+                        else {
+                            $outputObject += $elementObject
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($PsBoundParameters.ContainsKey('html')) {
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+                if ($outputObject.Count -eq 0) {
+                    $addNoIssues = $true 
+                }
+                if ($addNoIssues) {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-hardware"></a><h3>Hardware Compatibility Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                }
+                else {
+                    $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-hardware"></a><h3>Hardware Compatibility Health Status</h3>' -As Table
+                }
+                $outputObject = Convert-CssClass -htmlData $outputObject
+            }
+            else {
+                $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-hardware"></a><h3>Hardware Compatibility Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Hardware compatibility data not found.</p>' -As Table
+            }
+            $outputObject
+        }
+        else {
+            $outputObject | Sort-Object Component, Resource
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-HardwareCompatibilityHealth
 
 Function Publish-ServiceHealth {
     <#
@@ -8102,6 +8202,7 @@ Function Get-ClarityReportHeader {
             .alertOK { color: #61B715; font-weight: bold }
             .alertWarning { color: #FDD008; font-weight: bold }
             .alertCritical { color: #F55047; font-weight: bold }
+            .alertSkipped { font-weight: bold }
             .table th, .table td { text-align: left; }
 
             :root { --cds-global-base: 20; }
@@ -8454,6 +8555,8 @@ Function Convert-CssClass {
     $newAlertCritical = '<td class="alertCritical">RED</td>'
     $oldAlertWarning = '<td>YELLOW</td>'
     $newAlertWarning = '<td class="alertWarning">YELLOW</td>'
+    $oldAlertSkipped = '<td>SKIPPED/td>'
+    $newAlertSkipped = '<td class="alertSkipped">SKIPPED</td>'
     $oldTable = '<table>'
     $newTable = '<table class="table">'
     $oldAddLine = ':-: '
