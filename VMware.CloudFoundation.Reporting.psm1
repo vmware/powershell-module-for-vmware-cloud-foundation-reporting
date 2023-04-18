@@ -6869,7 +6869,7 @@ Function Publish-VcfSystemOverview {
                     $esxiOverview = Request-EsxiOverview -server $server -user $user -pass $pass -anonymized
                     $clusterOverview = Request-ClusterOverview -server $server -user $user -pass $pass -anonymized
                     $networkingOverview = Request-NetworkOverview -server $server -user $user -pass $pass -anonymized
-                    $vrealizeOverview = Request-VrealizeOverview -server $server -user $user -pass $pass -anonymized
+                    $ariaSuiteOverview = Request-VMwareAriaSuiteOverview -server $server -user $user -pass $pass -anonymized
                     $vvsOverview = Request-ValidatedSolutionOverview -server $server -user $user -pass $pass
                 } else {
                     $vcfOverview = Request-VcfOverview -server $server -user $user -pass $pass
@@ -6878,7 +6878,7 @@ Function Publish-VcfSystemOverview {
                     $clusterOverview = Request-ClusterOverview -server $server -user $user -pass $pass
                     $esxiOverview = Request-EsxiOverview -server $server -user $user -pass $pass
                     $networkingOverview = Request-NetworkOverview -server $server -user $user -pass $pass
-                    $vrealizeOverview = Request-VrealizeOverview -server $server -user $user -pass $pass
+                    $ariaSuiteOverview = Request-VMwareAriaSuiteOverview -server $server -user $user -pass $pass
                     $vvsOverview = Request-ValidatedSolutionOverview -server $server -user $user -pass $pass
                 }
 
@@ -6894,11 +6894,11 @@ Function Publish-VcfSystemOverview {
                 $esxiOverview = Convert-CssClass -htmldata $esxiOverview
                 $networkingOverview = $networkingOverview | ConvertTo-Html -Fragment -PreContent '<h4>Networking Overview</h4>'
                 $networkingOverview = Convert-CssClass -htmldata $networkingOverview
-                if ($vrealizeOverview) {
-                    $vrealizeOverview = $vrealizeOverview | ConvertTo-Html -Fragment -PreContent '<h4>vRealize Suite Overview</h4>'
-                    $vrealizeOverview = Convert-CssClass -htmldata $vrealizeOverview
+                if ($ariaSuiteOverview) {
+                    $ariaSuiteOverview = $ariaSuiteOverview | ConvertTo-Html -Fragment -PreContent '<h4>VMware Aria Suite Overview</h4>'
+                    $ariaSuiteOverview = Convert-CssClass -htmldata $ariaSuiteOverview
                 } else {
-                    $vrealizeOverview = $vrealizeOverview | ConvertTo-Html -Fragment -PreContent '<h4>vRealize Suite Overview</h4>' -PostContent '<p>No vRealize Suite Installed.</p>'
+                    $ariaSuiteOverview = $ariaSuiteOverview | ConvertTo-Html -Fragment -PreContent '<h4>VMware Aria Suite Overview</h4>' -PostContent '<p>No VMware Aria Suite products deployed in VMware Cloud Foundation mode.</p>'
                 }
                 $vvsOverview = $vvsOverview | ConvertTo-Html -Fragment -PreContent '<h4>VMware Validated Solutions Overview</h4>'
                 $vvsOverview = Convert-CssClass -htmldata $vvsOverview
@@ -6908,7 +6908,7 @@ Function Publish-VcfSystemOverview {
                 $allOverviewObject += $vcenterOverview
                 $allOverviewObject += $clusterOverview
                 $allOverviewObject += $networkingOverview
-                $allOverviewObject += $vrealizeOverview
+                $allOverviewObject += $ariaSuiteOverview
                 $allOverviewObject += $vvsOverview
                 $allOverviewObject += $esxiOverview
                 $allOverviewObject
@@ -7422,24 +7422,25 @@ Function Request-NetworkOverview {
 }
 Export-ModuleMember -Function Request-NetworkOverview
 
-Function Request-VrealizeOverview {
+Function Request-VMwareAriaSuiteOverview {
     <#
         .SYNOPSIS
-        Returns overview of vRealize Suite.
+        Returns an overview of VMware Aria Suite products managed by SDDC Manager.
 
         .DESCRIPTION
-        The Request-VrealizeOverview cmdlet returns an overview of vRealize Suite managed by SDDC Manager.
+        The Request-VMwareAriaSuiteOverview cmdlet returns an overview of VMware Aria Suite products managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity and authentication to the SDDC Manager instance
-        - Collects the networking overview detail
+        - Collects the VMware Aria Suite product overview detail
 
         .EXAMPLE
-        Request-VrealizeOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
-        This example will return an overview of vRealize Suite managed by the SDDC Manager instance.
+        Request-VMwareAriaSuiteOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        This example will return an overview of VMware Aria Suite products managed by the SDDC Manager instance.
 
         .EXAMPLE
-        Request-VrealizeOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
-        This example will return an overview of vRealize Suite managed by the SDDC Manager instance, but will anonymize the output.
+        Request-VMwareAriaSuiteOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
+        This example will return an overview of VMware Aria Suite products managed by the SDDC Manager instance, but
+        will anonymize the output.
     #>
 
     Param (
@@ -7452,30 +7453,33 @@ Function Request-VrealizeOverview {
     Try {
         if (Test-VCFConnection -server $server) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
-                $allVrealizeObject = New-Object System.Collections.ArrayList
+                $allAriaSuiteObject = New-Object System.Collections.ArrayList
                 $vcfApiCmdlet = @("Get-VCFvRSLCM","Get-VCFWSA","Get-VCFvRLI","Get-VCFvROPS","Get-VCFvRA")
                 foreach ($apiCmdlet in $vcfApiCmdlet) {
                     if ((Invoke-Expression $apiCmdlet).status -eq "ACTIVE") {
-                        if ($apiCmdlet -eq "Get-VCFvRSLCM") {$nodeCount = "1"} else { ($nodeCount = ((Invoke-Expression $apiCmdlet).nodes).Count)}
-
                         if ($apiCmdlet -eq "Get-VCFvRSLCM") {
-                            $product = "vRealize Suite Lifecycle Manager"
+                            $product = "VMware Aria Suite Lifecycle"
+                            $nodeCount = "1"
                         }
                         elseif ($apiCmdlet -eq "Get-VCFWSA") {
-                            $product = "Workspace ONE Access"
+                            $product = "VMware Workspace ONE Access"
+                            $nodeCount = (Get-VCFWSA).nodes.Count
                         }
                         elseif ($apiCmdlet -eq "Get-VCFvRLI") {
-                            $product = "vRealize Log Insight"
+                            $product = "VMware Aria Operations for Logs"
+                            $nodeCount = (Get-VCFvRLI).nodes.Count
                         }
                         elseif ($apiCmdlet -eq "Get-VCFvROPS") {
-                            $product = "vRealize Operations"
+                            $product = "VMware Aria Operations"
+                            $nodeCount = (Get-VCFvROPS).nodes.Count
                         }
                         elseif ($apiCmdlet -eq "Get-VCFvRA") {
-                            $product = "vRealize Automation"
+                            $product = "VMware Aria Automation"
+                            $nodeCount = (Get-VCFvRA).nodes.Count
                         }
                         
                         $customObject = New-Object -TypeName psobject
-                        $customObject | Add-Member -NotePropertyName "vRealize Product" -NotePropertyValue $product
+                        $customObject | Add-Member -NotePropertyName "VMware Aria Suite Product" -NotePropertyValue $product
                         if ($PsBoundParameters.ContainsKey("anonymized")) {
                             $customObject | Add-Member -NotePropertyName "UUID" -NotePropertyValue (Invoke-Expression $apiCmdlet).id
                         } else {
@@ -7488,10 +7492,10 @@ Function Request-VrealizeOverview {
                         $customObject | Add-Member -NotePropertyName "Version" -NotePropertyValue (Invoke-Expression $apiCmdlet).version
                         $customObject | Add-Member -NotePropertyName "Status" -NotePropertyValue (Invoke-Expression $apiCmdlet).status
                         $customObject | Add-Member -NotePropertyName "Nodes" -NotePropertyValue $nodeCount
-                        $allVrealizeObject += $customObject
+                        $allAriaSuiteObject += $customObject
                     }
                 }
-                $allVrealizeObject
+                $allAriaSuiteObject
             }
         }
     }
@@ -7499,7 +7503,7 @@ Function Request-VrealizeOverview {
         Debug-ExceptionWriter -object $_
     }
 }
-Export-ModuleMember -Function Request-VrealizeOverview
+Export-ModuleMember -Function Request-VMwareAriaSuiteOverview
 
 Function Request-ValidatedSolutionOverview {
     <#
