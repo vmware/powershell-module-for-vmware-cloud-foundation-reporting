@@ -14,6 +14,7 @@ Enhancement:
 - Updated `Invoke-VcfHealthReport` to include the version health using the `Publish-VersionHealth` cmdlet. [GH-123](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/123)
 - Added `Show-ReportingOutput` cmdlet to format output to the console when `PowerVCF` is not installed. [GH-121](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/121)
 - Updated `Publish-VsanHealth` to include the results for capacity utilization and the active resysc of objects [GH-124](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/124)
+- Updated `Publish-VsanHealth` to include the results for stretched cluster health and stretched cluster tests. [GH-126](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/126)
 
 Refactor:
 
