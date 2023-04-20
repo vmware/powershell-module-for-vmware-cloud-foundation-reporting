@@ -41,8 +41,7 @@ if ($PSEdition -eq 'Desktop') {
 }
 
 #######################################################################################################################
-#############################  J S O N   O U T P U T   F I L E N A M E S   ############################################
-
+#####################################  J S O N   O U T P U T   V A R I A B L E S  #####################################
 
 Set-Variable -Name "backupJsonSuffix" -value "backup-status.json" -scope global
 Set-Variable -Name "nsxtTransportJsonSuffix" -value "nsxttransportnode-status.json" -scope global
@@ -54,6 +53,133 @@ Set-Variable -Name "storageCapacityHealthJsonSuffix" -value "storagecapacityheal
 Set-Variable -Name "componentConnectivityHealthNonSOSJsonSuffix" -value "componentconnectivityhealthnonsos-status.json" -scope global
 Set-Variable -Name "nsxtCombinedHealthNonSOSJsonSuffix" -value "nsxtcombinedhealthnonsos-status.json" -scope global
 
+##############################  E N D   O F   J S O N   O U T P U T   V A R I A B L E S  ##############################
+#######################################################################################################################
+
+#######################################################################################################################
+##################################  C O M P O N E N T   S I Z E   V A R I A B L E S  ##################################
+
+Set-Variable -Name "vcsaSize" -Value '[
+    {
+        "name": "tiny",
+        "resources": {
+            "cpu": 2,
+            "memory": 12
+        },
+        "maximum": {
+            "hosts": 10,
+            "vms": 100
+        }
+    },
+    {
+        "name": "small",
+        "resources": {
+            "cpu": 4,
+            "memory": 19
+        },
+        "maximum": {
+            "hosts": 100,
+            "vms": 1000
+        }
+    },
+    {
+        "name": "medium",
+        "resources": {
+            "cpu": 8,
+            "memory": 28
+        },
+        "maximum": {
+            "hosts": 400,
+            "vms": 4000
+        }
+    },
+    {
+        "name": "large",
+        "resources": {
+            "cpu": 16,
+            "memory": 37
+        },
+        "maximum": {
+            "hosts": 1000,
+            "vms": 10000
+        }
+    },
+    {
+        "name": "extra-large",
+        "resources": {
+            "cpu": 24,
+            "memory": 56
+        },
+        "maximum": {
+            "hosts": 3000,
+            "vms": 30000
+        }
+    }
+]' -Scope Global
+Set-Variable -Name 'nsxLocalManagerSize' -Value '[
+    {
+        "name": "extra-small",
+        "resources": {
+            "cpu": 2,
+            "memory": 8
+        }
+    },
+    {
+        "name": "small",
+        "resources": {
+            "cpu": 4,
+            "memory": 16
+        }
+    },
+    {
+        "name": "medium",
+        "resources": {
+            "cpu": 6,
+            "memory": 24
+        }
+    },
+    {
+        "name": "large",
+        "resources": {
+            "cpu": 12,
+            "memory": 48
+        }
+    }
+]' -Scope Global
+
+Set-Variable -Name 'nsxEdgeSize' -Value '[
+    {
+        "name": "small",
+        "resources": {
+            "cpu": 2,
+            "memory": 4
+        }
+    },
+    {
+        "name": "medium",
+        "resources": {
+            "cpu": 4,
+            "memory": 8
+        }
+    },
+    {
+        "name": "large",
+        "resources": {
+            "cpu": 8,
+            "memory": 32
+        }
+    },
+    {
+        "name": "extra-large",
+        "resources": {
+            "cpu": 16,
+            "memory": 64
+        }
+    }
+]' -Scope Global
+
+###########################  E N D   O F   C O M P O N E N T   S I Z E   V A R I A B L E S  ###########################
+#######################################################################################################################
 
 #######################################################################################################################
 #############################  C O M B I N E D   O P E R A T I O N S   F U N C T I O N S   ############################
@@ -7203,32 +7329,50 @@ Function Request-VcenterOverview {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage) {
                 $allWorkloadDomains = Get-VCFWorkloadDomain
                 $allVsphereObject = New-Object System.Collections.ArrayList
-                foreach ($domain in $allWorkloadDomains) {
-                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain.name)) {
-                        if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
-                            if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                                $customObject = New-Object -TypeName psobject
-                                if ($PsBoundParameters.ContainsKey('anonymized')) {
-                                    $customObject | Add-Member -notepropertyname "vCenter Server UUID" -notepropertyvalue $domain.vcenters.id
-                                    $customObject | Add-Member -notepropertyname "vCenter Server Version" -notepropertyvalue (Get-VCFvCenter -id $domain.vcenters.id).version
-                                    $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
-                                } else {
-                                    $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $domain.vcenters.fqdn
-                                    $customObject | Add-Member -notepropertyname "vCenter Server Version" -notepropertyvalue (Get-VCFvCenter -id $domain.vcenters.id).version
-                                    $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
+
+                if (($vcfMgmtVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $vcfMgmtVcenterDetails.fqdn) {
+                        if (Test-VsphereAuthentication -server $vcfMgmtVcenterDetails.fqdn -user $vcfMgmtVcenterDetails.ssoAdmin -pass $vcfMgmtVcenterDetails.ssoAdminPass) {
+                            foreach ($domain in $allWorkloadDomains) {
+                                if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain.name)) {
+                                    if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
+                                        if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
+                                            $customObject = New-Object -TypeName psobject
+                                            $vm = Get-VM -Server $vcfMgmtVcenterDetails.fqdn -ErrorAction SilentlyContinue | Where-Object {$_.Name -eq $vcfVcenterDetails.vmName} | Select-Object Name, NumCpu, MemoryGB
+                                            $vcsaSizing = $vcsaSize | ConvertFrom-Json
+                                            if ($PsBoundParameters.ContainsKey('anonymized')) {
+                                                $customObject | Add-Member -notepropertyname "vCenter Server UUID" -notepropertyvalue $domain.vcenters.id
+                                                $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFvCenter -id $domain.vcenters.id).version
+                                                $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
+                                            } else {
+                                                $customObject | Add-Member -notepropertyname "vCenter Server FQDN" -notepropertyvalue $domain.vcenters.fqdn
+                                                $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFvCenter -id $domain.vcenters.id).version
+                                                $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
+                                            }
+                                            $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
+                                            if ($size = $vcsaSizing | Where-Object {$_.resources.cpu -eq $vm.NumCpu -and $_.resources.memory -eq $vm.MemoryGB}) {
+                                                $customObject | Add-Member -notepropertyname "Size" -notepropertyvalue $size.name
+                                            } else {
+                                                $customObject | Add-Member -notepropertyname "Size" -notepropertyvalue "custom"
+                                            }
+                                            $customObject | Add-Member -notepropertyname "CPU" -notepropertyvalue $vm.NumCpu
+                                            $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue $vm.MemoryGB
+                                            $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-VCFWorkloadDomain -id $domain.id).clusters.Count
+                                            $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VCFHost | Where-Object {$_.domain.id -eq $domain.id}).Count
+                                            $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
+                                            $customObject | Add-Member -notepropertyname "Powered On VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
+                                            $customObject | Add-Member -notepropertyname "Powered Off VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
+                                        }
+                                        Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                                    }
                                 }
-                                $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
-                                $customObject | Add-Member -notepropertyname "Total Clusters" -notepropertyvalue (Get-VCFWorkloadDomain -id $domain.id).clusters.Count
-                                $customObject | Add-Member -notepropertyname "Total Hosts" -notepropertyvalue (Get-VCFHost | Where-Object {$_.domain.id -eq $domain.id}).Count
-                                $customObject | Add-Member -notepropertyname "Total VMs" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn).Count
-                                $customObject | Add-Member -notepropertyname "Powered On" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOn"}).Count
-                                $customObject | Add-Member -notepropertyname "Powered Off" -notepropertyvalue (Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object {$_.PowerState -eq "PoweredOff"}).Count
-                                Disconnect-VIServer -Server $vcfVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
+                                $allVsphereObject += $customObject
                             }
                         }
+                        Disconnect-VIServer -Server $vcfMgmtVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
-                    $allVsphereObject += $customObject
                 }
+
                 $allVsphereObject | Sort-Object 'Domain Type', 'Domain Name'
             } else {
                 Write-LogMessage -Type ERROR -Message "$ErrorMessage"
@@ -7305,7 +7449,7 @@ Function Request-EsxiOverview {
                                 $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
                                 $customObject | Add-Member -notepropertyname "Cluster UUID" -notepropertyvalue $cluster.id
                                 $customObject | Add-Member -notepropertyname "ESXi Host UUID" -notepropertyvalue $assignedEsxiHost.id
-                                $customObject | Add-Member -notepropertyname "ESXi Host Version" -notepropertyvalue $assignedEsxiHost.esxiVersion
+                                $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue $assignedEsxiHost.esxiVersion
                                 $customObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $assignedEsxiHost.hardwareVendor
                                 $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
                                 $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
@@ -7320,7 +7464,7 @@ Function Request-EsxiOverview {
                                 $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
                                 $customObject | Add-Member -notepropertyname "Cluster Name" -notepropertyvalue (Get-VCFCluster -id $cluster.id).name
                                 $customObject | Add-Member -notepropertyname "ESXi Host FQDN" -notepropertyvalue (Get-VCFHost -id $assignedEsxiHost.id).fqdn
-                                $customObject | Add-Member -notepropertyname "ESXi Host Version" -notepropertyvalue $assignedEsxiHost.esxiVersion
+                                $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue $assignedEsxiHost.esxiVersion
                                 $customObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $assignedEsxiHost.hardwareVendor
                                 $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
                                 $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
@@ -7353,7 +7497,7 @@ Function Request-EsxiOverview {
                         $customObject | Add-Member -NotePropertyName 'Domain UUID' -NotePropertyValue ""
                         $customObject | Add-Member -notepropertyname "Cluster UUID" -notepropertyvalue ""
                         $customObject | Add-Member -notepropertyname "ESXi Host UUID" -notepropertyvalue $unassignedEsxiHost.id
-                        $customObject | Add-Member -notepropertyname "ESXi Host Version" -notepropertyvalue $unassignedEsxiHost.esxiVersion
+                        $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue $unassignedEsxiHost.esxiVersion
                         $customObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $assignedEsxiHost.hardwareVendor
                         $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
                         $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
@@ -7368,7 +7512,7 @@ Function Request-EsxiOverview {
                         $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue ""
                         $customObject | Add-Member -notepropertyname "Cluster Name" -notepropertyvalue ""
                         $customObject | Add-Member -notepropertyname "ESXi Host FQDN" -notepropertyvalue (Get-VCFHost -id $unassignedEsxiHost.id).fqdn
-                        $customObject | Add-Member -notepropertyname "ESXi Host Version" -notepropertyvalue $unassignedEsxiHost.esxiVersion
+                        $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue $unassignedEsxiHost.esxiVersion
                         $customObject | Add-Member -notepropertyname "Hardware OEM" -notepropertyvalue $assignedEsxiHost.hardwareVendor
                         $customObject | Add-Member -notepropertyname "Hardware Platform" -notepropertyvalue $assignedEsxiHost.hardwareModel
                         $customObject | Add-Member -notepropertyname "CPU Sockets" -notepropertyvalue $assignedEsxiHost.cpu.cpuCores.Count
@@ -7490,27 +7634,41 @@ Function Request-NetworkOverview {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $allWorkloadDomains = Get-VCFWorkloadDomain
                 $allNetworkingObject = New-Object System.Collections.ArrayList
-                foreach ($domain in $allWorkloadDomains) {
-                    foreach ($cluster in $domain.clusters) {
-                        if (Get-VCFEdgeCluster | Where-Object {$_.nsxtCluster.id -eq $domain.nsxtCluster.id}) { $edgeCluster = "True" } else { $edgeCluster = "False" }
-                        if ($domain.type -eq "MANAGEMENT" -and (Get-VCFApplicationVirtualNetwork)) { $avnStatus = "True"} else { $avnStatus = "False" }
-                        $customObject = New-Object -TypeName psobject
-                        if ($PsBoundParameters.ContainsKey('anonymized')) {
-                            $customObject | Add-Member -notepropertyname "NSX Manager UUID" -notepropertyvalue $domain.nsxtCluster.id
-                            $customObject | Add-Member -notepropertyname "NSX Manager Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
-                            $customObject | Add-Member -notepropertyname "NSX Stretched" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
-                            $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
-                        } else {
-                            $customObject | Add-Member -notepropertyname "NSX Manager FQDN" -notepropertyvalue $domain.nsxtCluster.vipFqdn
-                            $customObject | Add-Member -notepropertyname "NSX Manager Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
-                            $customObject | Add-Member -notepropertyname "NSX Stretched" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
-                            $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
+                if (Test-VsphereConnection -server $vcfMgmtVcenterDetails.fqdn) {
+                    if (Test-VsphereAuthentication -server $vcfMgmtVcenterDetails.fqdn -user $vcfMgmtVcenterDetails.ssoAdmin -pass $vcfMgmtVcenterDetails.ssoAdminPass) {        
+                        foreach ($domain in $allWorkloadDomains) {
+                            foreach ($cluster in $domain.clusters) {
+                                if (Get-VCFEdgeCluster | Where-Object {$_.nsxtCluster.id -eq $domain.nsxtCluster.id}) { $edgeCluster = "True" } else { $edgeCluster = "False" }
+                                if ($domain.type -eq "MANAGEMENT" -and (Get-VCFApplicationVirtualNetwork)) { $avnStatus = "True"} else { $avnStatus = "False" }
+                                $customObject = New-Object -TypeName psobject
+                                $nsxManagerNode = ($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain sfo-m01 -listNodes).nodes | Select-Object -First 1
+                                $vm = Get-VM -Server $vcfMgmtVcenterDetails.fqdn -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq $nsxManagerNode.name } | Select-Object Name, NumCpu, MemoryGB
+                                $nsxLocalManagerSizing = $nsxLocalManagerSize | ConvertFrom-Json
+                                if ($PsBoundParameters.ContainsKey('anonymized')) {
+                                    $customObject | Add-Member -notepropertyname "NSX Manager Cluster UUID" -notepropertyvalue $domain.nsxtCluster.id
+                                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
+                                    $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
+                                } else {
+                                    $customObject | Add-Member -notepropertyname "NSX Manager Cluster FQDN" -notepropertyvalue $domain.nsxtCluster.vipFqdn
+                                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
+                                    $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
+                                }
+                                $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
+                                $customObject | Add-Member -notepropertyname "Shared" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
+                                if ($size = $nsxLocalManagerSizing | Where-Object {$_.resources.cpu -eq $vm.NumCpu -and $_.resources.memory -eq $vm.MemoryGB}) {
+                                    $customObject | Add-Member -notepropertyname "Size" -notepropertyvalue $size.name
+                                } else {
+                                    $customObject | Add-Member -notepropertyname "Size" -notepropertyvalue "custom"
+                                }
+                                $customObject | Add-Member -notepropertyname "CPU" -notepropertyvalue $vm.NumCpu
+                                $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue $vm.MemoryGB
+                                $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
+                                $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
+                            }
+                            $allNetworkingObject += $customObject
                         }
-                        $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
-                        $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
-                        $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
                     }
-                    $allNetworkingObject += $customObject
+                    Disconnect-VIServer -Server $vcfMgmtVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                 }
                 $allNetworkingObject | Sort-Object 'Domain Type'
             }
