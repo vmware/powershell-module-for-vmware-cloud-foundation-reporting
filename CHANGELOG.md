@@ -2,7 +2,7 @@
 
 ## [v2.0.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.0)
 
-> Release Date: Unreleased
+> Release Date: 2023-04-25
 
 Enhancement:
 

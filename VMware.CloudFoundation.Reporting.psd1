@@ -12,13 +12,13 @@
     RootModule = '.\VMware.CloudFoundation.Reporting.psm1'
     
     # Version number of this module.
-    ModuleVersion = '2.0.0.1012'
+    ModuleVersion = '2.0.0.1013'
     
     # Supported PSEditions
     # CompatiblePSEditions = @()
     
     # ID used to uniquely identify this module
-    GUID = 'c2cc3747-c22a-4253-8fe7-0237a62986f0'
+    GUID = '603813a8-4f36-424a-be6a-f2914f987961'
     
     # Author of this module
     Author = 'Gary Blake, Ryan Johnson, Ivaylo Ivanov, Antony Stefanov - Cloud Infrastructure Business Group (CIBG)'

@@ -16,9 +16,9 @@
 
 ### Platforms
 
-- [VMware Cloud Foundation][vmware-cloud-foundation] 4.2.1 or later
-    - vSAN ReadyNodes
-    - DellEMC VxRail
+- [VMware Cloud Foundation][vmware-cloud-foundation] 4.4 or later
+  - vSAN ReadyNodes
+  - DellEMC VxRail
 
 ### Operating Systems
 
@@ -33,10 +33,10 @@
 
 ### PowerShell Modules
 
-- [`VMware.PowerCLI`][module-vmware-powercli] 12.7.0 or later
-- [`VMware.vSphere.SsoAdmin`][module-vmware-vsphere-ssoadmin] 1.3.8 or later
-- [`PowerVCF`][module-powervcf] 2.2.0 or later
-- [`PowerValidatedSolutions`][module-powervalidatedsolutions] 2.0.1 or later
+- [`VMware.PowerCLI`][module-vmware-powercli] 13.0.0 or later
+- [`VMware.vSphere.SsoAdmin`][module-vmware-vsphere-ssoadmin] 1.3.9 or later
+- [`PowerVCF`][module-powervcf] 2.3.0 or later
+- [`PowerValidatedSolutions`][module-powervalidatedsolutions] 2.2.0 or later
 
 ### Browsers
 
@@ -54,10 +54,10 @@ Install the supporting PowerShell modules from the PowerShell Gallery by running
 
 ```powershell
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-Install-Module -Name VMware.PowerCLI -MinimumVersion 12.7.0
-Install-Module -Name VMware.vSphere.SsoAdmin -MinimumVersion 1.3.8
-Install-Module -Name PowerVCF -MinimumVersion 2.2.0
-Install-Module -Name PowerValidatedSolutions -MinimumVersion 2.0.1
+Install-Module -Name VMware.PowerCLI -MinimumVersion 13.0.0
+Install-Module -Name VMware.vSphere.SsoAdmin -MinimumVersion 1.3.9
+Install-Module -Name PowerVCF -MinimumVersion 2.3.0
+Install-Module -Name PowerValidatedSolutions -MinimumVersion 2.2.0
 Install-Module -Name VMware.CloudFoundation.Reporting
 ```
 
@@ -73,10 +73,16 @@ Import-Module -Name PowerValidatedSolutions
 Import-Module -Name VMware.CloudFoundation.Reporting
 ```
 
-To verify the modules are installed, run the following command in the PowerShell console.
+To verify the modules are installed, run the following commands in the PowerShell console.
+
+**Example**:
 
 ```powershell
-Test-VcfReportingPrereq
+$sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
+$sddcManagerUser = "admin@local"
+$sddcManagerPass = "VMw@re1!VMw@re1!"
+
+Test-VcfReportingPrereq -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass
 ```
 
 Once installed, any cmdlets associated with `VMware.CloudFoundation.Reporting` and the supporting PowerShell modules will be available for use.
@@ -113,11 +119,7 @@ To verify that the PowerShell module is updated, run the following command in th
 Get-InstalledModule -Name VMware.CloudFoundation.Reporting
 ```
 
-To verify that the dependencies meet the minimum requirements, run the following command in the PowerShell console.
-
-```powershell
-Test-VcfReportingPrereq
-```
+To verify the module dependencies meet the minimum requirements, use the `Test-VcfReportingPrereq` cmdlet.
 
 If a dependency does not meet the minimum requirements, run the appropriate `Update-Module` command for the dependency in the PowerShell console.
 
@@ -143,7 +145,6 @@ The PowerShell module provides the ability to generate the following reports:
 - [Overview Report](#generating-system-overview-report-tasks)
 - [Health Report](#generating-health-report-tasks)
 - [Alert Report](#generating-system-alert-report-tasks)
-- [Password Policy Report](#generating-password-policy-report-tasks)
 - [Configuration Report](#generating-configuration-report-tasks)
 - [Upgrade Precheck Report](#generating-upgrade-precheck-report-tasks)
 
@@ -199,7 +200,7 @@ The `Invoke-VcfOverviewReport` cmdlet generates a system overview report. This r
 
 ### Generating Health Report Tasks
 
-The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combines the SoS Utility health checks with additional health checks not presently available in the SoS Utility for previous VMware Cloud Foundation releases. The report contains detailed information about the health of the VMware Cloud Foundation system and its components.
+The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combines the SoS Utility health checks with additional health checks not presently available in the SoS Utility. The report contains detailed information about the health of the VMware Cloud Foundation system and its components.
 
 #### Generate a Health Report for a VMware Cloud Foundation Instance (Display Only Issues)
 
@@ -214,7 +215,9 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $sddcManagerRootPass = "VMw@re1!"
+    $sddcManagerLocalUser = "vcf"  
+    $sddcManagerLocalPass = "VMw@re1!"
+
     $reportPath = "F:\Reporting"
     ```
 
@@ -225,14 +228,16 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $sddcManagerRootPass = "VMw@re1!"
+    $sddcManagerLocalUser = "vcf"  
+    $sddcManagerLocalPass = "VMw@re1!"
+
     $reportPath = "/home/vmware/reporting"
     ```
 
 3. Generate the report which only displays issues by running the command in the PowerShell console.
 
     ```powershell
-    Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerRootPass $sddcManagerRootPass -reportPath $reportPath -allDomains -failureOnly
+    Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerLocalUser $sddcManagerLocalUser -sddcManagerLocalPass $sddcManagerLocalPass -reportPath $reportPath -allDomains -failureOnly
     ```
 
 4. Review the generated HTML report and perform remediation of any identified issues.
@@ -250,7 +255,9 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $sddcManagerRootPass = "VMw@re1!"
+    $sddcManagerLocalUser = "vcf"  
+    $sddcManagerLocalPass = "VMw@re1!"
+
     $workloadDomain = "sfo-w01"
     $reportPath = "F:\Reporting"
     ```
@@ -262,7 +269,9 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $sddcManagerRootPass = "VMw@re1!"
+    $sddcManagerLocalUser = "vcf"  
+    $sddcManagerLocalPass = "VMw@re1!"
+
     $workloadDomain = "sfo-w01"
     $reportPath = "/home/vmware/reporting"
     ```
@@ -270,7 +279,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
 3. Generate the report which only displays issues by running the command in the PowerShell console.
 
     ```powershell
-    Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerRootPass $sddcManagerRootPass -reportPath $reportPath -workloadDomain $workloadDomain -failureOnly
+    Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerLocalUser $sddcManagerLocalUser -sddcManagerLocalPass $sddcManagerLocalPass -reportPath $reportPath -workloadDomain $workloadDomain -failureOnly
     ```
 
 4. Review the generated HTML report and perform remediation of any identified issues.
@@ -288,7 +297,9 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $sddcManagerRootPass = "VMw@re1!"
+    $sddcManagerLocalUser = "vcf"  
+    $sddcManagerLocalPass = "VMw@re1!"
+
     $reportPath = "F:\Reporting"
     ```
 
@@ -299,14 +310,16 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $sddcManagerRootPass = "VMw@re1!"
+    $sddcManagerLocalUser = "vcf"  
+    $sddcManagerLocalPass = "VMw@re1!"
+
     $reportPath = "/home/vmware/reporting"
     ```
 
 3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
-    Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerRootPass $sddcManagerRootPass -reportPath $reportPath -allDomains
+    Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerLocalUser $sddcManagerLocalUser -sddcManagerLocalPass $sddcManagerLocalPass -reportPath $reportPath -allDomains
     ```
 
 4. Review the generated HTML report and perform remediation of any identified issues.
@@ -324,7 +337,9 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $sddcManagerRootPass = "VMw@re1!"
+    $sddcManagerLocalUser = "vcf"  
+    $sddcManagerLocalPass = "VMw@re1!"
+
     $workloadDomain = "sfo-w01"
     $reportPath = "F:\Reporting"
     ```
@@ -336,7 +351,9 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
     $sddcManagerUser = "admin@local"
     $sddcManagerPass = "VMw@re1!VMw@re1!"
 
-    $sddcManagerRootPass = "VMw@re1!"
+    $sddcManagerLocalUser = "vcf"  
+    $sddcManagerLocalPass = "VMw@re1!"
+
     $workloadDomain = "sfo-w01"
     $reportPath = "/home/vmware/reporting"
     ```
@@ -344,7 +361,7 @@ The `Invoke-VcfHealthReport` cmdlet generates a health report. This report combi
 3. Generate the report by running the command in the PowerShell console.
 
     ```powershell
-    Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerRootPass $sddcManagerRootPass -reportPath $reportPath -workloadDomain $workloadDomain
+    Invoke-VcfHealthReport -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcManagerLocalUser $sddcManagerLocalUser -sddcManagerLocalPass $sddcManagerLocalPass -reportPath $reportPath -workloadDomain $workloadDomain
     ```
 
 4. Review the generated HTML report and perform remediation of any identified issues.
@@ -492,84 +509,6 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
     ```
 
 4. Review the generated HTML report and perform remediation of any identified issues.
-
-### Generating Password Policy Report Tasks
-
-The `Invoke-VcfPasswordPolicyReport` cmdlet generates a password policy report. This report collects information about the password policy settings in a VMware Cloud Foundation system for the platform components. This report reduces the need to login to multiple product interfaces and endpoints to collect information about the password policy.
-
-#### Generate a Password Policy Report for a VMware Cloud Foundation Instance
-
-1. Start PowerShell (Run as Administrator).
-
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a password policy report for SDDC Manager instance and run the commands in the PowerShell console.
-
-    **Example**: Windows
-
-    ```powershell
-    $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
-    $sddcManagerUser = "admin@local"
-    $sddcManagerPass = "VMw@re1!VMw@re1!"
-
-    $sddcManagerRootPass = "VMw@re1!"
-    $reportPath = "F:\Reporting"
-    ```
-
-    **Example**: Linux
-
-    ```powershell
-    $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
-    $sddcManagerUser = "admin@local"
-    $sddcManagerPass = "VMw@re1!VMw@re1!"
-
-    $sddcManagerRootPass = "VMw@re1!"
-    $reportPath = "/home/vmware/reporting"
-    ```
-
-3. Generate the report by running the command in the PowerShell console.
-
-    ```powershell
-    Invoke-VcfPasswordPolicy -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -reportPath $reportPath -allDomains
-    ```
-
-4. Review the generated HTML report.
-
-#### Generate a Password Policy Report for a Workload Domain
-
-1. Start PowerShell (Run as Administrator)
-
-2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a password policy report for SDDC Manager instance and run the commands in the PowerShell console.
-
-    **Example**: Windows
-
-    ```powershell
-    $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
-    $sddcManagerUser = "admin@local"
-    $sddcManagerPass = "VMw@re1!VMw@re1!"
-
-    $sddcManagerRootPass = "VMw@re1!"
-    $workloadDomain = "sfo-w01"
-    $reportPath = "F:\Reporting"
-    ```
-
-    **Example**: Linux
-
-    ```powershell
-    $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
-    $sddcManagerUser = "admin@local"
-    $sddcManagerPass = "VMw@re1!VMw@re1!"
-
-    $sddcManagerRootPass = "VMw@re1!"
-    $workloadDomain = "sfo-w01"
-    $reportPath = "/home/vmware/reporting"
-    ```
-
-3. Generate the report by running the command in the PowerShell console.
-
-    ```powershell
-    Invoke-VcfPasswordPolicy -sddcManagerFqdn $sddcManagerFqdn -sddcManagerUser $sddcManagerUser -sddcManagerPass $sddcManagerPass -sddcRootPass $sddcManagerRootPass -reportPath $reportPath -workloadDomain $workloadDomain
-    ```
-
-4. Review the generated HTML report.
 
 ### Generating Configuration Report Tasks
 
