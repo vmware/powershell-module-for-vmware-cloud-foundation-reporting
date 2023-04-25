@@ -7,7 +7,7 @@
 Enhancement:
 
 - Added `Publish-HardwareCompatibilityHealth` to return the hardware compatibilty health from the SoS Health Summary JSON data. [GH-129](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/129)
-- Updated` Invoke-VcfHealthReport` to include the hardware compatibility health using the `Publish-HardwareCompatibilityHealth` cmdlet. [GH-129](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/129)
+- Updated `Invoke-VcfHealthReport` to include the hardware compatibility health using the `Publish-HardwareCompatibilityHealth` cmdlet. [GH-129](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/129)
 
 ## [v2.0.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.0)
 
