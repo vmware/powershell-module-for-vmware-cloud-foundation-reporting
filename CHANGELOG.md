@@ -10,6 +10,11 @@ Enhancement:
 - Updated `Invoke-VcfHealthReport` to include the hardware compatibility health using the `Publish-HardwareCompatibilityHealth` cmdlet. [GH-129](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/129)
 - Added component size checks for vCenter Server instances and NSX Local Manager clusters to the overview report. [GH-130](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/130)
 
+Refactor:
+
+- Updated `Request-VcenterAuthentication` to support isolated workload domains. [GH-131](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/131)
+- Updated `Request-DatastoreStorageCapacity` to support isolated workload domains. [GH-131](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/131)
+
 ## [v2.0.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.0)
 
 > Release Date: 2023-04-25
