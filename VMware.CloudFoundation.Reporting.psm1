@@ -1145,6 +1145,91 @@ Function Publish-ConnectivityHealth {
 }
 Export-ModuleMember -Function Publish-ConnectivityHealth
 
+Function Publish-PingConnectivityHealth {
+    <#
+        .SYNOPSIS
+        Formats the Ping Connectivity Health data from the SoS JSON output.
+
+        .DESCRIPTION
+        The Publish-PingConnectivityHealth cmdlet formats the Ping Connectivity Health data from the SoS JSON output and
+        publishes it as either a standard PowerShell object or an HTML object.
+
+        .EXAMPLE
+        Publish-PingConnectivityHealth -json <file-name>
+        This example extracts and formats the Ping Connectivity Health data as a PowerShell object from the JSON file.
+
+        .EXAMPLE
+        Publish-PingConnectivityHealth -json <file-name> -html
+        This example extracts and formats the Ping Connectivity Health data as an HTML object from the JSON file.
+
+        .EXAMPLE
+        Publish-PingConnectivityHealth -json <file-name> -failureOnly
+        This example extracts and formats the Ping Connectivity Health data as a PowerShell object from the JSON file for only the failed items.
+    #>
+
+    Param (
+        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+    )
+
+    Try {
+        if (!(Test-Path -Path $json)) {
+            Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
+        } else {
+            $targetContent = Get-Content $json | ConvertFrom-Json
+        }
+
+        $customObject = New-Object System.Collections.ArrayList
+        $jsonInputData = $targetContent.Connectivity.'Ping Status'
+        $pingStatusProperties = @('area', 'title', 'state', 'timestamp', 'message', 'status', 'alert')
+        
+        if (($jsonInputData | Measure-Object).Count -lt 1) {
+            Write-Warning 'Ping Status data not found in the JSON file: SKIPPED'
+        } else {
+            $esxiHosts = Get-VCFHost
+            foreach ($esxiHost in $esxiHosts) {
+                $fqdn = $esxiHost.fqdn
+                $propertiesName = $jsonInputData.$fqdn.PSObject.Properties.Name
+                if (($pingStatusProperties.contains($propertiesName))) {
+                    # do nothing    
+                } else {
+                    $jsonInputData.$fqdn = $jsonInputData.$fqdn.$propertiesName
+                }   
+            }
+
+            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly
+            } else {
+                $outputObject = Read-JsonElement -inputData $jsonInputData
+            }
+            $customObject += $outputObject
+        }
+
+        # Return the structured data to the console or format using HTML CSS Styles
+        if ($PsBoundParameters.ContainsKey('html')) {
+            if (($jsonInputData | Measure-Object).Count -gt 0) {
+                if ($outputObject.Count -eq 0) { $addNoIssues = $true }
+                if ($addNoIssues) {
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-ping-connectivity"></a><h3>Ping Connectivity Health Status</h3>' -PostContent '<p>No issues found.</p>'
+                } else {
+                    $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-ping-connectivity"></a><h3>Ping Connectivity Health Status</h3>' -As Table
+                }
+                $customObject = Convert-CssClass -htmldata $customObject
+            } else {
+                $customObject = $customObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-ping-connectivity"></a><h3>Ping Connectivity Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Ping Status data not found.</p>' -As Table
+            }
+            $customObject
+        } else {
+            $customObject | Sort-Object Component, Resource
+        }
+    }
+    Catch {
+        Debug-CatchWriter -object $_
+    }
+}
+Export-ModuleMember -Function Publish-PingConnectivityHealth
+
 Function Publish-DnsHealth {
     <#
         .SYNOPSIS
@@ -4698,7 +4783,8 @@ Function Publish-ComponentConnectivityHealth {
                 $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allConnectivityObject += $vcenterConnectivity
                 $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain -failureOnly; $allConnectivityObject += $NsxtConnectivity
             }
-            $connectivityRaw = Publish-ConnectivityHealth -json $json -failureOnly
+            $apiSshConnectivity = Publish-ConnectivityHealth -json $json -failureOnly
+            $pingConnectivity = Publish-PingConnectivityHealth -json $json -failureOnly
         } else {
             if ($PsBoundParameters.ContainsKey("allDomains")) {
                 $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -alldomains; $allConnectivityObject += $vcenterConnectivity
@@ -4707,14 +4793,16 @@ Function Publish-ComponentConnectivityHealth {
                 $vcenterConnectivity = Request-VcenterAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allConnectivityObject += $vcenterConnectivity
                 $NsxtConnectivity = Request-NsxtAuthentication -server $server -user $user -pass $pass -workloadDomain $workloadDomain; $allConnectivityObject += $NsxtConnectivity
             }
-            $connectivityRaw = Publish-ConnectivityHealth -json $json
+            $apiSshConnectivity = Publish-ConnectivityHealth -json $json
+            $pingConnectivity = Publish-PingConnectivityHealth -json $json
         }
-        $allConnectivityObject += $connectivityRaw
+        $allConnectivityObject += $apiSshConnectivity
+        $allConnectivityObject += $pingConnectivity
         if ($allConnectivityObject.Count -eq 0) { $addNoIssues = $true }
         if ($addNoIssues) {
-            $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p>No issues found.</p>'
+            $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource, Message | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -PostContent '<p>No issues found.</p>'
         } else {
-            $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -As Table
+            $allConnectivityObject = $allConnectivityObject | Sort-Object Component, Resource, Message | ConvertTo-Html -Fragment -PreContent '<a id="general-connectivity"></a><h3>Connectivity Health Status</h3>' -As Table
         }
         $allConnectivityObject = Convert-CssClass -htmldata $allConnectivityObject
         $allConnectivityObject
