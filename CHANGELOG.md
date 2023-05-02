@@ -9,6 +9,8 @@ Enhancement:
 - Added `Publish-HardwareCompatibilityHealth` to return the hardware compatibilty health from the SoS Health Summary JSON data. [GH-129](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/129)
 - Updated `Invoke-VcfHealthReport` to include the hardware compatibility health using the `Publish-HardwareCompatibilityHealth` cmdlet. [GH-129](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/129)
 - Added component size checks for vCenter Server instances and NSX Local Manager clusters to the overview report. [GH-130](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/130)
+- Added `Publish-PingConnectivityHealth` to return the ping connectivity health from the SoS Health Summary JSON data. [GH-132](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/132)
+- Updated `Publish-ComponentConnectivityHealth` to include the ping connectivity health using the `Publish-PingConnectivityHealth` cmdlet. [GH-132](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/132)
 
 ## [v2.0.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.0)
 
