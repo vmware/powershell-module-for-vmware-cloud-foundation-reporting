@@ -12,6 +12,11 @@ Enhancement:
 - Added `Publish-PingConnectivityHealth` to return the ping connectivity health from the SoS Health Summary JSON data. [GH-132](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/132)
 - Updated `Publish-ComponentConnectivityHealth` to include the ping connectivity health using the `Publish-PingConnectivityHealth` cmdlet. [GH-132](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/132)
 
+Refactor:
+
+- Updated `Request-VcenterAuthentication` to support isolated workload domains. [GH-131](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/131)
+- Updated `Request-DatastoreStorageCapacity` to support isolated workload domains. [GH-131](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/131)
+
 ## [v2.0.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.0)
 
 > Release Date: 2023-04-25

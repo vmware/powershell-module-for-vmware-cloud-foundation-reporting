@@ -4426,7 +4426,7 @@ Function Request-DatastoreStorageCapacity {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $customObject = New-Object System.Collections.ArrayList
                 $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }).vcenters
-                $vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT
+                $vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain
                 if (Test-VsphereConnection -server $($vcenter.fqdn)) {
                     if (Test-VsphereAuthentication -server $vcenter.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                         $datastores = Get-Datastore
@@ -4854,7 +4854,32 @@ Function Request-VcenterAuthentication {
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $allWorkloadDomains = Get-VCFWorkloadDomain
                     foreach ($domain in $allWorkloadDomains) {
-                        if (Test-vSphereApiAuthentication -server $domain.vcenters.fqdn -user $account.username -pass $account.password) {
+                        if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $domain.name)) {
+                            if (Test-vSphereApiAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass -ErrorAction SilentlyContinue) {
+                                $alert = "GREEN"
+                                $message = "API Connection check successful!"
+                            } else {
+                                $alert = "RED"
+                                $message = "API Connection check failed!"
+                            }
+                            $elementObject = New-Object System.Collections.ArrayList
+                            $elementObject = New-Object -TypeName psobject
+                            $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "vCenter"
+                            $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcfVcenterDetails.fqdn
+                            $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                            $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                            if ($PsBoundParameters.ContainsKey('failureOnly')) {
+                                if (($elementObject.alert -eq 'RED')) {
+                                    $customObject += $elementObject
+                                }
+                            } else {
+                                $customObject += $elementObject
+                            }
+                        }
+                    }
+                } else {
+                    if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domain $workloadDomain)) {
+                        if (Test-vSphereApiAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass -ErrorAction SilentlyContinue) {
                             $alert = "GREEN"
                             $message = "API Connection check successful!"
                         } else {
@@ -4864,7 +4889,7 @@ Function Request-VcenterAuthentication {
                         $elementObject = New-Object System.Collections.ArrayList
                         $elementObject = New-Object -TypeName psobject
                         $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "vCenter"
-                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $domain.vcenters.fqdn
+                        $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcfVcenterDetails.fqdn
                         $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
                         $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
                         if ($PsBoundParameters.ContainsKey('failureOnly')) {
@@ -4874,28 +4899,6 @@ Function Request-VcenterAuthentication {
                         } else {
                             $customObject += $elementObject
                         }
-                    }
-                } else {
-                    $vcenter = (Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}).vcenters.fqdn
-                    if (Test-vSphereApiAuthentication -server $vcenter -user $account.username -pass $account.password) {
-                        $alert = "GREEN"
-                        $message = "API Connection check successful!"
-                    } else {
-                        $alert = "RED"
-                        $message = "API Connection check failed!"
-                    }
-                    $elementObject = New-Object System.Collections.ArrayList
-                    $elementObject = New-Object -TypeName psobject
-                    $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "vCenter"
-                    $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcenter
-                    $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
-                    $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
-                    if ($PsBoundParameters.ContainsKey('failureOnly')) {
-                        if (($elementObject.alert -eq 'RED')) {
-                            $customObject += $elementObject
-                        }
-                    } else {
-                        $customObject += $elementObject
                     }
                 }
                 $customObject | Sort-Object Component, Resource
