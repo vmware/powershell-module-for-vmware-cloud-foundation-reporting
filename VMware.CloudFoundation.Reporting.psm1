@@ -312,7 +312,7 @@ Function Invoke-VcfHealthReport {
                 $vsanPolicyHtml = Invoke-Expression "Publish-VsanStoragePolicy -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $vsanPolicyHtml
 
                 # Generating the NSX Manager Health Data Using SoS output and Supplemental PowerShell Request Functions
-                Write-LogMessage -Type INFO -Message "Generating the NSX-T Data Center Health Report using the SoS output for $workflowMessage."
+                Write-LogMessage -Type INFO -Message "Generating the NSX Health Report using the SoS output for $workflowMessage."
                 $nsxtHtml = Invoke-Expression "Publish-NsxtCombinedHealth -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass -json $jsonFilePath $($commandSwitch) $($failureOnlySwitch)"; $reportData += $nsxtHtml
 
                 # Generating the NSX Edge Cluster Health Data Using the SoS Data
@@ -442,8 +442,8 @@ Function Invoke-VcfAlertReport {
                 Write-LogMessage -type INFO -Message "Generating the vSAN alerts for $workflowMessage."
                 $vsanAlertHtml = Invoke-Expression "Publish-VsanAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $vsanAlertHtml
 
-                # Generate NSX-T Data Center Alerts Using PowerShell Function
-                Write-LogMessage -type INFO -Message "Generating the NSX-T Data Center alerts for $workflowMessage."
+                # Generate NSX Alerts Using PowerShell Function
+                Write-LogMessage -type INFO -Message "Generating the NSX alerts for $workflowMessage."
                 $nsxtAlertHtml = Invoke-Expression "Publish-NsxtAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $nsxtAlertHtml
 
                 if ($PsBoundParameters.ContainsKey("darkMode")) {
@@ -4915,17 +4915,17 @@ Export-ModuleMember -Function Request-VcenterAuthentication
 Function Request-NsxtAuthentication {
     <#
 		.SYNOPSIS
-        Checks API authentication to NSX Manager instance.
+        Checks API authentication to NSX Manager cluster.
 
         .DESCRIPTION
-        The Request-NsxtAuthentication cmdlets checks the authentication to NSX Manager instance. The cmdlet
+        The Request-NsxtAuthentication cmdlets checks the authentication to NSX Manager cluster. The cmdlet
         connects to SDDC Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the NSX Manager instance
+        - Validates that network connectivity is available to the NSX Manager cluster
 
         .EXAMPLE
         Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will check authentication to NSX Manager API for all NSX Manager instances managed by SDDC Manager.
+        This example will check authentication to NSX Manager API for all NSX Manager clusters managed by SDDC Manager.
 
         .EXAMPLE
         Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
@@ -4933,7 +4933,7 @@ Function Request-NsxtAuthentication {
 
         .EXAMPLE
         Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will check authentication to NSX Manager API for all NSX Manager instances but only reports issues.
+        This example will check authentication to NSX Manager API for all NSX Manager clusters but only reports issues.
     #>
 
     Param (
@@ -5831,7 +5831,7 @@ Function Publish-NsxtAlert {
         Publish system alerts/alarms from a NSX Manager cluster managed by SDDC Manager.
 
         .DESCRIPTION
-        The Publish-NsxtAlert cmdlet returns all alarms from NSX Manager cluster.
+        The Publish-NsxtAlert cmdlet returns all alarms from an NSX Manager cluster.
         The cmdlet connects to the NSX Manager using the -server, -user, and -pass values:
         - Validates that network connectivity is available to the NSX Manager cluster
         - Validates that network connectivity is available to the vCenter Server instance
@@ -5885,9 +5885,9 @@ Function Publish-NsxtAlert {
 
                 if ($allAlertObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alert</h3>' -PostContent '<p>No alerts found.</p>'
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX Alert</h3>' -PostContent '<p>No alerts found.</p>'
                 } else {
-                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX-T Data Center Alerts</h3>' -As Table
+                    $allAlertObject = $allAlertObject | Sort-Object Component, Resource, Domain | ConvertTo-Html -Fragment -PreContent '<a id="alert-nsx"></a><h3>NSX Alerts</h3>' -As Table
                 }
                 $allAlertObject = Convert-CssClass -htmldata $allAlertObject
                 $allAlertObject
@@ -6054,9 +6054,9 @@ Function Request-NsxtAlert {
         Returns alarms from an NSX Manager cluster.
 
         .DESCRIPTION
-        The Request-NsxtAlert cmdlet returns all alarms from NSX Manager cluster.
-        The cmdlet connects to the NSX-T Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the NSX-T Manager instance
+        The Request-NsxtAlert cmdlet returns all alarms from an NSX Manager cluster.
+        The cmdlet connects to the NSX Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the NSX Manager cluster
         - Validates that network connectivity is available to the vCenter Server instance
         - Gathers the details for the NSX Manager cluster
         - Collects the alerts
@@ -6083,7 +6083,7 @@ Function Request-NsxtAlert {
             if (($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain)) {
                 if (Test-NSXTConnection -server $vcfNsxDetails.fqdn) {
                     if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
-                        $nsxtAlarms = Get-NsxtAlarm -fqdn $vcfNsxDetails.fqdn # Get the NSX-T alarms
+                        $nsxtAlarms = Get-NsxtAlarm -fqdn $vcfNsxDetails.fqdn # Get the NSX alarms
                         $customObject = New-Object System.Collections.ArrayList
                         # TODO: Define the YELLOW alert based on Status and Severity
                         foreach ($alarm in $nsxtAlarms.results) {
@@ -8587,9 +8587,9 @@ Function Get-ClarityReportNavigation {
                 </section>
                 <section class="nav-group collapsible">
                     <input id="nsx" type="checkbox"/>
-                    <label for="nsx">NSX-T Data Center</label>
+                    <label for="nsx">NSX</label>
                     <ul class="nav-list">
-                        <li><a class="nav-link" href="#nsx-local-manager">NSX Managers (Local)</a></li>
+                        <li><a class="nav-link" href="#nsx-local-manager">NSX Local Managers</a></li>
                         <li><a class="nav-link" href="#nsx-edge-cluster">NSX Edge Cluster</a></li>
                         <li><a class="nav-link" href="#nsx-edge">NSX Edge Nodes</a></li>
                         <li><a class="nav-link" href="#nsx-tn">NSX Transport Nodes</a></li>
@@ -8630,7 +8630,7 @@ Function Get-ClarityReportNavigation {
                 <a class="nav-link nav-icon" href="#alert-vcenter">vCenter Server</a>
                 <a class="nav-link nav-icon" href="#alert-esxi">ESXi</a>
                 <a class="nav-link nav-icon" href="#alert-vsan">vSAN</a>
-                <a class="nav-link nav-icon" href="#alert-nsx">NSX-T Data Center</a>
+                <a class="nav-link nav-icon" href="#alert-nsx">NSX</a>
             </section>
             </nav>
                 <div class="content-area">

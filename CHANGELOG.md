@@ -21,6 +21,10 @@ Refactor:
 - Updated `Request-VcenterAuthentication` to support isolated workload domains. [GH-131](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/131)
 - Updated `Request-DatastoreStorageCapacity` to support isolated workload domains. [GH-131](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/131)
 
+Chore:
+
+- Updated the NSX product name and terms. [GH-135](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/135)
+
 ## [v2.0.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.0)
 
 > Release Date: 2023-04-25
@@ -108,7 +112,7 @@ Bugfix:
 
 - Updated `Request0VcenterOverview` to use the PowerVCF cmdlets to return the workload domain's cluster and host counts from the SDDC Manager inventory versus directly from the vSphere inventory. This will ensure that the host count does not include any HCX nodes. [GH-65](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/65)
 - Updated `Publish-NsxtCombinedHealth` to use `$json` when calling `Publish-NsxtHealth`. [GH-59](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/59)
-- Updated `Request-NsxtEdgeUserExpiry` to resolve error if an NSX Edge `root` password is different from NSX Manager `root` password. [GH-75](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/75)
+- Updated `Request-NsxtEdgeUserExpiry` to resolve error if an NSX Edge `root` password is different from an NSX Manager `root` password. [GH-75](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/75)
 
 Enhancement:
 
