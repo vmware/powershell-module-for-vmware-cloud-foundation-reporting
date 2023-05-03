@@ -7725,44 +7725,47 @@ Function Request-NetworkOverview {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
                 $allWorkloadDomains = Get-VCFWorkloadDomain
                 $allNetworkingObject = New-Object System.Collections.ArrayList
-                if (Test-VsphereConnection -server $vcfMgmtVcenterDetails.fqdn) {
-                    if (Test-VsphereAuthentication -server $vcfMgmtVcenterDetails.fqdn -user $vcfMgmtVcenterDetails.ssoAdmin -pass $vcfMgmtVcenterDetails.ssoAdminPass) {        
-                        foreach ($domain in $allWorkloadDomains) {
-                            foreach ($cluster in $domain.clusters) {
-                                if (Get-VCFEdgeCluster | Where-Object {$_.nsxtCluster.id -eq $domain.nsxtCluster.id}) { $edgeCluster = "True" } else { $edgeCluster = "False" }
-                                if ($domain.type -eq "MANAGEMENT" -and (Get-VCFApplicationVirtualNetwork)) { $avnStatus = "True"} else { $avnStatus = "False" }
-                                $customObject = New-Object -TypeName psobject
-                                $nsxManagerNode = ($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain sfo-m01 -listNodes).nodes | Select-Object -First 1
-                                $vm = Get-VM -Server $vcfMgmtVcenterDetails.fqdn -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq $nsxManagerNode.name } | Select-Object Name, NumCpu, MemoryGB
-                                $nsxLocalManagerSizing = $nsxLocalManagerSize | ConvertFrom-Json
-                                if ($PsBoundParameters.ContainsKey('anonymized')) {
-                                    $customObject | Add-Member -notepropertyname "NSX Manager Cluster UUID" -notepropertyvalue $domain.nsxtCluster.id
-                                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
-                                    $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
-                                } else {
-                                    $customObject | Add-Member -notepropertyname "NSX Manager Cluster FQDN" -notepropertyvalue $domain.nsxtCluster.vipFqdn
-                                    $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
-                                    $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
+                if (($vcfMgmtVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
+                    if (Test-VsphereConnection -server $vcfMgmtVcenterDetails.fqdn) {
+                        if (Test-VsphereAuthentication -server $vcfMgmtVcenterDetails.fqdn -user $vcfMgmtVcenterDetails.ssoAdmin -pass $vcfMgmtVcenterDetails.ssoAdminPass) {        
+                            foreach ($domain in $allWorkloadDomains) {
+                                foreach ($cluster in $domain.clusters) {
+                                    if (Get-VCFEdgeCluster | Where-Object {$_.nsxtCluster.id -eq $domain.nsxtCluster.id}) { $edgeCluster = "True" } else { $edgeCluster = "False" }
+                                    if ($domain.type -eq "MANAGEMENT" -and (Get-VCFApplicationVirtualNetwork)) { $avnStatus = "True"} else { $avnStatus = "False" }
+                                    $customObject = New-Object -TypeName psobject
+                                    $nsxManagerNode = ($vcfNsxDetails = Get-NsxtServerDetail -fqdn $server -username $user -password $pass -domain $domain.name -listNodes).nodes | Select-Object -First 1
+                                    $vm = Get-VM -Server $vcfMgmtVcenterDetails.fqdn -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq $nsxManagerNode.name } | Select-Object Name, NumCpu, MemoryGB
+                                    $nsxLocalManagerSizing = $nsxLocalManagerSize | ConvertFrom-Json
+                                    if ($PsBoundParameters.ContainsKey('anonymized')) {
+                                        $customObject | Add-Member -notepropertyname "NSX Manager Cluster UUID" -notepropertyvalue $domain.nsxtCluster.id
+                                        $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
+                                        $customObject | Add-Member -notepropertyname "Domain UUID" -notepropertyvalue $domain.id
+                                    } else {
+                                        $customObject | Add-Member -notepropertyname "NSX Manager Cluster FQDN" -notepropertyvalue $domain.nsxtCluster.vipFqdn
+                                        $customObject | Add-Member -notepropertyname "Version" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).version
+                                        $customObject | Add-Member -notepropertyname "Domain Name" -notepropertyvalue $domain.name
+                                    }
+                                    $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
+                                    $customObject | Add-Member -notepropertyname "Shared" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
+                                    if ($size = $nsxLocalManagerSizing | Where-Object {$_.resources.cpu -eq $vm.NumCpu -and $_.resources.memory -eq $vm.MemoryGB}) {
+                                        $customObject | Add-Member -notepropertyname "Size" -notepropertyvalue $size.name
+                                    } else {
+                                        $customObject | Add-Member -notepropertyname "Size" -notepropertyvalue "custom"
+                                    }
+                                    $customObject | Add-Member -notepropertyname "CPU" -notepropertyvalue $vm.NumCpu
+                                    $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue $vm.MemoryGB
+                                    $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
+                                    $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
                                 }
-                                $customObject | Add-Member -notepropertyname "Domain Type" -notepropertyvalue $domain.type.ToLower()
-                                $customObject | Add-Member -notepropertyname "Shared" -notepropertyvalue (Get-VCFNsxtCluster -id $domain.nsxtCluster.id).isShared
-                                if ($size = $nsxLocalManagerSizing | Where-Object {$_.resources.cpu -eq $vm.NumCpu -and $_.resources.memory -eq $vm.MemoryGB}) {
-                                    $customObject | Add-Member -notepropertyname "Size" -notepropertyvalue $size.name
-                                } else {
-                                    $customObject | Add-Member -notepropertyname "Size" -notepropertyvalue "custom"
-                                }
-                                $customObject | Add-Member -notepropertyname "CPU" -notepropertyvalue $vm.NumCpu
-                                $customObject | Add-Member -notepropertyname "Memory (GB)" -notepropertyvalue $vm.MemoryGB
-                                $customObject | Add-Member -notepropertyname "Edge Cluster" -notepropertyvalue $edgeCluster
-                                $customObject | Add-Member -notepropertyname "AVN" -notepropertyvalue $avnStatus
+                                $allNetworkingObject += $customObject
                             }
-                            $allNetworkingObject += $customObject
                         }
+                        Disconnect-VIServer -Server $vcfMgmtVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
-                    Disconnect-VIServer -Server $vcfMgmtVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                 }
                 $allNetworkingObject | Sort-Object 'Domain Type'
             }
+            
         }
     }
 	Catch {
