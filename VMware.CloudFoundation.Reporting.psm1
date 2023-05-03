@@ -6062,11 +6062,11 @@ Function Request-NsxtAlert {
         - Collects the alerts
 
         .EXAMPLE
-        Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01
+        Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain.
 
         .EXAMPLE
-        Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user administrator@vsphere.local -pass VMw@re1! -domain sfo-w01 -failureOnly
+        Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain but only for the failed items
     #>
 
@@ -8765,7 +8765,7 @@ Function Format-DfStorageHealth {
                     # TODO: Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
                     # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
                     # As an alternative you could run PowerCLI commandlet:
-                    # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <administrator@vsphere.local> -pass <administrator@vsphere.local_password> -GuestUser root -vmPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
+                    # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <admin@local> -pass <admin@local_password> -GuestUser root -vmPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
                 }
                 Default {
                     # TODO: Same as above - add hints on new lines }
