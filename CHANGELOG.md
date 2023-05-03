@@ -4,6 +4,10 @@
 
 > Release Date: Unreleased
 
+Bug Fixes:
+
+- Updates `Publish-NsxtTier0BgpStatus` to correctly format the HTML output if the NSX Tier-0 is not configured for BGP. [GH-134](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/134)
+
 Enhancement:
 
 - Added `Publish-HardwareCompatibilityHealth` to return the hardware compatibilty health from the SoS Health Summary JSON data. [GH-129](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/129)

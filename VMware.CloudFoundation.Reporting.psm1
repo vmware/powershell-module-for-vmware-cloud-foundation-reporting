@@ -2974,6 +2974,7 @@ Function Publish-NsxtTier0BgpStatus {
                         $allNsxtTier0BgpStatusObject = Convert-CssClass -htmldata $allNsxtTier0BgpStatusObject
                     } else {
                         $allNsxtTier0BgpStatusObject = $allNsxtTier0BgpStatusObject | ConvertTo-Html -Fragment -PreContent '<a id="nsx-t0-bgp"></a><h3>NSX Tier-0 Gateway BGP Status</h3>' -PostContent '<p>No BGP configuration found on NSX Tier-0 Gateway(s).</p>' -As Table
+                        $allNsxtTier0BgpStatusObject = Convert-CssClass -htmldata $allNsxtTier0BgpStatusObject
                     }
                     $allNsxtTier0BgpStatusObject
                 }
