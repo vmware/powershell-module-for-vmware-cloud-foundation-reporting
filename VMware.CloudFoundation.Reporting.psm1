@@ -9,7 +9,7 @@
 # scenarios. It is recommended you don't use it for any production environment without testing extensively!
 
 # Allow communication with self-signed certificates when using Powershell Core. If you require all communications to be
-# secure and do not wish to allow communication with self-signed certificates, remove lines 13-36 before importing the
+# secure and do not wish to allow communication with self-signed certificates, remove lines 15-41 before importing the
 # module.
 
 if ($PSEdition -eq 'Core') {
@@ -1076,8 +1076,7 @@ Function Publish-ConnectivityHealth {
     Try {
         if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -1091,8 +1090,7 @@ Function Publish-ConnectivityHealth {
             $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi SSH Status' # Extract Data from the provided SOS JSON
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-            }
-            else {
+            } else {
                 $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
             }
             $customObject += $outputObject # Adding individual component to main customObject
@@ -1101,8 +1099,7 @@ Function Publish-ConnectivityHealth {
             $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi API Status' # Extract Data from the provided SOS JSON
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-            }
-            else {
+            } else {
                 $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
             }
             $customObject += $outputObject # Adding individual component to main customObject
@@ -1113,8 +1110,7 @@ Function Publish-ConnectivityHealth {
             $jsonInputData.PSObject.Properties.Remove('ESXi API Status')
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-            }
-            else {
+            } else {
                 $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
             }
             $customObject += $outputObject # Adding individual component to main customObject
@@ -1360,8 +1356,7 @@ Function Publish-EsxiHealth {
     Try {
         if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -1377,8 +1372,7 @@ Function Publish-EsxiHealth {
             $jsonInputData = $targetContent.General.'ESXi Core Dump Status' # Extract Data from the provided SOS JSON
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-            }
-            else {
+            } else {
                 $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Rep
             }
         }
@@ -1391,8 +1385,7 @@ Function Publish-EsxiHealth {
             $jsonInputData = $targetContent.Compute.'ESXi Overall Health' # Extract Data from the provided SOS JSON
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-            }
-            else {
+            } else {
                 $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
             }
 
@@ -1401,8 +1394,7 @@ Function Publish-EsxiHealth {
             $jsonInputData = $targetContent.Compute.'ESXi License Status' # Extract Data from the provided SOS JSON
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $allLicenseObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-            }
-            else {
+            } else {
                 $allLicenseObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
             }
 
@@ -1411,8 +1403,7 @@ Function Publish-EsxiHealth {
             $jsonInputData = $targetContent.Compute.'ESXi Disk Status' # Extract Data from the provided SOS JSON
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $allDiskObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-            }
-            else {
+            } else {
                 $allDiskObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
             }
         }
@@ -1470,8 +1461,7 @@ Function Publish-EsxiHealth {
                 $allDiskObject = $allDiskObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="esxi-disk"></a><h3>ESXi Disk Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: ESXi Disk data not found.</p>' -As Table
             }
             $allDiskObject
-        }
-        else {
+        } else {
             $allCoreDumpObject | Sort-Object Component, Resource
             $allOverallHealthbject | Sort-Object Component, Resource
             $allLicenseObject | Sort-Object Component, Resource
@@ -1515,8 +1505,7 @@ Function Publish-NsxtHealth {
     Try {
         if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -1540,8 +1529,7 @@ Function Publish-NsxtHealth {
                     if (($element.status -eq 'FAILED')) {
                         $customObject += $elementObject
                     }
-                }
-                else {
+                } else {
                     $customObject += $elementObject
                 }
             }
@@ -1559,8 +1547,7 @@ Function Publish-NsxtHealth {
                     if (($element.status -eq 'FAILED')) {
                         $customObject += $elementObject
                     }
-                }
-                else {
+                } else {
                     $customObject += $elementObject
                 }
             }
@@ -1578,8 +1565,7 @@ Function Publish-NsxtHealth {
                         if (($element.status -eq 'FAILED')) {
                             $customObject += $elementObject
                         }
-                    }
-                    else {
+                    } else {
                         $customObject += $elementObject
                     }
                 }
@@ -1599,8 +1585,7 @@ Function Publish-NsxtHealth {
                         if (($element.status -eq 'FAILED')) {
                             $customObject += $elementObject
                         }
-                    }
-                    else {
+                    } else {
                         $customObject += $elementObject
                     }
                 }
@@ -1662,8 +1647,7 @@ Function Publish-NsxtEdgeNodeHealth {
     Try {
         if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -1749,8 +1733,7 @@ Function Publish-NsxtEdgeClusterHealth {
     Try {
         if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -1759,8 +1742,7 @@ Function Publish-NsxtEdgeClusterHealth {
         $jsonInputData = $targetContent.General.'NSX Health'.'NSX Edge'
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning "NSX Health data for NSX Edge Cluster not found in the JSON file: SKIPPED"
-        }
-        else {
+        } else {
             $nsxtEdgeClusters = Get-VCFEdgeCluster
             foreach ($nsxtEdgeNodes in $nsxtEdgeClusters.edgeNodes.hostname) {
                 $jsonInputData.PSObject.Properties.Remove($nsxtEdgeNodes)
@@ -1859,8 +1841,7 @@ Function Publish-NtpHealth {
 
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
-            }
-            else {
+            } else {
                 $outputObject = Read-JsonElement -inputData $jsonInputData # Call Function to Structure the Data for Report Output
             }
         }
@@ -1942,8 +1923,7 @@ Function Publish-PasswordHealth {
                     if (($element.status -eq 'FAILED')) {
                         $outputObject += $elementObject
                     }
-                }
-                else {
+                } else {
                     $outputObject += $elementObject
                 }
             }
@@ -2026,8 +2006,7 @@ Function Publish-VersionHealth {
                     if (($element.status -eq 'FAILED')) {
                         $outputObject += $elementObject
                     }
-                }
-                else {
+                } else {
                     $outputObject += $elementObject
                 }
             }
@@ -2046,8 +2025,7 @@ Function Publish-VersionHealth {
                 $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-version"></a><h3>Version Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Version data not found.</p>' -As Table
             }
             $outputObject
-        }
-        else {
+        } else {
             $outputObject | Sort-Object Component, Resource
         }
     }
@@ -2088,8 +2066,7 @@ Function Publish-HardwareCompatibilityHealth {
     Try {
         if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -2097,8 +2074,7 @@ Function Publish-HardwareCompatibilityHealth {
         $jsonInputData = $targetContent.'Hardware Compatibility' # Extract Data from the provided SOS JSON
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning 'Hardware Compatibility not found in the JSON file: SKIPPED'
-        }
-        else {
+        } else {
             $outputObject = New-Object System.Collections.ArrayList
             foreach ($component in $jsonInputData.PsObject.Properties.Value) {
                 foreach ($element in $component.PsObject.Properties.Value) {
@@ -2116,8 +2092,7 @@ Function Publish-HardwareCompatibilityHealth {
                             if (($element.status -eq 'FAILED')) {
                                 $outputObject += $elementObject
                             }
-                        }
-                        else {
+                        } else {
                             $outputObject += $elementObject
                         }
                     }
@@ -2132,18 +2107,15 @@ Function Publish-HardwareCompatibilityHealth {
                 }
                 if ($addNoIssues) {
                     $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-hardware"></a><h3>Hardware Compatibility Health Status</h3>' -PostContent '<p>No issues found.</p>'
-                }
-                else {
+                } else {
                     $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-hardware"></a><h3>Hardware Compatibility Health Status</h3>' -As Table
                 }
                 $outputObject = Convert-CssClass -htmlData $outputObject
-            }
-            else {
+            } else {
                 $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-hardware"></a><h3>Hardware Compatibility Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Hardware compatibility data not found.</p>' -As Table
             }
             $outputObject
-        }
-        else {
+        } else {
             $outputObject | Sort-Object Component, Resource
         }
     }
@@ -2184,8 +2156,7 @@ Function Publish-ServiceHealth {
     Try {
         if (!(Test-Path -Path $json)) {
             Write-Error "Unable to find JSON file at location ($json)" -ErrorAction Stop
-        }
-        else {
+        } else {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
@@ -2206,8 +2177,7 @@ Function Publish-ServiceHealth {
                         if (($element.status -eq 'FAILED')) {
                             $outputObject += $elementObject
                         }
-                    }
-                    else {
+                    } else {
                         $outputObject += $elementObject
                     }
                 }
@@ -2227,8 +2197,7 @@ Function Publish-ServiceHealth {
                 $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-service"></a><h3>Service Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: Services data not found.</p>' -As Table
             }
             $outputObject
-        }
-        else {
+        } else {
             $outputObject | Sort-Object Component, Resource
         }
     }
@@ -2577,8 +2546,7 @@ Function Publish-VsanStoragePolicy {
                     if (($element.status -eq 'FAILED')) {
                         $outputObject += $elementObject
                     }
-                }
-                else {
+                } else {
                     $outputObject += $elementObject
                 }
             }
@@ -2594,8 +2562,7 @@ Function Publish-VsanStoragePolicy {
                     $outputObject = $outputObject | Sort-Object Component, 'vCenter Server', Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -As Table
                 }
             $outputObject = Convert-CssClass -htmldata $outputObject
-            }
-            else {
+            } else {
                 $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="vsan-spbm"></a><h3>vSAN Storage Policy Health Status</h3>' -PostContent '<p><strong>WARNING</strong>: vSAN data not found.</p>' -As Table
             }
             $outputObject
@@ -3182,7 +3149,6 @@ Function Publish-NsxtHealthNonSOS {
 }
 Export-ModuleMember -Function Publish-NsxtHealthNonSOS
 
-
 Function Publish-NsxtCombinedHealth {
     <#
 		.SYNOPSIS
@@ -3246,7 +3212,6 @@ Function Publish-NsxtCombinedHealth {
             $nsxtComputeManagerStatus = Request-NsxtComputeManagerStatus -server $server -user $user -pass $pass -domain $workloadDomain; $allNsxtHealthObject += $nsxtComputeManagerStatus
             $nsxtHtml = Publish-NsxtHealth -json $json; $allNsxtHealthObject += $nsxtHtml
         }
-
 
         if ($allNsxtHealthObject.Count -eq 0) { $addNoIssues = $true }
         if ($addNoIssues) {
@@ -3545,15 +3510,15 @@ Function Request-NsxtComputeManagerStatus {
                                 } else {
                                     $status = (Get-NsxtComputeManagerStatus -id $computeManager.id)
                                     if ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -eq 'UP') {
-                                    $alert = 'GREEN' # Ok; registered and up
-                                    $message = "$($computeManager.server) is registered and healthy." # Ok; registered and up
-                                } elseif ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -ne 'UP') {
-                                    $alert = 'RED' # Critical; registered and not up
-                                    $message = "$($computeManager.server) is registered but unhealthy." # Critical; registered and not up
-                                } else {
-                                    $alert = 'RED' # Critical; not registered
-                                    $message = "$($computeManager.server) is not registered." # Critical; not registered
-                                }
+                                        $alert = 'GREEN' # Ok; registered and up
+                                        $message = "$($computeManager.server) is registered and healthy." # Ok; registered and up
+                                    } elseif ($status.registration_status -eq 'REGISTERED' -and $status.connection_status -ne 'UP') {
+                                        $alert = 'RED' # Critical; registered and not up
+                                        $message = "$($computeManager.server) is registered but unhealthy." # Critical; registered and not up
+                                    } else {
+                                        $alert = 'RED' # Critical; not registered
+                                        $message = "$($computeManager.server) is not registered." # Critical; not registered
+                                    }
                                 }
 
                                 # Add the properties to the element object
@@ -4305,7 +4270,7 @@ Function Request-VcenterBackupStatus {
                         } else {
                             $timestamp = [DateTime]::ParseExact($backupTask.end_time, 'yyyy-MM-ddTHH:mm:ss.fffZ', [System.Globalization.CultureInfo]::InvariantCulture) # Define the date
                         }
-                            if ($timestamp) {
+                        if ($timestamp) {
                             $backupAge = [math]::Ceiling(((Get-Date) - ([DateTime]$timestamp)).TotalDays) # Calculate the number of days since the backup was created
                         } else {
                             $backupAge = 0 # Set the backup age to 0 if not available
@@ -4619,7 +4584,7 @@ Function Request-EsxiStorageCapacity {
                     if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                             $esxiHosts = Get-VMHost -Server $vcfVcenterDetails.fqdn
-                            Foreach ($esxiHost in $esxiHosts) {
+                            foreach ($esxiHost in $esxiHosts) {
                                 $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
                                 $allPrtitions = $esxcli.storage.filesystem.list.invoke()
                                 foreach ($partition in $allPrtitions) {
@@ -5337,7 +5302,6 @@ Function Publish-VmConnectedCdrom {
                 }
 
                 if ($allHealthObject.Count -eq 0) { $addNoIssues = $true }
-
                 if ($addNoIssues) {
                     $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -PostContent '<p>No virtual machines with connected CD-ROMs found.</p>'
                 } else {
@@ -5611,8 +5575,7 @@ Function Publish-SddcManagerFreePool {
                 if ($unassignedEsxiHosts.Count -gt 0) {
                     if ($PsBoundParameters.ContainsKey('failureOnly')) {
                         $allConfigurationObject = Request-SddcManagerFreePool -server $server -user $user -pass $pass -failureOnly
-                    }
-                    else {
+                    } else {
                         $allConfigurationObject = Request-SddcManagerFreePool -server $server -user $user -pass $pass
                     }
 
@@ -6454,7 +6417,7 @@ Function Publish-EsxiCoreDumpConfig {
                                 if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                                     $coreDumpObject = New-Object -TypeName psobject
                                     $esxiHosts = Get-VMHost
-                                    Foreach ($esxiHost in $esxiHosts) {
+                                    foreach ($esxiHost in $esxiHosts) {
                                         $coreDumpObject = New-Object -TypeName psobject
                                         $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
                                         $coreDumpConfig = $esxcli.system.coredump.partition.get.invoke()
@@ -6476,7 +6439,7 @@ Function Publish-EsxiCoreDumpConfig {
                             if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
                                 $coreDumpObject = New-Object -TypeName psobject
                                 $esxiHosts = Get-VMHost
-                                Foreach ($esxiHost in $esxiHosts) {
+                                foreach ($esxiHost in $esxiHosts) {
                                     $coreDumpObject = New-Object -TypeName psobject
                                     $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
                                     $coreDumpConfig = $esxcli.system.coredump.partition.get.invoke()
@@ -7813,20 +7776,16 @@ Function Request-VMwareAriaSuiteOverview {
                         if ($apiCmdlet -eq "Get-VCFvRSLCM") {
                             $product = "VMware Aria Suite Lifecycle"
                             $nodeCount = "1"
-                        }
-                        elseif ($apiCmdlet -eq "Get-VCFWSA") {
+                        } elseif ($apiCmdlet -eq "Get-VCFWSA") {
                             $product = "VMware Workspace ONE Access"
                             $nodeCount = (Get-VCFWSA).nodes.Count
-                        }
-                        elseif ($apiCmdlet -eq "Get-VCFvRLI") {
+                        } elseif ($apiCmdlet -eq "Get-VCFvRLI") {
                             $product = "VMware Aria Operations for Logs"
                             $nodeCount = (Get-VCFvRLI).nodes.Count
-                        }
-                        elseif ($apiCmdlet -eq "Get-VCFvROPS") {
+                        } elseif ($apiCmdlet -eq "Get-VCFvROPS") {
                             $product = "VMware Aria Operations"
                             $nodeCount = (Get-VCFvROPS).nodes.Count
-                        }
-                        elseif ($apiCmdlet -eq "Get-VCFvRA") {
+                        } elseif ($apiCmdlet -eq "Get-VCFvRA") {
                             $product = "VMware Aria Automation"
                             $nodeCount = (Get-VCFvRA).nodes.Count
                         }
