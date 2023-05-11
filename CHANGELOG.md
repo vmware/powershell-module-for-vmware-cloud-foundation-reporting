@@ -25,6 +25,14 @@ Chore:
 
 - Updated the NSX product name and terms. [GH-135](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/135)
 
+## [v2.0.1](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.1)
+
+> Release Date: 2023-05-12
+
+Bug Fixes:
+
+- Updated `Request-SoSHealthJson` to omit the `precheckReport` and `versionHealth` from the SoS API request payload if the version is not VMware Cloud Foundatin 4.5.0 or later.
+
 ## [v2.0.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.0)
 
 > Release Date: 2023-04-25
