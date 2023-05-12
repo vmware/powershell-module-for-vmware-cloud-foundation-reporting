@@ -240,6 +240,8 @@ Function Invoke-VcfHealthReport {
                     $failureOnlySwitch = " -failureOnly"
                 }
 
+                $vcfVersion = ((Get-VCFManager).version).Split('-')[0]
+                
                 Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
                 Write-LogMessage -Type INFO -Message "Starting the process of creating a Health Report for $workflowMessage." -Colour Yellow
                 Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
@@ -252,8 +254,10 @@ Function Invoke-VcfHealthReport {
                 $serviceHtml = Invoke-Expression "Publish-ServiceHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $serviceHtml
 
                 # Generating the Version Health Data Using the SoS Data
-                Write-LogMessage -Type INFO -Message "Generating the Version Health Report using the SoS output for $workflowMessage."
-                $versionHtml = Invoke-Expression "Publish-VersionHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $versionHtml
+                if ($vcfVersion -ge "4.5.0") {
+                    Write-LogMessage -Type INFO -Message "Generating the Version Health Report using the SoS output for $workflowMessage."
+                    $versionHtml = Invoke-Expression "Publish-VersionHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $versionHtml
+                }
 
                 # Generating the Hardware Compatibility Health Data Using the SoS Data
                 Write-LogMessage -type INFO -Message "Generating the Hardware Compatibility Health Report using the SoS output for $workflowMessage."
@@ -817,6 +821,10 @@ Function Request-SoSHealthJson {
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
 
+    # Request VCF Token
+    Request-VCFToken -fqdn $server -Username $user -Password $pass -skipCertificateCheck -ErrorAction SilentlyContinue -ErrorVariable ErrMsg | Out-Null
+    $vcfVersion = ((Get-VCFManager).version).Split('-')[0]
+
     # Build Default Health Summary Check POST payload
     $healthChecksPayload = New-Object -TypeName psobject
     $healthChecksPayload | Add-Member -notepropertyname 'certificateHealth' -notepropertyvalue $true
@@ -830,12 +838,12 @@ Function Request-SoSHealthJson {
     $healthChecksPayload | Add-Member -notepropertyname 'passwordHealth' -notepropertyvalue $true
     $healthChecksPayload | Add-Member -notepropertyname 'servicesHealth' -notepropertyvalue $true
     $healthChecksPayload | Add-Member -notepropertyname 'storageHealth' -notepropertyvalue $true
-    $healthChecksPayload | Add-Member -notepropertyname 'versionHealth' -notepropertyvalue $true
+    if ($vcfVersion -ge "4.5.0") { $healthChecksPayload | Add-Member -notepropertyname 'versionHealth' -notepropertyvalue $true }
     $optionsConfigPayload = New-Object -TypeName psobject
     $optionsConfigPayload | Add-Member -notepropertyname 'force' -notepropertyvalue $false
     $optionsConfigPayload | Add-Member -notepropertyname 'skipKnownHostCheck' -notepropertyvalue $true
     $optionsIncludePayload = New-Object -TypeName psobject
-    $optionsIncludePayload | Add-Member -notepropertyname 'precheckReport' -notepropertyvalue $false
+    if ($vcfVersion -ge "4.5.0") { $optionsIncludePayload | Add-Member -notepropertyname 'precheckReport' -notepropertyvalue $false }
     $optionsIncludePayload | Add-Member -notepropertyname 'summaryReport' -notepropertyvalue $false
     $optionsPayload = New-Object -TypeName psobject
     $optionsPayload | Add-Member -notepropertyname 'config' -notepropertyvalue $optionsConfigPayload
@@ -856,9 +864,6 @@ Function Request-SoSHealthJson {
     $healthSummarySpec | Add-Member -notepropertyname 'options' -notepropertyvalue $optionsPayload
     $healthSummarySpec | Add-Member -notepropertyname 'scope' -notepropertyvalue $scopePayload
     
-    # Request VCF Token
-    Request-VCFToken -fqdn $server -Username $user -Password $pass -skipCertificateCheck -ErrorAction SilentlyContinue -ErrorVariable ErrMsg | Out-Null
-
     Try {
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $healthSummarySpec.scope.includeAllDomains = $true
