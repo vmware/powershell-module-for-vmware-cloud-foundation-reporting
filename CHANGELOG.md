@@ -4,7 +4,7 @@
 
 > Release Date: Unreleased
 
-Bug Fixes:
+Bug Fixe:
 
 - Updates `Publish-NsxtTier0BgpStatus` to correctly format the HTML output if the NSX Tier-0 is not configured for BGP. [GH-134](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/134)
 
@@ -24,12 +24,13 @@ Refactor:
 Chore:
 
 - Updated the NSX product name and terms. [GH-135](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/135)
+- Added `.PARAMETER` entries for user-facing functions. [GH-141](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/141)
 
 ## [v2.0.1](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.1)
 
 > Release Date: 2023-05-12
 
-Bug Fixes:
+Bug Fix:
 
 - Updated `Request-SoSHealthJson` to omit the `precheckReport` and `versionHealth` from the SoS API request payload if the version is not VMware Cloud Foundatin 4.5.0 or later.
 
@@ -88,7 +89,7 @@ Bugfix:
 - Resolves an issue with the display name of the vRealize Log Insight product name in the `Request-VrealizeOverview`due to an upstream error in the `.SYNOPSIS` of `Get-VCFvRLI` in `PowerVCF`. [GH-86](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/86)
 - Updated `Test-VcfReportingPrereq` to return results when run on Photon OS. [GH-82](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/82)
 
-Enhancement:
+Enhancements:
 
 - Updated `Publish-*` cmdlets to support JSON generation. Required for Heatlh Monitoring and Reporting solution. [GH-79](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/79)
   - `Publish-BackupStatus`
