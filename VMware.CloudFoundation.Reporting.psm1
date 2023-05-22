@@ -198,11 +198,41 @@ Function Invoke-VcfHealthReport {
 
         .EXAMPLE
         Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerLocalUser vcf -sddcManagerLocalPass VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
-        This example runs a health check for a specific Workload Domain within a VMware Cloud Foundation instance.
+        This example runs a health check for a specific workload domain within a VMware Cloud Foundation instance.
 
         .EXAMPLE
         Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerLocalUser vcf -sddcManagerLocalPass VMw@re1! -reportPath F:\Reporting -allDomains -failureOnly
         This example runs a health check across a VMware Cloud Foundation instance but only ouputs issues to the HTML report.
+
+        .PARAMETER sddcManagerFqdn
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER sddcManagerUser
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER sddcManagerPass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER sddcManagerLocalUser
+        The username to authenticate to the SDDC Manager appliance.
+
+        .PARAMETER sddcManagerLocalPass
+        The password to authenticate to the SDDC Manager appliance.
+
+        .PARAMETER reportPath
+        The path to save the policy report.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER darkMode
+        Switch to enable dark mode for the report.
     #>
 
     Param (
@@ -241,7 +271,7 @@ Function Invoke-VcfHealthReport {
                 }
 
                 $vcfVersion = ((Get-VCFManager).version).Split('-')[0]
-                
+
                 Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
                 Write-LogMessage -Type INFO -Message "Starting the process of creating a Health Report for $workflowMessage." -Colour Yellow
                 Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
@@ -394,6 +424,30 @@ Function Invoke-VcfAlertReport {
         .EXAMPLE
         Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01 -failureOnly
         This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance but for only failed items.
+
+        .PARAMETER sddcManagerFqdn
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER sddcManagerUser
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER sddcManagerPass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER reportPath
+        The path to save the policy report.
+
+        .PARAMETER allDomains
+        Switch to run against all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER darkMode
+        Switch to enable dark mode for the report.
     #>
 
     Param (
@@ -492,7 +546,31 @@ Function Invoke-VcfConfigReport {
 
         .EXAMPLE
         Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
-        This example generates the configuration report for a specific Workload Domain within a VMware Cloud Foundation instance.
+        This example generates the configuration report for a specific workload domain within a VMware Cloud Foundation instance.
+
+        .PARAMETER sddcManagerFqdn
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER sddcManagerUser
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER sddcManagerPass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER reportPath
+        The path to save the policy report.
+
+        .PARAMETER allDomains
+        Switch to run against all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER darkMode
+        Switch to enable dark mode for the report.
     #>
 
     Param (
@@ -586,11 +664,29 @@ Function Invoke-VcfUpgradePrecheck {
         Perform upgrade precheck
 
         .DESCRIPTION
-        The Invoke-VcfUpgradePrecheck runs an upgrade precheck for a Workload Domain
+        The Invoke-VcfUpgradePrecheck runs an upgrade precheck for a workload domain
 
         .EXAMPLE
         Invoke-VcfUpgradePrecheck -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
-        This example runs a health check for a specific Workload Domain within an SDDC Manager instance.
+        This example runs a health check for a specific workload domain within an SDDC Manager instance.
+
+        .PARAMETER sddcManagerFqdn
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER sddcManagerUser
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER sddcManagerPass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER reportPath
+        The path to save the policy report.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER darkMode
+        Switch to enable dark mode for the report.
     #>
 
     Param (
@@ -723,6 +819,24 @@ Function Invoke-VcfOverviewReport {
         .EXAMPLE
         Invoke-VcfOverviewReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -anonymized
         This example generates the system overview report for a VMware Cloud Foundation instance, but will anonymize the output.
+
+        .PARAMETER sddcManagerFqdn
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER sddcManagerUser
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER sddcManagerPass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER reportPath
+        The path to save the policy report.
+
+        .PARAMETER darkMode
+        Switch to enable dark mode for the report.
+
+        .PARAMETER anonymized
+        Switch to enable anonymized output for the report.
     #>
 
     Param (
@@ -810,6 +924,24 @@ Function Request-SoSHealthJson {
         .EXAMPLE
         Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Reporting\HealthReports -workloadDomain sfo-w01
         This example runs an SoS Health collection for a workload domain in the SDDC and saves the JSON output to the local file system.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER reportPath
+        The path to save the policy report.
+
+        .PARAMETER allDomains
+        Switch to run against all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -863,7 +995,7 @@ Function Request-SoSHealthJson {
     $healthSummarySpec | Add-Member -notepropertyname 'healthChecks' -notepropertyvalue $healthChecksPayload
     $healthSummarySpec | Add-Member -notepropertyname 'options' -notepropertyvalue $optionsPayload
     $healthSummarySpec | Add-Member -notepropertyname 'scope' -notepropertyvalue $scopePayload
-    
+
     Try {
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $healthSummarySpec.scope.includeAllDomains = $true
@@ -906,7 +1038,7 @@ Function Request-SoSHealthJson {
 				Return $false
 			}
 			$requestID = $response.id
-			
+
             # Retrieve the request status.
             $response = Get-VCFHealthSummaryTask -id $requestID
             $escapeCounter = 0
@@ -937,10 +1069,10 @@ Function Request-SoSHealthJson {
 			$healthSummaryPath = gci -recurse -filter "health-results.json" -Path $outFilePath
 			$healthSummaryFile = Join-Path -Path $healthSummaryPath.DirectoryName -childPath "health-results.json"
 			Copy-Item $healthSummaryFile $reportDestination  | Out-NULL
-				
+
 			# Remove the temporary directory.
 			Remove-Item -Recurse -Force $outFilePath  | Out-NULL
-				
+
             # Convert to JSON.
             $temp = Get-Content -Path $reportDestination; $temp = $temp -replace '""', '"-"'; $temp | Out-File $reportDestination
 			Return $reportDestination
@@ -972,6 +1104,15 @@ Function Publish-CertificateHealth {
         .EXAMPLE
         Publish-CertificateHealth -json <file-name> -failureOnly
         This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -1049,7 +1190,6 @@ Function Publish-CertificateHealth {
 }
 Export-ModuleMember -Function Publish-CertificateHealth
 
-
 Function Publish-ConnectivityHealth {
     <#
         .SYNOPSIS
@@ -1070,6 +1210,15 @@ Function Publish-ConnectivityHealth {
         .EXAMPLE
         Publish-ConnectivityHealth -json <file-name> -failureOnly
         This example extracts and formats the Connectivity Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -1166,6 +1315,15 @@ Function Publish-PingConnectivityHealth {
         .EXAMPLE
         Publish-PingConnectivityHealth -json <file-name> -failureOnly
         This example extracts and formats the Ping Connectivity Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -1184,7 +1342,7 @@ Function Publish-PingConnectivityHealth {
         $customObject = New-Object System.Collections.ArrayList
         $jsonInputData = $targetContent.Connectivity.'Ping Status'
         $pingStatusProperties = @('area', 'title', 'state', 'timestamp', 'message', 'status', 'alert')
-        
+
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning 'Ping Status data not found in the JSON file: SKIPPED'
         } else {
@@ -1193,10 +1351,10 @@ Function Publish-PingConnectivityHealth {
                 $fqdn = $esxiHost.fqdn
                 $propertiesName = $jsonInputData.$fqdn.PSObject.Properties.Name
                 if (($pingStatusProperties.contains($propertiesName))) {
-                    # do nothing    
+                    # do nothing
                 } else {
                     $jsonInputData.$fqdn = $jsonInputData.$fqdn.$propertiesName
-                }   
+                }
             }
 
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
@@ -1251,6 +1409,15 @@ Function Publish-DnsHealth {
         .EXAMPLE
         Publish-DnsHealth -json <file-name> -failureOnly
         This example extracts and formats the DNS Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -1350,6 +1517,15 @@ Function Publish-EsxiHealth {
         .EXAMPLE
         Publish-EsxiHealth -json <file-name> -failureOnly
         This example extracts and formats the ESXi Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -1499,6 +1675,15 @@ Function Publish-NsxtHealth {
         .EXAMPLE
         Publish-NsxtHealth -json <file-name> -failureOnly
         This example extracts and formats the NSX Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -1641,6 +1826,15 @@ Function Publish-NsxtEdgeNodeHealth {
         .EXAMPLE
         Publish-NsxtEdgeNodeHealth -json <file-name> -failureOnly
         This example extracts and formats the NSX Edge Node Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -1727,6 +1921,15 @@ Function Publish-NsxtEdgeClusterHealth {
         .EXAMPLE
         Publish-NsxtEdgeClusterHealth -json <file-name> -failureOnly
         This example extracts and formats the NSX Edge Cluster Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -1821,6 +2024,15 @@ Function Publish-NtpHealth {
         .EXAMPLE
         Publish-NtpHealth -json <file-name> -failureOnly
         This example extracts and formats the NTP Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -1895,6 +2107,15 @@ Function Publish-PasswordHealth {
         .EXAMPLE
         Publish-PasswordHealth -json <file-name> -failureOnly
         This example extracts and formats the Password Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -1979,6 +2200,15 @@ Function Publish-VersionHealth {
         .EXAMPLE
         Publish-VersionHealth -json <file-name> -failureOnly
         This example extracts and formats the Version Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -2060,6 +2290,15 @@ Function Publish-HardwareCompatibilityHealth {
         .EXAMPLE
         Publish-HardwareCompatibilityHealth -json <file-name> -failureOnly
         This example extracts and formats the Hardware Compatibility data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -2083,7 +2322,7 @@ Function Publish-HardwareCompatibilityHealth {
             $outputObject = New-Object System.Collections.ArrayList
             foreach ($component in $jsonInputData.PsObject.Properties.Value) {
                 foreach ($element in $component.PsObject.Properties.Value) {
-                    if ($element.title -ne '-' -and $element.alert -ne '-') {  
+                    if ($element.title -ne '-' -and $element.alert -ne '-') {
                         $elementObject = New-Object -TypeName psobject
                         $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue ($element.area -Split (':'))[0].Trim()
                         $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue ($element.area -Split (':'))[-1].Trim()
@@ -2108,7 +2347,7 @@ Function Publish-HardwareCompatibilityHealth {
         if ($PsBoundParameters.ContainsKey('html')) {
             if (($jsonInputData | Measure-Object).Count -gt 0) {
                 if ($outputObject.Count -eq 0) {
-                    $addNoIssues = $true 
+                    $addNoIssues = $true
                 }
                 if ($addNoIssues) {
                     $outputObject = $outputObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="general-hardware"></a><h3>Hardware Compatibility Health Status</h3>' -PostContent '<p>No issues found.</p>'
@@ -2150,6 +2389,15 @@ Function Publish-ServiceHealth {
         .EXAMPLE
         Publish-ServiceHealth -json <file-name> -failureOnly
         This example extracts and formats the Service Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -2232,6 +2480,15 @@ Function Publish-VcenterHealth {
         .EXAMPLE
         Publish-VcenterHealth -json <file-name> -failureOnly
         This example extracts and formats the vCenter Server Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -2247,7 +2504,7 @@ Function Publish-VcenterHealth {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
-        # vCenter Overall Health
+        # vCenter Server Overall Health
         $jsonInputData = $targetContent.Compute.'vCenter Overall Health' # Extract Data from the provided SOS JSON
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning "vCenter Server Overall Health data not found in the JSON file: SKIPPED"
@@ -2340,6 +2597,15 @@ Function Publish-VsanHealth {
         .EXAMPLE
         Publish-VsanHealth -json <file-name> -failureOnly
         This example extracts and formats the vSAN Health data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -2507,6 +2773,15 @@ Function Publish-VsanStoragePolicy {
         .EXAMPLE
         Publish-VsanStoragePolicy -json <file-name> -failureOnly
         This example extracts and formats the vSAN Storage Policy data as a PowerShell object from the JSON file for only the failed items.
+
+        .PARAMETER json
+        The path to the JSON file containing the SoS Health Summary data.
+
+        .PARAMETER html
+        Specifies that the output should be formatted as an HTML object.
+
+        .PARAMETER failureOnly
+        Specifies that the output should only contain failed items.
     #>
 
     Param (
@@ -2611,12 +2886,33 @@ Function Publish-BackupStatus {
 
         .EXAMPLE
         Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will publish the backup status for the vCenter Server instances, and NSX Local Manager clusters in Workload Domain sfo-w01.
+        This example will publish the backup status for the vCenter Server instances, and NSX Local Manager clusters in workload domain sfo-w01.
 
         .EXAMPLE
         Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
         This example will generate a json for the backup status for the vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance
         and saves it under F:\Reporting with filename <timestamp>-backup-status.json
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER outputJson
+        The path to save the output as a JSON file.
     #>
 
     Param (
@@ -2717,6 +3013,27 @@ Function Publish-NsxtTransportNodeStatus {
         Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
         This example will generate a json for the status of all NSX transport nodes in a VMware Cloud Foundation instance.
         and saves it under F:\Reporting with filename <timestamp>-nsxttransportnode-status.json
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER outputJson
+        The path to save the output as a JSON file.
     #>
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -2807,7 +3124,26 @@ Function Publish-NsxtTransportNodeTunnelStatus {
         This example will generate a json for the status of all NSX transport node tunnels in a VMware Cloud Foundation instance
         and saves it under F:\Reporting with filename <timestamp>-nsxttntunnel-status.json
 
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
 
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER outputJson
+        The path to save the output as a JSON file.
     #>
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -2891,13 +3227,33 @@ Function Publish-NsxtTier0BgpStatus {
 
         .EXAMPLE
         Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will publish the BGP status for the NSX Tier-0 gateways in a VMware Cloud Foundation instance for a workload domain names sfo-w01.
+        This example will publish the BGP status for the NSX Tier-0 gateways in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
 
         .EXAMPLE
         Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
         This example will generate a json for the BGP status for all NSX Tier-0 gateways in a VMware Cloud Foundation instance.
         and saves it under F:\Reporting with filename <timestamp>-nsxttier0bgp-status.json
 
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER outputJson
+        The path to save the output as a JSON file.
     #>
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
@@ -2986,13 +3342,33 @@ Function Publish-SnapshotStatus {
 
         .EXAMPLE
         Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will publish the snapshot status for the SDDC Manager, vCenter Server instance, and NSX Edge nodes managed by SDDC Manager for a workload domain names sfo-w01.
+        This example will publish the snapshot status for the SDDC Manager, vCenter Server instance, and NSX Edge nodes managed by SDDC Manager for a workload domain named sfo-w01.
 
         .EXAMPLE
         Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
         This example will generate a json for the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.
         and saves it under F:\Reporting with filename <timestamp>-snapshot-status.json
 
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER outputJson
+        The path to save the output as a JSON file.
     #>
 
     Param (
@@ -3003,7 +3379,6 @@ Function Publish-SnapshotStatus {
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
-
     )
 
     Try {
@@ -3043,7 +3418,7 @@ Function Publish-SnapshotStatus {
                 }
 
                 if ($PsBoundParameters.ContainsKey('outputJson')) {
-                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $snapshotJsonSuffix 
+                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $snapshotJsonSuffix
                     $allSnapshotStatusObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
                 } else {
@@ -3067,7 +3442,6 @@ Function Publish-SnapshotStatus {
 Export-ModuleMember -Function Publish-SnapshotStatus
 
 Function Publish-NsxtHealthNonSOS {
-
     <#
 		.SYNOPSIS
         Publish NSX Manager Health only for health checks which are not a part of SOS Utility NSX health. Data obtained is a subset of Publish-NsxtCombinedHealth cmdlet.
@@ -3082,21 +3456,41 @@ Function Publish-NsxtHealthNonSOS {
 
         .EXAMPLE
         Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example checks NSX Manager health outside SOS Utility for all Workload Domains across the VMware Cloud Foundation instance.
+        This example checks NSX Manager health outside SOS Utility for all workload domains across the VMware Cloud Foundation instance.
 
         .EXAMPLE
         Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example checks NSX Manager health outside SOS Utility for a single Workload Domain in a VMware Cloud Foundation instance.
+        This example checks NSX Manager health outside SOS Utility for a single workload domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
         Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example checks NSX Manager health outside SOS Utility for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
+        This example checks NSX Manager health outside SOS Utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
         .EXAMPLE
         Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
-        This example checks NSX Manager health outside SOS Utility for all Workload Domains across the VMware Cloud Foundation instance and
-       and saves it as JSON under F:\Reporting with filename <timestamp>-nsxtcombinedhealthnonsos-status.json
+        This example checks NSX Manager health outside SOS Utility for all workload domains across the VMware Cloud Foundation instance and
+        and saves it as JSON under F:\Reporting with filename <timestamp>-nsxtcombinedhealthnonsos-status.json
 
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER outputJson
+        The path to save the output as a JSON file.
     #>
 
     Param (
@@ -3169,16 +3563,33 @@ Function Publish-NsxtCombinedHealth {
 
         .EXAMPLE
         Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains
-        This example checks NSX Manager health for all Workload Domains across the VMware Cloud Foundation instance.
+        This example checks NSX Manager health for all workload domains across the VMware Cloud Foundation instance.
 
         .EXAMPLE
         Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -workloadDomain sfo-w01
-        This example checks NSX Manager health for a single Workload Domain in a VMware Cloud Foundation instance.
+        This example checks NSX Manager health for a single workload domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
         Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains -failureOnly
-        This example checks NSX Manager health for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
+        This example checks NSX Manager health for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -3226,7 +3637,6 @@ Function Publish-NsxtCombinedHealth {
         }
         $allNsxtHealthObject = Convert-CssClass -htmldata $allNsxtHealthObject
         $allNsxtHealthObject
-
     }
     Catch {
         Debug-CatchWriter -object $_
@@ -3256,13 +3666,39 @@ Function Publish-StorageCapacityHealth {
 
         .EXAMPLE
         Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -workloadDomain sfo-w01
-        This example will publish storage usage status for a specific Workload Domain in a VMware Cloud Foundation instance
+        This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance
 
         .EXAMPLE
         Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -workloadDomain sfo-w01 -outputJson F:\Reporting
-        This example will publish storage usage status for a specific Workload Domain in a VMware Cloud Foundation instance
+        This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance
         and saves it as JSON under F:\Reporting with filename <timestamp>-storagecapacityhealth-status.json
 
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER localUser
+        The username to authenticate to the SDDC Manager appliance as a local user.
+
+        .PARAMETER localPass
+        The password to authenticate to the SDDC Manager appliance as a local user.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER outputJson
+        The path to save the output as a JSON file.
     #>
 
     Param (
@@ -3397,6 +3833,21 @@ Function Request-NsxtVidmStatus {
         .EXAMPLE
         Request-NsxtVidmStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return the status of the Identity Manager integration for an NSX Manager cluster managed by SDDC Manager for a workload domain but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -3486,6 +3937,21 @@ Function Request-NsxtComputeManagerStatus {
         .EXAMPLE
         Request-NsxtComputeManagerStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return the status of the compute managers attached to an NSX Manager cluster managed by SDDC Manager for a workload domain but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -3574,6 +4040,18 @@ Function Request-SddcManagerSnapshotStatus {
         .EXAMPLE
         Request-SddcManagerSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
         This example will publish the snapshot status for the SDDC Manager in a VMware Cloud Foundation instance, but for only failed items.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -3683,6 +4161,21 @@ Function Request-VcenterSnapshotStatus {
         .EXAMPLE
         Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will publish the snapshot status for a vCenter Server instance for a specific workload domain, but only failed items.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -3795,6 +4288,21 @@ Function Request-NsxtEdgeSnapshotStatus {
         .EXAMPLE
         Request-NsxtEdgeSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will publish the snapshot status for all NSX Edge nodes managed by SDDC Manager for a specific workload domain. but only failed items.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -3911,6 +4419,18 @@ Function Request-SddcManagerBackupStatus {
         .EXAMPLE
         Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
         This example will return the status of the latest file-level backup task in an SDDC Manager instance but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -4023,6 +4543,21 @@ Function Request-NsxtManagerBackupStatus {
         .EXAMPLE
         Request-NsxtManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return the status of the latest file-level backup of an NSX Manager cluster managed by SDDC Manager for a workload domain but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -4250,6 +4785,21 @@ Function Request-VcenterBackupStatus {
         .EXAMPLE
         Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -4378,6 +4928,20 @@ Function Request-DatastoreStorageCapacity {
         Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will check datastore on a vCenter Servers managed by SDDC Manager for a workload domain.
 
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -4469,6 +5033,21 @@ Function Request-VcenterStorageHealth {
         .EXAMPLE
         Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will check the disk usage for all vCenter Server instances but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -4525,6 +5104,24 @@ Function Request-SddcManagerStorageHealth {
         .EXAMPLE
         Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -failureOnly
         This example checks the hard disk space in the SDDC Manager appliance and outputs only the failures.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER localUser
+        The username to authenticate to the SDDC Manager appliance as a local user.
+
+        .PARAMETER localPass
+        The password to authenticate to the SDDC Manager appliance as a local user.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -4561,7 +5158,7 @@ Function Request-EsxiStorageCapacity {
         The Request-EsxiStorageCapacity cmdlets checks the disk space usage on ESXi hosts. The cmdlet connects to SDDC
         Manager using the -server, -user, and -pass values:
         - Validates network connectivity and authentication to the SDDC Manager instance
-        - Collects disk usage information for each ESXi host in the Workload Domain
+        - Collects disk usage information for each ESXi host in the workload domain
         - Checks disk usage against thresholds and outputs the results
 
         .EXAMPLE
@@ -4571,6 +5168,21 @@ Function Request-EsxiStorageCapacity {
         .EXAMPLE
         Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will check disk usage for ESXi hosts managed by SDDC Manager for a single workload domain but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -4642,20 +5254,41 @@ Function Publish-ComponentConnectivityHealthNonSOS {
 
         .EXAMPLE
         Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example checks the component connectivity outside of SOS utility for all Workload Domains across the VMware Cloud Foundation instance.
+        This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance.
 
         .EXAMPLE
         Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!  -workloadDomain sfo-w01
-        This example checks the component connectivity outside of SOS utility for a single Workload Domain in a VMware Cloud Foundation instance.
+        This example checks the component connectivity outside of SOS utility for a single workload domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
         Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example checks the component connectivity outside of SOS utility for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
+        This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
 		.EXAMPLE
         Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -jsonOutput F:\Reporting
-        This example checks the component connectivity outside of SOS utility for all Workload Domains across the VMware Cloud Foundation instance
+        This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance
 		and saves it under F:\Reporting with filename <timestamp>-componentconnectivityhealthnonsos-status.json
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER outputJson
+        The path to save the output as a JSON file.
     #>
 
     Param (
@@ -4723,15 +5356,36 @@ Function Publish-ComponentConnectivityHealth {
 
         .EXAMPLE
         Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains
-        This example checks the component connectivity for all Workload Domains across the VMware Cloud Foundation instance.
+        This example checks the component connectivity for all workload domains across the VMware Cloud Foundation instance.
 
         .EXAMPLE
         Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -workloadDomain sfo-w01
-        This example checks the component connectivity for a single Workload Domain in a VMware Cloud Foundation instance.
+        This example checks the component connectivity for a single workload domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
         Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains -failureOnly
-        This example checks the component connectivity for all Workload Domains across the VMware Cloud Foundation instance but only reports issues.
+        This example checks the component connectivity for all workload domains across the VMware Cloud Foundation instance but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER json
+        The full path to the JSON file to output the results to.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -4806,6 +5460,24 @@ Function Request-VcenterAuthentication {
         .EXAMPLE
         Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will check authentication to vCenter Server API for all vCenter Server instances but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -4904,6 +5576,24 @@ Function Request-NsxtAuthentication {
         .EXAMPLE
         Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will check authentication to NSX Manager API for all NSX Manager clusters but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -5011,6 +5701,21 @@ Function Request-NsxtTransportNodeStatus {
         .EXAMPLE
         Request-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return the status of the NSX transport nodes managed by an NSX Manager cluster which is managed by SDDC Manager for a workload domain but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -5097,6 +5802,21 @@ Function Request-NsxtTransportNodeTunnelStatus {
         .EXAMPLE
         Request-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return the status of the NSX transport node tunnels for a workload domain but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -5194,6 +5914,21 @@ Function Request-NsxtTier0BgpStatus {
         .EXAMPLE
         Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -5283,6 +6018,21 @@ Function Publish-VmConnectedCdrom {
         .EXAMPLE
         Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will returns the status of virtual machines with connected CD-ROMs in a workload domain.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -5338,6 +6088,18 @@ Function Request-VmConnectedCdrom {
         .EXAMPLE
         Request-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example returns the status of virtual machines with connected CD-ROMs in a workload domain.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -5409,6 +6171,24 @@ Function Publish-EsxiConnectionHealth {
         .EXAMPLE
         Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will publish the connection status of ESXi hosts in all workload domains but only for failures.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -5477,6 +6257,21 @@ Function Request-EsxiConnectionHealth {
         .EXAMPLE
         Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example returns the connection status of ESXi hosts in a workload domain but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -5563,6 +6358,18 @@ Function Publish-SddcManagerFreePool {
         .EXAMPLE
         Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
         This example will return the free pool health from SDDC Manager and return the failures only.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -5623,6 +6430,18 @@ Function Request-SddcManagerFreePool {
         .EXAMPLE
         Request-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
         This example will return the ESXi hosts in the free pool managed by SDDC Manager for a workload domain but only reports issues.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -5741,7 +6560,25 @@ Function Publish-EsxiAlert {
 
         .EXAMPLE
         Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
+        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -5817,6 +6654,24 @@ Function Publish-NsxtAlert {
         .EXAMPLE
         Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will return alarms from the NSX Manager cluster managed by SDDC Manager for a workload domain named sfo-w01.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -5891,6 +6746,24 @@ Function Publish-VcenterAlert {
         .EXAMPLE
         Publish-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will return alarms from a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -5965,6 +6838,24 @@ Function Publish-VsanAlert {
         .EXAMPLE
         Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -6035,7 +6926,22 @@ Function Request-NsxtAlert {
 
         .EXAMPLE
         Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain but only for the failed items
+        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain but only for the failed items.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -6109,6 +7015,21 @@ Function Request-VsanAlert {
         .EXAMPLE
         Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -6179,6 +7100,24 @@ Function Request-VcenterAlert {
         .EXAMPLE
         Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return alarms from vSAN clusters of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER filterOut
+        Filter out alarms. One of: hostOnly, vsanOnly.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -6271,6 +7210,21 @@ Function Request-EsxiAlert {
         .EXAMPLE
         Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
         This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01 but only for the failed items.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
     #>
 
     Param (
@@ -6347,7 +7301,22 @@ Function Publish-ClusterConfiguration {
 
         .EXAMPLE
         Publish-ClusterConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return cluster configuration from all clusters in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
+        This example will return cluster configuration from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -6398,6 +7367,24 @@ Function Publish-EsxiCoreDumpConfig {
         .EXAMPLE
         Publish-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -alldomains
         This example generates an ESXi core dump report for all ESXi hosts across the VMware Cloud Foundation instance.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER html
+        Switch to output the report in HTML format.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -6487,7 +7474,19 @@ Function Request-ClusterConfiguration {
 
         .EXAMPLE
         Request-ClusterConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the cluster configuration for a vCenter Server instance based on the Workload Domain provided.
+        This example gets the cluster configuration for a vCenter Server instance based on the workload domain provided.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -6556,7 +7555,22 @@ Function Publish-ClusterDrsRule {
 
         .EXAMPLE
         Publish-ClusterDrsRule -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return cluster DRS rules from all clusters in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
+        This example will return cluster DRS rules from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -6610,7 +7624,19 @@ Function Request-ClusterDrsRule {
 
         .EXAMPLE
         Request-ClusterDrsRule -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the cluster DRS rules for a vCenter Server instance based on the Workload Domain provided.
+        This example gets the cluster DRS rules for a vCenter Server instance based on the workload domain provided.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -6678,7 +7704,22 @@ Function Publish-ResourcePool {
 
         .EXAMPLE
         Publish-ResourcePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return resource pool details from all clusters in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
+        This example will return resource pool details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -6727,7 +7768,19 @@ Function Request-ResourcePool {
 
         .EXAMPLE
         Request-ResourcePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the resource pool details for a vCenter Server instance based on the Workload Domain provided.
+        This example gets the resource pool details for a vCenter Server instance based on the workload domain provided.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -6788,11 +7841,26 @@ Function Publish-VmOverride {
 
         .EXAMPLE
         Publish-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return VM Override details from all clusters in vCenter Server managed by SDDC Manager for a all workload domains.
+        This example will return VM Override details from all clusters in vCenter Server managed by SDDC Manager for all workload domains.
 
         .EXAMPLE
         Publish-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return VM Override details from all clusters in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
+        This example will return VM Override details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -6841,7 +7909,19 @@ Function Request-VmOverride {
 
         .EXAMPLE
         Request-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the VM Override setting for a vCenter Server instance based on the Workload Domain provided.
+        This example gets the VM Override setting for a vCenter Server instance based on the workload domain provided.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -6901,7 +7981,22 @@ Function Publish-VirtualNetwork {
 
         .EXAMPLE
         Publish-VirtualNetwork -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return vSphere virtual networking details from all clusters in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
+        This example will return vSphere virtual networking details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -6950,7 +8045,19 @@ Function Request-VirtualNetwork {
 
         .EXAMPLE
         Request-VirtualNetwork -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the vSphere virtual networking configurationfor a vCenter Server instance based on the Workload Domain provided.
+        This example gets the vSphere virtual networking configurationfor a vCenter Server instance based on the workload domain provided.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -7017,7 +8124,22 @@ Function Publish-EsxiSecurityConfiguration {
 
         .EXAMPLE
         Publish-EsxiSecurityConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return ESXi security details from all clusters in vCenter Server managed by SDDC Manager for a workload domain names sfo-w01.
+        This example will return ESXi security details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER allDomains
+        Switch to run health checks across all workload domains.
+
+        .PARAMETER workloadDomain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -7066,7 +8188,19 @@ Function Request-EsxiSecurityConfiguration {
 
         .EXAMPLE
         Request-EsxiSecurityConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the ESXi security configurationfor a vCenter Server instance based on the Workload Domain provided.
+        This example gets the ESXi security configurationfor a vCenter Server instance based on the workload domain provided.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER domain
+        The name of the workload domain to run against.
     #>
 
     Param (
@@ -7135,6 +8269,18 @@ Function Publish-VcfSystemOverview {
         .EXAMPLE
         Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
         This example will return system overview report for a all workload domains, but with anonymized data.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER anonymized
+        Switch to enable anonymized output for the report.
     #>
 
     Param (
@@ -7225,6 +8371,18 @@ Function Request-VcfOverview {
         .EXAMPLE
         Request-VcfOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
         This example will return an overview of the SDDC Manager instance, but will anonymize the output.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER anonymized
+        Switch to enable anonymized output for the report.
     #>
 
     Param (
@@ -7287,6 +8445,15 @@ Function Request-HardwareOverview {
         .EXAMPLE
         Request-HardwareOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will return an overview of the SDDC Manager instance.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
     #>
 
     Param (
@@ -7375,6 +8542,18 @@ Function Request-VcenterOverview {
         .EXAMPLE
         Request-VcenterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -aanonymized
         This example will return an overview of the vSphere environment managed by the SDDC Manager instance, but will anonymize the output.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER anonymized
+        Switch to enable anonymized output for the report.
     #>
 
     Param (
@@ -7474,6 +8653,24 @@ Function Request-EsxiOverview {
         .EXAMPLE
         Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
         This example will return an overview of the ESXi hosts managed by the SDDC Manager instance, but will anonymize the output.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER anonymized
+        Switch to enable anonymized output for the report.
+
+        .PARAMETER subscription
+        Switch to enable subscription output for the report.
+
+        .PARAMETER outputCsv
+        The path to save the output as a CSV file.
     #>
 
     Param (
@@ -7594,7 +8791,7 @@ Function Request-EsxiOverview {
                 } else {
                     $allEsxiHostObject | Sort-Object -Property Status,  'Domain Name', 'Domain UUID', 'Cluster Name', 'Cluster UUID', 'ESXi Host FQDN', 'ESXi Host UUID'
                 }
-                
+
             }
         }
     }
@@ -7623,6 +8820,18 @@ Function Request-ClusterOverview {
         .EXAMPLE
         Request-ClusterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
         This example will return an overview of the vSphere environment managed by the SDDC Manager instance, but will anonymize the output.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER anonymized
+        Switch to enable anonymized output for the report.
     #>
 
     Param (
@@ -7680,6 +8889,18 @@ Function Request-NetworkOverview {
         .EXAMPLE
         Request-NetworkOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
         This example will return an overview of the networking managed by the SDDC Manager instance, but will anonymize the output.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER anonymized
+        Switch to enable anonymized output for the report.
     #>
 
     Param (
@@ -7696,7 +8917,7 @@ Function Request-NetworkOverview {
                 $allNetworkingObject = New-Object System.Collections.ArrayList
                 if (($vcfMgmtVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
                     if (Test-VsphereConnection -server $vcfMgmtVcenterDetails.fqdn) {
-                        if (Test-VsphereAuthentication -server $vcfMgmtVcenterDetails.fqdn -user $vcfMgmtVcenterDetails.ssoAdmin -pass $vcfMgmtVcenterDetails.ssoAdminPass) {        
+                        if (Test-VsphereAuthentication -server $vcfMgmtVcenterDetails.fqdn -user $vcfMgmtVcenterDetails.ssoAdmin -pass $vcfMgmtVcenterDetails.ssoAdminPass) {
                             foreach ($domain in $allWorkloadDomains) {
                                 foreach ($cluster in $domain.clusters) {
                                     if (Get-VCFEdgeCluster | Where-Object {$_.nsxtCluster.id -eq $domain.nsxtCluster.id}) { $edgeCluster = "True" } else { $edgeCluster = "False" }
@@ -7734,7 +8955,7 @@ Function Request-NetworkOverview {
                 }
                 $allNetworkingObject | Sort-Object 'Domain Type'
             }
-            
+
         }
     }
 	Catch {
@@ -7762,6 +8983,18 @@ Function Request-VMwareAriaSuiteOverview {
         Request-VMwareAriaSuiteOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
         This example will return an overview of VMware Aria Suite products managed by the SDDC Manager instance, but
         will anonymize the output.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER anonymized
+        Switch to enable anonymized output for the report.
     #>
 
     Param (
@@ -7794,7 +9027,7 @@ Function Request-VMwareAriaSuiteOverview {
                             $product = "VMware Aria Automation"
                             $nodeCount = (Get-VCFvRA).nodes.Count
                         }
-                        
+
                         $customObject = New-Object -TypeName psobject
                         $customObject | Add-Member -NotePropertyName "VMware Aria Suite Product" -NotePropertyValue $product
                         if ($PsBoundParameters.ContainsKey("anonymized")) {
@@ -7836,6 +9069,15 @@ Function Request-ValidatedSolutionOverview {
         .EXAMPLE
         Request-ValidatedSolutionOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
         This example will return an overview of VMware Validated Solutions.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
     #>
 
     Param (
@@ -7991,6 +9233,15 @@ Function Test-VcfReportingPrereq {
         .EXAMPLE
         Test-VcfReportingPrereq -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1!
         This example runs the prerequisite validation.
+
+        .PARAMETER sddcManagerFqdn
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER sddcManagerUser
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER sddcManagerPass
+        The password to authenticate to the SDDC Manager.
     #>
 
     Param (
@@ -8012,7 +9263,7 @@ Function Test-VcfReportingPrereq {
         )
 
         if (Test-VCFConnection -server $sddcManagerFqdn) {
-            if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {           
+            if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
 
                 $vcfVersion = ((Get-VCFManager).version).Split('-')[0]
                 if ($vcfVersion -lt $vcfMinVersion) {
@@ -8037,7 +9288,7 @@ Function Test-VcfReportingPrereq {
                 }
             }
         }
-        
+
     }
     Catch {
         Write-Error $_.Exception.Message
@@ -8046,7 +9297,7 @@ Function Test-VcfReportingPrereq {
 Export-ModuleMember -Function Test-VcfReportingPrereq
 
 Function Show-ReportingOutput {
-    
+
     Param (
         [Parameter (Mandatory = $true)] [AllowEmptyString()] [String]$message,
         [Parameter (Mandatory = $false)] [ValidateSet("INFO", "ERROR", "WARNING", "EXCEPTION","ADVISORY","NOTE","QUESTION","WAIT")] [String]$type = "INFO",
@@ -8167,6 +9418,24 @@ Function Invoke-SddcCommand {
         .EXAMPLE
         Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser vcf -vmPass VMw@re1! -command "echo Hello World."
         This example runs the command provided on the SDDC Manager appliance as the vcf user.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER vmUser
+        The username to authenticate to the virtual machine.
+
+        .PARAMETER vmPass
+        The password to authenticate to the virtual machine.
+
+        .PARAMETER command
+        The command to run on the virtual machine.
     #>
 
     Param (
@@ -8213,6 +9482,27 @@ Function Copy-FiletoSddc {
         .EXAMPLE
         Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmuser vcf -vmPass VMw@re1! -source "C:\Temp\bar" -destination "/home/vcf/"
         This example copies a file to the SDDC Manager appliance.
+
+        .PARAMETER server
+        The fully qualified domain name of the SDDC Manager.
+        
+        .PARAMETER user
+        The username to authenticate to the SDDC Manager.
+
+        .PARAMETER pass
+        The password to authenticate to the SDDC Manager.
+
+        .PARAMETER vmUser
+        The username to authenticate to the virtual machine.
+
+        .PARAMETER vmPass
+        The password to authenticate to the virtual machine.
+
+        .PARAMETER source
+        The source file or folder to copy to the SDDC Manager appliance.
+
+        .PARAMETER destination
+        The destination file or folder to copy to on the SDDC Manager appliance.
     #>
 
     Param (
@@ -8281,7 +9571,7 @@ Function Get-ClarityReportHeader {
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$dark
     )
 
-    # Define the default Clarity Cascading Style Sheets (CSS) for the HTML report Header
+    # Define the default Clarity Cascading Style Sheets (CSS) for the HTML report header
     if ($PsBoundParameters.ContainsKey("dark")) {
         $clarityCssHeader = '
         <head>
@@ -8670,7 +9960,7 @@ Function Get-ClarityReportNavigation {
 Export-ModuleMember -Function Get-ClarityReportNavigation
 
 Function Get-ClarityReportFooter {
-    # Define the default Clarity Cascading Style Sheets (CSS) for the HTML report Footer
+    # Define the default Clarity Cascading Style Sheets (CSS) for the HTML report footer
     $clarityCssFooter = '
                 </div>
             </div>
@@ -8691,7 +9981,22 @@ Function Format-DfStorageHealth {
 
         .EXAMPLE
         Format-DfStorageHealth -reportTitle '<h3>SDDC Manager Disk Health Status</h3>' -dfOutput $dfOutput -html -failureOnly -greenThreshold 20 -redThreshold 40
-        This example returns only failures (Alert is not GREEN), produces html report with title '<h3>SDDC Manager Disk Health Status</h3>' and overwrites the default thresholds
+        This example returns only failures (Alert is not GREEN), produces html report with title '<h3>SDDC Manager Disk Health Status</h3>' and overwrites the default thresholds.
+
+        .PARAMETER dfOutput
+        The output from 'df -h' command.
+
+        .PARAMETER systemFqdn
+        The fully qualified domain name of the system.
+
+        .PARAMETER failureOnly
+        Switch to only output issues to the report.
+
+        .PARAMETER greenThreshold
+        The threshold for a "Green" alert. Default is 70%.
+
+        .PARAMETER redThreshold
+        The threshold for a "Red" alert. Default is 85%.
     #>
 
     Param (
@@ -8699,7 +10004,7 @@ Function Format-DfStorageHealth {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] $systemFqdn,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateRange(1, 100)] [int]$greenThreshold = 70, # Define default value for "Green" threshold
-        [Parameter (Mandatory = $false)] [ValidateRange(1, 100)] [int]$redThreshold = 85   # Define default value for "Red" threshold
+        [Parameter (Mandatory = $false)] [ValidateRange(1, 100)] [int]$redThreshold = 85    # Define default value for "Red" threshold
     )
 
     Try {
@@ -8798,7 +10103,13 @@ Function Format-StorageThreshold {
 
         .EXAMPLE
         Format-StorageThreshold -size <size> -free <free>
-        This example returns the status of the BGP routing for NSX Tier-0 gateway.
+        This example converts the storage to a percentage and checks capacity.
+
+        .PARAMETER size
+        The size of the datastore.
+
+        .PARAMETER free
+        The free space of the datastore.
     #>
 
     Param (
