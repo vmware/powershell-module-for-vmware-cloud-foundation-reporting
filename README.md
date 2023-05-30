@@ -134,9 +134,9 @@ Update-Module -Name PowerValidatedSolutions
 
 Each cmdlet may provide one or more usage examples. Many of the cmdlets require that credentials are provided to output to the PowerShell console or a report.
 
-The cmdlets in this module, and its dependencies, return data from multple platform components. The credentials for most of the platform components are returned to the cmdlets by retrieving credentials from the SDDC Manager inventory and using these credentials, as needed, within cmdlet operations.
+The cmdlets in this module, and its dependencies, return data from multiple platform components. The credentials for most of the platform components are returned to the cmdlets by retrieving credentials from the SDDC Manager inventory and using these credentials, as needed, within cmdlet operations.
 
-For the best expereince, for cmdlets that connect to SDDC Manager, use the VMware Cloud Foundation API user `admin@local` or an account with the **ADMIN** role in SDDC Manager (e.g., `administrator@vsphere.local`).
+For the best experience, for cmdlets that connect to SDDC Manager, use the VMware Cloud Foundation API user `admin@local` or an account with the **ADMIN** role in SDDC Manager (e.g., `administrator@vsphere.local`).
 
 ## Getting Started with Reports
 
@@ -446,7 +446,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system alert report for SDDC Manager instance and run the commands in the PowerShell console.
 
-    **Example**: Windowa
+    **Example**: Windows
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
@@ -480,7 +480,7 @@ The `Invoke-VcfSystemAlertReport` cmdlet generates a system alert report. This r
 
 2. Replace the values in the sample code with values for the instance of VMware Cloud Foundation to generate a system alert report for SDDC Manager instance and run the commands in the PowerShell console.
 
-    **Example**: Windowa
+    **Example**: Windows
 
     ```powershell
     $sddcManagerFqdn = "sfo-vcf01.sfo.rainpole.io"
@@ -626,8 +626,8 @@ The upgrade precheck report, initiates an upgrade precheck of a workload domain 
 
 ## Contributing
 
-The project team welcomes contributions from the community. Before you start working with PowerValidatedSolutions, please
-read our [Developer Certificate of Origin][vmware-cla-dco]. All contributions to this repository must be
+The project team welcomes contributions from the community. Before you start working with VMware.CloudFoundation.Reporting,
+please read our [Developer Certificate of Origin][vmware-cla-dco]. All contributions to this repository must be
 signed as described on that page. Your signature certifies that you wrote the patch or have the right to pass it on
 as an open-source patch.
 
@@ -668,7 +668,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 [microsoft-powershell]: https://docs.microsoft.com/en-us/powershell
 [module-vmware-powercli]: https://www.powershellgallery.com/packages/VMware.PowerCLI
 [module-vmware-vsphere-ssoadmin]: https://www.powershellgallery.com/packages/VMware.vSphere.SsoAdmin
-[module-powervcf]: https://www.powershellgallery.com/packages/PowerVCF/2.2.0
+[module-powervcf]: https://www.powershellgallery.com/packages/PowerVCF
 [module-reporting]: https://www.powershellgallery.com/packages/VMware.CloudFoundation.Reporting
 [module-powervalidatedsolutions]: https://www.powershellgallery.com/packages/PowerValidatedSolutions
 [vmware-photon]: https://vmware.github.io/photon/
