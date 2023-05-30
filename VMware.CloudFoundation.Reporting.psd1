@@ -18,7 +18,7 @@
     # CompatiblePSEditions = @()
     
     # ID used to uniquely identify this module
-    GUID = '046bcd4d-209a-4520-87f5-080650399a43'
+    GUID = '043bbd4d-206a-4520-87f5-070450379d72'
     
     # Author of this module
     Author = 'Gary Blake, Ryan Johnson, Ivaylo Ivanov, Antony Stefanov - Cloud Infrastructure Business Group (CIBG)'

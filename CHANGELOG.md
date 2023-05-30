@@ -2,9 +2,9 @@
 
 ## [v2.1.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.1.0)
 
-> Release Date: Unreleased
+> Release Date: 2023-05-30
 
-Bug Fixe:
+Bugfix:
 
 - Updates `Publish-NsxtTier0BgpStatus` to correctly format the HTML output if the NSX Tier-0 is not configured for BGP. [GH-134](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/134)
 
