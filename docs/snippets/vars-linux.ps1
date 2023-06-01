@@ -1,0 +1,1 @@
+$reportPath = "/home/vmware/reporting"

@@ -1,0 +1,1 @@
+$workloadDomain = "sfo-w01"
