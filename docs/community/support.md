@@ -1,6 +1,6 @@
 # Support
 
-This PowerShell module is not supported by VMware Support Service.
+This PowerShell module is not supported by VMware Support Services.
 
 We welcome you to use the GitHub [issues][issues] tracker to report bugs or suggest features and enhancements.
 
