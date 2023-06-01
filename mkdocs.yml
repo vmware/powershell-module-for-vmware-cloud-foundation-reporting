@@ -1,0 +1,244 @@
+# Project Information
+site_name: VMware.CloudFoundation.Reporting
+site_description: PowerShell Module for VMware Cloud Foundation Reporting
+site_url: https://vmware.github.io/powershell-module-for-vmware-cloud-foundation-reporting/
+site_author: VMware, Inc.
+docs_dir: docs
+site_dir: .site
+use_directory_urls: true
+
+# Repository
+repo_url: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting
+edit_uri: blob/main/docs/
+
+# Copyright
+copyright: >
+  Copyright &copy; 2023 - VMware, Inc. –
+  <a href="#__consent">Manage Settings</a>
+
+# Configuration
+theme:
+  name: material
+  favicon: favicon.ico
+  logo: assets/images/icon-white.svg
+  icon:
+    repo: fontawesome/brands/github
+  palette:  
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: indigo
+    accent: indigo
+    toggle:
+      icon: material/toggle-switch
+      name: Dark Theme
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: indigo
+    accent: indigo
+    toggle:
+      icon: material/toggle-switch-off-outline
+      name: Light Theme
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+  - content.action.edit
+  - content.action.view
+  - content.code.annotate
+  - content.code.copy
+  - content.tabs.link
+  - navigation.expand
+  - navigation.footer
+  - navigation.header
+  - navigation.indexes
+  - navigation.instant
+  - navigation.sections
+  - navigation.tabs
+  - navigation.tabs.sticky
+  - navigation.top
+  - navigation.tracking
+  - search.highlight
+  - search.share
+  - search.suggest
+  - toc.follow
+
+# Plugins
+plugins:
+- search:
+    separator: '[\s\u200b\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+- markdownextradata:
+    jinja_options:
+      variable_start_string: "${{"
+      variable_end_string: "}}"
+- git-authors
+- git-revision-date-localized:
+    enabled: !ENV [CI, false]
+    enable_creation_date: false
+    exclude:
+      - index.md
+    fallback_to_build_date: true
+    type: timeago
+
+# Customization
+extra:
+  config:
+    repo_url: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting
+    repo_url_raw: https://raw.githubusercontent.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting
+  consent:
+    title: Cookie Consent
+    description: >- 
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.
+    actions:
+      - accept
+      - manage
+      - reject
+  version:
+    default: latest
+    provider: mike
+extra_css:
+  - assets/stylesheets/extra.css
+
+# Extensions
+markdown_extensions:
+- admonition
+- attr_list
+- md_in_html
+- pymdownx.emoji:
+    emoji_index: !!python/name:materialx.emoji.twemoji
+    emoji_generator: !!python/name:materialx.emoji.to_svg
+    options:
+      custom_icons:
+      - material/.icons
+- pymdownx.inlinehilite
+- pymdownx.highlight:
+    use_pygments: true
+- pymdownx.snippets:
+    check_paths: true
+- pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+      format: !!python/name:pymdownx.superfences.fence_code_format
+- pymdownx.tabbed:
+    alternate_style: true
+- pymdownx.details
+- tables
+- toc:
+    permalink: true
+
+# Navigation
+nav:
+- Getting Started: 
+  - index.md
+  - Installation: install.md
+  - Updating: update.md
+  - User Access: user-access.md
+  - Release Notes: release-notes.md
+  - Release Milestones: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/milestones
+  - License: license.md
+- Documentation:
+  - Reports:
+    - Overview Reports: documentation/getting-started/overview-report.md
+    - Health Reports: documentation/getting-started/health-report.md
+    - Alert Reports: documentation/getting-started/alert-report.md
+    - Configuration Reports: documentation/getting-started/configuration-report.md
+    - Upgrade Reports: documentation/getting-started/upgrade-precheck-report.md
+  - Functions:
+    - Copy-FiletoSddc: documentation/functions/Copy-FiletoSddc.md
+    - Invoke-SddcCommand: documentation/functions/Invoke-SddcCommand.md
+    - Invoke-VcfAlertReport: documentation/functions/Invoke-VcfAlertReport.md
+    - Invoke-VcfConfigReport: documentation/functions/Invoke-VcfConfigReport.md
+    - Invoke-VcfHealthReport: documentation/functions/Invoke-VcfHealthReport.md
+    - Invoke-VcfOverviewReport: documentation/functions/Invoke-VcfOverviewReport.md
+    - Invoke-VcfUpgradePrecheck: documentation/functions/Invoke-VcfUpgradePrecheck.md
+    - Publish-BackupStatus: documentation/functions/Publish-BackupStatus.md
+    - Publish-CertificateHealth: documentation/functions/Publish-CertificateHealth.md
+    - Publish-ClusterConfiguration: documentation/functions/Publish-ClusterConfiguration.md
+    - Publish-ClusterDrsRule: documentation/functions/Publish-ClusterDrsRule.md
+    - Publish-ComponentConnectivityHealth: documentation/functions/Publish-ComponentConnectivityHealth.md
+    - Publish-ComponentConnectivityHealthNonSOS: documentation/functions/Publish-ComponentConnectivityHealthNonSOS.md
+    - Publish-ConnectivityHealth: documentation/functions/Publish-ConnectivityHealth.md
+    - Publish-DnsHealth: documentation/functions/Publish-DnsHealth.md
+    - Publish-EsxiAlert: documentation/functions/Publish-EsxiAlert.md
+    - Publish-EsxiConnectionHealth: documentation/functions/Publish-EsxiConnectionHealth.md
+    - Publish-EsxiCoreDumpConfig: documentation/functions/Publish-EsxiCoreDumpConfig.md
+    - Publish-EsxiHealth: documentation/functions/Publish-EsxiHealth.md
+    - Publish-EsxiSecurityConfiguration: documentation/functions/Publish-EsxiSecurityConfiguration.md
+    - Publish-HardwareCompatibilityHealth: documentation/functions/Publish-HardwareCompatibilityHealth.md
+    - Publish-NsxtAlert: documentation/functions/Publish-NsxtAlert.md
+    - Publish-NsxtCombinedHealth: documentation/functions/Publish-NsxtCombinedHealth.md
+    - Publish-NsxtEdgeClusterHealth: documentation/functions/Publish-NsxtEdgeClusterHealth.md
+    - Publish-NsxtEdgeNodeHealth: documentation/functions/Publish-NsxtEdgeNodeHealth.md
+    - Publish-NsxtHealth: documentation/functions/Publish-NsxtHealth.md
+    - Publish-NsxtHealthNonSOS: documentation/functions/Publish-NsxtHealthNonSOS.md
+    - Publish-NsxtTier0BgpStatus: documentation/functions/Publish-NsxtTier0BgpStatus.md
+    - Publish-NsxtTransportNodeStatus: documentation/functions/Publish-NsxtTransportNodeStatus.md
+    - Publish-NsxtTransportNodeTunnelStatus: documentation/functions/Publish-NsxtTransportNodeTunnelStatus.md
+    - Publish-NtpHealth: documentation/functions/Publish-NtpHealth.md
+    - Publish-PasswordHealth: documentation/functions/Publish-PasswordHealth.md
+    - Publish-PingConnectivityHealth: documentation/functions/Publish-PingConnectivityHealth.md
+    - Publish-ResourcePool: documentation/functions/Publish-ResourcePool.md
+    - Publish-SddcManagerFreePool: documentation/functions/Publish-SddcManagerFreePool.md
+    - Publish-ServiceHealth: documentation/functions/Publish-ServiceHealth.md
+    - Publish-SnapshotStatus: documentation/functions/Publish-SnapshotStatus.md
+    - Publish-StorageCapacityHealth: documentation/functions/Publish-StorageCapacityHealth.md
+    - Publish-VcenterAlert: documentation/functions/Publish-VcenterAlert.md
+    - Publish-VcenterHealth: documentation/functions/Publish-VcenterHealth.md
+    - Publish-VcfSystemOverview: documentation/functions/Publish-VcfSystemOverview.md
+    - Publish-VersionHealth: documentation/functions/Publish-VersionHealth.md
+    - Publish-VirtualNetwork: documentation/functions/Publish-VirtualNetwork.md
+    - Publish:VmConnectedCdrom: documentation/functions/Publish-VmConnectedCdrom.md
+    - Publish-VmOverride: documentation/functions/Publish-VmOverride.md
+    - Publish-VsanAlert: documentation/functions/Publish-VsanAlert.md
+    - Publish-VsanHealth: documentation/functions/Publish-VsanHealth.md
+    - Publish-VsanStoragePolicy: documentation/functions/Publish-VsanStoragePolicy.md
+    - Request-ClusterConfiguration: documentation/functions/Request-ClusterConfiguration.md
+    - Request-ClusterDrsRule: documentation/functions/Request-ClusterDrsRule.md
+    - Request-ClusterOverview: documentation/functions/Request-ClusterOverview.md
+    - Request-DatastoreStorageCapacity: documentation/functions/Request-DatastoreStorageCapacity.md
+    - Request-EsxiAlert: documentation/functions/Request-EsxiAlert.md
+    - Request-EsxiConnectionHealth: documentation/functions/Request-EsxiConnectionHealth.md
+    - Request-EsxiOverview: documentation/functions/Request-EsxiOverview.md
+    - Request-EsxiSecurityConfiguration: documentation/functions/Request-EsxiSecurityConfiguration.md
+    - Request-EsxiStorageCapacity: documentation/functions/Request-EsxiStorageCapacity.md
+    - Request-HardwareOverview: documentation/functions/Request-HardwareOverview.md
+    - Request-NetworkOverview: documentation/functions/Request-NetworkOverview.md
+    - Request-NsxtAlert: documentation/functions/Request-NsxtAlert.md
+    - Request-NsxtAuthentication: documentation/functions/Request-NsxtAuthentication.md
+    - Request-NsxtComputeManagerStatus: documentation/functions/Request-NsxtComputeManagerStatus.md
+    - Request-NsxtEdgeSnapshotStatus: documentation/functions/Request-NsxtEdgeSnapshotStatus.md
+    - Request-NsxtManagerBackupStatus: documentation/functions/Request-NsxtManagerBackupStatus.md
+    - Request-NsxtTier0BgpStatus: documentation/functions/Request-NsxtTier0BgpStatus.md
+    - Request-NsxtTransportNodeStatus: documentation/functions/Request-NsxtTransportNodeStatus.md
+    - Request-NsxtTransportNodeTunnelStatus: documentation/functions/Request-NsxtTransportNodeTunnelStatus.md
+    - Request-NsxtVidmStatus: documentation/functions/Request-NsxtVidmStatus.md
+    - Request-ResourcePool: documentation/functions/Request-ResourcePool.md
+    - Request-SddcManagerBackupStatus: documentation/functions/Request-SddcManagerBackupStatus.md
+    - Request-SddcManagerFreePool: documentation/functions/Request-SddcManagerFreePool.md
+    - Request-SddcManagerSnapshotStatus: documentation/functions/Request-SddcManagerSnapshotStatus.md
+    - Request-SddcManagerStorageHealth: documentation/functions/Request-SddcManagerStorageHealth.md
+    - Request-SosHealthJson: documentation/functions/Request-SoSHealthJson.md
+    - Request-ValidatedSolutionsOverview: documentation/functions/Request-ValidatedSolutionOverview.md
+    - Request-VcenterAlert: documentation/functions/Request-VcenterAlert.md
+    - Request-VcenterAuthentication: documentation/functions/Request-VcenterAuthentication.md
+    - Request-VcenterBackupStatus: documentation/functions/Request-VcenterBackupStatus.md
+    - Request-VcenterOverview: documentation/functions/Request-VcenterOverview.md
+    - Request-VcenterSnapshotStatus: documentation/functions/Request-VcenterSnapshotStatus.md
+    - Request-VcenterStorageHealth: documentation/functions/Request-VcenterStorageHealth.md
+    - Request-VcfOverview: documentation/functions/Request-VcfOverview.md
+    - Request-VirtualNetwork: documentation/functions/Request-VirtualNetwork.md
+    - Request-VmConnectedCdrom: documentation/functions/Request-VmConnectedCdrom.md
+    - Request-VmOverride: documentation/functions/Request-VmOverride.md
+    - Request-VMwareAriaSuiteOverview: documentation/functions/Request-VMwareAriaSuiteOverview.md
+    - Request-VsanAlert: documentation/functions/Request-VsanAlert.md
+    - Test-VcfReportingPrereq: documentation/functions/Test-VcfReportingPrereq.md
+- Community:
+  - Contributing: community/contributing.md
+  - Discussions: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/discussions
+  - Search Issues: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/issues
+  - Open an Issue: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/issues/new/choose
+  - Support: community/support.md
+  - Code of Conduct: community/code-of-conduct.md
