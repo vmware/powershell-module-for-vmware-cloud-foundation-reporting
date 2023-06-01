@@ -1,4 +1,4 @@
-# Contributing to powershell-module-for-vmware-cloud-foundation-reporting
+# Contributing
 
 The project team welcomes contributions from the community. Before you start working with project, please read our
 [Developer Certificate of Origin](https://cla.vmware.com/dco).
