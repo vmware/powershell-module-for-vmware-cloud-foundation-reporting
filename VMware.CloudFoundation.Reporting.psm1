@@ -3719,6 +3719,9 @@ Function Publish-StorageCapacityHealth {
                 $allWorkloadDomains = Get-VCFWorkloadDomain
                 $singleWorkloadDomain = Get-VCFWorkloadDomain | Where-Object {$_.name -eq $workloadDomain}
                 $allStorageCapacityHealth = New-Object System.Collections.ArrayList
+                $allVcenterStorageHealth = New-Object System.Collections.ArrayList
+                $allEsxiStorageCapacity = New-Object System.Collections.ArrayList
+                $allDatastoreStorageCapacity = New-Object System.Collections.ArrayList
 
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     if ($PsBoundParameters.ContainsKey("failureOnly")) {

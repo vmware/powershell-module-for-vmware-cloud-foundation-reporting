@@ -1,4 +1,13 @@
-# CHANGELOG
+# Release History
+
+## v2.2.0 (Unreleases)
+
+> Release Date: Unreleased
+
+Bugfix:
+
+- Updates `Publish-StorageCapacityHealth` to correct [GH-147](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/issues/147). [GH-148](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/148)
+
 
 ## [v2.1.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.1.0)
 
