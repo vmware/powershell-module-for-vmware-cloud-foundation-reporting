@@ -1,8 +1,8 @@
 # Release History
 
-## v2.2.0 (Unreleases)
+## [v2.2.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.2.0)
 
-> Release Date: Unreleased
+> Release Date: 2023-06-27
 
 Bugfix:
 

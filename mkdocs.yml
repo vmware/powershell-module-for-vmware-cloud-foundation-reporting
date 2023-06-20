@@ -236,6 +236,7 @@ nav:
     - Request-VsanAlert: documentation/functions/Request-VsanAlert.md
     - Test-VcfReportingPrereq: documentation/functions/Test-VcfReportingPrereq.md
 - Community:
+  - community/index.md
   - Contributing: community/contributing.md
   - Discussions: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/discussions
   - Search Issues: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/issues
