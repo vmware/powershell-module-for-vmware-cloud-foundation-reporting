@@ -15,7 +15,7 @@
 The following table lists the supported platforms for this module.
 
 Platform                                                     | vSAN ReadyNodes                     | DellEMC VxRail
--------------------------------------------------------------|-------------------------------------|--------------------------
+-------------------------------------------------------------|-------------------------------------|------------------------------------
 :fontawesome-solid-cloud: &nbsp; VMware Cloud Foundation 5.0 | :fontawesome-solid-check:{ .green } | :fontawesome-solid-check:{ .green }
 :fontawesome-solid-cloud: &nbsp; VMware Cloud Foundation 4.5 | :fontawesome-solid-check:{ .green } | :fontawesome-solid-check:{ .green }
 :fontawesome-solid-cloud: &nbsp; VMware Cloud Foundation 4.4 | :fontawesome-solid-check:{ .green } | :fontawesome-solid-check:{ .green }
@@ -49,7 +49,7 @@ PowerShell Module                                    | Version   | Publisher    
 [VMware.PowerCLI][psgallery-module-powercli]         | >= 13.0.0 | VMware, Inc. | :fontawesome-solid-book: &nbsp; [Documentation][developer-module-powercli]
 [VMware.vSphere.SsoAdmin][psgallery-module-ssoadmin] | >= 1.3.9  | VMware, Inc. | :fontawesome-brands-github: &nbsp; [GitHub][github-module-ssoadmin]
 [PowerVCF][psgallery-module-powervcf]                | >= 2.3.0  | VMware, Inc. | :fontawesome-brands-github: &nbsp; [GitHub][github-module-powervcf]
-[PowerValidatedSolutions][psgallery-module-pvs]      | >= 2.2.0  | VMware, Inc. | :fontawesome-brands-github: &nbsp; [GitHub][github-module-pvs]
+[PowerValidatedSolutions][psgallery-module-pvs]      | >= 2.4.0  | VMware, Inc. | :fontawesome-brands-github: &nbsp; [GitHub][github-module-pvs]
 
 ### Browsers
 
