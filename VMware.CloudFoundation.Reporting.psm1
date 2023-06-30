@@ -9227,11 +9227,12 @@ Export-ModuleMember -Function Request-ValidatedSolutionOverview
 
 Function Test-VcfReportingPrereq {
     <#
-		.SYNOPSIS
-        Validate prerequisites to run the PowerShell module.
+    	.SYNOPSIS
+        Verifies that the minimum dependencies are met to run the PowerShell module.
 
         .DESCRIPTION
-        The Test-VcfReportingPrereq cmdlet checks that all the prerequisites have been met to run the PowerShell module.
+        The Test-VcfReportingPrereq cmdlet verifies that the minimum dependencies are met to
+        run the the PowerShell module.
 
         .EXAMPLE
         Test-VcfReportingPrereq -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1!
@@ -9258,13 +9259,6 @@ Function Test-VcfReportingPrereq {
 
         $vcfMinVersion = "4.4.0"
 
-        $modules = @(
-            @{ Name=("VMware.PowerCLI"); MinimumVersion=("13.0.0")}
-            @{ Name=("VMware.vSphere.SsoAdmin"); MinimumVersion=("1.3.9")}
-            @{ Name=("PowerVCF"); MinimumVersion=("2.3.0")}
-            @{ Name=("PowerValidatedSolutions"); MinimumVersion=("2.4.0")}
-        )
-
         if (Test-VCFConnection -server $sddcManagerFqdn) {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
 
@@ -9278,22 +9272,40 @@ Function Test-VcfReportingPrereq {
                     Show-ReportingOutput -Type INFO -Message $message
                 }
 
-                foreach ($module in $modules ) {
-                    if ((Get-InstalledModule -ErrorAction SilentlyContinue -Name $module.Name).Version -lt $module.MinimumVersion) {
-                        $message = "PowerShell Module: $($module.Name) $($module.MinimumVersion) minimum required version is not installed."
-                        Show-ReportingOutput -type ERROR -message $message
-                        Break
+                $moduleName = $myInvocation.myCommand.ModuleName
+                $moduleData = (Get-Module -Name $moduleName)
+
+                if ($PSEdition -eq 'Core' -and ($PSVersionTable.OS).Split(' ')[0] -eq 'Linux') {
+                    $moduleManifestPath = $moduleData.ModuleBase + '/' + $moduleData.Name + '.psd1'
+                } else {
+                    $moduleManifestPath = $moduleData.ModuleBase + '\' + $moduleData.Name + '.psd1'
+                }
+
+                $moduleManifest = Import-PowerShellDataFile -Path $moduleManifestPath
+                $requiredModules = $moduleManifest.RequiredModules
+
+                foreach ($module in $requiredModules) {
+                    $moduleName = $module.ModuleName
+                    $requiredVersion = $module.ModuleVersion
+                    $installedModule = Get-Module -ListAvailable -Name $moduleName
+
+                    if ($installedModule) {
+                        $installedVersion = $installedModule.Version
+                        if ($installedVersion -lt $requiredVersion) {
+                            $message = "$($moduleName) $($installedVersion) is installed. Install $($moduleName) $($requiredVersion) or higher."
+                            Show-ReportingOutput -type ERROR -message $message
+                        } elseif ($installedVersion -ge $requiredVersion) {
+                            $message = "$($moduleName) $($installedVersion) is installed version and meets the minimum required version of $($moduleName) $($requiredVersion)."
+                            Show-ReportingOutput -type INFO -message $message
+                        }
                     } else {
-                        $moduleCurrentVersion = (Get-InstalledModule -Name $module.Name).Version
-                        $message = "PowerShell Module: $($module.Name) $($moduleCurrentVersion) is installed and supports the minimum required version."
-                        Show-ReportingOutput -Type INFO -Message $message
+                        $message = "$($moduleName) is not installed. Install $($moduleName) $($requiredVersion) or higher."
+                        Show-ReportingOutputt -type ERROR -message $message
                     }
                 }
             }
         }
-
-    }
-    Catch {
+    } Catch {
         Write-Error $_.Exception.Message
     }
 }
