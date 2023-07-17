@@ -9300,7 +9300,7 @@ Function Test-VcfReportingPrereq {
                         }
                     } else {
                         $message = "$($moduleName) is not installed. Install $($moduleName) $($requiredVersion) or higher."
-                        Show-ReportingOutputt -type ERROR -message $message
+                        Show-ReportingOutput -type ERROR -message $message
                     }
                 }
             }
