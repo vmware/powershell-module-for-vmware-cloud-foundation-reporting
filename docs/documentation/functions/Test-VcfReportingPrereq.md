@@ -2,13 +2,12 @@
 
 ## SYNOPSIS
 
-Validate prerequisites to run the PowerShell module.
+Verifies that the minimum dependencies are met to run the PowerShell module.
 
 ## SYNTAX
 
 ```powershell
-Test-VcfReportingPrereq [-sddcManagerFqdn] <String> [-sddcManagerUser] <String> [-sddcManagerPass] <String>
- [<CommonParameters>]
+Test-VcfReportingPrereq [-sddcManagerFqdn] <String> [-sddcManagerUser] <String> [-sddcManagerPass] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION

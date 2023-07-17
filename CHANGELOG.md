@@ -1,5 +1,18 @@
 # Release History
 
+## v2.3.0 (Unreleased)
+
+> Release Date: Unreleased
+
+Enhancement:
+
+- Added the `RequiredModules` key to the module manifest to specify the minimum dependencies required to install and run the PowerShell module. [GH-155](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/155)
+- Updated `Test-VcfReportingPrereq` to verify that the minimum dependencies are met to run the PowerShell module based on the module's manifest. [GH-155](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/155)
+
+Chore:
+
+- Updated `PowerValidatedSolutions` from v2.4.0 to v2.5.0. [GH-155](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/155)
+
 ## [v2.2.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.2.0)
 
 > Release Date: 2023-06-27
@@ -8,6 +21,9 @@ Bugfix:
 
 - Updates `Publish-StorageCapacityHealth` to correct [GH-147](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/issues/147). [GH-148](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/148)
 
+Chore:
+
+- Updated `PowerValidatedSolutions` from v2.3.0 to v2.4.0. [GH-150](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/150)
 
 ## [v2.1.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.1.0)
 
