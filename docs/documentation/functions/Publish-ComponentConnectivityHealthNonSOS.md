@@ -1,39 +1,35 @@
 # Publish-ComponentConnectivityHealthNonSOS
 
-## SYNOPSIS
+## Synopsis
 
 Request and publish Component Connectivity Health only for health checks which are not a part of SOS Utility NSX health.
 Data obtained is a subset of Publish-ComponentConnectivityHealth cmdlet.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-ComponentConnectivityHealthNonSOS -server <String> -user <String> -pass <String> [-allDomains]
- [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-ComponentConnectivityHealthNonSOS -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-ComponentConnectivityHealthNonSOS -server <String> -user <String> -pass <String>
- -workloadDomain <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-ComponentConnectivityHealthNonSOS -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-ComponentConnectivityHealthNonSOS cmdlet checks component connectivity across the VMware Cloud Foundation
-instance and prepares the data to be published to an HTML report.
-The cmdlet connects to SDDC Manager using the
--server, -user, and password values:
+The `Publish-ComponentConnectivityHealthNonSOS` cmdlet checks component connectivity across the VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Performs connectivityy health checks and outputs the results
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
@@ -41,7 +37,7 @@ Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -use
 
 This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!  -workloadDomain sfo-w01
@@ -49,7 +45,7 @@ Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -use
 
 This example checks the component connectivity outside of SOS utility for a single workload domain in a VMware Cloud Foundation instance.
 
-### EXAMPLE 3
+### Example 3
 
 ```powershell
 Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
@@ -57,16 +53,15 @@ Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -use
 
 This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
-### EXAMPLE 4
+### Example 4
 
 ```powershell
 Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -jsonOutput F:\Reporting
 ```
 
-This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance
-and saves it under F:\Reporting with filename <timestamp>-componentconnectivityhealthnonsos-status.json
+This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance and saves it under F:\Reporting with filename <timestamp>-componentconnectivityhealthnonsos-status.json
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

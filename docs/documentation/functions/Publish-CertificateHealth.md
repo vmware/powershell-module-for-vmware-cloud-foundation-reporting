@@ -1,23 +1,22 @@
 # Publish-CertificateHealth
 
-## SYNOPSIS
+## Synopsis
 
 Formats the Certificate Health data from the SoS JSON output.
 
-## SYNTAX
+## Syntax
 
 ```powershell
 Publish-CertificateHealth [-json] <String> [-html] [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-CertificateHealth cmdlet formats the Certificate Health data from the SoS JSON output and publishes
-it as either a standard PowerShell object or an HTML object.
+The `Publish-CertificateHealth` cmdlet formats the Certificate Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-CertificateHealth -json <file-name> -html
@@ -25,7 +24,7 @@ Publish-CertificateHealth -json <file-name> -html
 
 This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-CertificateHealth -json <file-name> -html-html
@@ -33,7 +32,7 @@ Publish-CertificateHealth -json <file-name> -html-html
 
 This example extracts and formats the Certificate Health data as an HTML object from the JSON file.
 
-### EXAMPLE 3
+### Example 3
 
 ```powershell
 Publish-CertificateHealth -json <file-name> -html-failureOnly
@@ -41,7 +40,7 @@ Publish-CertificateHealth -json <file-name> -html-failureOnly
 
 This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file for only the failed items.
 
-## PARAMETERS
+## Parameters
 
 ### -json
 

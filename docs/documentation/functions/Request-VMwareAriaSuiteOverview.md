@@ -1,27 +1,26 @@
 # Request-VMwareAriaSuiteOverview
 
-## SYNOPSIS
+## Synopsis
 
 Returns an overview of VMware Aria Suite products managed by SDDC Manager.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-VMwareAriaSuiteOverview [-server] <String> [-user] <String> [-pass] <String> [-anonymized]
- [<CommonParameters>]
+Request-VMwareAriaSuiteOverview [-server] <String> [-user] <String> [-pass] <String> [-anonymized] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-VMwareAriaSuiteOverview cmdlet returns an overview of VMware Aria Suite products managed by SDDC Manager.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-VMwareAriaSuiteOverview` cmdlet returns an overview of VMware Aria Suite products managed by SDDC Manager.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity and authentication to the SDDC Manager instance
 - Collects the VMware Aria Suite product overview detail
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-VMwareAriaSuiteOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -29,7 +28,7 @@ Request-VMwareAriaSuiteOverview -server sfo-vcf01.sfo.rainpole.io -user admin@lo
 
 This example will return an overview of VMware Aria Suite products managed by the SDDC Manager instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-VMwareAriaSuiteOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
@@ -38,7 +37,7 @@ Request-VMwareAriaSuiteOverview -server sfo-vcf01.sfo.rainpole.io -user admin@lo
 This example will return an overview of VMware Aria Suite products managed by the SDDC Manager instance, but
 will anonymize the output.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

@@ -1,26 +1,26 @@
 # Request-NetworkOverview
 
-## SYNOPSIS
+## Synopsis
 
 Returns overview of networking.
 
-## SYNTAX
+## Syntax
 
 ```powershell
 Request-NetworkOverview [-server] <String> [-user] <String> [-pass] <String> [-anonymized] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-NetworkOverview cmdlet returns an overview of the networking managed by SDDC Manager.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-NetworkOverview` cmdlet returns an overview of the networking managed by SDDC Manager.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity and authentication to the SDDC Manager instance
 - Collects the networking overview detail
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-NetworkOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -28,7 +28,7 @@ Request-NetworkOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pas
 
 This example will return an overview of the networking managed by the SDDC Manager instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-NetworkOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
@@ -36,7 +36,7 @@ Request-NetworkOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pas
 
 This example will return an overview of the networking managed by the SDDC Manager instance, but will anonymize the output.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

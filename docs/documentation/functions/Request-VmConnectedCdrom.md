@@ -1,29 +1,27 @@
 # Request-VmConnectedCdrom
 
-## SYNOPSIS
+## Synopsis
 
 Returns the status of virtual machines with connected CD-ROMs in a workload domain.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-VmConnectedCdrom [-server] <String> [-user] <String> [-pass] <String> [-domain] <String>
- [<CommonParameters>]
+Request-VmConnectedCdrom [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-VmConnectedCdrom cmdlet returns the status of virtual machines with connected CD-ROMs in a workload
-domain.
-The cmdlet connects to SDDC Manager using the -server, -user, and -pass values:
+The `Request-VmConnectedCdrom` cmdlet returns the status of virtual machines with connected CD-ROMs in a workload domain.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Validates that network connectivity is available to the vCenter Server instance
 - Gathers the status of virtual machines with connected CD-ROMs in a workload domain.
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
@@ -31,7 +29,7 @@ Request-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pa
 
 This example returns the status of virtual machines with connected CD-ROMs in a workload domain.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

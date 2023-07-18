@@ -1,38 +1,34 @@
 # Publish-StorageCapacityHealth
 
-## SYNOPSIS
+## Synopsis
 
 Request and publish the storage capacity status.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-StorageCapacityHealth -server <String> -user <String> -pass <String> -localUser <String>
- -localPass <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-StorageCapacityHealth -server <String> -user <String> -pass <String> -localUser <String> -localPass <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-StorageCapacityHealth -server <String> -user <String> -pass <String> -localUser <String>
- -localPass <String> -workloadDomain <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-StorageCapacityHealth -server <String> -user <String> -pass <String> -localUser <String> -localPass <String> -workloadDomain <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-StorageCapacityHealth cmdlet checks the storage usage status for SDDC Manager, vCenter Server,
-Datastores and ESXi hosts, in a VMware Cloud Foundation instance and prepares the data to be published
-to an HTML report or plain text to console.
-The cmdlet connects to SDDC Manager using the -server, -user, -pass, -localUser, and -localPass values:
+The `Publish-StorageCapacityHealth` cmdlet checks the storage usage status for SDDC Manager, vCenter Server, Datastores and ESXi hosts, in a VMware Cloud Foundation instance and prepares the data to be published to an HTML report or plain text to console.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, -`pass`, `-localUser`, and `-localPass` values:
 
 - Validates the network connectivity and authantication to the SDDC Manager instance
 - Performs checks on the storage usage status and outputs the results
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -allDomains
@@ -40,7 +36,7 @@ Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@loca
 
 This example will publish storage usage status for SDDC Manager, vCenter Server instances, ESXi hosts, and datastores in a VMware Cloud Foundation instance
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -allDomains -failureOnly
@@ -48,7 +44,7 @@ Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@loca
 
 This example will publish storage usage status for SDDC Manager, vCenter Server instances, ESXi hosts, and datastores in a VMware Cloud Foundation instance but only for the failed items.
 
-### EXAMPLE 3
+### Example 3
 
 ```powershell
 Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -workloadDomain sfo-w01
@@ -56,16 +52,15 @@ Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@loca
 
 This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance
 
-### EXAMPLE 4
+### Example 4
 
 ```powershell
 Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -workloadDomain sfo-w01 -outputJson F:\Reporting
 ```
 
-This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance
-and saves it as JSON under F:\Reporting with filename <timestamp>-storagecapacityhealth-status.json
+This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance and saves it as JSON under F:\Reporting with filename <timestamp>-storagecapacityhealth-status.json
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

@@ -1,38 +1,35 @@
 # Publish-EsxiCoreDumpConfig
 
-## SYNOPSIS
+## Synopsis
 
 Generates an ESXi core dump configuration report.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-EsxiCoreDumpConfig -server <String> -user <String> -pass <String> [-html] [-allDomains]
- [<CommonParameters>]
+Publish-EsxiCoreDumpConfig -server <String> -user <String> -pass <String> [-html] [-allDomains] [<CommonParameters>]
 ```
 
 ### Specific--WorkloadDomain
 
 ```powershell
-Publish-EsxiCoreDumpConfig -server <String> -user <String> -pass <String> [-html] -workloadDomain <String>
- [<CommonParameters>]
+Publish-EsxiCoreDumpConfig -server <String> -user <String> -pass <String> [-html] -workloadDomain <String> [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-EsxiCoreDumpConfig cmdlet generates an ESXi core dump report for a workload domain.
-The cmdlet
-connects to SDDC Manager using the -server, -user, and -pass values:
+The `Publish-EsxiCoreDumpConfig` cmdlet generates an ESXi core dump report for a workload domain.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Validates that network connectivity is available to the vCenter Server instance
 - Generates an ESXi core dump report for all ESXi hosts in a workload domain
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -alldomains
@@ -40,7 +37,7 @@ Publish-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user admin@local -
 
 This example generates an ESXi core dump report for all ESXi hosts across the VMware Cloud Foundation instance.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

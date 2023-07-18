@@ -1,29 +1,28 @@
 # Request-NsxtTransportNodeTunnelStatus
 
-## SYNOPSIS
+## Synopsis
 
 Returns the status of NSX transport node tunnels.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-NsxtTransportNodeTunnelStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String>
- [-failureOnly] [<CommonParameters>]
+Request-NsxtTransportNodeTunnelStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-NsxtTransportNodeTunnelStatus cmdlet returns the status NSX transport nodes tunnels.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-NsxtTransportNodeTunnelStatus` cmdlet returns the status NSX transport nodes tunnels.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates network connectivity and authentication to the SDDC Manager instance
 - Gathers the details for the NSX Manager cluster from the SDDC Manager
 - Validates network connectivity and authentication to the NSX Local Manager cluster
 - Collects the status of the transport node tunnels
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
@@ -31,7 +30,7 @@ Request-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user ad
 
 This example will return the status of the NSX transport node tunnels for a workload domain.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
@@ -39,7 +38,7 @@ Request-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user ad
 
 This example will return the status of the NSX transport node tunnels for a workload domain but only reports issues.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

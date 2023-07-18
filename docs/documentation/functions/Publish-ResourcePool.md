@@ -1,10 +1,10 @@
 # Publish-ResourcePool
 
-## SYNOPSIS
+## Synopsis
 
 Publish resource pool information in HTML format.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
@@ -15,22 +15,21 @@ Publish-ResourcePool -server <String> -user <String> -pass <String> [-allDomains
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-ResourcePool -server <String> -user <String> -pass <String> -workloadDomain <String>
- [<CommonParameters>]
+Publish-ResourcePool -server <String> -user <String> -pass <String> -workloadDomain <String> [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-ResourcePool cmdlet returns resource pool information in HTML format.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Publish-ResourcePool` cmdlet returns resource pool information in HTML format.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the vCenter Server instance
 - Validates the authentication to vCenter Server with credentials from SDDC Manager
 - Publishes resource pool information
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-ResourcePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
@@ -38,7 +37,7 @@ Publish-ResourcePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass V
 
 This example will return resource pool details from all clusters in vCenter Server managed by SDDC Manager for a all workload domains.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-ResourcePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
@@ -46,7 +45,7 @@ Publish-ResourcePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass V
 
 This example will return resource pool details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

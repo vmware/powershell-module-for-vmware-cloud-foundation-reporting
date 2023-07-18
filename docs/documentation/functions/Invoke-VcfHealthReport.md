@@ -1,34 +1,30 @@
 # Invoke-VcfHealthReport
 
-## SYNOPSIS
+## Synopsis
 
 Perform health checks.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Invoke-VcfHealthReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String>
- -sddcManagerLocalUser <String> -sddcManagerLocalPass <String> -reportPath <String> [-allDomains]
- [-failureOnly] [-darkMode] [<CommonParameters>]
+Invoke-VcfHealthReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -sddcManagerLocalUser <String> -sddcManagerLocalPass <String> -reportPath <String> [-allDomains] [-failureOnly] [-darkMode] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Invoke-VcfHealthReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String>
- -sddcManagerLocalUser <String> -sddcManagerLocalPass <String> -reportPath <String> -workloadDomain <String>
- [-failureOnly] [-darkMode] [<CommonParameters>]
+Invoke-VcfHealthReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -sddcManagerLocalUser <String> -sddcManagerLocalPass <String> -reportPath <String> -workloadDomain <String> [-failureOnly] [-darkMode] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Invoke-VcfHealthReport provides a single cmdlet to perform health checks across a VMware Cloud Foundation instance.
+The `Invoke-VcfHealthReport` provides a single cmdlet to perform health checks across a VMware Cloud Foundation instance.
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerLocalUser vcf -sddcManagerLocalPass VMw@re1! -reportPath F:\Reporting -allDomains
@@ -36,7 +32,7 @@ Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUs
 
 This example runs a health check across a VMware Cloud Foundation instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerLocalUser vcf -sddcManagerLocalPass VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
@@ -44,7 +40,7 @@ Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUs
 
 This example runs a health check for a specific workload domain within a VMware Cloud Foundation instance.
 
-### EXAMPLE 3
+### Example 3
 
 ```powershell
 Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerLocalUser vcf -sddcManagerLocalPass VMw@re1! -reportPath F:\Reporting -allDomains -failureOnly
@@ -52,7 +48,7 @@ Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUs
 
 This example runs a health check across a VMware Cloud Foundation instance but only ouputs issues to the HTML report.
 
-## PARAMETERS
+## Parameters
 
 ### -sddcManagerFqdn
 

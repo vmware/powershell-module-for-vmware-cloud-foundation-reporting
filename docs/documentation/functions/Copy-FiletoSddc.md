@@ -1,29 +1,27 @@
 # Copy-FiletoSddc
 
-## SYNOPSIS
+## Synopsis
 
 Copy a file to SDDC Manager.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Copy-FiletoSddc [-server] <String> [-user] <String> [-pass] <String> [-vmUser] <String> [-vmPass] <String>
- [-source] <String> [-destination] <String> [<CommonParameters>]
+Copy-FiletoSddc [-server] <String> [-user] <String> [-pass] <String> [-vmUser] <String> [-vmPass] <String> [-source] <String> [-destination] <String> [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Copy-FiletoSddc cmdlet copies files to the SDDC Manager appliance.
-The cmdlet connects to SDDC
-Manager using the -server, -user, and -pass values:
+The `Copy-FiletoSddc` cmdlet copies files to the SDDC Manager appliance.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Validates that network connectivity is available to the Management Domain vCenter Server instance
 - Copies the files to the SDDC Manager appliance
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser vcf -vmPass VMw@re1! -source "C:\Temp\foo.txt" -destination "/home/vcf/foo.txt"
@@ -31,7 +29,7 @@ Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re
 
 This example copies a file to the SDDC Manager appliance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmuser vcf -vmPass VMw@re1! -source "C:\Temp\bar" -destination "/home/vcf/"
@@ -39,7 +37,7 @@ Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re
 
 This example copies a file to the SDDC Manager appliance.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

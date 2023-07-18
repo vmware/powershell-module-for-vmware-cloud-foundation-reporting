@@ -1,29 +1,28 @@
 # Invoke-SddcCommand
 
-## SYNOPSIS
+## Synopsis
 
 Run a command on SDDC Manager.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Invoke-SddcCommand [-server] <String> [-user] <String> [-pass] <String> [-vmUser] <String> [-vmPass] <String>
- [-command] <String> [<CommonParameters>]
+Invoke-SddcCommand [-server] <String> [-user] <String> [-pass] <String> [-vmUser] <String> [-vmPass] <String> [-command] <String>
+[<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Invoke-SddcCommand cmdlet runs a command within the SDDC Manager appliance.
-The cmdlet connects to SDDC
-Manager using the -server, -user, and -pass values:
+The `Invoke-SddcCommand` cmdlet runs a command within the SDDC Manager appliance.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Validates that network connectivity is available to the Management Domain vCenter Server instance
 - Runs the command provided within the SDDC Manager appliance
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser root -vmPass VMw@re1! -command "chage -l backup"
@@ -31,7 +30,7 @@ Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw
 
 This example runs the command provided on the SDDC Manager appliance as the root user.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser vcf -vmPass VMw@re1! -command "echo Hello World."
@@ -39,7 +38,7 @@ Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw
 
 This example runs the command provided on the SDDC Manager appliance as the vcf user.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

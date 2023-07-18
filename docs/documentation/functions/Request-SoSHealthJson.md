@@ -1,33 +1,30 @@
 # Request-SoSHealthJson
 
-## SYNOPSIS
+## Synopsis
 
 Run SoS and save the JSON output.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Request-SoSHealthJson -server <String> -user <String> -pass <String> -reportPath <String> [-allDomains]
- [<CommonParameters>]
+Request-SoSHealthJson -server <String> -user <String> -pass <String> -reportPath <String> [-allDomains] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Request-SoSHealthJson -server <String> -user <String> -pass <String> -reportPath <String>
- -workloadDomain <String> [<CommonParameters>]
+Request-SoSHealthJson -server <String> -user <String> -pass <String> -reportPath <String> -workloadDomain <String> [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-SoSHealthJson cmdlet connects to SDDC Manager, runs an SoS Health collection to JSON, and saves the
-JSON file to the local file system.
+The `Request-SoSHealthJson` cmdlet connects to SDDC Manager, runs an SoS Health collection to JSON, and saves the JSON file to the local file system.
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Reporting\HealthReports -allDomains
@@ -35,7 +32,7 @@ Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass 
 
 This example runs an SoS Health collection for all domains in the SDDC and saves the JSON output to the local file system.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Reporting\HealthReports -workloadDomain sfo-w01
@@ -43,7 +40,7 @@ Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass 
 
 This example runs an SoS Health collection for a workload domain in the SDDC and saves the JSON output to the local file system.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

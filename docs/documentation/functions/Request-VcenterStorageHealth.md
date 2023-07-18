@@ -1,30 +1,28 @@
 # Request-VcenterStorageHealth
 
-## SYNOPSIS
+## Synopsis
 
 Checks the disk usage on a vCenter Server instance.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-VcenterStorageHealth [-server] <String> [-user] <String> [-pass] <String> [-domain] <String>
- [-failureOnly] [<CommonParameters>]
+Request-VcenterStorageHealth [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-VcenterStorageHealth cmdlets checks the disk space usage on a vCenter Server.
-The cmdlet
-connects to SDDC Manager using the -server, -user, and -pass values:
+The `Request-VcenterStorageHealth` cmdlets checks the disk space usage on a vCenter Server.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates network connectivity and authentication to the SDDC Manager instance
 - Validates network connectivity and authentication to the vCenter Server instance
 - Collects information for the disk usage
 - Checks disk usage against thresholds and outputs the results
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
@@ -32,7 +30,7 @@ Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local
 
 This example will check disk usage for a single workload domain
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
@@ -40,7 +38,7 @@ Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local
 
 This example will check the disk usage for all vCenter Server instances but only reports issues.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

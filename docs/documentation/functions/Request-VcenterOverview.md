@@ -1,27 +1,27 @@
 # Request-VcenterOverview
 
-## SYNOPSIS
+## Synopsis
 
 Returns overview of vSphere.
 
-## SYNTAX
+## Syntax
 
 ```powershell
 Request-VcenterOverview [-server] <String> [-user] <String> [-pass] <String> [-anonymized] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-VcenterOverview cmdlet returns an overview of the vSphere environment managed by SDDC Manager.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-VcenterOverview` cmdlet returns an overview of the vSphere environment managed by SDDC Manager.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity and authentication to the SDDC Manager instance
 - Validates that network connectivity and authentication to the vCenter Server instances
 - Collects the vSphere overview detail
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-VcenterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -29,7 +29,7 @@ Request-VcenterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pas
 
 This example will return an overview of the vSphere environment managed by the SDDC Manager instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-VcenterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -aanonymized
@@ -37,7 +37,7 @@ Request-VcenterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pas
 
 This example will return an overview of the vSphere environment managed by the SDDC Manager instance, but will anonymize the output.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

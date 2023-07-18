@@ -1,29 +1,28 @@
 # Request-NsxtVidmStatus
 
-## SYNOPSIS
+## Synopsis
 
 Returns the status of the Identity Manager integration for an NSX Manager cluster.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-NsxtVidmStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly]
- [<CommonParameters>]
+Request-NsxtVidmStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-NsxtVidmStatus cmdlet returns the status of the Identity Manager integration for an NSX Manager cluster.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-NsxtVidmStatus` cmdlet returns the status of the Identity Manager integration for an NSX Manager cluster.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates network connectivity and authentication to the SDDC Manager instanc
 - Gathers the details for the NSX Manager cluster from the SDDC Manager
 - Validates network connectivity and authentication to the NSX Local Manager cluster
 - Collects the Identity Manager integration status details
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-NsxtVidmStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
@@ -31,7 +30,7 @@ Request-NsxtVidmStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass
 
 This example will return the status of the Identity Manager integration for an NSX Manager cluster managed by SDDC Manager for a workload domain.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-NsxtVidmStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
@@ -39,7 +38,7 @@ Request-NsxtVidmStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass
 
 This example will return the status of the Identity Manager integration for an NSX Manager cluster managed by SDDC Manager for a workload domain but only reports issues.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

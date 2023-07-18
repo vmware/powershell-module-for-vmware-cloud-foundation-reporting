@@ -1,30 +1,28 @@
 # Request-NsxtTier0BgpStatus
 
-## SYNOPSIS
+## Synopsis
 
 Returns the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-NsxtTier0BgpStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String>
- [-failureOnly] [<CommonParameters>]
+Request-NsxtTier0BgpStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-NsxtTier0BgpStatus cmdlet returns the BGP status for all Tier-0 gateways managed by the NSX Manager
-cluster.
-The cmdlet connects to the NSX Local Manager using the -server, -user, and -pass values:
+The `Request-NsxtTier0BgpStatus` cmdlet returns the BGP status for all Tier-0 gateways managed by the NSX Manager cluster.
+The cmdlet connects to the NSX Local Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Validates that network connectivity is available to the NSX Local Manager cluster
 - Gathers the details for the NSX Local Manager cluster
 - Collects the BGP status for all Tier-0s managed by the NSX Local Manager cluster
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
@@ -32,7 +30,7 @@ Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -
 
 This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
@@ -40,7 +38,7 @@ Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -
 
 This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain but only reports issues.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

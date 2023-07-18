@@ -47,7 +47,6 @@ theme:
   - content.code.annotate
   - content.code.copy
   - content.tabs.link
-  - navigation.expand
   - navigation.footer
   - navigation.header
   - navigation.indexes
@@ -66,6 +65,7 @@ theme:
 plugins:
 - search:
     separator: '[\s\u200b\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+- open-in-new-tab
 - markdownextradata:
     jinja_options:
       variable_start_string: "${{"
@@ -139,8 +139,8 @@ nav:
   - Release Notes: release-notes.md
   - Release Milestones: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/milestones
   - License: license.md
-- Documentation:
-  - Reports:
+- Reference:
+  - User Guide:
     - Overview Reports: documentation/getting-started/overview-report.md
     - Health Reports: documentation/getting-started/health-report.md
     - Alert Reports: documentation/getting-started/alert-report.md

@@ -1,28 +1,26 @@
 # Request-SddcManagerBackupStatus
 
-## SYNOPSIS
+## Synopsis
 
 Returns the status of the file-level latest backup task in an SDDC Manager instance.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-SddcManagerBackupStatus [-server] <String> [-user] <String> [-pass] <String> [-failureOnly]
- [<CommonParameters>]
+Request-SddcManagerBackupStatus [-server] <String> [-user] <String> [-pass] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-SddcManagerBackupStatus cmdlet returns the status of the latest file-level backup task in an SDDC
-Manager instance.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-SddcManagerBackupStatus` cmdlet returns the status of the latest file-level backup task in an SDDC Manager instance.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates network connectivity and authentication to the SDDC Manager instance
 - Collects the latest file-level backup status details
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -30,7 +28,7 @@ Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@lo
 
 This example will return the status of the latest file-level backup task in an SDDC Manager instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
@@ -38,7 +36,7 @@ Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@lo
 
 This example will return the status of the latest file-level backup task in an SDDC Manager instance but only reports issues.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

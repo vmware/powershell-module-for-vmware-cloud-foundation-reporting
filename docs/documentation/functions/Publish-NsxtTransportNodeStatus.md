@@ -1,38 +1,34 @@
 # Publish-NsxtTransportNodeStatus
 
-## SYNOPSIS
+## Synopsis
 
 Request and publish the status of NSX transport nodes managed by an NSX Manager cluster.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-NsxtTransportNodeStatus -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly]
- [-outputJson <String>] [<CommonParameters>]
+Publish-NsxtTransportNodeStatus -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-NsxtTransportNodeStatus -server <String> -user <String> -pass <String> -workloadDomain <String>
- [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-NsxtTransportNodeStatus -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-NsxtTransportNodeStatus cmdlet checks the status NSX transport nodes managed by an NSX Manager cluster
-and prepares the data to be published to an HTML report.
-The cmdlet connects to SDDC Manager using the
--server, -user, and password values:
+The `Publish-NsxtTransportNodeStatus` cmdlet checks the status NSX transport nodes managed by an NSX Manager cluster and prepares the data to be published to an HTML report.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Performs checks on the NSX transport node status and outputs the results
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
@@ -40,7 +36,7 @@ Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@lo
 
 This example will publish the status of all NSX transport nodes in a VMware Cloud Foundation instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
@@ -48,7 +44,7 @@ Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@lo
 
 This example will publish thestatus of all NSX transport nodes in a VMware Cloud Foundation instance but only reports issues.
 
-### EXAMPLE 3
+### Example 3
 
 ```powershell
 Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
@@ -56,7 +52,7 @@ Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@lo
 
 This example will publish the BGP status for the NSX transport nodes in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
 
-### EXAMPLE 4
+### Example 4
 
 ```powershell
 Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
@@ -65,7 +61,7 @@ Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@lo
 This example will generate a json for the status of all NSX transport nodes in a VMware Cloud Foundation instance.
 and saves it under F:\Reporting with filename <timestamp>-nsxttransportnode-status.json
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

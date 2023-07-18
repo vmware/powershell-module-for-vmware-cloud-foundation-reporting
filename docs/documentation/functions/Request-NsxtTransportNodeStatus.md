@@ -1,29 +1,28 @@
 # Request-NsxtTransportNodeStatus
 
-## SYNOPSIS
+## Synopsis
 
 Returns the status of NSX transport nodes managed by an NSX Manager cluster.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-NsxtTransportNodeStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String>
- [-failureOnly] [<CommonParameters>]
+Request-NsxtTransportNodeStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-NsxtTransportNodeStatus cmdlet returns the status NSX transport nodes managed by an NSX Manager cluster.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-NsxtTransportNodeStatus` cmdlet returns the status NSX transport nodes managed by an NSX Manager cluster.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates network connectivity and authentication to the SDDC Manager instance
 - Gathers the details for the NSX Manager cluster from the SDDC Manager
 - Validates network connectivity and authentication to the NSX Local Manager cluster
 - Collects the status of the transport nodes
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
@@ -31,7 +30,7 @@ Request-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@lo
 
 This example will return the status of the NSX transport nodes managed by an NSX Manager cluster which is managed by SDDC Manager for a workload domain.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
@@ -39,7 +38,7 @@ Request-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@lo
 
 This example will return the status of the NSX transport nodes managed by an NSX Manager cluster which is managed by SDDC Manager for a workload domain but only reports issues.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

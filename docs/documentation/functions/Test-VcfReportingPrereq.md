@@ -1,22 +1,22 @@
 # Test-VcfReportingPrereq
 
-## SYNOPSIS
+## Synopsis
 
 Verifies that the minimum dependencies are met to run the PowerShell module.
 
-## SYNTAX
+## Syntax
 
 ```powershell
 Test-VcfReportingPrereq [-sddcManagerFqdn] <String> [-sddcManagerUser] <String> [-sddcManagerPass] <String> [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Test-VcfReportingPrereq cmdlet checks that all the prerequisites have been met to run the PowerShell module.
+The `Test-VcfReportingPrereq` cmdlet checks that all the prerequisites have been met to run the PowerShell module.
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Test-VcfReportingPrereq -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1!
@@ -24,7 +24,7 @@ Test-VcfReportingPrereq -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerU
 
 This example runs the prerequisite validation.
 
-## PARAMETERS
+## Parameters
 
 ### -sddcManagerFqdn
 

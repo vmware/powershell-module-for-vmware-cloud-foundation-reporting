@@ -1,27 +1,26 @@
 # Publish-VcfSystemOverview
 
-## SYNOPSIS
+## Synopsis
 
 Publishs a system overview report.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Publish-VcfSystemOverview [-server] <String> [-user] <String> [-pass] <String> [-anonymized]
- [<CommonParameters>]
+Publish-VcfSystemOverview [-server] <String> [-user] <String> [-pass] <String> [-anonymized] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-VcfSystemOverview cmdlet returns an overview of the Vmware Cloud Foundation instance.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Publish-VcfSystemOverview` cmdlet returns an overview of the Vmware Cloud Foundation instance.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Collects the system overview details from the environment
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -29,7 +28,7 @@ Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -p
 
 This example will return system overview report for a all workload domains.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
@@ -37,7 +36,7 @@ Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -p
 
 This example will return system overview report for a all workload domains, but with anonymized data.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

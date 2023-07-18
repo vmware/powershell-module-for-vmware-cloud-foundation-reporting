@@ -1,28 +1,27 @@
 # Request-EsxiConnectionHealth
 
-## SYNOPSIS
+## Synopsis
 
 Returns the connection status of ESXi hosts in a workload domain.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-EsxiConnectionHealth [-server] <String> [-user] <String> [-pass] <String> [-domain] <String>
- [-failureOnly] [<CommonParameters>]
+Request-EsxiConnectionHealth [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-EsxiConnectionHealth cmdlet returns the connection status of ESXi hosts in a workload domain.
-The cmdlet connects to SDDC Manager using the -server, -user, and -pass values:
+The `Request-EsxiConnectionHealth` cmdlet returns the connection status of ESXi hosts in a workload domain.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Validates that network connectivity is available to the vCenter Server instance
 - Gathers the connection status of ESXi hosts in a workload domain.
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
@@ -30,7 +29,7 @@ Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local
 
 This example returns the connection status of ESXi hosts in a workload domain.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
@@ -38,7 +37,7 @@ Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local
 
 This example returns the connection status of ESXi hosts in a workload domain but only reports issues.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

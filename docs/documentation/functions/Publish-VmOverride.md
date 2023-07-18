@@ -1,10 +1,10 @@
 # Publish-VmOverride
 
-## SYNOPSIS
+## Synopsis
 
 Publish VM Override information in HTML format.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
@@ -18,18 +18,18 @@ Publish-VmOverride -server <String> -user <String> -pass <String> [-allDomains] 
 Publish-VmOverride -server <String> -user <String> -pass <String> -workloadDomain <String> [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-VmOverride cmdlet returns VM Override information in HTML format.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Publish-VmOverride` cmdlet returns VM Override information in HTML format.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the vCenter Server instance
 - Validates the authentication to vCenter Server with credentials from SDDC Manager
 - Publishes information
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
@@ -37,7 +37,7 @@ Publish-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw
 
 This example will return VM Override details from all clusters in vCenter Server managed by SDDC Manager for all workload domains.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
@@ -45,7 +45,7 @@ Publish-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw
 
 This example will return VM Override details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 
