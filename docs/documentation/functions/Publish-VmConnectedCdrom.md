@@ -1,10 +1,10 @@
 # Publish-VmConnectedCdrom
 
-## SYNOPSIS
+## Synopsis
 
 Publish the status of virtual machines with connected CD-ROMs in a workload domain in HTML format.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
@@ -15,23 +15,21 @@ Publish-VmConnectedCdrom -server <String> -user <String> -pass <String> [-allDom
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-VmConnectedCdrom -server <String> -user <String> -pass <String> -workloadDomain <String>
- [<CommonParameters>]
+Publish-VmConnectedCdrom -server <String> -user <String> -pass <String> -workloadDomain <String> [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-VmConnectedCdrom cmdlet returns the status of virtual machines with connected CD-ROMS in a workload
-domain in HTML format.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Publish-VmConnectedCdrom` cmdlet returns the status of virtual machines with connected CD-ROMS in a workload domain in HTML format.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the vCenter Server instance
 - Validates the authentication to vCenter Server with credentials from SDDC Manager
 - Publishes information
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
@@ -39,7 +37,7 @@ Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pa
 
 This example will returns the status of virtual machines with connected CD-ROMs in all workload domains.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
@@ -47,7 +45,7 @@ Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pa
 
 This example will returns the status of virtual machines with connected CD-ROMs in a workload domain.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

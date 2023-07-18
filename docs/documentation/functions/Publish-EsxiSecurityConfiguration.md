@@ -1,37 +1,35 @@
 # Publish-EsxiSecurityConfiguration
 
-## SYNOPSIS
+## Synopsis
 
 Publish ESXi security information in HTML format.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-EsxiSecurityConfiguration -server <String> -user <String> -pass <String> [-allDomains]
- [<CommonParameters>]
+Publish-EsxiSecurityConfiguration -server <String> -user <String> -pass <String> [-allDomains] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-EsxiSecurityConfiguration -server <String> -user <String> -pass <String> -workloadDomain <String>
- [<CommonParameters>]
+Publish-EsxiSecurityConfiguration -server <String> -user <String> -pass <String> -workloadDomain <String> [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-EsxiSecurityConfiguration cmdlet returns ESXi security information in HTML format.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Publish-EsxiSecurityConfiguration` cmdlet returns ESXi security information in HTML format.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the vCenter Server instance
 - Validates the authentication to vCenter Server with credentials from SDDC Manager
 - Publishes information
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-EsxiSecurityConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
@@ -39,7 +37,7 @@ Publish-EsxiSecurityConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@
 
 This example will return ESXi security details from all clusters in vCenter Server managed by SDDC Manager for a all workload domains.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-EsxiSecurityConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
@@ -47,7 +45,7 @@ Publish-EsxiSecurityConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@
 
 This example will return ESXi security details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

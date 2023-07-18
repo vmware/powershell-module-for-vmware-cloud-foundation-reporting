@@ -1,28 +1,28 @@
 # Request-EsxiOverview
 
-## SYNOPSIS
+## Synopsis
 
 Returns overview of ESXi hosts.
 
-## SYNTAX
+## Syntax
 
 ```powershell
 Request-EsxiOverview [-server] <String> [-user] <String> [-pass] <String> [-anonymized] [-subscription]
  [[-outputCsv] <String>] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-EsxiOverview cmdlet returns an overview of the ESXi host managed by SDDC Manager.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-EsxiOverview` cmdlet returns an overview of the ESXi host managed by SDDC Manager.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity and authentication to the SDDC Manager instance
 - Validates that network connectivity and authentication to the vCenter Server instances
 - Collects the ESXi host overview detail
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -30,7 +30,7 @@ Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass V
 
 This example will return an overview of the ESXi hosts managed by the SDDC Manager instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -subscription
@@ -38,7 +38,7 @@ Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass V
 
 This example will return an overview of the ESXi hosts managed by the SDDC Manager instance with the number of cores for VCF+ subscription.
 
-### EXAMPLE 3
+### Example 3
 
 ```powershell
 Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -subscription -outputCsv F:\Reporting
@@ -46,7 +46,7 @@ Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass V
 
 This example will return an overview of the ESXi hosts managed by the SDDC Manager instance with the number of cores for VCF+ subscription and save as a CSV file to F:\Reporting.
 
-### EXAMPLE 4
+### Example 4
 
 ```powershell
 Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
@@ -54,7 +54,7 @@ Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass V
 
 This example will return an overview of the ESXi hosts managed by the SDDC Manager instance, but will anonymize the output.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

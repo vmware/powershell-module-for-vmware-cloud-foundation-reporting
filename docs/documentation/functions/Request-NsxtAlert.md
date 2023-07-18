@@ -1,29 +1,28 @@
 # Request-NsxtAlert
 
-## SYNOPSIS
+## Synopsis
 
 Returns alarms from an NSX Manager cluster.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-NsxtAlert [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly]
- [<CommonParameters>]
+Request-NsxtAlert [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-NsxtAlert cmdlet returns all alarms from an NSX Manager cluster.
-The cmdlet connects to the NSX Manager using the -server, -user, and -pass values:
+The `Request-NsxtAlert` cmdlet returns all alarms from an NSX Manager cluster.
+The cmdlet connects to the NSX Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the NSX Manager cluster
 - Validates that network connectivity is available to the vCenter Server instance
 - Gathers the details for the NSX Manager cluster
 - Collects the alerts
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
@@ -31,7 +30,7 @@ Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@
 
 This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
@@ -39,7 +38,7 @@ Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@
 
 This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain but only for the failed items.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

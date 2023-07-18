@@ -1,28 +1,26 @@
 # Request-SddcManagerFreePool
 
-## SYNOPSIS
+## Synopsis
 
 Returns the status of the ESXi hosts in the free pool.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-SddcManagerFreePool [-server] <String> [-user] <String> [-pass] <String> [-failureOnly]
- [<CommonParameters>]
+Request-SddcManagerFreePool [-server] <String> [-user] <String> [-pass] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-SddcManagerFreePool cmdlet returns status of the ESXi hosts in the free pool.
-The cmdlet connects
-to SDDC Manager using the -server, -user, and -pass values:
+The `Request-SddcManagerFreePool` cmdlet returns status of the ESXi hosts in the free pool.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity and authentication is possible to the SDDC Manager instance
 - Gathers the details for the ESXi hosts in the free pool
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -30,7 +28,7 @@ Request-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local 
 
 This example will return the ESXi hosts in the free pool managed by SDDC Manager for a workload domain.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
@@ -38,7 +36,7 @@ Request-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local 
 
 This example will return the ESXi hosts in the free pool managed by SDDC Manager for a workload domain but only reports issues.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

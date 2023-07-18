@@ -1,26 +1,25 @@
 # Request-SddcManagerStorageHealth
 
-## SYNOPSIS
+## Synopsis
 
 Checks the storage health (capacity) in an SDDC Manager appliance.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-SddcManagerStorageHealth [-server] <String> [-user] <String> [-pass] <String> [-localUser] <String>
- [-localPass] <String> [-failureOnly] [<CommonParameters>]
+Request-SddcManagerStorageHealth [-server] <String> [-user] <String> [-pass] <String> [-localUser] <String> [-localPass] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-SddcManagerStorageHealth cmdlet checks the disk free space on the SDDC Manager appliance.
-The cmdlet connects to SDDC Manager using the -server, -user, -pass, -localUser, and -localPass values:
+The `Request-SddcManagerStorageHealth` cmdlet checks the disk free space on the SDDC Manager appliance.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, -`pass`, `-localUser`, and `-localPass` values:
 
 - Performs checks on the local storage used space and outputs the results
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1!
@@ -28,7 +27,7 @@ Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@l
 
 This example checks the hard disk space in the SDDC Manager appliance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -failureOnly
@@ -36,7 +35,7 @@ Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@l
 
 This example checks the hard disk space in the SDDC Manager appliance and outputs only the failures.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

@@ -1,27 +1,26 @@
 # Publish-SddcManagerFreePool
 
-## SYNOPSIS
+## Synopsis
 
 Publish SDDC Manager free pool health information in HTML format.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Publish-SddcManagerFreePool [-server] <String> [-user] <String> [-pass] <String> [-failureOnly]
- [<CommonParameters>]
+Publish-SddcManagerFreePool [-server] <String> [-user] <String> [-pass] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-SddcManagerFreePool cmdlet returns SDDC Manager free pool information in HTML format.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Publish-SddcManagerFreePool` cmdlet returns SDDC Manager free pool information in HTML format.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates the network connectivity and authentication to the SDDC Manager instance
 - Publishes information
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -29,7 +28,7 @@ Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local 
 
 This example will return the free pool health from SDDC Manager.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
@@ -37,7 +36,7 @@ Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local 
 
 This example will return the free pool health from SDDC Manager and return the failures only.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

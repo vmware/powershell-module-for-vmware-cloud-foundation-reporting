@@ -1,26 +1,26 @@
 # Request-VcfOverview
 
-## SYNOPSIS
+## Synopsis
 
 Returns System Overview.
 
-## SYNTAX
+## Syntax
 
 ```powershell
 Request-VcfOverview [-server] <String> [-user] <String> [-pass] <String> [-anonymized] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-VcfOverview cmdlet returns an overview of the SDDC Manager instance.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-VcfOverview` cmdlet returns an overview of the SDDC Manager instance.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Collects the overview detail
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-VcfOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -28,7 +28,7 @@ Request-VcfOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VM
 
 This example will return an overview of the SDDC Manager instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-VcfOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
@@ -36,7 +36,7 @@ Request-VcfOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VM
 
 This example will return an overview of the SDDC Manager instance, but will anonymize the output.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

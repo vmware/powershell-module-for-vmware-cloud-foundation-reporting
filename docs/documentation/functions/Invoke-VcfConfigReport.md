@@ -1,32 +1,30 @@
 # Invoke-VcfConfigReport
 
-## SYNOPSIS
+## Synopsis
 
 Generates the configuration report.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Invoke-VcfConfigReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String>
- -reportPath <String> [-allDomains] [-darkMode] [<CommonParameters>]
+Invoke-VcfConfigReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -reportPath <String> [-allDomains] [-darkMode] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Invoke-VcfConfigReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String>
- -reportPath <String> -workloadDomain <String> [-darkMode] [<CommonParameters>]
+Invoke-VcfConfigReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -reportPath <String> -workloadDomain <String> [-darkMode] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Invoke-VcfConfigReport provides a single cmdlet to generates a configuration report for a VMware Cloud Foundation instance.
+The `Invoke-VcfConfigReport` provides a single cmdlet to generates a configuration report for a VMware Cloud Foundation instance.
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains
@@ -34,7 +32,7 @@ Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUs
 
 This example generates the configuration report across a VMware Cloud Foundation instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
@@ -42,7 +40,7 @@ Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUs
 
 This example generates the configuration report for a specific workload domain within a VMware Cloud Foundation instance.
 
-## PARAMETERS
+## Parameters
 
 ### -sddcManagerFqdn
 

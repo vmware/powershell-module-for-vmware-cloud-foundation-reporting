@@ -1,38 +1,35 @@
 # Publish-EsxiConnectionHealth
 
-## SYNOPSIS
+## Synopsis
 
 Publish the connection status of ESXi hosts in a workload domain in HTML format.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-EsxiConnectionHealth -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly]
- [<CommonParameters>]
+Publish-EsxiConnectionHealth -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-EsxiConnectionHealth -server <String> -user <String> -pass <String> -workloadDomain <String>
- [-failureOnly] [<CommonParameters>]
+Publish-EsxiConnectionHealth -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-EsxiConnectionHealth cmdlet returns the status of virtual machines with connected CD-ROMS in a workload
-domain in HTML format.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Publish-EsxiConnectionHealth` cmdlet returns the status of virtual machines with connected CD-ROMS in a workload domain in HTML format.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the vCenter Server instance
 - Validates the authentication to vCenter Server with credentials from SDDC Manager
 - Publishes information
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
@@ -40,7 +37,7 @@ Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local
 
 This example will publish the connection status of ESXi hosts in all workload domains.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
@@ -48,7 +45,7 @@ Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local
 
 This example will publish the connection status of ESXi hosts in a workload domain.
 
-### EXAMPLE 3
+### Example 3
 
 ```powershell
 Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
@@ -56,7 +53,7 @@ Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local
 
 This example will publish the connection status of ESXi hosts in all workload domains but only for failures.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

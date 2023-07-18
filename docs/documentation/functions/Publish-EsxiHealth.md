@@ -1,23 +1,22 @@
 # Publish-EsxiHealth
 
-## SYNOPSIS
+## Synopsis
 
 Formats the ESXi Health data from the SoS JSON output.
 
-## SYNTAX
+## Syntax
 
 ```powershell
 Publish-EsxiHealth [-json] <String> [-html] [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-EsxiHealth cmdlet formats the ESXi Health data from the SoS JSON output and publishes it as
-either a standard PowerShell object or an HTML object.
+The `Publish-EsxiHealth` cmdlet formats the ESXi Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-EsxiHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -25,7 +24,7 @@ Publish-EsxiHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw
 
 This example extracts and formats the ESXi Health data as a PowerShell object from the JSON file.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-EsxiHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
@@ -33,7 +32,7 @@ Publish-EsxiHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw
 
 This example extracts and formats the ESXi Health data as an HTML object from the JSON file.
 
-### EXAMPLE 3
+### Example 3
 
 ```powershell
 Publish-EsxiHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
@@ -41,7 +40,7 @@ Publish-EsxiHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw
 
 This example extracts and formats the ESXi Health data as a PowerShell object from the JSON file for only the failed items.
 
-## PARAMETERS
+## Parameters
 
 ### -json
 

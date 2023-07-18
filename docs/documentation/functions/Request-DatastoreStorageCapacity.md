@@ -1,30 +1,28 @@
 # Request-DatastoreStorageCapacity
 
-## SYNOPSIS
+## Synopsis
 
 Checks the datastore usage in all vCenter Server instances.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-DatastoreStorageCapacity [-server] <String> [-user] <String> [-pass] <String> [-domain] <String>
- [-failureOnly] [<CommonParameters>]
+Request-DatastoreStorageCapacity [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-DatastoreStorageCapacity cmdlet checks the datastore usage in all vCenters.
-The cmdlet
-connects to SDDC Manager using the -server, -user, and -pass values:
+The `Request-DatastoreStorageCapacity` cmdlet checks the datastore usage in all vCenters.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Validates that network connectivity is available to the vCenter Server instance
 - Gathers the details for each vCenter Server
 - Collects information about datastore usage
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
@@ -32,7 +30,7 @@ Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@l
 
 This example will check datastores on all vCenter Servers managed by SDDC Manager in a VMware Cloud Foundation instance but only failed items.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
@@ -40,7 +38,7 @@ Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@l
 
 This example will check datastore on a vCenter Servers managed by SDDC Manager for a workload domain.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

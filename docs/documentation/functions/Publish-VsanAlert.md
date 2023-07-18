@@ -1,37 +1,35 @@
 # Publish-VsanAlert
 
-## SYNOPSIS
+## Synopsis
 
 RPublish the vSAN Healthcheck alarms from a vCenter Server instance.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-VsanAlert -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly]
- [<CommonParameters>]
+Publish-VsanAlert -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-VsanAlert -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly]
- [<CommonParameters>]
+Publish-VsanAlert -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-VsanAlert cmdlet returns vSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Publish-VsanAlert` cmdlet returns vSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the vCenter Server instance
 - Validates the authentication to vCenter Server with credentials from SDDC Manager
 - Collects the vSAN Healthcheck alarms from vCenter Server
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
@@ -39,7 +37,7 @@ Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@
 
 This example will return vSAN Healthcheck alarms for all vCenter Server instances managed by SDDC Manager for a workload domain.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
@@ -47,7 +45,7 @@ Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@
 
 This example will return vSAN Healthcheck alarms for all vCenter Server instances managed by SDDC Manager for a workload domain but only failed items.
 
-### EXAMPLE 3
+### Example 3
 
 ```powershell
 Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
@@ -55,7 +53,7 @@ Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@
 
 This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

@@ -1,29 +1,28 @@
 # Request-VcenterSnapshotStatus
 
-## SYNOPSIS
+## Synopsis
 
 Request the snapshot status for the vCenter Server instance.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-VcenterSnapshotStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String>
- [-failureOnly] [<CommonParameters>]
+Request-VcenterSnapshotStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-VcenterSnapshotStatus cmdlet checks the snapshot status for vCenter Server instance.
-The cmdlet connects to SDDC Manager using the -server, -user, and password values:
+The `Request-VcenterSnapshotStatus` cmdlet checks the snapshot status for vCenter Server instance.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates network connectivity and authentication to the SDDC Manager instance
 - Gathers the details for the vCenter Server instance from the SDDC Manager
 - Validates network connectivity and authentication to the vCenter Server instance
 - Performs checks on the snapshot status and outputs the results
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
@@ -31,7 +30,7 @@ Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@loca
 
 This example will publish the snapshot status for a vCenter Server instance for a specific workload domain.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
@@ -39,7 +38,7 @@ Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@loca
 
 This example will publish the snapshot status for a vCenter Server instance for a specific workload domain, but only failed items.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

@@ -1,28 +1,27 @@
 # Request-VsanAlert
 
-## SYNOPSIS
+## Synopsis
 
 Returns vSAN Healthcheck alarms from a vCenter Server instance.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-VsanAlert [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly]
- [<CommonParameters>]
+Request-VsanAlert [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-VsanAlert cmdlet returns vSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-VsanAlert` cmdlet returns vSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the vCenter Server instance
 - Validates the authentication to vCenter Server with credentials from SDDC Manager
 - Collects the vSAN Healthcheck alarms from vCenter Server
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
@@ -30,7 +29,7 @@ Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@
 
 This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
@@ -38,7 +37,7 @@ Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@
 
 This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

@@ -1,28 +1,27 @@
 # Request-VmOverride
 
-## SYNOPSIS
+## Synopsis
 
 Gets VM Override setting from a vCenter Server instance.
 
-## SYNTAX
+## Syntax
 
 ```powershell
 Request-VmOverride [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-VmOverride cmdlets gets VM Override setting for a vCenter Server instance.
-The cmdlet connects to
-SDDC Manager using the -server, -user, and -pass values:
+The `Request-VmOverride` cmdlets gets VM Override setting for a vCenter Server instance.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Validates that network connectivity is available to the vCenter Server instance
 - Gathers the VM Override settings from vCenter Server
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
@@ -30,7 +29,7 @@ Request-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw
 
 This example gets the VM Override setting for a vCenter Server instance based on the workload domain provided.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

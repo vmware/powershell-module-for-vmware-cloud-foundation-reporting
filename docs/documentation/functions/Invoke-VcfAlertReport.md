@@ -1,32 +1,30 @@
 # Invoke-VcfAlertReport
 
-## SYNOPSIS
+## Synopsis
 
 Generates the alert report for a VMware Cloud Foundation instance.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Invoke-VcfAlertReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String>
- -reportPath <String> [-allDomains] [-failureOnly] [-darkMode] [<CommonParameters>]
+Invoke-VcfAlertReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -reportPath <String> [-allDomains] [-failureOnly] [-darkMode] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Invoke-VcfAlertReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String>
- -reportPath <String> -workloadDomain <String> [-failureOnly] [-darkMode] [<CommonParameters>]
+Invoke-VcfAlertReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -reportPath <String> -workloadDomain <String> [-failureOnly] [-darkMode] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Invoke-VcfAlertReport provides a single cmdlet to generates the alert report for a VMware Cloud Foundation instance.
+The `Invoke-VcfAlertReport` provides a single cmdlet to generates the alert report for a VMware Cloud Foundation instance.
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains
@@ -34,7 +32,7 @@ Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUse
 
 This example generates the alert report across a VMware Cloud Foundation instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains -failureOnly
@@ -42,7 +40,7 @@ Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUse
 
 This example generates the alert report across a VMware Cloud Foundation instance but for only failed items.
 
-### EXAMPLE 3
+### Example 3
 
 ```powershell
 Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
@@ -50,7 +48,7 @@ Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUse
 
 This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance.
 
-### EXAMPLE 4
+### Example 4
 
 ```powershell
 Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01 -failureOnly
@@ -58,7 +56,7 @@ Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUse
 
 This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance but for only failed items.
 
-## PARAMETERS
+## Parameters
 
 ### -sddcManagerFqdn
 

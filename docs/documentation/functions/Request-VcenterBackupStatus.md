@@ -1,29 +1,28 @@
 # Request-VcenterBackupStatus
 
-## SYNOPSIS
+## Synopsis
 
 Returns the status of the file-level latest backup of a vCenter Server instance.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-VcenterBackupStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String>
- [-failureOnly] [<CommonParameters>]
+Request-VcenterBackupStatus [-server] <String> [-user] <String> [-pass] <String> [-domain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-VcenterBackupStatus cmdlet returns the status of the latest backup of a vCenter Server instance.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-VcenterBackupStatus` cmdlet returns the status of the latest backup of a vCenter Server instance.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates network connectivity and authentication to the SDDC Manager instance
 - Gathers the details for the NvCenter Server instance from the SDDC Manager
 - Validates network connectivity and authentication to the vCenter Server instance
 - Collects the file-level backup status details
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
@@ -31,7 +30,7 @@ Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local 
 
 This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
@@ -39,7 +38,7 @@ Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local 
 
 This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain but only reports issues.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

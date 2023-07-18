@@ -1,39 +1,35 @@
 # Publish-NsxtCombinedHealth
 
-## SYNOPSIS
+## Synopsis
 
 Request and publish NSX Manager Health.
 
-## SYNTAX
+## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-NsxtCombinedHealth -server <String> -user <String> -pass <String> -json <String> [-allDomains]
- [-failureOnly] [<CommonParameters>]
+Publish-NsxtCombinedHealth -server <String> -user <String> -pass <String> -json <String> [-allDomains] [-failureOnly] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-NsxtCombinedHealth -server <String> -user <String> -pass <String> -json <String>
- -workloadDomain <String> [-failureOnly] [<CommonParameters>]
+Publish-NsxtCombinedHealth -server <String> -user <String> -pass <String> -json <String> -workloadDomain <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Publish-NsxtCombinedHealth cmdlet checks the health of NSX Manager on the VMware Cloud Foundation instance
-and prepares the data to be published to an HTML report.
-The cmdlet connects to SDDC Manager using the
--server, -user, and password values:
+The `Publish-NsxtCombinedHealth` cmdlet checks the health of NSX Manager on the VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity and autehentication is available to SDDC Manager
 - Validates that network connectivity and autehentication is available to NSX Manager
 - Performs health checks and outputs the results
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
@@ -41,7 +37,7 @@ Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -
 
 This example checks NSX Manager health for all workload domains across the VMware Cloud Foundation instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
@@ -49,7 +45,7 @@ Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -
 
 This example checks NSX Manager health for a single workload domain in a VMware Cloud Foundation instance.
 
-### EXAMPLE 3
+### Example 3
 
 ```powershell
 Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
@@ -57,7 +53,7 @@ Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -
 
 This example checks NSX Manager health for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

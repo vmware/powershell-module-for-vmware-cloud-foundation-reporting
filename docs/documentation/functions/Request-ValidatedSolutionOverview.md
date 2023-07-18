@@ -1,26 +1,26 @@
 # Request-ValidatedSolutionOverview
 
-## SYNOPSIS
+## Synopsis
 
 Returns VMware Validated Solution Overview.
 
-## SYNTAX
+## Syntax
 
 ```powershell
 Request-ValidatedSolutionOverview [-server] <String> [-user] <String> [-pass] <String> [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-ValidatedSolutionOverview cmdlet returns an overview of VMware Validated Solutions deployed.
-The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+The `Request-ValidatedSolutionOverview` cmdlet returns an overview of VMware Validated Solutions deployed.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity is available to the SDDC Manager instance
 - Collects the VMware Validated Solution details
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-ValidatedSolutionOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -28,7 +28,7 @@ Request-ValidatedSolutionOverview -server sfo-vcf01.sfo.rainpole.io -user admin@
 
 This example will return an overview of VMware Validated Solutions.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 

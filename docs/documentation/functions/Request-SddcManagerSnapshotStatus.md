@@ -1,29 +1,28 @@
 # Request-SddcManagerSnapshotStatus
 
-## SYNOPSIS
+## Synopsis
 
 Request the snapshot status for the SDDC Manager.
 
-## SYNTAX
+## Syntax
 
 ```powershell
-Request-SddcManagerSnapshotStatus [-server] <String> [-user] <String> [-pass] <String> [-failureOnly]
- [<CommonParameters>]
+Request-SddcManagerSnapshotStatus [-server] <String> [-user] <String> [-pass] <String> [-failureOnly] [<CommonParameters>]
 ```
 
-## DESCRIPTION
+## Description
 
-The Request-SddcManagerSnapshotStatus cmdlet checks the snapshot status for SDDC Manager.
-The cmdlet connects to SDDC Manager using the -server, -user, and password values:
+The `Request-SddcManagerSnapshotStatus` cmdlet checks the snapshot status for SDDC Manager.
+The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates network connectivity and authenticaton to the SDDC Manager instance
 - Gathers the details for the vCenter Server instance from the SDDC Manager
 - Validates network connectivity and authentication to the vCenter Server instance
 - Performs checks on the snapshot status and outputs the results
 
-## EXAMPLES
+## Examples
 
-### EXAMPLE 1
+### Example 1
 
 ```powershell
 Request-SddcManagerSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
@@ -31,7 +30,7 @@ Request-SddcManagerSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@
 
 This example will publish the snapshot status for the SDDC Manager in a VMware Cloud Foundation instance.
 
-### EXAMPLE 2
+### Example 2
 
 ```powershell
 Request-SddcManagerSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
@@ -39,7 +38,7 @@ Request-SddcManagerSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@
 
 This example will publish the snapshot status for the SDDC Manager in a VMware Cloud Foundation instance, but for only failed items.
 
-## PARAMETERS
+## Parameters
 
 ### -server
 
