@@ -63,7 +63,7 @@ Browser                                             | Download
 
 [docs-vmware-cloud-foundation]: https://docs.vmware.com/en/VMware-Cloud-Foundation/index.html
 [docs-module-powervcf]: https://vmware.github.io/powershell-module-for-vmware-cloud-foundation
-[docs-module-pvs]: https://vmware-samples.github.io/power-validated-solutions-for-cloud-foundation
+[docs-module-pvs]: https://vmware.github.io/power-validated-solutions-for-cloud-foundation
 [download-browser-edge]: https://www.microsoft.com/edge
 [download-browser-chrome]: https://www.google.com/chrome
 [download-browser-firefox]: https://www.mozilla.org/firefox/download
