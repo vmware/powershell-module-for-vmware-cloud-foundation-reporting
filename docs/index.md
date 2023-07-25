@@ -48,8 +48,8 @@ PowerShell Module                                    | Version   | Publisher    
 -----------------------------------------------------|-----------|--------------|---------------------------------------------------------------------------
 [VMware.PowerCLI][psgallery-module-powercli]         | >= 13.0.0 | VMware, Inc. | :fontawesome-solid-book: &nbsp; [Documentation][developer-module-powercli]
 [VMware.vSphere.SsoAdmin][psgallery-module-ssoadmin] | >= 1.3.9  | VMware, Inc. | :fontawesome-brands-github: &nbsp; [GitHub][github-module-ssoadmin]
-[PowerVCF][psgallery-module-powervcf]                | >= 2.3.0  | VMware, Inc. | :fontawesome-brands-github: &nbsp; [GitHub][github-module-powervcf]
-[PowerValidatedSolutions][psgallery-module-pvs]      | >= 2.4.0  | VMware, Inc. | :fontawesome-brands-github: &nbsp; [GitHub][github-module-pvs]
+[PowerVCF][psgallery-module-powervcf]                | >= 2.3.0  | VMware, Inc. | :fontawesome-solid-book: &nbsp; [Documentation][docs-module-powervcf]
+[PowerValidatedSolutions][psgallery-module-pvs]      | >= 2.5.0  | VMware, Inc. | :fontawesome-solid-book: &nbsp; [Documentation][docs-module-pvs]
 
 ### Browsers
 
@@ -62,6 +62,8 @@ Browser                                             | Download
 :fontawesome-brands-firefox: &nbsp; Mozilla Firefox | :fontawesome-solid-cloud-arrow-down: &nbsp; [Download][download-browser-firefox]
 
 [docs-vmware-cloud-foundation]: https://docs.vmware.com/en/VMware-Cloud-Foundation/index.html
+[docs-module-powervcf]: https://vmware.github.io/powershell-module-for-vmware-cloud-foundation
+[docs-module-pvs]: https://vmware-samples.github.io/power-validated-solutions-for-cloud-foundation
 [download-browser-edge]: https://www.microsoft.com/edge
 [download-browser-chrome]: https://www.google.com/chrome
 [download-browser-firefox]: https://www.mozilla.org/firefox/download
@@ -72,7 +74,5 @@ Browser                                             | Download
 [psgallery-module-ssoadmin]: https://www.powershellgallery.com/packages/VMware.vSphere.SsoAdmin
 [psgallery-module-pvs]: https://www.powershellgallery.com/packages/PowerValidatedSolutions
 [developer-module-powercli]: https://developer.vmware.com/tool/vmware-powercli
-[github-module-powervcf]: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation
 [github-module-ssoadmin]: https://github.com/vmware/PowerCLI-Example-Scripts/tree/master/Modules/VMware.vSphere.SsoAdmin
-[github-module-pvs]: https://github.com/vmware-samples/power-validated-solutions-for-cloud-foundation
 [github-os-photon]: https://vmware.github.io/photon/
