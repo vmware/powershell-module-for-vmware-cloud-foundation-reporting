@@ -1,5 +1,14 @@
 # Release History
 
+> Release Date: Unreleased
+
+## [v2.4.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.4.0)
+
+Bugfix:
+
+- Updated `Request-VcenterStorageHealth` to exclude `/dev/mapper/archive_vg-archive` from the output per [KB 76563](https://kb.vmware.com/s/article/76563).
+
+
 ## [v2.3.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.3.0)
 
 > Release Date: 2023-07-25
