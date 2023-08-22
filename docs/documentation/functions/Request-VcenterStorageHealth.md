@@ -25,7 +25,7 @@ The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass
 ### Example 1
 
 ```powershell
-Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
 ```
 
 This example will check disk usage for a single workload domain
