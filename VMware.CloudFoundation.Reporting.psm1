@@ -1027,7 +1027,7 @@ Function Request-SoSHealthJson {
 					$createPathCounter++
 				}
 			}
-			New-Item -Path $outFilePath -ItemType Directory | Out-NULL
+			New-Item -Path $outFilePath -ItemType Directory | Out-Null
 
             # Use REST API method to request the health summary.
             $healthSummaryPayloadJson = Join-Path -Path $outFilePath -childPath "healthSummaryPayload.json"
@@ -1042,7 +1042,7 @@ Function Request-SoSHealthJson {
             # Retrieve the request status.
             $response = Get-VCFHealthSummaryTask -id $requestID
             $escapeCounter = 0
-			While (($escapeCounter -lt 30) -and !($response.status -match "COMPLETED")) {
+			while (($escapeCounter -lt 30) -and !($response.status -match "COMPLETED")) {
 				sleep(30)
 				$escapeCounter++
                 $response = Get-VCFHealthSummaryTask -id $requestID
@@ -1054,24 +1054,24 @@ Function Request-SoSHealthJson {
 
             # Download the health summary bundle file to a temporary directory.
             Request-VCFHealthSummaryBundle -id $requestID
-			$outFile = Join-Path -Path $outFilePath  -childPath "health-summary.tar.gz"
+			$outFile = Join-Path -Path $outFilePath -childPath "health-summary.tar.gz"
 			$savedFile = "health-summary-"+$requestID+".tar"
 			if (Test-Path -Path $savedFile) {
-				Copy-Item $savedFile $outFile | Out-NULL
-				Remove-Item -Force $savedFile  | Out-NULL
+				Copy-Item $savedFile $outFile | Out-Null
+				Remove-Item -Force $savedFile | Out-Null
 			} else {
 				Write-Error "An error was encountered downloading the health summary bundle."
 				Return $false
 			}
 
             # Untar the tar.gz file and extract health-results.json file.
-			tar -xzf $outFile -C $outFilePath | Out-NULL
+			tar -xzf $outFile -C $outFilePath | Out-Null
 			$healthSummaryPath = gci -recurse -filter "health-results.json" -Path $outFilePath
 			$healthSummaryFile = Join-Path -Path $healthSummaryPath.DirectoryName -childPath "health-results.json"
-			Copy-Item $healthSummaryFile $reportDestination  | Out-NULL
+			Copy-Item $healthSummaryFile $reportDestination | Out-Null
 
 			# Remove the temporary directory.
-			Remove-Item -Recurse -Force $outFilePath  | Out-NULL
+			Remove-Item -Recurse -Force $outFilePath | Out-Null
 
             # Convert to JSON.
             $temp = Get-Content -Path $reportDestination; $temp = $temp -replace '""', '"-"'; $temp | Out-File $reportDestination
@@ -5030,7 +5030,7 @@ Function Request-VcenterStorageHealth {
         - Checks disk usage against thresholds and outputs the results
 
         .EXAMPLE
-        Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+        Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
         This example will check disk usage for a single workload domain
 
         .EXAMPLE
@@ -5067,11 +5067,13 @@ Function Request-VcenterStorageHealth {
                 if (($vcfVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
                     if (Test-VsphereConnection -server $($vcfVcenterDetails.fqdn)) {
                         if (Test-VsphereAuthentication -server $vcfVcenterDetails.fqdn -user $vcfVcenterDetails.ssoAdmin -pass $vcfVcenterDetails.ssoAdminPass) {
-                            $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"' # Define Command for Retriveing Disk Information
+                            # Define the command for retrieving the disk information.
+                            # Ignore the loopback device and the archive volume from the output.
+                            # Reference: https://kb.vmware.com/s/article/76563.
+                            $command = 'df -h | grep -e "^/" | grep -v "/dev/loop" | grep -v "/dev/mapper/archive_vg-archive"'
                             $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }).vcenters
                             $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn }).password
                             $dfOutput = Invoke-VMScript -VM ($vcenter.fqdn.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass -Server $vcfVcenterDetails.fqdn
-
                             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                                 Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $vcenter.fqdn -failureOnly
                             } else {
@@ -5137,8 +5139,10 @@ Function Request-SddcManagerStorageHealth {
     )
 
     Try {
-        $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"' # Define Command for Retriveing Disk Information
-        $dfOutput = Invoke-SddcCommand -server $server -user $user -pass $pass -vmUser $localUser -vmPass $localPass -command $command # Get Disk Information from SDDC Manager
+        # Define the command for retrieving the disk information.
+        # Ignore the loopback device from the output.
+        $command = 'df -h | grep -e "^/" | grep -v "/dev/loop"'
+        $dfOutput = Invoke-SddcCommand -server $server -user $user -pass $pass -vmUser $localUser -vmPass $localPass -command $command
 
         if ($PsBoundParameters.ContainsKey("failureOnly")) {
             Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $server -failureOnly
