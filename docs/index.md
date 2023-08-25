@@ -4,6 +4,8 @@
 
 # PowerShell Module for VMware Cloud Foundation Reporting
 
+<img src="https://img.shields.io/powershellgallery/dt/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery Downloads">
+
 `VMware.CloudFoundation.Reporting` is an open source PowerShell module that supports the ability to gain insights into the operational state of [VMware Cloud Foundation][docs-vmware-cloud-foundation] through the use of PowerShell cmdlets. These cmdlets provide quick access to information from the PowerShell console as well as the ability to publish pre-defined HTML reports.
 
 [:material-powershell: &nbsp; PowerShell Gallery][psgallery-module-reporting]{ .md-button .md-button--primary }
@@ -46,10 +48,10 @@ The following table lists the required PowerShell module dependencies for this m
 
 PowerShell Module                                    | Version   | Publisher    | Reference
 -----------------------------------------------------|-----------|--------------|---------------------------------------------------------------------------
-[VMware.PowerCLI][psgallery-module-powercli]         | >= 13.0.0 | VMware, Inc. | :fontawesome-solid-book: &nbsp; [Documentation][developer-module-powercli]
+[VMware.PowerCLI][psgallery-module-powercli]         | >= 13.1.0 | VMware, Inc. | :fontawesome-solid-book: &nbsp; [Documentation][developer-module-powercli]
 [VMware.vSphere.SsoAdmin][psgallery-module-ssoadmin] | >= 1.3.9  | VMware, Inc. | :fontawesome-brands-github: &nbsp; [GitHub][github-module-ssoadmin]
 [PowerVCF][psgallery-module-powervcf]                | >= 2.3.0  | VMware, Inc. | :fontawesome-solid-book: &nbsp; [Documentation][docs-module-powervcf]
-[PowerValidatedSolutions][psgallery-module-pvs]      | >= 2.5.0  | VMware, Inc. | :fontawesome-solid-book: &nbsp; [Documentation][docs-module-pvs]
+[PowerValidatedSolutions][psgallery-module-pvs]      | >= 2.6.0  | VMware, Inc. | :fontawesome-solid-book: &nbsp; [Documentation][docs-module-pvs]
 
 ### Browsers
 
