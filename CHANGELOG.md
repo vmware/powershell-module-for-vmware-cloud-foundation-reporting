@@ -1,12 +1,18 @@
 # Release History
 
-> Release Date: Unreleased
+> Release Date: 2023-08-29
 
 ## [v2.4.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.4.0)
 
 Bugfix:
 
-- Updated `Request-VcenterStorageHealth` to exclude `/dev/mapper/archive_vg-archive` from the output per [KB 76563](https://kb.vmware.com/s/article/76563).
+- Updated `Request-VcenterStorageHealth` to exclude `/dev/mapper/archive_vg-archive` from the output per [KB 76563](https://kb.vmware.com/s/article/76563). [GH-167](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/167)
+
+Chore:
+
+- Updated `PowerValidatedSolutions` from v2.5.0 to v2.6.0. [GH-171](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/171)
+- Updated module versions in `docs/snippets/install-module.ps1` [GH-171](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/171)
+- Added PowerShell Gallery downloads badge to the `docs/index.md` [GH-171](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/171)
 
 
 ## [v2.3.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.3.0)
