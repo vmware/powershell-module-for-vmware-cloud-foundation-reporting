@@ -21,7 +21,7 @@
         <link rel="next" href="../update/">
       
       <link rel="icon" href="../favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.18">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.eebd395e.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.26e3688c.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ecc896b0.min.css">
@@ -47,8 +47,6 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-    
-      <link rel="stylesheet" href="../css/timeago.css">
     
       <link rel="stylesheet" href="../assets/stylesheets/extra.css">
     
@@ -2280,10 +2278,10 @@
 <p>Verify that your system has a <a href="/powershell-module-for-vmware-cloud-foundation-reporting/#powershell">supported edition and version</a> of PowerShell installed.</p>
 <p>Install the PowerShell <a href="/powershell-module-for-vmware-cloud-foundation-reporting/#module-dependencies">module dependencies</a> from the PowerShell Gallery by running the following commands:</p>
 <div class="highlight"><pre><span></span><code><span class="nb">Set-PSRepository</span> <span class="n">-Name</span> <span class="n">PSGallery</span> <span class="n">-InstallationPolicy</span> <span class="n">Trusted</span>
-<span class="nb">Install-Module</span> <span class="n">-Name</span> <span class="n">VMware</span><span class="p">.</span><span class="n">PowerCLI</span> <span class="n">-MinimumVersion</span> <span class="n">13</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">0</span>
+<span class="nb">Install-Module</span> <span class="n">-Name</span> <span class="n">VMware</span><span class="p">.</span><span class="n">PowerCLI</span> <span class="n">-MinimumVersion</span> <span class="n">13</span><span class="p">.</span><span class="n">1</span><span class="p">.</span><span class="n">0</span>
 <span class="nb">Install-Module</span> <span class="n">-Name</span> <span class="n">VMware</span><span class="p">.</span><span class="n">vSphere</span><span class="p">.</span><span class="n">SsoAdmin</span> <span class="n">-MinimumVersion</span> <span class="n">1</span><span class="p">.</span><span class="n">3</span><span class="p">.</span><span class="n">9</span>
 <span class="nb">Install-Module</span> <span class="n">-Name</span> <span class="n">PowerVCF</span> <span class="n">-MinimumVersion</span> <span class="n">2</span><span class="p">.</span><span class="n">3</span><span class="p">.</span><span class="n">0</span>
-<span class="nb">Install-Module</span> <span class="n">-Name</span> <span class="n">PowerValidatedSolutions</span> <span class="n">-MinimumVersion</span> <span class="n">2</span><span class="p">.</span><span class="n">5</span><span class="p">.</span><span class="n">0</span>
+<span class="nb">Install-Module</span> <span class="n">-Name</span> <span class="n">PowerValidatedSolutions</span> <span class="n">-MinimumVersion</span> <span class="n">2</span><span class="p">.</span><span class="n">6</span><span class="p">.</span><span class="n">0</span>
 <span class="nb">Install-Module</span> <span class="n">-Name</span> <span class="n">VMware</span><span class="p">.</span><span class="n">CloudFoundation</span><span class="p">.</span><span class="n">Reporting</span>
 </code></pre></div>
 <p>If using PowerShell Core, import the modules before proceeding:</p>
@@ -2312,17 +2310,6 @@
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><span class="nb">Get-Help</span> <span class="n">-Name</span> <span class="nb">Invoke-VcfHealthReport</span> <span class="n">-Examples</span>
 </code></pre></div>
-
-  <hr>
-<div class="md-source-file">
-  <small>
-    
-      Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-01T19:34:08+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-01</span>
-      
-    
-  </small>
-</div>
 
 
 
@@ -2413,14 +2400,6 @@
     
     
       <script src="../assets/javascripts/bundle.220ee61c.min.js"></script>
-      
-        
-          <script src="../js/timeago.min.js"></script>
-        
-      
-        
-          <script src="../js/timeago_mkdocs_material.js"></script>
-        
       
         
           <script src="../js/open_in_new_tab.js"></script>

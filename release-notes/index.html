@@ -21,7 +21,7 @@
         <link rel="next" href="../license/">
       
       <link rel="icon" href="../favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.18">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.eebd395e.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.26e3688c.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ecc896b0.min.css">
@@ -47,8 +47,6 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-    
-      <link rel="stylesheet" href="../css/timeago.css">
     
       <link rel="stylesheet" href="../assets/stylesheets/extra.css">
     
@@ -457,6 +455,13 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v240" class="md-nav__link">
+    v2.4.0
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#v230" class="md-nav__link">
@@ -2341,6 +2346,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v240" class="md-nav__link">
+    v2.4.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v230" class="md-nav__link">
     v2.3.0
   </a>
@@ -2435,6 +2447,20 @@
 
 
 <h1 id="release-history">Release History<a class="headerlink" href="#release-history" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Release Date: 2023-08-29</p>
+</blockquote>
+<h2 id="v240"><a href="https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.4.0">v2.4.0</a><a class="headerlink" href="#v240" title="Permanent link">&para;</a></h2>
+<p>Bugfix:</p>
+<ul>
+<li>Updated <code>Request-VcenterStorageHealth</code> to exclude <code>/dev/mapper/archive_vg-archive</code> from the output per <a href="https://kb.vmware.com/s/article/76563">KB 76563</a>. <a href="https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/167">GH-167</a></li>
+</ul>
+<p>Chore:</p>
+<ul>
+<li>Updated <code>VMware.PowerCLI</code> from v13.0.0 to v13.1.0. <a href="https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/171">GH-171</a></li>
+<li>Updated <code>PowerValidatedSolutions</code> from v2.5.0 to v2.6.0. <a href="https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/171">GH-171</a></li>
+<li>Added PowerShell Gallery downloads badge to the <code>docs/index.md</code> <a href="https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/171">GH-171</a></li>
+</ul>
 <h2 id="v230"><a href="https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.3.0">v2.3.0</a><a class="headerlink" href="#v230" title="Permanent link">&para;</a></h2>
 <blockquote>
 <p>Release Date: 2023-07-25</p>
@@ -2640,17 +2666,6 @@
 </blockquote>
 <p>Initial availability of the PowerShell module for VMware Cloud Foundation Reporting.</p>
 
-  <hr>
-<div class="md-source-file">
-  <small>
-    
-      Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-01T19:34:08+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-01</span>
-      
-    
-  </small>
-</div>
-
 
 
 
@@ -2740,14 +2755,6 @@
     
     
       <script src="../assets/javascripts/bundle.220ee61c.min.js"></script>
-      
-        
-          <script src="../js/timeago.min.js"></script>
-        
-      
-        
-          <script src="../js/timeago_mkdocs_material.js"></script>
-        
       
         
           <script src="../js/open_in_new_tab.js"></script>
