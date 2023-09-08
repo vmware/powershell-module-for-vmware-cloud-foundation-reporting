@@ -997,27 +997,31 @@ Function Request-SoSHealthJson {
     $healthSummarySpec | Add-Member -notepropertyname 'scope' -notepropertyvalue $scopePayload
 
     Try {
+        # Set the suffix for the report name.
+        $reportSuffix = "-all-health-results.json"
+
+        # Set the report name and scope.
         if ($PsBoundParameters.ContainsKey("allDomains")) {
             $healthSummarySpec.scope.includeAllDomains = $true
-            if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
-                $reportDestination = ($reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json")).split('\') -join '/' | Split-Path -NoQualifier
-            } else {
-                $reportDestination = ($reportPath + "\" + $server.Split(".")[0] + "-all-health-results.json")
-            }
+            $reportName = $server.Split(".")[0] + $reportSuffix
         } elseif ($PsBoundParameters.ContainsKey("workloadDomain")) {
             $healthSummarySpec.scope.domains[0].domainName = $workloadDomain
-            if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
-                $reportDestination = ($reportDestination = ($reportPath + "\" + $workloadDomain + "-all-health-results.json")).split('\') -join '/' | Split-Path -NoQualifier
-            } else {
-                $reportDestination = ($reportPath + "\" + $workloadDomain + "-all-health-results.json")
-            }
+            $reportName = $workloadDomain + $reportSuffix
         }
+
+        # Set the report destination.
+        if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
+            $reportDestination = Join-Path -Path $reportPath -ChildPath $reportName | Split-Path -NoQualifier -Parent
+        } else {
+            $reportDestination = Join-Path -Path $reportPath -ChildPath $reportName
+        }
+
         if (Test-VCFConnection -server $server) {
-            # Create a temporary directory under reportDirectory
+            # Create a temporary directory under reportDirectory.
             $createPathCounter = 0
 			for ($createPathCounter -lt 4) {
-				$randomOutput = -join (((48..57)+(65..90)+(97..122)) * 80 |Get-Random -Count 6 |%{[char]$_})
-				$outFilePath = Join-Path -Path $reportPath -childPath $randomOutput
+				$randomOutput = -join (((48..57)+(65..90)+(97..122)) * 80 | Get-Random -Count 6 |%{[char]$_})
+				$outFilePath = Join-Path -Path $reportPath -ChildPath $randomOutput
 				if (!(Test-Path -Path $outFilePath) -and (Test-Path -Path $reportPath)) {
 					Break
 				} else {
@@ -1030,8 +1034,8 @@ Function Request-SoSHealthJson {
 			New-Item -Path $outFilePath -ItemType Directory | Out-Null
 
             # Use REST API method to request the health summary.
-            $healthSummaryPayloadJson = Join-Path -Path $outFilePath -childPath "healthSummaryPayload.json"
-			ConvertTo-JSON $healthSummarySpec -depth 10 | Out-File $healthSummaryPayloadJson
+            $healthSummaryPayloadJson = Join-Path -Path $outFilePath -ChildPath "healthSummaryPayload.json"
+			ConvertTo-JSON $healthSummarySpec -Depth 10 | Out-File $healthSummaryPayloadJson
             $response = Start-VCFHealthSummary -json $healthSummaryPayloadJson
 			if ($response.id -eq "") {
 				Write-Error "The Health Summary request encountered an issue. Please try again."
@@ -1042,7 +1046,7 @@ Function Request-SoSHealthJson {
             # Retrieve the request status.
             $response = Get-VCFHealthSummaryTask -id $requestID
             $escapeCounter = 0
-			while (($escapeCounter -lt 30) -and !($response.status -match "COMPLETED")) {
+			while (($escapeCounter -lt 30) -and !($response.status -Match "COMPLETED")) {
 				sleep(30)
 				$escapeCounter++
                 $response = Get-VCFHealthSummaryTask -id $requestID
@@ -1054,32 +1058,43 @@ Function Request-SoSHealthJson {
 
             # Download the health summary bundle file to a temporary directory.
             Request-VCFHealthSummaryBundle -id $requestID
-			$outFile = Join-Path -Path $outFilePath -childPath "health-summary.tar.gz"
-			$savedFile = "health-summary-"+$requestID+".tar"
+            $prefix = "health-summary"
+            $outFile = Join-Path -Path $outFilePath -ChildPath ($prefix + ".tar.gz")
+            $savedFile = ($prefix + "-" + $requestID + ".tar")
 			if (Test-Path -Path $savedFile) {
-				Copy-Item $savedFile $outFile | Out-Null
+				# Copy the saved file to the output file.
+                Copy-Item -Path $savedFile -Destination $outFile -Force | Out-Null
+                # Remove the saved file.
 				Remove-Item -Force $savedFile | Out-Null
 			} else {
 				Write-Error "An error was encountered downloading the health summary bundle."
 				Return $false
 			}
 
-            # Untar the tar.gz file and extract health-results.json file.
-			tar -xzf $outFile -C $outFilePath | Out-Null
-			$healthSummaryPath = gci -recurse -filter "health-results.json" -Path $outFilePath
-			$healthSummaryFile = Join-Path -Path $healthSummaryPath.DirectoryName -childPath "health-results.json"
-			Copy-Item $healthSummaryFile $reportDestination | Out-Null
+            # Extract health-results.json from tar.gz file.
+            tar -xzf $outFile -C $outFilePath | Out-Null
 
-			# Remove the temporary directory.
-			Remove-Item -Recurse -Force $outFilePath | Out-Null
+            # Find health-results.json file and copy to report destination.
+            $healthSummaryFile = "health-results.json"
+            $healthSummaryPath = Get-ChildItem -Recurse -Filter $healthSummaryFile -Path $outFilePath
+            $healthSummaryFile = Join-Path -Path $healthSummaryPath.DirectoryName -ChildPath $healthSummaryFile
+            Copy-Item -Path $healthSummaryFile -Destination $reportDestination | Out-Null
 
             # Convert to JSON.
             $temp = Get-Content -Path $reportDestination; $temp = $temp -replace '""', '"-"'; $temp | Out-File $reportDestination
 			Return $reportDestination
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
+    } Finally {
+        # Always remove the temporary directory and its contents to free up disk space.
+        Try {
+            if (Test-Path -Path $outFilePath) {
+                Remove-Item -Path $outFilePath -Recurse -Force | Out-Null
+            }
+        } Catch {
+            Debug-CatchWriter -object $_
+        }
     }
 }
 Export-ModuleMember -Function Request-SoSHealthJson
@@ -5210,8 +5225,8 @@ Function Request-EsxiStorageCapacity {
                             $esxiHosts = Get-VMHost -Server $vcfVcenterDetails.fqdn
                             foreach ($esxiHost in $esxiHosts) {
                                 $esxcli = Get-EsxCli -VMhost $esxiHost.Name -V2
-                                $allPrtitions = $esxcli.storage.filesystem.list.invoke()
-                                foreach ($partition in $allPrtitions) {
+                                $allPartitions = $esxcli.storage.filesystem.list.invoke()
+                                foreach ($partition in $allPartitions) {
                                     if ($partition.Type -eq "VMFS-L" -or $partition.Type -eq "vfat") {
                                         $threshold = Format-StorageThreshold -size $partition.Size -free $partition.Free
                                         $esxiPartition = New-Object -TypeName psobject
@@ -9381,10 +9396,10 @@ Function Start-CreateOutputJsonDirectory {
     $jsonName = $filetimeStamp + "-" + $jsonFileSuffix
 
     if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
-        $jsonDestination = ($jsonDestination = ($jsonFolder + "\" + $jsonName)).split('\') -join '/' | Split-Path -NoQualifier
-        $jsonFolder = ($jsonFolder).split('\') -join '/' | Split-Path -NoQualifier
+        $jsonDestination = Join-Path -Path $jsonFolder -ChildPath $jsonName | Split-Path -NoQualifier -Parent
+        $jsonFolder = $jsonFolder | Split-Path -NoQualifier -Parent
     } else {
-        $jsonDestination = ($jsonFolder + "\" + $jsonName)
+        $jsonDestination = Join-Path -Path $jsonFolder -ChildPath $jsonName
     }
 
     if (!(Test-Path -Path $jsonFolder)) {
@@ -9405,10 +9420,10 @@ Function Start-CreateOutputCsvDirectory {
     $csvName = $filetimeStamp + "-" + $csvFileSuffix + ".csv"
 
     if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
-        $csvDestination = ($csvDestination = ($csvFolder + "\" + $csvName)).split('\') -join '/' | Split-Path -NoQualifier
-        $csvFolder = ($csvFolder).split('\') -join '/' | Split-Path -NoQualifier
+        $csvDestination = Join-Path -Path $csvFolder -ChildPath $csvName | Split-Path -NoQualifier -Parent
+        $csvFolder = $csvFolder | Split-Path -NoQualifier -Parent
     } else {
-        $csvDestination = ($csvFolder + "\" + $csvName)
+        $csvDestination = Join-Path -Path $csvFolder -ChildPath $csvName
     }
 
     if (!(Test-Path -Path $csvFolder)) {
