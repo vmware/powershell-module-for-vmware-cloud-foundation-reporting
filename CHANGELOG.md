@@ -1,6 +1,6 @@
 # Release History
 
-## [v2.5.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.5.0)
+## v2.4.1
 
 > Release Date: Unreleased
 
@@ -8,7 +8,7 @@ Chore:
 
 - Updated code to use `Join-Path` for file paths to simplify the code and better support Windows and Linux.
 
-## [v2.4.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.4.0)
+## v2.4.0
 
 > Release Date: 2023-08-29
 
@@ -22,7 +22,7 @@ Chore:
 - Updated `PowerValidatedSolutions` from v2.5.0 to v2.6.0. [GH-171](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/171)
 - Added PowerShell Gallery downloads badge to the `docs/index.md` [GH-171](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/171)
 
-## [v2.3.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.3.0)
+## v2.3.0
 
 > Release Date: 2023-07-25
 
@@ -35,7 +35,7 @@ Chore:
 
 - Updated `PowerValidatedSolutions` from v2.4.0 to v2.5.0. [GH-155](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/155)
 
-## [v2.2.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.2.0)
+## v2.2.0
 
 > Release Date: 2023-06-27
 
@@ -47,7 +47,7 @@ Chore:
 
 - Updated `PowerValidatedSolutions` from v2.3.0 to v2.4.0. [GH-150](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/150)
 
-## [v2.1.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.1.0)
+## v2.1.0
 
 > Release Date: 2023-05-30
 
@@ -57,7 +57,7 @@ Bugfix:
 
 Enhancement:
 
-- Added `Publish-HardwareCompatibilityHealth` to return the hardware compatibilty health from the SoS Health Summary JSON data. [GH-129](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/129)
+- Added `Publish-HardwareCompatibilityHealth` to return the hardware compatibility health from the SoS Health Summary JSON data. [GH-129](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/129)
 - Updated `Invoke-VcfHealthReport` to include the hardware compatibility health using the `Publish-HardwareCompatibilityHealth` cmdlet. [GH-129](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/129)
 - Added component size checks for vCenter Server instances and NSX Local Manager clusters to the overview report. [GH-130](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/130)
 - Added `Publish-PingConnectivityHealth` to return the ping connectivity health from the SoS Health Summary JSON data. [GH-132](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/132)
@@ -73,15 +73,15 @@ Chore:
 - Updated the NSX product name and terms. [GH-135](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/135)
 - Added `.PARAMETER` entries for user-facing functions. [GH-141](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/141)
 
-## [v2.0.1](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.1)
+## v2.0.1
 
 > Release Date: 2023-05-12
 
 Bug Fix:
 
-- Updated `Request-SoSHealthJson` to omit the `precheckReport` and `versionHealth` from the SoS API request payload if the version is not VMware Cloud Foundatin 4.5.0 or later.
+- Updated `Request-SoSHealthJson` to omit the `precheckReport` and `versionHealth` from the SoS API request payload if the version is not VMware Cloud Foundation 4.5.0 or later.
 
-## [v2.0.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v2.0.0)
+## v2.0.0
 
 > Release Date: 2023-04-25
 
@@ -125,32 +125,32 @@ Chore:
 - Updated `VMware.PowerCLI` from v12.7.0 to v13.0.0. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
 - Updated `VMware.vSphere.SsoAdmin` from v1.3.8 to v1.3.9. [GH-117](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/117)
 
-## [v1.1.0](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.1.0)
+## v1.1.0
 
 > Release Date: 2023-02-28
 
 Bugfix:
 
-- Updated `Request-VcenterBackupStatus` backup message to remove the SDDC Manager FQDN when backups are located on the SDDC Manager. Required for Heatlh Monitoring and Reporting solution alerts. [GH-95](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/95)
+- Updated `Request-VcenterBackupStatus` backup message to remove the SDDC Manager FQDN when backups are located on the SDDC Manager. Required for Health Monitoring and Reporting solution alerts. [GH-95](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/95)
 - Updated `Publish-vCenterHealth` to correctly link and display the vCenter Server Ring Topology Health from SoS. [GH-94](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/94)
 - Resolves an issue with the display name of the vRealize Log Insight product name in the `Request-VrealizeOverview`due to an upstream error in the `.SYNOPSIS` of `Get-VCFvRLI` in `PowerVCF`. [GH-86](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/86)
 - Updated `Test-VcfReportingPrereq` to return results when run on Photon OS. [GH-82](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/82)
 
 Enhancements:
 
-- Updated `Publish-*` cmdlets to support JSON generation. Required for Heatlh Monitoring and Reporting solution. [GH-79](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/79)
+- Updated `Publish-*` cmdlets to support JSON generation. Required for Health Monitoring and Reporting solution. [GH-79](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/79)
   - `Publish-BackupStatus`
   - `Publish-NsxtTransportNodeStatus`
   - `Publish-NsxtTier0BgpStatus`
   - `Publish-SnapshotStatus`
   - `Publish-LocalUserExpiry`
   - `Publish-StorageCapacityHealth`
-- Added `Publish-NsxtHealthNonSOS` and `Publish-ComponentConnectivityHealthNonSOS` cmdlets. Required for Heatlh Monitoring and Reporting solution. [GH-79](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/79)
-- Updated in `Publish-*` cmdlets that support JSON generation to specify encoding needed for Python to read it the content. Required for Heatlh Monitoring and Reporting solution alerts. [GH-93](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/93)
+- Added `Publish-NsxtHealthNonSOS` and `Publish-ComponentConnectivityHealthNonSOS` cmdlets. Required for Health Monitoring and Reporting solution. [GH-79](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/79)
+- Updated in `Publish-*` cmdlets that support JSON generation to specify encoding needed for Python to read it the content. Required for Health Monitoring and Reporting solution alerts. [GH-93](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/93)
 - Added CPU Cores per Socket to the ESXi Host Overview on the overview report. [GH-85](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/85)
 - Added an option to `Request-ESXiOverview` to report on the VCF+ subscription cores and export the results to CSV. [GH-87](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/87)
 
-Documenation:
+Documentation:
 
 - Updated `README.md` to remove the **Known Issues** section and adds references to the GitHub issue tracker for support. [GH-88](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/88)
 - Updated `README.md` documentation to include support for DellEMC VxRAIL. [GH-98](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/98)
@@ -160,7 +160,7 @@ Chore:
 - Removed the password policy functions that were moved to `PowerValidatedSolutions` v2.0.0. [GH-100](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/100)
 - Updated `PowerValidatedSolutions` from v2.0.0 to v2.0.1. [GH-99](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/99)
 
-## [v1.0.6](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.0.6)
+## v1.0.6
 
 > Release Date: 2023-01-31
 
@@ -174,7 +174,7 @@ Enhancement:
 
 - Updated `Invoke-VcfPasswordPolicy` cmdlet with new password expiration, complexity and account lockout details. [GH-53](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/53)
 
-Documenation:
+Documentation:
 
 - Added a section for **Updating the Module** to the `README.md` documentation. [GH-57](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/57)
 
@@ -189,9 +189,9 @@ Refactor:
 - Refactored `Invoke-VcfConfigReport` for code efficiency. [GH-62](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/62)
 - Refactored `Invoke-VcfAlertReport` for code efficiency. [GH-61](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/61)
 - Refactored `Invoke-VcfHealthReport` for code efficiency. [GH-60](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/60)
-- Transfered `Publish-EsxiPasswordPolicy` to `PowerValidatedSolutions` module. [GH-55](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/55)
+- Transferred `Publish-EsxiPasswordPolicy` to `PowerValidatedSolutions` module. [GH-55](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/55)
 
-## [v1.0.5](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.0.5)
+## v1.0.5
 
 > Release Date: 2022-12-20
 
@@ -199,8 +199,8 @@ Bugfix:
 
 - Updated `Request-NsxtVidmStatus` and `Request-NsxtComputeManagerStatus` functions to resolve an issue supporting workload domains with shared NSX Local Managers on the health report. [GH-25](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/25)
 - Updated `Request-NsxtComputeManagerStatus` function to resolve an issue with supporting workload domains with shared NSX Local Managers on the health report; a false negative for "rogue" compute managers (vCenter Server instances) registered in NSX Local Managers. [GH-42](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/42)
-- Updated `Publish-CertificateHealth` function to resolve an issue accurately dosplaying the certificate health on the health report. [GH-43](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/43)
-- Updated `Request-SddcManagerFreePool` function to resolve an issue returning the free pool health for the heatlh report if the ESXi host license is expired. [GH-32](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/32)
+- Updated `Publish-CertificateHealth` function to resolve an issue accurately displaying the certificate health on the health report. [GH-43](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/43)
+- Updated `Request-SddcManagerFreePool` function to resolve an issue returning the free pool health for the Health report if the ESXi host license is expired. [GH-32](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/32)
 - Updated `Test-VcfReportingPrereq` to display an error on the PowerShell console if the version of a PowerShell module dependency does not meet the minimum requirements. [GH-35](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/35)
 
 Enhancement:
@@ -221,7 +221,7 @@ Chore:
 - Updated `VMware.PowerCLI` from v12.4.1 to v12.7.0. [GH-35](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/35)
 - Updated `VMware.vSphere.SsoAdmin` from v1.3.7 to v1.3.8. [GH-35](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/35)
 
-## [v1.0.4](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/releases/tag/v1.0.4)
+## v1.0.4
 
 > Release Date: 2022-10-10
 
