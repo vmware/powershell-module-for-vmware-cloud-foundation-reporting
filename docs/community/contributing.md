@@ -1,1 +1,1 @@
---8<-- "./CONTRIBUTING_DCO.md"
+--8<-- "./CONTRIBUTING.md"
