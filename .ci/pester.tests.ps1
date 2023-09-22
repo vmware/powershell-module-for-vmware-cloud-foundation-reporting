@@ -1,16 +1,12 @@
-BeforeAll {
-    Import-Module -Name "$PSScriptRoot/../VMware.CloudFoundation.Reporting.psd1" -Force -ErrorAction Stop
-}
-
-Describe -Tag:('ModuleValidation') 'Module Baseline Validation' {
+Describe -Tag:('ModuleValidation') 'Module Basic Tests' {
 
     It 'is present' {
-        $module = Get-Module VMware.CloudFoundation.Reporting
+        $module = Get-Module -Name $moduleName
         $module | Should -Be $true
     }
 
     It ('passes Test-ModuleManifest') {
-        Test-ModuleManifest -Path:("$PSScriptRoot/../VMware.CloudFoundation.Reporting.psd1") | Should -Not -BeNullOrEmpty
+        Test-ModuleManifest -Path $moduleManifest | Should -Not -BeNullOrEmpty
         $? | Should -Be $true
     }
 }
