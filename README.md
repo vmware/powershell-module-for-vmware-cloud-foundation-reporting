@@ -72,7 +72,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 [//]: Links
 
 [changelog]: CHANGELOG.md
-[contributing]: CONTRIBUTING_DCO.md
+[contributing]: CONTRIBUTING.md
 [docs-vmware-cloud-foundation]: https://docs.vmware.com/en/VMware-Cloud-Foundation
 [docs-module]: https://vmware.github.io/powershell-module-for-vmware-cloud-foundation-reporting
 [gh-discussions]: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/discussions
