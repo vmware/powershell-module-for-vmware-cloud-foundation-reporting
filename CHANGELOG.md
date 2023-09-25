@@ -2,7 +2,7 @@
 
 ## v2.4.1
 
-> Release Date: Unreleased
+> Release Date: 2023-09-25
 
 Chore:
 
