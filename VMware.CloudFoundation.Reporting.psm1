@@ -253,7 +253,7 @@ Function Invoke-VcfHealthReport {
 
         if (Test-VCFConnection -server $sddcManagerFqdn) {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
-                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType health # Setup Report Location and Report File
+                $defaultReport = Start-CreateReportDirectory -path $reportPath -reportType health # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
@@ -466,7 +466,7 @@ Function Invoke-VcfAlertReport {
 
         if (Test-VCFConnection -server $sddcManagerFqdn) {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
-                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType alert # Setup Report Location and Report File
+                $defaultReport = Start-CreateReportDirectory -path $reportPath -reportType alert # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
@@ -588,7 +588,7 @@ Function Invoke-VcfConfigReport {
 
         if (Test-VCFConnection -server $sddcManagerFqdn) {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
-                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType config # Setup Report Location and Report File
+                $defaultReport = Start-CreateReportDirectory -path $reportPath -reportType config # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
                     $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
@@ -704,7 +704,7 @@ Function Invoke-VcfUpgradePrecheck {
 
         if (Test-VCFConnection -server $sddcManagerFqdn) {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
-                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType upgrade # Setup Report Location and Report File
+                $defaultReport = Start-CreateReportDirectory -path $reportPath -reportType upgrade # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
                 $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
                 $workflowMessage = "Workload Domain ($workloadDomain)"
@@ -853,7 +853,7 @@ Function Invoke-VcfOverviewReport {
 
         if (Test-VCFConnection -server $sddcManagerFqdn) {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
-                $defaultReport = Start-CreateReportDirectory -path $reportPath -sddcManagerFqdn $sddcManagerFqdn -reportType overview # Setup Report Location and Report File
+                $defaultReport = Start-CreateReportDirectory -path $reportPath -reportType overview # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
                 $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
                 $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
@@ -1010,11 +1010,7 @@ Function Request-SoSHealthJson {
         }
 
         # Set the report destination.
-        if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
-            $reportDestination = Join-Path -Path $reportPath -ChildPath $reportName | Split-Path -NoQualifier -Parent
-        } else {
-            $reportDestination = Join-Path -Path $reportPath -ChildPath $reportName
-        }
+        $reportDestination = Join-Path -Path $reportPath -ChildPath $reportName
 
         if (Test-VCFConnection -server $server) {
             # Create a temporary directory under reportDirectory.
@@ -9364,23 +9360,22 @@ Export-ModuleMember -Function Show-ReportingOutput
 Function Start-CreateReportDirectory {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$path,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
         [Parameter (Mandatory = $true)] [ValidateSet("health","alert","config","upgrade","overview")] [String]$reportType
     )
 
     $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
-    if ($reportType -eq "health") { $Global:reportFolder = $path + '\HealthReports\' }
-    if ($reportType -eq "alert") { $Global:reportFolder = $path + '\AlertReports\' }
-    if ($reportType -eq "config") { $Global:reportFolder = $path + '\ConfigReports\' }
-    if ($reportType -eq "upgrade") { $Global:reportFolder = $path + '\UpgradeReports\' }
-    if ($reportType -eq "overview") { $Global:reportFolder = $path + '\OverviewReports\' }
-    if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
-        $reportFolder = ($reportFolder).split('\') -join '/' | Split-Path -NoQualifier
-    }
+    if ($reportType -eq "health") { $Global:reportFolder = Join-Path -Path $path -ChildPath 'HealthReports' }
+    if ($reportType -eq "alert") { $Global:reportFolder = Join-Path -Path $path -ChildPath 'AlertReports'  }
+    if ($reportType -eq "config") { $Global:reportFolder = Join-Path -Path $path -ChildPath 'ConfigReports'  }
+    if ($reportType -eq "upgrade") { $Global:reportFolder = Join-Path -Path $path -ChildPath 'UpgradeReports'  }
+    if ($reportType -eq "overview") { $Global:reportFolder = Join-Path -Path $path -ChildPath 'OverviewReports' }
+
+    
     if (!(Test-Path -Path $reportFolder)) {
         New-Item -Path $reportFolder -ItemType "directory" | Out-Null
     }
-    $reportName = $reportFolder + $filetimeStamp + "-" + $reportType + ".htm"
+    $filename = $filetimeStamp + "-" + $reportType + ".htm"
+    $reportName = Join-Path -Path $reportFolder -ChildPath $fileName
     $reportName
 }
 Export-ModuleMember -Function Start-CreateReportDirectory
@@ -9394,13 +9389,7 @@ Function Start-CreateOutputJsonDirectory {
     $filetimeStamp = Get-Date -Format "MM-dd-yyyy_hh_mm_ss"
     $Global:jsonFolder = $jsonFolder
     $jsonName = $filetimeStamp + "-" + $jsonFileSuffix
-
-    if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
-        $jsonDestination = Join-Path -Path $jsonFolder -ChildPath $jsonName | Split-Path -NoQualifier -Parent
-        $jsonFolder = $jsonFolder | Split-Path -NoQualifier -Parent
-    } else {
-        $jsonDestination = Join-Path -Path $jsonFolder -ChildPath $jsonName
-    }
+    $jsonDestination = Join-Path -Path $jsonFolder -ChildPath $jsonName
 
     if (!(Test-Path -Path $jsonFolder)) {
         New-Item -Path $jsonFolder -ItemType "directory" | Out-Null
@@ -9419,12 +9408,7 @@ Function Start-CreateOutputCsvDirectory {
     $Global:csvFolder = $csvFolder
     $csvName = $filetimeStamp + "-" + $csvFileSuffix + ".csv"
 
-    if ($PSEdition -eq "Core" -and ($PSVersionTable.OS).Split(' ')[0] -eq "Linux") {
-        $csvDestination = Join-Path -Path $csvFolder -ChildPath $csvName | Split-Path -NoQualifier -Parent
-        $csvFolder = $csvFolder | Split-Path -NoQualifier -Parent
-    } else {
-        $csvDestination = Join-Path -Path $csvFolder -ChildPath $csvName
-    }
+    $csvDestination = Join-Path -Path $csvFolder -ChildPath $csvName
 
     if (!(Test-Path -Path $csvFolder)) {
         New-Item -Path $csvFolder -ItemType "directory" | Out-Null

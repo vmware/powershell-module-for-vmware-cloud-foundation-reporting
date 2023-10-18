@@ -1,5 +1,13 @@
 # Release History
 
+## v2.4.2
+
+> Release Date: 2023-10-18
+
+Bugfix:
+
+- Updated `Start-Create*` and `Invoke-*` functions to address file path generation issues in Linux. [GH-182](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/182)
+
 ## v2.4.1
 
 > Release Date: 2023-09-25
