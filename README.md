@@ -24,7 +24,7 @@ Please refer to the [documentation][docs-module] for more information on how to 
 ## Contributing
 
 The project team welcomes contributions from the community. Before you start working with project, please read our
-[Developer Certificate of Origin](https://cla.vmware.com/dco).
+[Developer Certificate of Origin][vmware-cla-dco].
 
 All contributions to this repository must be signed as described on that page. Your signature certifies that you wrote
 the patch or have the right to pass it on as an open-source patch.
@@ -33,20 +33,17 @@ For more detailed information, refer to the [contribution guidelines][contributi
 
 ## Support
 
-This PowerShell module is not supported by VMware Support Services.
+While this module is not supported by VMware Support Services, it is supported by the project maintainers and its community of users.
 
-We welcome you to use the GitHub [issues][gh-issues] tracker to report bugs or suggest features and enhancements.
+Use the GitHub [issues][gh-issues] to report bugs or suggest features and enhancements. Issues are monitored by the maintainers and are prioritized based on criticality and community [reactions][gh-reactions].
 
-When filing an issue, please check existing open, or recently closed, issues to make sure someone else hasn't already
-reported the issue.
-
-Please try to include as much information as you can. Details like these are incredibly useful:
+Before filing an issue, please search the issues and use the reactions feature to add votes to matching issues. Please include as much information as you can. Details like these are incredibly useful in helping the us evaluate and prioritize any changes:
 
 - A reproducible test case or series of steps.
 - Any modifications you've made relevant to the bug.
 - Anything unusual about your environment or deployment.
 
-You can also start a discussion on the [discussions][gh-discussions] area to ask questions or share ideas.
+You can also start a discussion on the GitHub [discussions][gh-discussions] area to ask questions or share ideas.
 
 ## License
 
@@ -77,6 +74,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 [docs-module]: https://vmware.github.io/powershell-module-for-vmware-cloud-foundation-reporting
 [gh-discussions]: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/discussions
 [gh-issues]: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/issues
+[gh-reactions]: https://blog.github.com/2016-03-10-add-reactions-to-pull-requests-issues-and-comments/
 [psgallery-module]: https://www.powershellgallery.com/packages/VMware.CloudFoundation.Reporting
 [vmware-cla-dco]: https://cla.vmware.com/dco
-
