@@ -17,4 +17,4 @@
 [issues]: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/issues
 [discussions]: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/discussions
 [issues-search]: https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/issues?q=is%3Aissue+is%3Aopen+label%3Abug
-[reactions]: https://blog.github.com/2024-03-10-add-reactions-to-pull-requests-issues-and-comments/
+[reactions]: https://github.blog/2016-03-10-add-reactions-to-pull-requests-issues-and-comments/
