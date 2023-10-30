@@ -11,4 +11,4 @@ Gary Blake      | Senior Staff Solutions Architect, VMware | Maintainer   | [:fo
 Ryan Johnson    | Senior Staff Solutions Architect, VMware | Maintainer   | [:fontawesome-brands-github:](https://github.com/tenthirtyam)    |
 Bhumitra Nagar  | Senior Member of Technical Staff, VMware | Maintainer   | [:fontawesome-brands-github:](https://github.com/bhumitra)       |
 Ivaylo Ivanov   | Staff Solutions Architect, VMware        | Collaborator | [:fontawesome-brands-github:](https://github.com/joisika)        |
-Antony Stefanov | Solution Adoption Manager VMware         | Collaborator | [:fontawesome-brands-github:](https://github.com/antonystefanov) |
+Antony Stefanov | Solution Adoption Manager, VMware        | Collaborator | [:fontawesome-brands-github:](https://github.com/antonystefanov) |
