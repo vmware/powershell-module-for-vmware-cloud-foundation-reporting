@@ -18,6 +18,7 @@ The following table lists the supported platforms for this module.
 
 Platform                                                     | vSAN ReadyNodes                     | DellEMC VxRail
 -------------------------------------------------------------|-------------------------------------|------------------------------------
+:fontawesome-solid-cloud: &nbsp; VMware Cloud Foundation 5.1 | :fontawesome-solid-check:{ .green } | :fontawesome-solid-check:{ .green }
 :fontawesome-solid-cloud: &nbsp; VMware Cloud Foundation 5.0 | :fontawesome-solid-check:{ .green } | :fontawesome-solid-check:{ .green }
 :fontawesome-solid-cloud: &nbsp; VMware Cloud Foundation 4.5 | :fontawesome-solid-check:{ .green } | :fontawesome-solid-check:{ .green }
 :fontawesome-solid-cloud: &nbsp; VMware Cloud Foundation 4.4 | :fontawesome-solid-check:{ .green } | :fontawesome-solid-check:{ .green }
@@ -39,8 +40,8 @@ The following table lists the supported editions and versions of PowerShell for 
 
 Edition                                                                           | Version
 ----------------------------------------------------------------------------------|----------
-:material-powershell: &nbsp; [Microsoft Windows PowerShell][microsoft-powershell] | 5.1
 :material-powershell: &nbsp; [PowerShell Core][microsoft-powershell]              | >= 7.2.0
+:material-powershell: &nbsp; [Microsoft Windows PowerShell][microsoft-powershell] | 5.1
 
 ### Module Dependencies
 
