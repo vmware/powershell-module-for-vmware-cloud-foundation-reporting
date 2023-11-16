@@ -250,6 +250,14 @@ Function Invoke-VcfHealthReport {
 
     Try {
         Clear-Host; Write-Host ""
+        
+        if ($PSVersionTable.PSEdition -eq "Desktop" -or $PSVersionTable.OS -like "Microsoft Windows*") {
+            $tarPath = (Get-Command tar -ErrorAction SilentlyContinue).Source
+            if (!($tarPath)) {
+                Write-Warning "The tar utility is required to run this cmdlet. Please check the module system requirements and try again."
+                return
+            }
+        } 
 
         if (Test-VCFConnection -server $sddcManagerFqdn) {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
