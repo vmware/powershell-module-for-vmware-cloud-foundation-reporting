@@ -1,16 +1,14 @@
-# Copyright 2022-2023 VMware, Inc.
+# Copyright 2023 Broadcom. All Rights Reserved.
+# SPDX-License-Identifier: BSD-2
+
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# Note:
-# This PowerShell module should be considered entirely experimental. It is still in development and not tested beyond lab
-# scenarios. It is recommended you don't use it for any production environment without testing extensively!
-
-# Allow communication with self-signed certificates when using Powershell Core. If you require all communications to be
-# secure and do not wish to allow communication with self-signed certificates, remove lines 15-41 before importing the
-# module.
+# Enable communication with self-signed certificates when using Powershell Core. If you require all communications
+# to be secure and do not wish to allow communication with self-signed certificates, remove lines 19-39 before
+# importing the module.
 
 if ($PSEdition -eq 'Core') {
     $PSDefaultParameterValues.Add("Invoke-RestMethod:SkipCertificateCheck", $true)
