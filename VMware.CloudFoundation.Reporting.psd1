@@ -11,7 +11,7 @@
     RootModule = '.\VMware.CloudFoundation.Reporting.psm1'
     
     # Version number of this module.
-    ModuleVersion = '2.5.0.1001'
+    ModuleVersion = '2.5.0.1002'
     
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -32,7 +32,7 @@
     Description = 'PowerShell Module for VMware Cloud Foundation Reporting'
     
     # Minimum version of the PowerShell engine required by this module
-    PowerShellVersion = '5.1'
+    PowerShellVersion = '7.2.0'
     
     # Name of the PowerShell host required by this module
     # PowerShellHostName = ''
@@ -57,11 +57,11 @@
         }
         @{
             ModuleName    = 'PowerVCF'
-            ModuleVersion = '2.3.0'
+            ModuleVersion = '2.4.0'
         }
         @{
             ModuleName    = 'PowerValidatedSolutions'
-            ModuleVersion = '2.6.0'
+            ModuleVersion = '2.7.0'
         }
     )
     
