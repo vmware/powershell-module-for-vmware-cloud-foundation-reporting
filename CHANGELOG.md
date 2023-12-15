@@ -7,6 +7,7 @@
 Enhancement:
 
 - Added a prerequisite check to `Invoke-VcfHealthReport` function to verify that the tar utility is present on Windows if using Windows PowerShell 5.1 (Desktop) or PowerShell 7 (Core). The `tar` utility is included with Windows Server 2019 and later and is noted as a system requirement in the documentation. [GH-191](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/191)
+- Added support for use of secure strings for sensitive parameters. [GH-199](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/199)
 
 ## v2.4.2
 

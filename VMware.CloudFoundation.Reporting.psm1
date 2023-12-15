@@ -38,6 +38,24 @@ if ($PSEdition -eq 'Desktop') {
     }
 }
 
+##########################################################################
+#Region     Non Exported Functions                                  ######
+Function Get-Password {
+    param (
+        [string]$user,
+        [string]$password
+    )
+
+    if ([string]::IsNullOrEmpty($password)) {
+        $secureString = Read-Host -Prompt "Enter the password for $user" -AsSecureString
+        $password = ConvertFrom-SecureString $secureString -AsPlainText
+    }
+    return $password
+}
+
+#EndRegion  Non Exported Functions                                  ######
+##########################################################################
+
 #######################################################################################################################
 #####################################  J S O N   O U T P U T   V A R I A B L E S  #####################################
 
@@ -236,15 +254,19 @@ Function Invoke-VcfHealthReport {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerLocalUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerLocalPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$sddcManagerLocalPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
+
+    $sddcManagerPass = Get-Password -user $sddcManagerUser -password $sddcManagerPass    
+    $sddcManagerLocalPass = Get-Password -user $sddcManagerLocalUser -password $sddcManagerLocalPass
+
 
     Try {
         Clear-Host; Write-Host ""
@@ -459,13 +481,15 @@ Function Invoke-VcfAlertReport {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
+
+    $sddcManagerPass = Get-Password -user $sddcManagerUser -password $sddcManagerPass
 
     Try {
         Clear-Host; Write-Host ""
@@ -582,12 +606,14 @@ Function Invoke-VcfConfigReport {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
+
+    $sddcManagerPass = Get-Password -user $sddcManagerUser -password $sddcManagerPass
 
     Try {
         Clear-Host; Write-Host ""
@@ -698,11 +724,13 @@ Function Invoke-VcfUpgradePrecheck {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
+
+    $sddcManagerPass = Get-Password -user $sddcManagerUser -password $sddcManagerPass
 
     Try {
 
@@ -732,33 +760,24 @@ Function Invoke-VcfUpgradePrecheck {
                             $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue $subTask.resources.type
                             if ($subTask.resources.type -eq "ESX") {
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFHost -id $subTask.resources.resourceId).fqdn
-                            }
-                            elseif ($subTask.resources.type -eq "VCENTER") {
+                            } elseif ($subTask.resources.type -eq "VCENTER") {
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvCenter -id $subTask.resources.resourceId).fqdn
-                            }
-                            elseif ($subTask.resources.type -eq "CLUSTER") {
+                            } elseif ($subTask.resources.type -eq "CLUSTER") {
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFCluster -id $subTask.resources.resourceId).name
-                            }
-                            elseif ($subTask.resources.type -eq "VSAN") {
+                            } elseif ($subTask.resources.type -eq "VSAN") {
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFCluster -id $subTask.resources.resourceId).primaryDatastoreName
-                            }
-                            elseif ($subTask.resources.type -eq "DEPLOYMENT_CONFIGURATION") {
+                            } elseif ($subTask.resources.type -eq "DEPLOYMENT_CONFIGURATION") {
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFManager -id $subTask.resources.resourceId).fqdn
-                            }
-                            elseif ($subTask.resources.type -eq "VRSLCM") {
+                            } elseif ($subTask.resources.type -eq "VRSLCM") {
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRSLCM -id $subTask.resources.resourceId).fqdn
-                            }
-                            elseif ($subTask.resources.type -eq "VROPS") {
+                            } elseif ($subTask.resources.type -eq "VROPS") {
                                 $id = $subTask.resources.resourceId + ":vrops"
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvROPS | Where-Object {$_.id -eq $id}).loadBalancerFqdn
-                            }
-                            elseif ($subTask.resources.type -eq "VRLI") {
+                            } elseif ($subTask.resources.type -eq "VRLI") {
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRLI -id $subTask.resources.resourceId).loadBalancerFqdn
-                            }
-                            elseif ($subTask.resources.type -eq "VRA") {
+                            } elseif ($subTask.resources.type -eq "VRA") {
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue (Get-VCFvRA -id $subTask.resources.resourceId).loadBalancerFqdn
-                            }
-                            else {
+                            } else {
                                 $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $subTask.resources.resourceId
                             }
                             $elementObject | Add-Member -NotePropertyName 'Precheck Task' -NotePropertyValue $subTask.name
@@ -803,8 +822,7 @@ Function Invoke-VcfUpgradePrecheck {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -848,11 +866,13 @@ Function Invoke-VcfOverviewReport {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
+
+    $sddcManagerPass = Get-Password -user $sddcManagerUser -password $sddcManagerPass
 
     Try {
         Clear-Host; Write-Host ""
@@ -900,8 +920,7 @@ Function Invoke-VcfOverviewReport {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -953,11 +972,13 @@ Function Request-SoSHealthJson {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$reportPath,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
+
+    $pass = Get-Password -user $user -password $pass
 
     # Request VCF Token
     Request-VCFToken -fqdn $server -Username $user -Password $pass -skipCertificateCheck -ErrorAction SilentlyContinue -ErrorVariable ErrMsg | Out-Null
@@ -1200,8 +1221,7 @@ Function Publish-CertificateHealth {
         } else {
             $outputObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -1305,8 +1325,7 @@ Function Publish-ConnectivityHealth {
         else {
             $customObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -1399,8 +1418,7 @@ Function Publish-PingConnectivityHealth {
         } else {
             $customObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -1507,8 +1525,7 @@ Function Publish-DnsHealth {
             $allForwardLookupObject | Sort-Object Component, Resource
             $allReverseLookupObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -1665,8 +1682,7 @@ Function Publish-EsxiHealth {
             $allLicenseObject | Sort-Object Component, Resource
             $allDiskObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -1816,8 +1832,7 @@ Function Publish-NsxtHealth {
         } else {
             $customObject | Sort-Object Resource, Component
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -1911,8 +1926,7 @@ Function Publish-NsxtEdgeNodeHealth {
         } else {
             $customObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -2014,8 +2028,7 @@ Function Publish-NsxtEdgeClusterHealth {
         } else {
             $customObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -2097,8 +2110,7 @@ Function Publish-NtpHealth {
         } else {
             $outputObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -2190,8 +2202,7 @@ Function Publish-PasswordHealth {
         } else {
             $outputObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -2280,8 +2291,7 @@ Function Publish-VersionHealth {
         } else {
             $outputObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -2379,8 +2389,7 @@ Function Publish-HardwareCompatibilityHealth {
         } else {
             $outputObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -2470,8 +2479,7 @@ Function Publish-ServiceHealth {
         } else {
             $outputObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -2587,8 +2595,7 @@ Function Publish-VcenterHealth {
         } else {
             $ringTopologyHealth | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -2763,8 +2770,7 @@ Function Publish-VsanHealth {
         } else {
             $customObject | Sort-Object Component, Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -2866,8 +2872,7 @@ Function Publish-VsanStoragePolicy {
         } else {
             $outputObject | Sort-Object Component, 'vCenter Server', Resource
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -2935,12 +2940,14 @@ Function Publish-BackupStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
+
+    $pass = Get-Password -user $user -password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -2995,8 +3002,7 @@ Function Publish-BackupStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -3055,13 +3061,15 @@ Function Publish-NsxtTransportNodeStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
 
     )
+
+    $pass = Get-Password -user $user -password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -3105,8 +3113,7 @@ Function Publish-NsxtTransportNodeStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -3165,13 +3172,15 @@ Function Publish-NsxtTransportNodeTunnelStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
 
     )
+
+    $pass = Get-Password -user $user -password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -3215,8 +3224,7 @@ Function Publish-NsxtTransportNodeTunnelStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -3275,12 +3283,14 @@ Function Publish-NsxtTier0BgpStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
+
+    $pass = Get-Password -user $user -password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -3325,8 +3335,7 @@ Function Publish-NsxtTier0BgpStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -3391,12 +3400,14 @@ Function Publish-SnapshotStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
+
+    $pass = Get-Password -user $user -password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -3451,8 +3462,7 @@ Function Publish-SnapshotStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -3513,12 +3523,14 @@ Function Publish-NsxtHealthNonSOS {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
+
+    $pass = Get-Password -user $user -password $pass
 
         Try {
         $allNsxtHealthObject = New-Object System.Collections.ArrayList
@@ -3558,8 +3570,7 @@ Function Publish-NsxtHealthNonSOS {
             $allNsxtHealthObject
         }
 
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -3612,12 +3623,14 @@ Function Publish-NsxtCombinedHealth {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -user $user -password $pass
 
     Try {
         $allNsxtHealthObject = New-Object System.Collections.ArrayList
@@ -3654,8 +3667,7 @@ Function Publish-NsxtCombinedHealth {
         }
         $allNsxtHealthObject = Convert-CssClass -htmldata $allNsxtHealthObject
         $allNsxtHealthObject
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -3721,14 +3733,17 @@ Function Publish-StorageCapacityHealth {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$localUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$localPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$localPass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
+
+    $pass = Get-Password -user $user -password $pass
+    $localPass = Get-Password -user $localUser -password $localPass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -3826,8 +3841,7 @@ Function Publish-StorageCapacityHealth {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -3873,10 +3887,12 @@ Function Request-NsxtVidmStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -3930,8 +3946,7 @@ Function Request-NsxtVidmStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -3977,10 +3992,12 @@ Function Request-NsxtComputeManagerStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -4033,8 +4050,7 @@ Function Request-NsxtComputeManagerStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -4077,9 +4093,11 @@ Function Request-SddcManagerSnapshotStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -4154,8 +4172,7 @@ Function Request-SddcManagerSnapshotStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -4201,10 +4218,12 @@ Function Request-VcenterSnapshotStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -4281,8 +4300,7 @@ Function Request-VcenterSnapshotStatus {
                 $outputObject | Sort-Object Component, Resource, Element
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -4328,10 +4346,12 @@ Function Request-NsxtEdgeSnapshotStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -4414,8 +4434,7 @@ Function Request-NsxtEdgeSnapshotStatus {
             }
         }
         $outputObject | Sort-Object Component, Resource, Element
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -4456,9 +4475,11 @@ Function Request-SddcManagerBackupStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -4536,8 +4557,7 @@ Function Request-SddcManagerBackupStatus {
                 $customObject | Sort-Object Component, Resource, Element
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -4583,10 +4603,12 @@ Function Request-NsxtManagerBackupStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -4778,8 +4800,7 @@ Function Request-NsxtManagerBackupStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -4825,11 +4846,13 @@ Function Request-VcenterBackupStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
 
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -4920,8 +4943,7 @@ Function Request-VcenterBackupStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -4967,10 +4989,12 @@ Function Request-DatastoreStorageCapacity {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     # Define thresholds Green < Yellow < Red
     $greenThreshold = 80
@@ -5025,8 +5049,7 @@ Function Request-DatastoreStorageCapacity {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 
@@ -5073,10 +5096,12 @@ Function Request-VcenterStorageHealth {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -5102,8 +5127,7 @@ Function Request-VcenterStorageHealth {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -5149,11 +5173,14 @@ Function Request-SddcManagerStorageHealth {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$localUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$localPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$localPass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
+    $localPass = Get-Password -User $localUser -Password $localPass
 
     Try {
         # Define the command for retrieving the disk information.
@@ -5166,8 +5193,7 @@ Function Request-SddcManagerStorageHealth {
         } else {
             Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $server
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -5212,10 +5238,12 @@ Function Request-EsxiStorageCapacity {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -5256,8 +5284,7 @@ Function Request-EsxiStorageCapacity {
                 $esxiPartitionsObject | Sort-Object Domain, 'ESXi FQDN', 'Volume Name', Alert
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -5318,12 +5345,14 @@ Function Publish-ComponentConnectivityHealthNonSOS {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         $allConnectivityObject = New-Object System.Collections.ArrayList
@@ -5359,8 +5388,7 @@ Function Publish-ComponentConnectivityHealthNonSOS {
             $allConnectivityObject = Convert-CssClass -htmldata $allConnectivityObject
             $allConnectivityObject
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -5415,12 +5443,14 @@ Function Publish-ComponentConnectivityHealth {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$json,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         $allConnectivityObject = New-Object System.Collections.ArrayList
@@ -5455,8 +5485,7 @@ Function Publish-ComponentConnectivityHealth {
         }
         $allConnectivityObject = Convert-CssClass -htmldata $allConnectivityObject
         $allConnectivityObject
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -5507,11 +5536,13 @@ Function Request-VcenterAuthentication {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -5571,8 +5602,7 @@ Function Request-VcenterAuthentication {
                 $customObject | Sort-Object Component, Resource
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -5623,11 +5653,13 @@ Function Request-NsxtAuthentication {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -5698,8 +5730,7 @@ Function Request-NsxtAuthentication {
                 $customObject | Sort-Object Component, Resource
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -5745,10 +5776,12 @@ Function Request-NsxtTransportNodeStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -5799,8 +5832,7 @@ Function Request-NsxtTransportNodeStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -5846,10 +5878,12 @@ Function Request-NsxtTransportNodeTunnelStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -5911,8 +5945,7 @@ Function Request-NsxtTransportNodeTunnelStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -5958,10 +5991,12 @@ Function Request-NsxtTier0BgpStatus {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -6016,8 +6051,7 @@ Function Request-NsxtTier0BgpStatus {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -6062,10 +6096,12 @@ Function Publish-VmConnectedCdrom {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -6090,8 +6126,7 @@ Function Publish-VmConnectedCdrom {
                 $allHealthObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -6129,9 +6164,11 @@ Function Request-VmConnectedCdrom {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -6165,8 +6202,7 @@ Function Request-VmConnectedCdrom {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -6218,11 +6254,13 @@ Function Publish-EsxiConnectionHealth {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -6255,8 +6293,7 @@ Function Publish-EsxiConnectionHealth {
                 $allHealthObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -6301,10 +6338,12 @@ Function Request-EsxiConnectionHealth {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -6357,8 +6396,7 @@ Function Request-EsxiConnectionHealth {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -6399,9 +6437,11 @@ Function Publish-SddcManagerFreePool {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -6429,8 +6469,7 @@ Function Publish-SddcManagerFreePool {
                 $allConfigurationObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -6471,9 +6510,11 @@ Function Request-SddcManagerFreePool {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -6548,8 +6589,7 @@ Function Request-SddcManagerFreePool {
                 $customObject | Sort-Object Component, 'ESXi FQDN'
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -6608,11 +6648,13 @@ Function Publish-EsxiAlert {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -6647,8 +6689,7 @@ Function Publish-EsxiAlert {
                 $allAlertObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -6701,11 +6742,13 @@ Function Publish-NsxtAlert {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -6740,8 +6783,7 @@ Function Publish-NsxtAlert {
                 $allAlertObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -6793,11 +6835,13 @@ Function Publish-VcenterAlert {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -6832,8 +6876,7 @@ Function Publish-VcenterAlert {
                 $allAlertObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -6885,11 +6928,13 @@ Function Publish-VsanAlert {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -6924,8 +6969,7 @@ Function Publish-VsanAlert {
                 $allAlertObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -6971,10 +7015,12 @@ Function Request-NsxtAlert {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     if (Test-VCFConnection -server $server) {
         if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -6983,7 +7029,6 @@ Function Request-NsxtAlert {
                     if (Test-NSXTAuthentication -server $vcfNsxDetails.fqdn -user ($vcfNsxDetails.adminUser | Select-Object -first 1) -pass ($vcfNsxDetails.adminPass | Select-Object -first 1)) {
                         $nsxtAlarms = Get-NsxtAlarm -fqdn $vcfNsxDetails.fqdn # Get the NSX alarms
                         $customObject = New-Object System.Collections.ArrayList
-                        # TODO: Define the YELLOW alert based on Status and Severity
                         foreach ($alarm in $nsxtAlarms.results) {
                             if ($alarm.status -eq "RESOLVED") {
                                 $alert = "GREEN"
@@ -7059,10 +7104,12 @@ Function Request-VsanAlert {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     if (Test-VCFConnection -server $server) {
         if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -7147,11 +7194,13 @@ Function Request-VcenterAlert {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateSet("hostOnly","vsanOnly")][ValidateNotNullOrEmpty()] [String]$filterOut,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     if (Test-VCFConnection -server $server) {
         if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -7254,10 +7303,12 @@ Function Request-EsxiAlert {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$domain,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     if (Test-VCFConnection -server $server) {
         if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -7346,10 +7397,12 @@ Function Publish-ClusterConfiguration {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -7369,8 +7422,7 @@ Function Publish-ClusterConfiguration {
                 $allConfigurationObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -7414,11 +7466,13 @@ Function Publish-EsxiCoreDumpConfig {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$html,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific--WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -7477,8 +7531,7 @@ Function Publish-EsxiCoreDumpConfig {
                 $allHostObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -7516,9 +7569,11 @@ Function Request-ClusterConfiguration {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -7554,8 +7609,7 @@ Function Request-ClusterConfiguration {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -7600,10 +7654,12 @@ Function Publish-ClusterDrsRule {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -7627,8 +7683,7 @@ Function Publish-ClusterDrsRule {
                 $allConfigurationObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -7666,9 +7721,11 @@ Function Request-ClusterDrsRule {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -7703,8 +7760,7 @@ Function Request-ClusterDrsRule {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -7749,10 +7805,12 @@ Function Publish-ResourcePool {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -7771,8 +7829,7 @@ Function Publish-ResourcePool {
                 $allConfigurationObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -7810,9 +7867,11 @@ Function Request-ResourcePool {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -7844,8 +7903,7 @@ Function Request-ResourcePool {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -7890,10 +7948,12 @@ Function Publish-VmOverride {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -7912,8 +7972,7 @@ Function Publish-VmOverride {
                 $allConfigurationObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -7951,9 +8010,11 @@ Function Request-VmOverride {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -7980,8 +8041,7 @@ Function Request-VmOverride {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -8026,10 +8086,12 @@ Function Publish-VirtualNetwork {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -8048,8 +8110,7 @@ Function Publish-VirtualNetwork {
                 $allConfigurationObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -8087,9 +8148,11 @@ Function Request-VirtualNetwork {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -8123,8 +8186,7 @@ Function Request-VirtualNetwork {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -8169,10 +8231,12 @@ Function Publish-EsxiSecurityConfiguration {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -8191,8 +8255,7 @@ Function Publish-EsxiSecurityConfiguration {
                 $allConfigurationObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -8230,7 +8293,7 @@ Function Request-EsxiSecurityConfiguration {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$domain
     )
 
@@ -8261,8 +8324,7 @@ Function Request-EsxiSecurityConfiguration {
                 }
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -8310,9 +8372,11 @@ Function Publish-VcfSystemOverview {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -8370,8 +8434,7 @@ Function Publish-VcfSystemOverview {
                 $allOverviewObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -8412,9 +8475,11 @@ Function Request-VcfOverview {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -8448,8 +8513,7 @@ Function Request-VcfOverview {
                 $systemObject
             }
         }
-    }
-	Catch {
+    } Catch {
         Debug-ExceptionWriter -object $_
     }
 }
@@ -8483,8 +8547,10 @@ Function Request-HardwareOverview {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -8540,8 +8606,7 @@ Function Request-HardwareOverview {
                 $customObject
             }
         }
-    }
-	Catch {
+    } Catch {
         Debug-ExceptionWriter -object $_
     }
 }
@@ -8583,16 +8648,17 @@ Function Request-VcenterOverview {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage) {
             if (Test-VCFAuthentication -server $server -user $user -pass $pass -ErrorAction SilentlyContinue -ErrorVariable ErrorMessage) {
                 $allWorkloadDomains = Get-VCFWorkloadDomain
                 $allVsphereObject = New-Object System.Collections.ArrayList
-
                 if (($vcfMgmtVcenterDetails = Get-vCenterServerDetail -server $server -user $user -pass $pass -domainType MANAGEMENT)) {
                     if (Test-VsphereConnection -server $vcfMgmtVcenterDetails.fqdn) {
                         if (Test-VsphereAuthentication -server $vcfMgmtVcenterDetails.fqdn -user $vcfMgmtVcenterDetails.ssoAdmin -pass $vcfMgmtVcenterDetails.ssoAdminPass) {
@@ -8635,7 +8701,6 @@ Function Request-VcenterOverview {
                         Disconnect-VIServer -Server $vcfMgmtVcenterDetails.fqdn -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
                 }
-
                 $allVsphereObject | Sort-Object 'Domain Type', 'Domain Name'
             } else {
                 Write-LogMessage -Type ERROR -Message "$ErrorMessage"
@@ -8643,8 +8708,7 @@ Function Request-VcenterOverview {
         } else {
             Write-LogMessage -Type ERROR -Message "$ErrorMessage"
         }
-    }
-	Catch {
+    } Catch {
         Debug-ExceptionWriter -object $_
     }
 }
@@ -8700,11 +8764,13 @@ Function Request-EsxiOverview {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$subscription,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputCsv
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -8818,8 +8884,7 @@ Function Request-EsxiOverview {
 
             }
         }
-    }
-	Catch {
+    } Catch {
         Debug-ExceptionWriter -object $_
     }
 }
@@ -8861,9 +8926,11 @@ Function Request-ClusterOverview {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -8888,8 +8955,7 @@ Function Request-ClusterOverview {
                 $allClusterObject | Sort-Object 'Domain Name','Cluster Name','Domain UUID','Cluster UUID'
             }
         }
-    }
-	Catch {
+    } Catch {
         Debug-ExceptionWriter -object $_
     }
 }
@@ -8930,9 +8996,11 @@ Function Request-NetworkOverview {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -8981,8 +9049,7 @@ Function Request-NetworkOverview {
             }
 
         }
-    }
-	Catch {
+    } Catch {
         Debug-ExceptionWriter -object $_
     }
 }
@@ -9024,9 +9091,11 @@ Function Request-VMwareAriaSuiteOverview {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$anonymized
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -9072,8 +9141,7 @@ Function Request-VMwareAriaSuiteOverview {
                 $allAriaSuiteObject
             }
         }
-    }
-    Catch {
+    } Catch {
         Debug-ExceptionWriter -object $_
     }
 }
@@ -9107,8 +9175,10 @@ Function Request-ValidatedSolutionOverview {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass
     )
+
+    $pass = Get-Password -User $user -Password $pass
 
     Try {
         if (Test-VCFConnection -server $server) {
@@ -9200,7 +9270,6 @@ Function Request-ValidatedSolutionOverview {
                 $allVvsObject += $customObject
 
                 # Validate PCA Deployment
-                # TODO: Extract configadmin user and password from vRSLCM to check config in vRA
                 if ((Get-VCFvRA).status -eq "ACTIVE") {
                     $vraEnabled = "Enabled"
                 } else {
@@ -9232,8 +9301,7 @@ Function Request-ValidatedSolutionOverview {
                 $allVvsObject | Sort-Object Name
             }
         }
-    }
-	Catch {
+    } Catch {
         Debug-ExceptionWriter -object $_
     }
 }
@@ -9248,7 +9316,7 @@ Export-ModuleMember -Function Request-ValidatedSolutionOverview
 
 Function Test-VcfReportingPrereq {
     <#
-    	.SYNOPSIS
+        .SYNOPSIS
         Verifies that the minimum dependencies are met to run the PowerShell module.
 
         .DESCRIPTION
@@ -9272,8 +9340,10 @@ Function Test-VcfReportingPrereq {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerFqdn,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$sddcManagerPass
     )
+
+    $sddcManagerPass = Get-Password -user $sddcManagerUser -password $sddcManagerPass
 
     Try {
         Clear-Host; Write-Host ""
@@ -9465,11 +9535,14 @@ Function Invoke-SddcCommand {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vmUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vmPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$vmPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$command
     )
+
+    $pass = Get-Password -User $user -Password $pass
+    $vmPass = Get-Password -User $vmUser -Password $vmPass
 
     if (Test-VCFConnection -server $server) {
         if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -9532,12 +9605,15 @@ Function Copy-FiletoSddc {
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$pass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vmUser,
-        [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$vmPass,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$vmPass,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$source,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$destination
     )
+
+    $pass = Get-Password -User $user -Password $pass
+    $vmPass = Get-Password -User $vmUser -Password $vmPass
 
     if (Test-VCFConnection -server $server) {
         if (Test-VCFAuthentication -server $server -user $user -pass $pass) {
@@ -10055,13 +10131,11 @@ Function Format-DfStorageHealth {
                 { $_ -ge $redThreshold } {
                     $alert = 'RED' # Red if $usage is equal or above $redThreshold
                     $message = "Used space is above $redThreshold%. Please reclaim space on the partition."
-                    # TODO: Find how to display the message in html on multiple rows (Add <br> with the right escape chars)
                     # In order to display usage, you could run as root in SDDC Manager 'du -Sh <mount-point> | sort -rh | head -10' "
                     # As an alternative you could run PowerCLI commandlet:
                     # 'Invoke-SddcCommand -server <SDDC_Manager_FQDN> -user <admin@local> -pass <admin@local_password> -GuestUser root -vmPass <SDDC_Manager_RootPassword> -command "du -Sh <mount-point> | sort -rh | head -10" '
                 }
                 Default {
-                    # TODO: Same as above - add hints on new lines }
                     $alert = 'YELLOW' # Yellow if above two are not matched
                     $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the partition."
                 }
@@ -10082,8 +10156,7 @@ Function Format-DfStorageHealth {
             $customObject += $userObject # Creating collection to work with afterwords
         }
         $customObject | Sort-Object FQDN # Return $customObject in HTML or pain format
-    }
-    Catch {
+    } Catch {
         Debug-CatchWriter -object $_
     }
 }
@@ -10171,8 +10244,7 @@ Function Format-StorageThreshold {
         $thresholdObject | Add-Member -notepropertyname 'alert' -notepropertyvalue $alert
         $thresholdObject | Add-Member -notepropertyname 'message' -notepropertyvalue $message
         $thresholdObject
-    }
-    Catch {
+    } Catch {
         Write-Error $_.Exception.Message
     }
 }
