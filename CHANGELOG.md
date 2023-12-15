@@ -2,12 +2,21 @@
 
 ## v2.5.0
 
-> Release Date: Unreleased
+> Release Date: 2023-12-15
+
+Breaking Change:
+
+- Removes support for Microsoft Windows PowerShell 5.1. Please use Microsoft PowerShell 7.2.0 or later. [GH-200](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/200)
 
 Enhancement:
 
 - Added a prerequisite check to `Invoke-VcfHealthReport` function to verify that the tar utility is present on Windows if using Windows PowerShell 5.1 (Desktop) or PowerShell 7 (Core). The `tar` utility is included with Windows Server 2019 and later and is noted as a system requirement in the documentation. [GH-191](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/191)
 - Added support for use of secure strings for sensitive parameters. [GH-199](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/199)
+
+Chore:
+
+- Updated `PowerVCF` from v2.3.0 to v2.4.0. [GH-200](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/200)
+- Updated `PowerValidatedSolutions` from v2.6.0 to v2.7.0. [GH-200](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/200)
 
 ## v2.4.2
 

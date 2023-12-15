@@ -267,7 +267,6 @@ Function Invoke-VcfHealthReport {
     $sddcManagerPass = Get-Password -user $sddcManagerUser -password $sddcManagerPass    
     $sddcManagerLocalPass = Get-Password -user $sddcManagerLocalUser -password $sddcManagerLocalPass
 
-
     Try {
         Clear-Host; Write-Host ""
         
