@@ -1,50 +1,27 @@
 ---
-name: Pull Request Target
+name: Pull Request Labels
 
 on:
   pull_request_target:
+    branches:
+      - develop
     types:
-    - opened
-    - synchronize
-    - reopened
-    - edited
-    - ready_for_review
-
-env:
-  IN_MAINTAINER_LIST: '${{ contains(secrets.MAINTAINER_LIST, github.actor) }}'
+      - opened
+      - synchronize
+      - reopened
+      - edited
+      - ready_for_review
 
 jobs:
-  label-needs-review:
+  labeler:
+    name: Labeler
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Apply Labels
         uses: actions/labeler@8558fd74291d67161a8a78ce36a881fa63b766a9 # v5.0.0
-        if: github.event.action == 'opened' && env.IN_MAINTAINER_LIST == 'false'
         with:
           configuration-path: .github/labeler-pull-requests.yml
-          repo-token: '${{ secrets.GITHUB_TOKEN }}'      
-  label-size:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Apply Size Label
-        uses: codelytv/pr-size-labeler@54ef36785e9f4cb5ecf1949cfc9b00dbb621d761 # v1.8.1
-        with:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-          xs_label: size/xs
-          xs_max_size: '10'
-          s_label: size/s
-          s_max_size: '100'
-          m_label: size/m
-          m_max_size: '500'
-          l_label: size/l
-          l_max_size: '1000'
-          xl_label: size/xl
-          fail_if_xl: 'false'
-          message_if_xl: >-
-            This pull request exceeds the recommended size of 1000 lines and
-            might be rejected due to its size.
-
-            Please make sure you are not addressing multiple issues in a pull
-            request.
-          github_api_url: api.github.com
-          
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
