@@ -9,7 +9,7 @@
         <meta name="description" content="PowerShell Module for VMware Cloud Foundation Reporting">
       
       
-        <meta name="author" content="VMware, Inc.">
+        <meta name="author" content="Broadcom">
       
       
         <link rel="canonical" href="https://vmware.github.io/powershell-module-for-vmware-cloud-foundation-reporting/documentation/functions/Invoke-VcfHealthReport/">
@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="../../../favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.8">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
     
     
       
@@ -30,10 +30,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.4b4a2bd9.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.50c56a3b.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.356b1318.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -75,9 +75,6 @@
     
     <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
   
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -137,9 +134,9 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Dark Theme"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Dark Theme"  type="radio" name="__palette" id="__palette_0">
     
-      <label class="md-header__button md-icon" title="Dark Theme" for="__palette_2" hidden>
+      <label class="md-header__button md-icon" title="Dark Theme" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
       </label>
     
@@ -147,15 +144,18 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Light Theme"  type="radio" name="__palette" id="__palette_2">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Light Theme"  type="radio" name="__palette" id="__palette_1">
     
-      <label class="md-header__button md-icon" title="Light Theme" for="__palette_1" hidden>
+      <label class="md-header__button md-icon" title="Light Theme" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
       </label>
     
   
 </form>
       
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
@@ -208,7 +208,7 @@
         <a href="https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -337,7 +337,7 @@
       <a href="https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -349,6 +349,7 @@
     
       
       
+  
   
   
   
@@ -419,6 +420,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../../install/" class="md-nav__link">
         
@@ -436,6 +438,7 @@
             
               
                 
+  
   
   
   
@@ -459,6 +462,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../../user-access/" class="md-nav__link">
         
@@ -476,6 +480,7 @@
             
               
                 
+  
   
   
   
@@ -499,6 +504,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/milestones" class="md-nav__link">
         
@@ -516,6 +522,7 @@
             
               
                 
+  
   
   
   
@@ -546,6 +553,7 @@
   
   
     
+  
   
   
     
@@ -590,6 +598,7 @@
             
               
                 
+  
   
   
   
@@ -644,6 +653,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../getting-started/overview-report/" class="md-nav__link">
         
@@ -661,6 +671,7 @@
             
               
                 
+  
   
   
   
@@ -684,6 +695,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../getting-started/alert-report/" class="md-nav__link">
         
@@ -704,6 +716,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../getting-started/configuration-report/" class="md-nav__link">
         
@@ -721,6 +734,7 @@
             
               
                 
+  
   
   
   
@@ -752,6 +766,7 @@
   
   
     
+  
   
   
     
@@ -971,6 +986,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Copy-FiletoSddc/" class="md-nav__link">
         
@@ -988,6 +1004,7 @@
             
               
                 
+  
   
   
   
@@ -1011,6 +1028,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Invoke-VcfAlertReport/" class="md-nav__link">
         
@@ -1028,6 +1046,7 @@
             
               
                 
+  
   
   
   
@@ -1051,6 +1070,7 @@
   
   
     
+  
   
   
     <li class="md-nav__item md-nav__item--active">
@@ -1099,14 +1119,18 @@
       
         <li class="md-nav__item">
   <a href="#synopsis" class="md-nav__link">
-    Synopsis
+    <span class="md-ellipsis">
+      Synopsis
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#syntax" class="md-nav__link">
-    Syntax
+    <span class="md-ellipsis">
+      Syntax
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Syntax">
@@ -1114,14 +1138,18 @@
         
           <li class="md-nav__item">
   <a href="#all-workloaddomains" class="md-nav__link">
-    All-WorkloadDomains
+    <span class="md-ellipsis">
+      All-WorkloadDomains
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#specific-workloaddomain" class="md-nav__link">
-    Specific-WorkloadDomain
+    <span class="md-ellipsis">
+      Specific-WorkloadDomain
+    </span>
   </a>
   
 </li>
@@ -1133,14 +1161,18 @@
       
         <li class="md-nav__item">
   <a href="#description" class="md-nav__link">
-    Description
+    <span class="md-ellipsis">
+      Description
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#examples" class="md-nav__link">
-    Examples
+    <span class="md-ellipsis">
+      Examples
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Examples">
@@ -1148,21 +1180,27 @@
         
           <li class="md-nav__item">
   <a href="#example-1" class="md-nav__link">
-    Example 1
+    <span class="md-ellipsis">
+      Example 1
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#example-2" class="md-nav__link">
-    Example 2
+    <span class="md-ellipsis">
+      Example 2
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#example-3" class="md-nav__link">
-    Example 3
+    <span class="md-ellipsis">
+      Example 3
+    </span>
   </a>
   
 </li>
@@ -1174,7 +1212,9 @@
       
         <li class="md-nav__item">
   <a href="#parameters" class="md-nav__link">
-    Parameters
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -1182,77 +1222,99 @@
         
           <li class="md-nav__item">
   <a href="#-sddcmanagerfqdn" class="md-nav__link">
-    -sddcManagerFqdn
+    <span class="md-ellipsis">
+      -sddcManagerFqdn
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-sddcmanageruser" class="md-nav__link">
-    -sddcManagerUser
+    <span class="md-ellipsis">
+      -sddcManagerUser
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-sddcmanagerpass" class="md-nav__link">
-    -sddcManagerPass
+    <span class="md-ellipsis">
+      -sddcManagerPass
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-sddcmanagerlocaluser" class="md-nav__link">
-    -sddcManagerLocalUser
+    <span class="md-ellipsis">
+      -sddcManagerLocalUser
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-sddcmanagerlocalpass" class="md-nav__link">
-    -sddcManagerLocalPass
+    <span class="md-ellipsis">
+      -sddcManagerLocalPass
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-reportpath" class="md-nav__link">
-    -reportPath
+    <span class="md-ellipsis">
+      -reportPath
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-alldomains" class="md-nav__link">
-    -allDomains
+    <span class="md-ellipsis">
+      -allDomains
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-workloaddomain" class="md-nav__link">
-    -workloadDomain
+    <span class="md-ellipsis">
+      -workloadDomain
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-failureonly" class="md-nav__link">
-    -failureOnly
+    <span class="md-ellipsis">
+      -failureOnly
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-darkmode" class="md-nav__link">
-    -darkMode
+    <span class="md-ellipsis">
+      -darkMode
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#common-parameters" class="md-nav__link">
-    Common Parameters
+    <span class="md-ellipsis">
+      Common Parameters
+    </span>
   </a>
   
 </li>
@@ -1276,6 +1338,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Invoke-VcfOverviewReport/" class="md-nav__link">
         
@@ -1293,6 +1356,7 @@
             
               
                 
+  
   
   
   
@@ -1316,6 +1380,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-BackupStatus/" class="md-nav__link">
         
@@ -1333,6 +1398,7 @@
             
               
                 
+  
   
   
   
@@ -1356,6 +1422,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-ClusterConfiguration/" class="md-nav__link">
         
@@ -1373,6 +1440,7 @@
             
               
                 
+  
   
   
   
@@ -1396,6 +1464,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-ComponentConnectivityHealth/" class="md-nav__link">
         
@@ -1413,6 +1482,7 @@
             
               
                 
+  
   
   
   
@@ -1436,6 +1506,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-ConnectivityHealth/" class="md-nav__link">
         
@@ -1453,6 +1524,7 @@
             
               
                 
+  
   
   
   
@@ -1476,6 +1548,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-EsxiAlert/" class="md-nav__link">
         
@@ -1493,6 +1566,7 @@
             
               
                 
+  
   
   
   
@@ -1516,6 +1590,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-EsxiCoreDumpConfig/" class="md-nav__link">
         
@@ -1533,6 +1608,7 @@
             
               
                 
+  
   
   
   
@@ -1556,6 +1632,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-EsxiSecurityConfiguration/" class="md-nav__link">
         
@@ -1573,6 +1650,7 @@
             
               
                 
+  
   
   
   
@@ -1596,6 +1674,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-NsxtAlert/" class="md-nav__link">
         
@@ -1613,6 +1692,7 @@
             
               
                 
+  
   
   
   
@@ -1636,6 +1716,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-NsxtEdgeClusterHealth/" class="md-nav__link">
         
@@ -1653,6 +1734,7 @@
             
               
                 
+  
   
   
   
@@ -1676,6 +1758,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-NsxtHealth/" class="md-nav__link">
         
@@ -1693,6 +1776,7 @@
             
               
                 
+  
   
   
   
@@ -1716,6 +1800,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-NsxtTier0BgpStatus/" class="md-nav__link">
         
@@ -1733,6 +1818,7 @@
             
               
                 
+  
   
   
   
@@ -1756,6 +1842,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-NsxtTransportNodeTunnelStatus/" class="md-nav__link">
         
@@ -1773,6 +1860,7 @@
             
               
                 
+  
   
   
   
@@ -1796,6 +1884,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-PasswordHealth/" class="md-nav__link">
         
@@ -1813,6 +1902,7 @@
             
               
                 
+  
   
   
   
@@ -1836,6 +1926,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-ResourcePool/" class="md-nav__link">
         
@@ -1853,6 +1944,7 @@
             
               
                 
+  
   
   
   
@@ -1876,6 +1968,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-ServiceHealth/" class="md-nav__link">
         
@@ -1893,6 +1986,7 @@
             
               
                 
+  
   
   
   
@@ -1916,6 +2010,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-StorageCapacityHealth/" class="md-nav__link">
         
@@ -1933,6 +2028,7 @@
             
               
                 
+  
   
   
   
@@ -1956,6 +2052,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-VcenterHealth/" class="md-nav__link">
         
@@ -1973,6 +2070,7 @@
             
               
                 
+  
   
   
   
@@ -1996,6 +2094,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-VersionHealth/" class="md-nav__link">
         
@@ -2013,6 +2112,7 @@
             
               
                 
+  
   
   
   
@@ -2036,6 +2136,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-VmConnectedCdrom/" class="md-nav__link">
         
@@ -2053,6 +2154,7 @@
             
               
                 
+  
   
   
   
@@ -2076,6 +2178,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-VsanAlert/" class="md-nav__link">
         
@@ -2093,6 +2196,7 @@
             
               
                 
+  
   
   
   
@@ -2116,6 +2220,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Publish-VsanStoragePolicy/" class="md-nav__link">
         
@@ -2133,6 +2238,7 @@
             
               
                 
+  
   
   
   
@@ -2156,6 +2262,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-ClusterDrsRule/" class="md-nav__link">
         
@@ -2173,6 +2280,7 @@
             
               
                 
+  
   
   
   
@@ -2196,6 +2304,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-DatastoreStorageCapacity/" class="md-nav__link">
         
@@ -2213,6 +2322,7 @@
             
               
                 
+  
   
   
   
@@ -2236,6 +2346,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-EsxiConnectionHealth/" class="md-nav__link">
         
@@ -2253,6 +2364,7 @@
             
               
                 
+  
   
   
   
@@ -2276,6 +2388,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-EsxiSecurityConfiguration/" class="md-nav__link">
         
@@ -2293,6 +2406,7 @@
             
               
                 
+  
   
   
   
@@ -2316,6 +2430,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-HardwareOverview/" class="md-nav__link">
         
@@ -2333,6 +2448,7 @@
             
               
                 
+  
   
   
   
@@ -2356,6 +2472,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-NsxtAlert/" class="md-nav__link">
         
@@ -2373,6 +2490,7 @@
             
               
                 
+  
   
   
   
@@ -2396,6 +2514,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-NsxtComputeManagerStatus/" class="md-nav__link">
         
@@ -2413,6 +2532,7 @@
             
               
                 
+  
   
   
   
@@ -2436,6 +2556,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-NsxtManagerBackupStatus/" class="md-nav__link">
         
@@ -2453,6 +2574,7 @@
             
               
                 
+  
   
   
   
@@ -2476,6 +2598,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-NsxtTransportNodeStatus/" class="md-nav__link">
         
@@ -2493,6 +2616,7 @@
             
               
                 
+  
   
   
   
@@ -2516,6 +2640,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-NsxtVidmStatus/" class="md-nav__link">
         
@@ -2533,6 +2658,7 @@
             
               
                 
+  
   
   
   
@@ -2556,6 +2682,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-SddcManagerBackupStatus/" class="md-nav__link">
         
@@ -2573,6 +2700,7 @@
             
               
                 
+  
   
   
   
@@ -2596,6 +2724,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-SddcManagerSnapshotStatus/" class="md-nav__link">
         
@@ -2613,6 +2742,7 @@
             
               
                 
+  
   
   
   
@@ -2636,6 +2766,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-SoSHealthJson/" class="md-nav__link">
         
@@ -2653,6 +2784,7 @@
             
               
                 
+  
   
   
   
@@ -2676,6 +2808,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-VcenterAlert/" class="md-nav__link">
         
@@ -2693,6 +2826,7 @@
             
               
                 
+  
   
   
   
@@ -2716,6 +2850,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-VcenterBackupStatus/" class="md-nav__link">
         
@@ -2733,6 +2868,7 @@
             
               
                 
+  
   
   
   
@@ -2756,6 +2892,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-VcenterSnapshotStatus/" class="md-nav__link">
         
@@ -2773,6 +2910,7 @@
             
               
                 
+  
   
   
   
@@ -2796,6 +2934,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-VcfOverview/" class="md-nav__link">
         
@@ -2813,6 +2952,7 @@
             
               
                 
+  
   
   
   
@@ -2836,6 +2976,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-VmConnectedCdrom/" class="md-nav__link">
         
@@ -2853,6 +2994,7 @@
             
               
                 
+  
   
   
   
@@ -2876,6 +3018,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-VMwareAriaSuiteOverview/" class="md-nav__link">
         
@@ -2896,6 +3039,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../Request-VsanAlert/" class="md-nav__link">
         
@@ -2913,6 +3057,7 @@
             
               
                 
+  
   
   
   
@@ -2948,6 +3093,7 @@
     
       
       
+  
   
   
   
@@ -3018,6 +3164,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../../community/contributing/" class="md-nav__link">
         
@@ -3035,6 +3182,7 @@
             
               
                 
+  
   
   
   
@@ -3058,6 +3206,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/issues" class="md-nav__link">
         
@@ -3075,6 +3224,7 @@
             
               
                 
+  
   
   
   
@@ -3098,6 +3248,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../../community/support/" class="md-nav__link">
         
@@ -3115,6 +3266,7 @@
             
               
                 
+  
   
   
   
@@ -3168,14 +3320,18 @@
       
         <li class="md-nav__item">
   <a href="#synopsis" class="md-nav__link">
-    Synopsis
+    <span class="md-ellipsis">
+      Synopsis
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#syntax" class="md-nav__link">
-    Syntax
+    <span class="md-ellipsis">
+      Syntax
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Syntax">
@@ -3183,14 +3339,18 @@
         
           <li class="md-nav__item">
   <a href="#all-workloaddomains" class="md-nav__link">
-    All-WorkloadDomains
+    <span class="md-ellipsis">
+      All-WorkloadDomains
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#specific-workloaddomain" class="md-nav__link">
-    Specific-WorkloadDomain
+    <span class="md-ellipsis">
+      Specific-WorkloadDomain
+    </span>
   </a>
   
 </li>
@@ -3202,14 +3362,18 @@
       
         <li class="md-nav__item">
   <a href="#description" class="md-nav__link">
-    Description
+    <span class="md-ellipsis">
+      Description
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#examples" class="md-nav__link">
-    Examples
+    <span class="md-ellipsis">
+      Examples
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Examples">
@@ -3217,21 +3381,27 @@
         
           <li class="md-nav__item">
   <a href="#example-1" class="md-nav__link">
-    Example 1
+    <span class="md-ellipsis">
+      Example 1
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#example-2" class="md-nav__link">
-    Example 2
+    <span class="md-ellipsis">
+      Example 2
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#example-3" class="md-nav__link">
-    Example 3
+    <span class="md-ellipsis">
+      Example 3
+    </span>
   </a>
   
 </li>
@@ -3243,7 +3413,9 @@
       
         <li class="md-nav__item">
   <a href="#parameters" class="md-nav__link">
-    Parameters
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -3251,77 +3423,99 @@
         
           <li class="md-nav__item">
   <a href="#-sddcmanagerfqdn" class="md-nav__link">
-    -sddcManagerFqdn
+    <span class="md-ellipsis">
+      -sddcManagerFqdn
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-sddcmanageruser" class="md-nav__link">
-    -sddcManagerUser
+    <span class="md-ellipsis">
+      -sddcManagerUser
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-sddcmanagerpass" class="md-nav__link">
-    -sddcManagerPass
+    <span class="md-ellipsis">
+      -sddcManagerPass
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-sddcmanagerlocaluser" class="md-nav__link">
-    -sddcManagerLocalUser
+    <span class="md-ellipsis">
+      -sddcManagerLocalUser
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-sddcmanagerlocalpass" class="md-nav__link">
-    -sddcManagerLocalPass
+    <span class="md-ellipsis">
+      -sddcManagerLocalPass
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-reportpath" class="md-nav__link">
-    -reportPath
+    <span class="md-ellipsis">
+      -reportPath
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-alldomains" class="md-nav__link">
-    -allDomains
+    <span class="md-ellipsis">
+      -allDomains
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-workloaddomain" class="md-nav__link">
-    -workloadDomain
+    <span class="md-ellipsis">
+      -workloadDomain
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-failureonly" class="md-nav__link">
-    -failureOnly
+    <span class="md-ellipsis">
+      -failureOnly
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#-darkmode" class="md-nav__link">
-    -darkMode
+    <span class="md-ellipsis">
+      -darkMode
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#common-parameters" class="md-nav__link">
-    Common Parameters
+    <span class="md-ellipsis">
+      Common Parameters
+    </span>
   </a>
   
 </li>
@@ -3511,16 +3705,47 @@
 <h3 id="common-parameters">Common Parameters<a class="headerlink" href="#common-parameters" title="Permanent link">&para;</a></h3>
 <p>This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see <a href="http://go.microsoft.com/fwlink/?LinkID=113216">about_CommonParameters</a>.</p>
 
-  <hr>
-<div class="md-source-file">
-  <small>
+
+
+
+
+
+
+  
     
-      Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-18T06:22:03+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-18</span>
+  
+  
+
+
+  <aside class="md-source-file">
+    
       
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-18T06:22:03+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-18</span>
+  </span>
+
     
-  </small>
-</div>
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Contributors">
+      
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4Z"/></svg>
+      
+    </span>
+    <nav>
+      
+        <a href="mailto:johnsonryan@vmware.com">Ryan Johnson</a>
+    </nav>
+  </span>
+
+    
+    
+  </aside>
 
 
 
@@ -3533,6 +3758,7 @@
           
   <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
 
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
@@ -3590,7 +3816,9 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2023 - VMware, Inc.
+      Copyright &copy; 2023 Broadcom. All Rights Reserved.<br/>
+The term “Broadcom” refers to Broadcom Inc. and/or its subsidiaries.<br/><br/>
+
     </div>
   
   
@@ -3614,7 +3842,7 @@
     <script id="__config" type="application/json">{"base": "../../..", "features": ["content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.tabs.link", "navigation.footer", "navigation.header", "navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.81fa17fe.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7c377c4.min.js"></script>
       
         <script src="../../../js/timeago.min.js"></script>
       
