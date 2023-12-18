@@ -19,7 +19,7 @@ The `Publish-HardwareCompatibilityHealth` cmdlet formats the Hardware Compatibil
 ### Example 1
 
 ```powershell
-Publish-HardwareCompatibilityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-HardwareCompatibilityHealth -json <file-name>
 ```
 
 This example extracts and formats the Hardware Compatibility data as a PowerShell object from the JSON file.
@@ -27,7 +27,7 @@ This example extracts and formats the Hardware Compatibility data as a PowerShel
 ### Example 2
 
 ```powershell
-Publish-HardwareCompatibilityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
+Publish-HardwareCompatibilityHealth -json <file-name> -html
 ```
 
 This example extracts and formats the Hardware Compatibility data as an HTML object from the JSON file.
@@ -35,7 +35,7 @@ This example extracts and formats the Hardware Compatibility data as an HTML obj
 ### Example 3
 
 ```powershell
-Publish-HardwareCompatibilityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-HardwareCompatibilityHealth -json <file-name> -failureOnly
 ```
 
 This example extracts and formats the Hardware Compatibility data as a PowerShell object from the JSON file for only the failed items.

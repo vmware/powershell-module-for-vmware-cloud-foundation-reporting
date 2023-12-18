@@ -19,7 +19,7 @@ The `Publish-VsanStoragePolicy` cmdlet formats the vSAN Storage Policy data from
 ### Example 1
 
 ```powershell
-Publish-VsanStoragePolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-VsanStoragePolicy -json <file-name>
 ```
 
 This example extracts and formats the vSAN Storage Policy data as a PowerShell object from the JSON file.
@@ -27,7 +27,7 @@ This example extracts and formats the vSAN Storage Policy data as a PowerShell o
 ### Example 2
 
 ```powershell
-Publish-VsanStoragePolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
+Publish-VsanStoragePolicy -json <file-name> -html
 ```
 
 This example extracts and formats the vSAN Storage Policy data as an HTML object from the JSON file.
@@ -35,7 +35,7 @@ This example extracts and formats the vSAN Storage Policy data as an HTML object
 ### Example 3
 
 ```powershell
-Publish-VsanStoragePolicy -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-VsanStoragePolicy -json <file-name> -failureOnly
 ```
 
 This example extracts and formats the vSAN Storage Policy data as a PowerShell object from the JSON file for only the failed items.

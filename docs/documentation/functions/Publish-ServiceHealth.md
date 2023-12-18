@@ -19,7 +19,7 @@ The `Publish-ServiceHealth` cmdlet formats the Service Health data from the SoS 
 ### Example 1
 
 ```powershell
-Publish-ServiceHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-ServiceHealth -json <file-name>
 ```
 
 This example extracts and formats the Service Health data as a PowerShell object from the JSON file.
@@ -27,7 +27,7 @@ This example extracts and formats the Service Health data as a PowerShell object
 ### Example 2
 
 ```powershell
-Publish-ServiceHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
+Publish-ServiceHealth -json <file-name> -html
 ```
 
 This example extracts and formats the Service Health data as an HTML object from the JSON file.
@@ -35,7 +35,7 @@ This example extracts and formats the Service Health data as an HTML object from
 ### Example 3
 
 ```powershell
-Publish-ServiceHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-ServiceHealth -json <file-name> -failureOnly
 ```
 
 This example extracts and formats the Service Health data as a PowerShell object from the JSON file for only the failed items.

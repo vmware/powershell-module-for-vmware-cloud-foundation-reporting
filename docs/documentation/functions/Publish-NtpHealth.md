@@ -19,7 +19,7 @@ The `Publish-NtpHealth` cmdlet formats the NTP Health data from the SoS JSON out
 ### Example 1
 
 ```powershell
-Publish-NtpHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-NtpHealth -json <file-name>
 ```
 
 This example extracts and formats the NTP Health data as a PowerShell object from the JSON file.
@@ -27,7 +27,7 @@ This example extracts and formats the NTP Health data as a PowerShell object fro
 ### Example 2
 
 ```powershell
-Publish-NtpHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
+Publish-NtpHealth -json <file-name> -html
 ```
 
 This example extracts and formats the NTP Health data as an HTML object from the JSON file.
@@ -35,7 +35,7 @@ This example extracts and formats the NTP Health data as an HTML object from the
 ### Example 3
 
 ```powershell
-Publish-NtpHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-NtpHealth -json <file-name> -failureOnly
 ```
 
 This example extracts and formats the NTP Health data as a PowerShell object from the JSON file for only the failed items.
