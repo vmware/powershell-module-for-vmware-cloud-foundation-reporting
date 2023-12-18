@@ -19,7 +19,7 @@ The `Publish-PasswordHealth` cmdlet formats the Password Health data from the So
 ### Example 1
 
 ```powershell
-Publish-PasswordHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-PasswordHealth -json <file-name>
 ```
 
 This example extracts and formats the Password Health data as a PowerShell object from the JSON file.
@@ -27,7 +27,7 @@ This example extracts and formats the Password Health data as a PowerShell objec
 ### Example 2
 
 ```powershell
-Publish-PasswordHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
+Publish-PasswordHealth -json <file-name> -html
 ```
 
 This example extracts and formats the Password Health data as an HTML object from the JSON file.
@@ -35,7 +35,7 @@ This example extracts and formats the Password Health data as an HTML object fro
 ### Example 3
 
 ```powershell
-Publish-PasswordHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-PasswordHealth -json <file-name> -failureOnly
 ```
 
 This example extracts and formats the Password Health data as a PowerShell object from the JSON file for only the failed items.

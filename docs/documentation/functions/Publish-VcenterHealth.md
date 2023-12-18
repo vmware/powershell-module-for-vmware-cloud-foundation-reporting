@@ -19,7 +19,7 @@ The `Publish-VcenterHealth` cmdlet formats the vCenter Server Health data from t
 ### Example 1
 
 ```powershell
-Publish-VcenterHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-VcenterHealth -json <file-name>
 ```
 
 This example extracts and formats the vCenter Server Health data as a PowerShell object from the JSON file.
@@ -27,7 +27,7 @@ This example extracts and formats the vCenter Server Health data as a PowerShell
 ### Example 2
 
 ```powershell
-Publish-VcenterHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
+Publish-VcenterHealth -json <file-name> -html
 ```
 
 This example extracts and formats the vCenter Server Health data as an HTML object from the JSON file.
@@ -35,7 +35,7 @@ This example extracts and formats the vCenter Server Health data as an HTML obje
 ### Example 3
 
 ```powershell
-Publish-VcenterHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-VcenterHealth -json <file-name> -failureOnly
 ```
 
 This example extracts and formats the vCenter Server Health data as a PowerShell object from the JSON file for only the failed items.

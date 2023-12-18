@@ -19,7 +19,7 @@ The `Publish-PingConnectivityHealth` cmdlet formats the Ping Connectivity Health
 ### Example 1
 
 ```powershell
-Publish-PingConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-PingConnectivityHealth -json <file-name>
 ```
 
 This example extracts and formats the Ping Connectivity Health data as a PowerShell object from the JSON file.
@@ -27,7 +27,7 @@ This example extracts and formats the Ping Connectivity Health data as a PowerSh
 ### Example 2
 
 ```powershell
-Publish-PingConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
+Publish-PingConnectivityHealth -json <file-name> -html
 ```
 
 This example extracts and formats the Ping Connectivity Health data as an HTML object from the JSON file.
@@ -35,7 +35,7 @@ This example extracts and formats the Ping Connectivity Health data as an HTML o
 ### Example 3
 
 ```powershell
-Publish-PingConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-PingConnectivityHealth -json <file-name> -failureOnly
 ```
 
 This example extracts and formats the Ping Connectivity Health data as a PowerShell object from the JSON file for only the failed items.

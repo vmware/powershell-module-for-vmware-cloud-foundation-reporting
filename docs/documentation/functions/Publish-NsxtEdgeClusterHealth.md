@@ -19,7 +19,7 @@ The `Publish-NsxtEdgeClusterHealth` cmdlet formats the NSX Edge Cluster Health d
 ### Example 1
 
 ```powershell
-Publish-NsxtEdgeClusterHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-NsxtEdgeClusterHealth -json <file-name>
 ```
 
 This example extracts and formats the NSX Edge Cluster Health data as a PowerShell object from the JSON file.
@@ -27,7 +27,7 @@ This example extracts and formats the NSX Edge Cluster Health data as a PowerShe
 ### Example 2
 
 ```powershell
-Publish-NsxtEdgeClusterHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
+Publish-NsxtEdgeClusterHealth -json <file-name> -html
 ```
 
 This example extracts and formats the NSX Edge Cluster Health data as an HTML object from the JSON file.
@@ -35,7 +35,7 @@ This example extracts and formats the NSX Edge Cluster Health data as an HTML ob
 ### Example 3
 
 ```powershell
-Publish-NsxtEdgeClusterHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-NsxtEdgeClusterHealth -json <file-name> -failureOnly
 ```
 
 This example extracts and formats the NSX Edge Cluster Health data as a PowerShell object from the JSON file for only the failed items.

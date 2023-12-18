@@ -19,7 +19,7 @@ The `Publish-VsanHealth` cmdlet formats the vSAN Health data from the SoS JSON o
 ### Example 1
 
 ```powershell
-Publish-VsanHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-VsanHealth -json <file-name>
 ```
 
 This example extracts and formats the vSAN Health data as a PowerShell object from the JSON file.
@@ -27,7 +27,7 @@ This example extracts and formats the vSAN Health data as a PowerShell object fr
 ### Example 2
 
 ```powershell
-Publish-VsanHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
+Publish-VsanHealth -json <file-name> -html
 ```
 
 This example extracts and formats the vSAN Health data as an HTML object from the JSON file.
@@ -35,7 +35,7 @@ This example extracts and formats the vSAN Health data as an HTML object from th
 ### Example 3
 
 ```powershell
-Publish-VsanHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-VsanHealth -json <file-name> -failureOnly
 ```
 
 This example extracts and formats the vSAN Health data as a PowerShell object from the JSON file for only the failed items.

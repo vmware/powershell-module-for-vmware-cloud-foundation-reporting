@@ -19,7 +19,7 @@ The `Publish-DnsHealth` cmdlet formats the DNS Health data from the SoS JSON out
 ### Example 1
 
 ```powershell
-Publish-DnsHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-DnsHealth -json <file-name>
 ```
 
 This example extracts and formats the DNS Health data as a PowerShell object from the JSON file.
@@ -27,7 +27,7 @@ This example extracts and formats the DNS Health data as a PowerShell object fro
 ### Example 2
 
 ```powershell
-Publish-DnsHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
+Publish-DnsHealth -json <file-name> -html
 ```
 
 This example extracts and formats the DNS Health data as an HTML object from the JSON file.
@@ -35,7 +35,7 @@ This example extracts and formats the DNS Health data as an HTML object from the
 ### Example 3
 
 ```powershell
-Publish-DnsHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-DnsHealth -json <file-name> -failureOnly
 ```
 
 This example extracts and formats the DNS Health data as a PowerShell object from the JSON file for only the failed items.
