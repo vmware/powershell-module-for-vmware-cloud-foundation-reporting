@@ -1,6 +1,6 @@
 # Generating an Upgrade Precheck Report
 
-The [`Invoke-VcfUpgradePrecheck`](../../functions/Invoke-VcfUpgradePrecheck) cmdlet initiates an upgrade precheck of a workload domain using the REST API and presents the results in an HTML report. This allows you to start the precheck from the PowerShell console.
+The [`Invoke-VcfUpgradePrecheck`](../functions/Invoke-VcfUpgradePrecheck.md) cmdlet initiates an upgrade precheck of a workload domain using the REST API and presents the results in an HTML report. This allows you to start the precheck from the PowerShell console.
 
 ## Start an Upgrade Precheck for a Workload Domain
 
