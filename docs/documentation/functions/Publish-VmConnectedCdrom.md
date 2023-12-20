@@ -9,13 +9,13 @@ Publish the status of virtual machines with connected CD-ROMs in a workload doma
 ### All-WorkloadDomains
 
 ```powershell
-Publish-VmConnectedCdrom -server <String> -user <String> -pass <String> [-allDomains] [<CommonParameters>]
+Publish-VmConnectedCdrom -server <String> -user <String> -pass <String> [-allDomains] [-outputJson <String>]  [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-VmConnectedCdrom -server <String> -user <String> -pass <String> -workloadDomain <String> [<CommonParameters>]
+Publish-VmConnectedCdrom -server <String> -user <String> -pass <String> -workloadDomain <String> [-outputJson <String>]  [<CommonParameters>]
 ```
 
 ## Description
@@ -44,6 +44,15 @@ Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pa
 ```
 
 This example will returns the status of virtual machines with connected CD-ROMs in a workload domain.
+
+### Example 3
+
+```powershell
+Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
+```
+
+This example will generate a json with the status of virtual machines with connected CD-ROMs in all workload domains
+and saves it under F:\Reporting with filename <timestamp>-cdrom-status.json
 
 ## Parameters
 
@@ -121,6 +130,22 @@ Parameter Sets: Specific-WorkloadDomain
 Aliases:
 
 Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -outputJson
+
+The path to save the output as a JSON file.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False

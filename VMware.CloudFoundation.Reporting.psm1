@@ -68,6 +68,9 @@ Set-Variable -Name "localuserexpiryJsonSuffix" -value "localuserexpiry-status.js
 Set-Variable -Name "storageCapacityHealthJsonSuffix" -value "storagecapacityhealth-status.json" -scope global
 Set-Variable -Name "componentConnectivityHealthNonSOSJsonSuffix" -value "componentconnectivityhealthnonsos-status.json" -scope global
 Set-Variable -Name "nsxtCombinedHealthNonSOSJsonSuffix" -value "nsxtcombinedhealthnonsos-status.json" -scope global
+Set-Variable -Name "cdRomJsonSuffix" -value "cdrom-status.json" -scope global
+Set-Variable -Name "esxiConnectionHealthJsonSuffix" -value "esxi-connection-status.json" -scope global
+Set-Variable -Name "sddcFreePoolJsonSuffix" -value "sddc-manager-free-pool-status.json" -scope global
 
 ##############################  E N D   O F   J S O N   O U T P U T   V A R I A B L E S  ##############################
 #######################################################################################################################
@@ -6076,6 +6079,11 @@ Function Publish-VmConnectedCdrom {
         Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
         This example will returns the status of virtual machines with connected CD-ROMs in a workload domain.
 
+        .EXAMPLE
+        Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
+        This example will generate a json with the status of virtual machines with connected CD-ROMs in all workload domains
+        and saves it under F:\Reporting with filename <timestamp>-cdrom-status.json
+
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
         
@@ -6090,6 +6098,9 @@ Function Publish-VmConnectedCdrom {
 
         .PARAMETER workloadDomain
         The name of the workload domain to run against.
+
+        .PARAMETER outputJson
+        The path to save the output as a JSON file.
     #>
 
     Param (
@@ -6097,7 +6108,8 @@ Function Publish-VmConnectedCdrom {
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
-        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain
+        [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
 
     $pass = Get-Password -User $user -Password $pass
@@ -6115,14 +6127,21 @@ Function Publish-VmConnectedCdrom {
                     $vmConnectedCdrom = Request-VmConnectedCdrom -server  $server -user $user -pass $pass -domain $workloadDomain; $allHealthObject += $vmConnectedCdrom
                 }
 
-                if ($allHealthObject.Count -eq 0) { $addNoIssues = $true }
-                if ($addNoIssues) {
-                    $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -PostContent '<p>No virtual machines with connected CD-ROMs found.</p>'
+
+                if ($PsBoundParameters.ContainsKey('outputJson')) {
+                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $cdRomJsonSuffix
+                    $allHealthObject | ConvertTo-JSON -Depth 10 | Out-File $json -Encoding ASCII
+                    Write-Output "JSON Created at $json"
                 } else {
-                    $allHealthObject = $allHealthObject | Sort-Object Cluster, 'VM Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -As Table
+					if ($allHealthObject.Count -eq 0) { $addNoIssues = $true }
+					if ($addNoIssues) {
+						$allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -PostContent '<p>No virtual machines with connected CD-ROMs found.</p>'
+					} else {
+						$allHealthObject = $allHealthObject | Sort-Object Cluster, 'VM Name' | ConvertTo-Html -Fragment -PreContent '<a id="storage-vm-cdrom"></a><h3>Virtual Machines with Connected CD-ROMs</h3>' -As Table
+					}
+					$allHealthObject = Convert-CssClass -htmlData $allHealthObject
+					$allHealthObject
                 }
-                $allHealthObject = Convert-CssClass -htmlData $allHealthObject
-                $allHealthObject
             }
         }
     } Catch {
@@ -6231,6 +6250,11 @@ Function Publish-EsxiConnectionHealth {
         Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
         This example will publish the connection status of ESXi hosts in all workload domains but only for failures.
 
+        .EXAMPLE
+        Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
+        This example will generate a json for the connection status of ESXi hosts in all workload domains and 
+        saves it under F:\Reporting with filename <timestamp>-esxi-connection-status.json
+
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
         
@@ -6248,6 +6272,9 @@ Function Publish-EsxiConnectionHealth {
 
         .PARAMETER failureOnly
         Switch to only output issues to the report.
+
+        .PARAMETER outputJson
+        The path to save the output as JSON file.
     #>
 
     Param (
@@ -6256,7 +6283,8 @@ Function Publish-EsxiConnectionHealth {
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
         [Parameter (ParameterSetName = 'All-WorkloadDomains', Mandatory = $true)] [ValidateNotNullOrEmpty()] [Switch]$allDomains,
         [Parameter (ParameterSetName = 'Specific-WorkloadDomain', Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$workloadDomain,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
 
     $pass = Get-Password -User $user -Password $pass
@@ -6282,6 +6310,12 @@ Function Publish-EsxiConnectionHealth {
                     $esxiConnectionStatus = Request-EsxiConnectionHealth -server  $server -user $user -pass $pass -domain $workloadDomain; $allHealthObject += $esxiConnectionStatus
                 }
 
+                if ($PsBoundParameters.ContainsKey('outputJson')) {
+                    $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $esxiConnectionHealthJsonSuffix
+                    $allHealthObject | ConvertTo-JSON -Depth 10 -EnumsAsStrings| Out-File $json -Encoding ASCII
+                    Write-Output "JSON Created at $json"
+					
+                } else {
                 if ($allHealthObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
                     $allHealthObject = $allHealthObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-connection"></a><h3>ESXi Connection Health</h3>' -PostContent '<p>No issues found.</p>'
@@ -6290,6 +6324,7 @@ Function Publish-EsxiConnectionHealth {
                 }
                 $allHealthObject = Convert-CssClass -htmlData $allHealthObject
                 $allHealthObject
+                }
             }
         }
     } Catch {
@@ -6420,6 +6455,11 @@ Function Publish-SddcManagerFreePool {
         Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
         This example will return the free pool health from SDDC Manager and return the failures only.
 
+        .EXAMPLE
+        Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -outputJson F:\Reporting
+        This example will generate a json for the status the free pool health from SDDC Manager and saves it under 
+        F:\Reporting with filename <timestamp>-sddc-manager-free-pool-status.json
+
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
         
@@ -6431,13 +6471,17 @@ Function Publish-SddcManagerFreePool {
 
         .PARAMETER failureOnly
         Switch to only output issues to the report.
+
+        .PARAMETER outputJson
+        The path to save the output as a JSON file.
     #>
 
     Param (
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$server,
         [Parameter (Mandatory = $true)] [ValidateNotNullOrEmpty()] [String]$user,
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$pass,
-        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$failureOnly,
+        [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [String]$outputJson
     )
 
     $pass = Get-Password -User $user -Password $pass
@@ -6454,18 +6498,32 @@ Function Publish-SddcManagerFreePool {
                         $allConfigurationObject = Request-SddcManagerFreePool -server $server -user $user -pass $pass
                     }
 
-                    if ($allConfigurationObject.Count -eq 0) { $addNoIssues = $true }
-                    if ($addNoIssues) {
-                        $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table -PostContent '<p>No issues found.</p>'
+
+                    if ($PsBoundParameters.ContainsKey('outputJson')) {
+                        $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $sddcFreePoolJsonSuffix
+                        $allConfigurationObject | ConvertTo-JSON -Depth 10 -EnumsAsStrings| Out-File $json -Encoding ASCII
+                        Write-Output "JSON Created at $json"
+                        return
                     } else {
-                        $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table
+                        if ($allConfigurationObject.Count -eq 0) { $addNoIssues = $true }
+                        if ($addNoIssues) {
+                            $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table -PostContent '<p>No issues found.</p>'
+                        } else {
+                            $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table
+                        }
                     }
                 } else {
-                    $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table -PostContent '<p>No ESXi hosts present in the free pool.</p>'
-                }
-
+                     if ($PsBoundParameters.ContainsKey('outputJson')) {
+                        $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $sddcFreePoolJsonSuffix
+                        $allConfigurationObject | ConvertTo-JSON -Depth 10 -EnumsAsStrings| Out-File $json -Encoding ASCII
+                        Write-Output "JSON Created at $json"
+                        return
+                    }else{
+                        $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table -PostContent '<p>No ESXi hosts present in the free pool.</p>'
+                    }
+                } 
                 $allConfigurationObject = Convert-CssClass -htmldata $allConfigurationObject
-                $allConfigurationObject
+                $allConfigurationObject 
             }
         }
     } Catch {
