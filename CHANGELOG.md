@@ -1,5 +1,15 @@
 # Release History
 
+## v2.6.0
+
+> Release Date: Unreleased
+
+Enhancement:
+
+- Updated `Publish-VmConnectedCdrom` function to generate JSON output. [GH-204](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/204)
+- Updated `Publish-EsxiConnectionHealth` function to generate JSON output. [GH-204](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/204)
+- Updated `Publish-SddcManagerFreePool` function to generate JSON output. [GH-204](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/204)
+
 ## v2.5.0
 
 > Release Date: 2023-12-15

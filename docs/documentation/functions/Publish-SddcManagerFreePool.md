@@ -7,7 +7,7 @@ Publish SDDC Manager free pool health information in HTML format.
 ## Syntax
 
 ```powershell
-Publish-SddcManagerFreePool [-server] <String> [-user] <String> [-pass] <String> [-failureOnly] [<CommonParameters>]
+Publish-SddcManagerFreePool [-server] <String> [-user] <String> [-pass] <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ## Description
@@ -35,6 +35,15 @@ Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local 
 ```
 
 This example will return the free pool health from SDDC Manager and return the failures only.
+
+### Example 3
+
+```powershell
+Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -outputJson F:\Reporting
+```
+
+This example will generate a json for the status the free pool health from SDDC Manager and saves it under 
+F:\Reporting with filename <timestamp>-sddc-manager-free-pool-status.json
 
 ## Parameters
 
@@ -98,6 +107,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -outputJson
+
+The path to save the output as a JSON file.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

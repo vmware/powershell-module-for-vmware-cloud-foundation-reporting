@@ -9,13 +9,13 @@ Publish the connection status of ESXi hosts in a workload domain in HTML format.
 ### All-WorkloadDomains
 
 ```powershell
-Publish-EsxiConnectionHealth -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [<CommonParameters>]
+Publish-EsxiConnectionHealth -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-EsxiConnectionHealth -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [<CommonParameters>]
+Publish-EsxiConnectionHealth -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ## Description
@@ -52,6 +52,14 @@ Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local
 ```
 
 This example will publish the connection status of ESXi hosts in all workload domains but only for failures.
+
+### Example 4
+
+```powershell
+Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
+```
+
+This example will generate a json for the connection status of ESXi hosts in all workload domains and saves it under F:\Reporting with filename <timestamp>-esxi-connection-status.json
 
 ## Parameters
 
@@ -147,6 +155,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -outputJson
+
+The path to save the output as a JSON file.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
