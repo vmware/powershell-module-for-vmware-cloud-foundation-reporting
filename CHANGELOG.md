@@ -6,7 +6,7 @@
 
 Bugfix:
 
-- Updated `Request-VcenterStorageHealth` cmdlet to output an error message if authentication to vCenter Server fails. [GH-209] https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/209
+- Updated `Request-VcenterStorageHealth` cmdlet to output an error message if authentication to vCenter Server fails. [GH-209](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/209)
   
 ## v2.6.0
 
