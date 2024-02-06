@@ -2,7 +2,7 @@
 
 ## v2.6.1
 
-> Release Date: Not Released
+> Release Date: 2024-02-06
 
 Bugfix:
 
