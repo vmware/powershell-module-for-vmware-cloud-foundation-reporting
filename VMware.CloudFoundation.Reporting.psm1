@@ -5116,13 +5116,28 @@ Function Request-VcenterStorageHealth {
                             # Reference: https://kb.vmware.com/s/article/76563.
                             $command = 'df -h | grep -e "^/" | grep -v "/dev/loop" | grep -v "/dev/mapper/archive_vg-archive"'
                             $vcenter = (Get-VCFWorkloadDomain | Where-Object { $_.name -eq $domain }).vcenters
+                            $vcenterfqdn = $vcenter.fqdn
                             $rootPass = (Get-VCFCredential | Where-Object { $_.credentialType -eq "SSH" -and $_.resource.resourceName -eq $vcenter.fqdn }).password
                             $dfOutput = Invoke-VMScript -VM ($vcenter.fqdn.Split(".")[0]) -ScriptText $command -GuestUser root -GuestPassword $rootPass -Server $vcfVcenterDetails.fqdn
-                            if ($PsBoundParameters.ContainsKey("failureOnly")) {
-                                Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $vcenter.fqdn -failureOnly
-                            } else {
-                                Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $vcenter.fqdn
-                            }
+                            if ($dfOutput.ExitCode -eq 0) {
+                                if ($PsBoundParameters.ContainsKey("failureOnly")) {
+                                    Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $vcenter.fqdn -failureOnly
+                                } else {
+                                    Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $vcenter.fqdn
+                                }
+                             } else {
+                                $alert = "RED"
+                                $message = "vCenter Connection check failed!"
+                                $elementObject = New-Object System.Collections.ArrayList
+                                $elementObject = New-Object -TypeName psobject
+                                $elementObject | Add-Member -NotePropertyName 'Component' -NotePropertyValue "vCenter"
+                                $elementObject | Add-Member -NotePropertyName 'Resource' -NotePropertyValue $vcenterfqdn
+                                $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
+                                $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
+                                $customObject += $elementObject
+                              }
+                                $customObject | Sort-Object Component, Resource
+                                
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
