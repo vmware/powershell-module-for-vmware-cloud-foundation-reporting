@@ -2,15 +2,15 @@
 
 ## v2.6.2
 
-> Release Date: (unreleased)
+> Release Date: 2024-05-28
 
 Bugfix:
 
-- Updated `Invoke-VcfHealthReport` cmdlet to handle . or - in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
-- Updated `Invoke-VcfAlertReport` cmdlet to handle . or - in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
-- Updated `Invoke-VcfConfigReport` cmdlet to handle . or - in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
-- Updated `Invoke-VcfUpgradePrecheck` cmdlet to handle . or - in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
-- Updated `Invoke-VcfOverviewReport` cmdlet to handle . or - in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+- Updated `Invoke-VcfHealthReport` cmdlet to handle `.` or `-` in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+- Updated `Invoke-VcfAlertReport` cmdlet to handle `.` or `-` in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+- Updated `Invoke-VcfConfigReport` cmdlet to handle `.` or `-` in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+- Updated `Invoke-VcfUpgradePrecheck` cmdlet to handle `.` or `-` in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+- Updated `Invoke-VcfOverviewReport` cmdlet to handle `.` or `-` in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
 
 ## v2.6.1
 
@@ -19,7 +19,7 @@ Bugfix:
 Bugfix:
 
 - Updated `Request-VcenterStorageHealth` cmdlet to output an error message if authentication to vCenter Server fails. [GH-209](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/209)
-  
+
 ## v2.6.0
 
 > Release Date: 2024-01-30
