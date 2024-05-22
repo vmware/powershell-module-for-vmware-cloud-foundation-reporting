@@ -286,7 +286,7 @@ Function Invoke-VcfHealthReport {
                 $defaultReport = Start-CreateReportDirectory -path $reportPath -reportType health # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
+                    $reportname = $defaultReport.Split('-health')[0] + "-health-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
                     $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
                     $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
                     $commandSwitch = "-allDomains"
@@ -501,7 +501,7 @@ Function Invoke-VcfAlertReport {
                 $defaultReport = Start-CreateReportDirectory -path $reportPath -reportType alert # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
+                    $reportname = $defaultReport.Split('-alert')[0] + "-alert-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
                     $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
                     $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
                     $commandSwitch = "-allDomains"
@@ -625,7 +625,7 @@ Function Invoke-VcfConfigReport {
                 $defaultReport = Start-CreateReportDirectory -path $reportPath -reportType config # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
                 if ($PsBoundParameters.ContainsKey("allDomains")) {
-                    $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
+                    $reportname = $defaultReport.Split('-config')[0] + "-config-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
                     $reportData = "<h1>SDDC Manager: $sddcManagerFqdn</h1>"
                     $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
                     $commandSwitch = "-allDomains"
@@ -742,7 +742,7 @@ Function Invoke-VcfUpgradePrecheck {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
                 $defaultReport = Start-CreateReportDirectory -path $reportPath -reportType upgrade # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-                $reportname = $defaultReport.Split('.')[0] + "-" + $workloadDomain + ".htm"
+                $reportname = $defaultReport.Split('-upgrade')[0] + "-upgrade-" + $workloadDomain + ".htm"
                 $workflowMessage = "Workload Domain ($workloadDomain)"
                 Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
                 Write-LogMessage -Type INFO -Message "Starting the Process of Running an Upgrade Precheck for $workflowMessage." -Colour Yellow
@@ -883,7 +883,7 @@ Function Invoke-VcfOverviewReport {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
                 $defaultReport = Start-CreateReportDirectory -path $reportPath -reportType overview # Setup Report Location and Report File
                 if (!(Test-Path -Path $reportPath)) {Write-Warning "Unable to locate report path $reportPath, enter a valid path and try again"; Write-Host ""; Break }
-                $reportname = $defaultReport.Split('.')[0] + "-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
+                $reportname = $defaultReport.Split('-overview')[0] + "-overview-" + $sddcManagerFqdn.Split(".")[0] + ".htm"
                 $workflowMessage = "VMware Cloud Foundation instance ($sddcManagerFqdn)"
                 Start-SetupLogFile -Path $reportPath -ScriptName $MyInvocation.MyCommand.Name # Setup Log Location and Log File
                 Write-LogMessage -Type INFO -Message "Starting the Process of Creating a System Overview Report for $workflowMessage." -Colour Yellow

@@ -11,7 +11,7 @@
     RootModule = '.\VMware.CloudFoundation.Reporting.psm1'
     
     # Version number of this module.
-    ModuleVersion = '2.6.1.1001'
+    ModuleVersion = '2.6.2.1000'
     
     # Supported PSEditions
     # CompatiblePSEditions = @()
