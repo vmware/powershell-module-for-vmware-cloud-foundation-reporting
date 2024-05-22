@@ -1,5 +1,17 @@
 # Release History
 
+## v2.6.2
+
+> Release Date: (unreleased)
+
+Bugfix:
+
+- Updated `Invoke-VcfHealthReport` cmdlet to handle . or - in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+- Updated `Invoke-VcfAlertReport` cmdlet to handle . or - in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+- Updated `Invoke-VcfConfigReport` cmdlet to handle . or - in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+- Updated `Invoke-VcfUpgradePrecheck` cmdlet to handle . or - in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+- Updated `Invoke-VcfOverviewReport` cmdlet to handle . or - in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+
 ## v2.6.1
 
 > Release Date: 2024-02-06
