@@ -12,6 +12,11 @@ Bugfix:
 - Updated `Invoke-VcfUpgradePrecheck` cmdlet to handle `.` or `-` in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
 - Updated `Invoke-VcfOverviewReport` cmdlet to handle `.` or `-` in the report path. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
 
+Chore:
+
+- Updated `VMware.PowerCLI` from v13.1.0 to v13.2.1 [GH-218](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/218)
+- Updated `PowerValidatedSolutions` from v2.8.0 to v2.10.0. [GH-218](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/218)
+
 ## v2.6.1
 
 > Release Date: 2024-02-06
