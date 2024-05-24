@@ -48,10 +48,10 @@ The following table lists the required PowerShell module dependencies for this m
 
 PowerShell Module                                    | Version   | Publisher    | Reference
 -----------------------------------------------------|-----------|--------------|---------------------------------------------------------------------------
-[VMware.PowerCLI][psgallery-module-powercli]         | >= 13.1.0 | Broadcom     | :fontawesome-solid-book: &nbsp; [Documentation][developer-module-powercli]
+[VMware.PowerCLI][psgallery-module-powercli]         | >= 13.2.1 | Broadcom     | :fontawesome-solid-book: &nbsp; [Documentation][developer-module-powercli]
 [VMware.vSphere.SsoAdmin][psgallery-module-ssoadmin] | >= 1.3.9  | Broadcom     | :fontawesome-brands-github: &nbsp; [GitHub][github-module-ssoadmin]
 [PowerVCF][psgallery-module-powervcf]                | >= 2.4.1  | Broadcom     | :fontawesome-solid-book: &nbsp; [Documentation][docs-module-powervcf]
-[PowerValidatedSolutions][psgallery-module-pvs]      | >= 2.8.0  | Broadcom     | :fontawesome-solid-book: &nbsp; [Documentation][docs-module-pvs]
+[PowerValidatedSolutions][psgallery-module-pvs]      | >= 2.10.0 | Broadcom     | :fontawesome-solid-book: &nbsp; [Documentation][docs-module-pvs]
 
 ### Browsers
 
