@@ -23,7 +23,7 @@ theme:
   logo: assets/images/icon-white.svg
   icon:
     repo: fontawesome/brands/github
-  palette:  
+  palette:
   - media: "(prefers-color-scheme: light)"
     scheme: default
     primary: indigo
@@ -119,7 +119,7 @@ markdown_extensions:
 
 # Navigation
 nav:
-- Getting Started: 
+- Getting Started:
   - index.md
   - Installation: install.md
   - Updating: update.md
@@ -178,7 +178,7 @@ nav:
     - Publish-VcfSystemOverview: documentation/functions/Publish-VcfSystemOverview.md
     - Publish-VersionHealth: documentation/functions/Publish-VersionHealth.md
     - Publish-VirtualNetwork: documentation/functions/Publish-VirtualNetwork.md
-    - Publish:VmConnectedCdrom: documentation/functions/Publish-VmConnectedCdrom.md
+    - Publish-VmConnectedCdrom: documentation/functions/Publish-VmConnectedCdrom.md
     - Publish-VmOverride: documentation/functions/Publish-VmOverride.md
     - Publish-VsanAlert: documentation/functions/Publish-VsanAlert.md
     - Publish-VsanHealth: documentation/functions/Publish-VsanHealth.md

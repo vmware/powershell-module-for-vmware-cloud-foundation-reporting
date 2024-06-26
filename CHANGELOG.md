@@ -1,5 +1,17 @@
 # Release History
 
+## v2.6.3
+
+> Release Date: Unreleased
+
+Enhancement:
+
+- Adds support for VMware Cloud Foundation 5.2. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+
+Bugfix:
+
+- Updates `Request-DatastoreStorageCapacity` to handle datastores with a size of 0. [GH-217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+
 ## v2.6.2
 
 > Release Date: 2024-05-28
