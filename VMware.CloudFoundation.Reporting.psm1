@@ -267,19 +267,19 @@ Function Invoke-VcfHealthReport {
         [Parameter (Mandatory = $false)] [ValidateNotNullOrEmpty()] [Switch]$darkMode
     )
 
-    $sddcManagerPass = Get-Password -user $sddcManagerUser -password $sddcManagerPass    
+    $sddcManagerPass = Get-Password -user $sddcManagerUser -password $sddcManagerPass
     $sddcManagerLocalPass = Get-Password -user $sddcManagerLocalUser -password $sddcManagerLocalPass
 
     Try {
         Clear-Host; Write-Host ""
-        
+
         if ($PSVersionTable.PSEdition -eq "Desktop" -or $PSVersionTable.OS -like "Microsoft Windows*") {
             $tarPath = (Get-Command tar -ErrorAction SilentlyContinue).Source
             if (!($tarPath)) {
                 Write-Warning "The tar utility is required to run this cmdlet. Please check the module system requirements and try again."
                 return
             }
-        } 
+        }
 
         if (Test-VCFConnection -server $sddcManagerFqdn) {
             if (Test-VCFAuthentication -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass) {
@@ -989,7 +989,7 @@ Function Request-SoSHealthJson {
     # Build Default Health Summary Check POST payload
     $healthChecksPayload = New-Object -TypeName psobject
     $healthChecksPayload | Add-Member -notepropertyname 'certificateHealth' -notepropertyvalue $true
-    $healthChecksPayload | Add-Member -notepropertyname 'composabilityHealth' -notepropertyvalue $true
+    if ($vcfVersion -lt "5.2.0") {$healthChecksPayload | Add-Member -notepropertyname 'composabilityHealth' -notepropertyvalue $true }
     $healthChecksPayload | Add-Member -notepropertyname 'computeHealth' -notepropertyvalue $true
     $healthChecksPayload | Add-Member -notepropertyname 'connectivityHealth' -notepropertyvalue $true
     $healthChecksPayload | Add-Member -notepropertyname 'dnsHealth' -notepropertyvalue $true
@@ -5013,26 +5013,32 @@ Function Request-DatastoreStorageCapacity {
                         $datastores = Get-Datastore
                         foreach ($datastore in $datastores) {
                             # Calculate datastore usage and capacity
-                            $usage = [math]::Round((($datastore.CapacityGB - $datastore.FreeSpaceGB) / $datastore.CapacityGB * 100))
-                            $usage = [int]$usage
-                            $capacity = [int]$datastore.CapacityGB
+                            if ([int]$datastore.CapacityGB -eq 0){
+                                $usage = 0
+                                $capacity = 0
+                                $alert = 'RED'
+                                $message = "Capacity is reported as 0. Please check the datastore."
+                            } else{
+                                $usage = [math]::Round((($datastore.CapacityGB - $datastore.FreeSpaceGB) / $datastore.CapacityGB * 100))
+                                $usage = [int]$usage
+                                $capacity = [int]$datastore.CapacityGB
 
-                            # Applying thresholds and creating collection from input
-                            Switch ($usage) {
-                                { $_ -le $greenThreshold } {
-                                    $alert = 'GREEN' # Green if $usage is up to $greenThreshold
-                                    $message = "Used space is less than $greenThreshold%."
-                                }
-                                { $_ -ge $redThreshold } {
-                                    $alert = 'RED' # Red if $usage is equal or above $redThreshold
-                                    $message = "Used space is above $redThreshold%. Please reclaim space on the datastore."
-                                }
-                                Default {
-                                    $alert = 'YELLOW' # Yellow if above two are not matched
-                                    $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the datastore."
+                                # Applying thresholds and creating collection from input
+                                Switch ($usage) {
+                                    { $_ -le $greenThreshold } {
+                                        $alert = 'GREEN' # Green if $usage is up to $greenThreshold
+                                        $message = "Used space is less than $greenThreshold%."
+                                    }
+                                    { $_ -ge $redThreshold } {
+                                        $alert = 'RED' # Red if $usage is equal or above $redThreshold
+                                        $message = "Used space is above $redThreshold%. Please reclaim space on the datastore."
+                                    }
+                                    Default {
+                                        $alert = 'YELLOW' # Yellow if above two are not matched
+                                        $message = "Used space is between $greenThreshold% and $redThreshold%. Please consider reclaiming some space on the datastore."
+                                    }
                                 }
                             }
-
                             # Populate data into the object
                             if (($PsBoundParameters.ContainsKey("failureOnly")) -and ($alert -eq 'GREEN')) { continue } # Skip population of object if "failureOnly" is selected and alert is "GREEN"
                             $userObject = New-Object -TypeName psobject
@@ -5137,7 +5143,7 @@ Function Request-VcenterStorageHealth {
                                 $customObject += $elementObject
                               }
                                 $customObject | Sort-Object Component, Resource
-                                
+
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
@@ -5650,7 +5656,7 @@ Function Request-NsxtAuthentication {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -5776,7 +5782,7 @@ Function Request-NsxtTransportNodeStatus {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -5878,7 +5884,7 @@ Function Request-NsxtTransportNodeTunnelStatus {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -5991,7 +5997,7 @@ Function Request-NsxtTier0BgpStatus {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -6101,7 +6107,7 @@ Function Publish-VmConnectedCdrom {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -6183,7 +6189,7 @@ Function Request-VmConnectedCdrom {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -6212,11 +6218,18 @@ Function Request-VmConnectedCdrom {
                             $allClustersObject = New-Object System.Collections.ArrayList
                             $allClusters = Get-Cluster -Server $vcfVcenterDetails.fqdn
                             foreach ($cluster in $allClusters) {
-                                $allVms = Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object { $_ | Get-CDDrive | Where-Object { $_.ConnectionState.Connected -eq 'true' } } | Select-Object Name, @{Name = 'ISO Path'; Expression = { (Get-CDDrive $_).isopath } }
+                                #$allVms = Get-VM -Server $vcfVcenterDetails.fqdn | Where-Object { $_ | Get-CDDrive | Where-Object { $_.ConnectionState.Connected -eq 'true' } } | Select-Object Name, @{Name = 'ISO Path'; Expression = { (Get-CDDrive $_).isopath } }
+                                $allVms = Get-VM -Server $vcfVcenterDetails.fqdn | Select-Object Name, @{Name = 'ISO Path'; Expression = { $cdDrive = $_ | Get-CDDrive | Where-Object { $_.ConnectionState.Connected -eq 'true' }; if ($cdDrive) { $cdDrive.isopath } else { 'N/A' } } } |  Sort-Object "ISO Path"
                                 foreach ($vm in $allVms) {
                                     # Set the alert and message based on the CD-ROM connection
-                                    $alert = 'YELLOW' # Warning, connected CD-ROM
-                                    $message = 'A virtual CD-ROM is connected.' # Set the status message
+                                   # Warning, connected CD-ROM
+                                    if ($vm.'ISO Path' -eq "N/A"){
+                                        $alert = 'GREEN'
+                                        $message = 'No virtual CD-ROM connected.'
+                                    } else {
+                                        $alert = 'YELLOW'
+                                        $message = 'A virtual CD-ROM is connected.'
+                                    }
                                     # Set the object properties
                                     $customObject = New-Object -TypeName psobject
                                     $customObject | Add-Member -NotePropertyName 'vCenter Server' -NotePropertyValue $vcfVcenterDetails.fqdn
@@ -6228,7 +6241,7 @@ Function Request-VmConnectedCdrom {
                                     $allClustersObject += $customObject
                                 }
                             }
-                            $allClustersObject | Sort-Object Cluster, 'VM Name', 'ISO Path'
+                            $allClustersObject | Sort-Object -Property Alert -Descending
                         }
                         Disconnect-VIServer * -Force -Confirm:$false -WarningAction SilentlyContinue | Out-Null
                     }
@@ -6267,12 +6280,12 @@ Function Publish-EsxiConnectionHealth {
 
         .EXAMPLE
         Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
-        This example will generate a json for the connection status of ESXi hosts in all workload domains and 
+        This example will generate a json for the connection status of ESXi hosts in all workload domains and
         saves it under F:\Reporting with filename <timestamp>-esxi-connection-status.json
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -6329,7 +6342,7 @@ Function Publish-EsxiConnectionHealth {
                     $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $esxiConnectionHealthJsonSuffix
                     $allHealthObject | ConvertTo-JSON -Depth 10 -EnumsAsStrings| Out-File $json -Encoding ASCII
                     Write-Output "JSON Created at $json"
-					
+
                 } else {
                 if ($allHealthObject.Count -eq 0) { $addNoIssues = $true }
                 if ($addNoIssues) {
@@ -6370,7 +6383,7 @@ Function Request-EsxiConnectionHealth {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -6472,12 +6485,12 @@ Function Publish-SddcManagerFreePool {
 
         .EXAMPLE
         Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -outputJson F:\Reporting
-        This example will generate a json for the status the free pool health from SDDC Manager and saves it under 
+        This example will generate a json for the status the free pool health from SDDC Manager and saves it under
         F:\Reporting with filename <timestamp>-sddc-manager-free-pool-status.json
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -6536,9 +6549,9 @@ Function Publish-SddcManagerFreePool {
                     }else{
                         $allConfigurationObject = $allConfigurationObject | ConvertTo-Html -Fragment -PreContent '<a id="esxi-free-pool"></a><h3>Free Pool Health</h3>' -As Table -PostContent '<p>No ESXi hosts present in the free pool.</p>'
                     }
-                } 
+                }
                 $allConfigurationObject = Convert-CssClass -htmldata $allConfigurationObject
-                $allConfigurationObject 
+                $allConfigurationObject
             }
         }
     } Catch {
@@ -6568,7 +6581,7 @@ Function Request-SddcManagerFreePool {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -6700,7 +6713,7 @@ Function Publish-EsxiAlert {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -6794,7 +6807,7 @@ Function Publish-NsxtAlert {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -6887,7 +6900,7 @@ Function Publish-VcenterAlert {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -6980,7 +6993,7 @@ Function Publish-VsanAlert {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -7070,7 +7083,7 @@ Function Request-NsxtAlert {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -7159,7 +7172,7 @@ Function Request-VsanAlert {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -7246,7 +7259,7 @@ Function Request-VcenterAlert {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -7358,7 +7371,7 @@ Function Request-EsxiAlert {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -7452,7 +7465,7 @@ Function Publish-ClusterConfiguration {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -7518,7 +7531,7 @@ Function Publish-EsxiCoreDumpConfig {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -7627,7 +7640,7 @@ Function Request-ClusterConfiguration {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -7709,7 +7722,7 @@ Function Publish-ClusterDrsRule {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -7779,7 +7792,7 @@ Function Request-ClusterDrsRule {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -7860,7 +7873,7 @@ Function Publish-ResourcePool {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -7925,7 +7938,7 @@ Function Request-ResourcePool {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8003,7 +8016,7 @@ Function Publish-VmOverride {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8068,7 +8081,7 @@ Function Request-VmOverride {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8141,7 +8154,7 @@ Function Publish-VirtualNetwork {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8206,7 +8219,7 @@ Function Request-VirtualNetwork {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8286,7 +8299,7 @@ Function Publish-EsxiSecurityConfiguration {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8351,7 +8364,7 @@ Function Request-EsxiSecurityConfiguration {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8430,7 +8443,7 @@ Function Publish-VcfSystemOverview {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8533,7 +8546,7 @@ Function Request-VcfOverview {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8608,7 +8621,7 @@ Function Request-HardwareOverview {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8706,7 +8719,7 @@ Function Request-VcenterOverview {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8816,7 +8829,7 @@ Function Request-EsxiOverview {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -8984,7 +8997,7 @@ Function Request-ClusterOverview {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -9054,7 +9067,7 @@ Function Request-NetworkOverview {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -9149,7 +9162,7 @@ Function Request-VMwareAriaSuiteOverview {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -9236,7 +9249,7 @@ Function Request-ValidatedSolutionOverview {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -9401,7 +9414,7 @@ Function Test-VcfReportingPrereq {
 
         .PARAMETER sddcManagerFqdn
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER sddcManagerUser
         The username to authenticate to the SDDC Manager.
 
@@ -9518,7 +9531,7 @@ Function Start-CreateReportDirectory {
     if ($reportType -eq "upgrade") { $Global:reportFolder = Join-Path -Path $path -ChildPath 'UpgradeReports'  }
     if ($reportType -eq "overview") { $Global:reportFolder = Join-Path -Path $path -ChildPath 'OverviewReports' }
 
-    
+
     if (!(Test-Path -Path $reportFolder)) {
         New-Item -Path $reportFolder -ItemType "directory" | Out-Null
     }
@@ -9587,7 +9600,7 @@ Function Invoke-SddcCommand {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
@@ -9654,7 +9667,7 @@ Function Copy-FiletoSddc {
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
-        
+
         .PARAMETER user
         The username to authenticate to the SDDC Manager.
 
