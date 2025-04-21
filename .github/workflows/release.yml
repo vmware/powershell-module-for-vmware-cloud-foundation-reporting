@@ -1,19 +1,19 @@
+---
 name: Release
 
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+*"
-
-permissions:
-  contents: write
+      - v[0-9]+.[0-9]+.[0-9]+*
 
 jobs:
   create-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
       - name: Check Version
@@ -129,9 +129,12 @@ jobs:
   publish-docs:
     needs: create-release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.event.release.tag_name }}
           fetch-depth: 0
@@ -150,9 +153,11 @@ jobs:
   publish-module:
     needs: [create-release, publish-docs]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.event.release.tag_name }}
           fetch-depth: 0
@@ -185,13 +190,18 @@ jobs:
               Write-Output "SUCCESS: Module dependencies were found."
               Write-Output "INFO: Required modules are $($requiredModules.ModuleName -join ', ')."
               Write-Output "INFO: Setting location to the PowerShell modules location on a Ubuntu-based GitHub runner."
-              Set-Location '/home/runner/.local/share/powershell/Modules/' 
+              Set-Location '/home/runner/.local/share/powershell/Modules/'
               foreach ($module in $requiredModules) {
                   $requiredModuleName = $module.ModuleName
-                  New-Item $requiredModuleName -ItemType Directory
-                  Write-Output "INFO: Performing workaround for github.com/PowerShell/PowerShell/issues/7722."
-                  Write-Output "INFO: Creating placeholder manifest for $requiredModuleName at $((Get-Location).Path)/$requiredModuleName/$requiredModuleName.psd1"
-                  New-Item "./$requiredModuleName/$requiredModuleName.psd1" -ItemType File
+                  if ($requiredModuleName -eq 'VMware.PowerCLI') {
+                    Write-Output "INFO: Installing version defined in the manifest from the PowerShell Gallery."
+                    Install-Module -Name VMware.PowerCLI -RequiredVersion $module.RequiredVersion -Force
+                  } else {
+                    New-Item $requiredModuleName -ItemType Directory
+                    Write-Output "INFO: Performing workaround for github.com/PowerShell/PowerShell/issues/7722."
+                    Write-Output "INFO: Creating placeholder manifest for $requiredModuleName at $((Get-Location).Path)/$requiredModuleName/$requiredModuleName.psd1"
+                    New-Item "./$requiredModuleName/$requiredModuleName.psd1" -ItemType File
+                  }
               }
           } else {
               Write-Output "INFO: No module dependencies were found."
@@ -232,4 +242,3 @@ jobs:
           } else {
               Write-Error "FAILED: Module manifest file not found at path '$moduleManifest'."
           }
-    
