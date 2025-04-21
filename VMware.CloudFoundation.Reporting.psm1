@@ -1,4 +1,5 @@
-# Copyright 2023-2024 Broadcom. All Rights Reserved.
+# © Broadcom. All Rights Reserved.
+# The term “Broadcom” refers to Broadcom Inc. and/or its subsidiaries.
 # SPDX-License-Identifier: BSD-2
 
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
@@ -7,7 +8,7 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # Enable communication with self-signed certificates when using Powershell Core. If you require all communications
-# to be secure and do not wish to allow communication with self-signed certificates, remove lines 19-39 before
+# to be secure and do not wish to allow communication with self-signed certificates, remove lines 20-40 before
 # importing the module.
 
 if ($PSEdition -eq 'Core') {
