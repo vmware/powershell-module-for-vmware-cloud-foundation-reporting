@@ -6,7 +6,7 @@
 
 <img src="https://img.shields.io/powershellgallery/dt/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery Downloads">
 
-`VMware.CloudFoundation.Reporting` is an open source PowerShell module that supports the ability to gain insights into the operational state of [VMware Cloud Foundation][docs-vmware-cloud-foundation] through the use of PowerShell cmdlets. These cmdlets provide quick access to information from the PowerShell console as well as the ability to publish pre-defined HTML reports.
+`VMware.CloudFoundation.Reporting` is an open source PowerShell module that supports the ability to gain insights into the operational state of VMware Cloud Foundation through the use of PowerShell cmdlets. These cmdlets provide quick access to information from the PowerShell console as well as the ability to publish pre-defined HTML reports.
 
 [:material-powershell: &nbsp; PowerShell Gallery][psgallery-module-reporting]{ .md-button .md-button--primary }
 
@@ -24,16 +24,6 @@ Platform                                                     | vSAN ReadyNodes  
 :fontawesome-solid-cloud: &nbsp; VMware Cloud Foundation 4.5 | :fontawesome-solid-check:{ .green } | :fontawesome-solid-check:{ .green }
 :fontawesome-solid-cloud: &nbsp; VMware Cloud Foundation 4.4 | :fontawesome-solid-check:{ .green } | :fontawesome-solid-check:{ .green }
 
-### Operating Systems
-
-The following table lists the supported operating systems for this module.
-
-Operating System                                                       | Version
------------------------------------------------------------------------|-----------
-:fontawesome-brands-windows: &nbsp; Microsoft Windows Server           | 2019, 2022
-:fontawesome-brands-windows: &nbsp; Microsoft Windows                  | 10, 11
-:fontawesome-brands-linux: &nbsp; [VMware Photon OS][github-os-photon] | 3.0, 4.0
-
 ### PowerShell
 
 The following table lists the supported editions and versions of PowerShell for this module.
@@ -48,10 +38,10 @@ The following table lists the required PowerShell module dependencies for this m
 
 PowerShell Module                                    | Version   | Publisher | Reference
 -----------------------------------------------------|-----------|-----------|---------------------------------------------------------------------------
-[VMware.PowerCLI][psgallery-module-powercli]         | >= 13.2.1 | Broadcom  | :fontawesome-solid-book: &nbsp; [Documentation][developer-module-powercli]
+[VMware.PowerCLI][psgallery-module-powercli]         | >= 13.3.0 | Broadcom  | :fontawesome-solid-book: &nbsp; [Documentation][developer-module-powercli]
 [VMware.vSphere.SsoAdmin][psgallery-module-ssoadmin] | >= 1.3.9  | Broadcom  | :fontawesome-brands-github: &nbsp; [GitHub][github-module-ssoadmin]
 [PowerVCF][psgallery-module-powervcf]                | >= 2.4.1  | Broadcom  | :fontawesome-solid-book: &nbsp; [Documentation][docs-module-powervcf]
-[PowerValidatedSolutions][psgallery-module-pvs]      | >= 2.11.0 | Broadcom  | :fontawesome-solid-book: &nbsp; [Documentation][docs-module-pvs]
+[PowerValidatedSolutions][psgallery-module-pvs]      | >= 2.12.1 | Broadcom  | :fontawesome-solid-book: &nbsp; [Documentation][docs-module-pvs]
 
 ### Browsers
 
@@ -63,7 +53,6 @@ Browser                                            | Download
 :fontawesome-brands-chrome: &nbsp; Google Chrome   | :fontawesome-solid-cloud-arrow-down: &nbsp; [Download][download-browser-chrome]
 :fontawesome-brands-firefox: &nbsp; Mozilla Firefox | :fontawesome-solid-cloud-arrow-down: &nbsp; [Download][download-browser-firefox]
 
-[docs-vmware-cloud-foundation]: https://docs.vmware.com/en/VMware-Cloud-Foundation/index.html
 [docs-module-powervcf]: https://vmware.github.io/powershell-module-for-vmware-cloud-foundation
 [docs-module-pvs]: https://vmware.github.io/power-validated-solutions-for-cloud-foundation
 [download-browser-edge]: https://www.microsoft.com/edge
@@ -75,6 +64,5 @@ Browser                                            | Download
 [psgallery-module-reporting]: https://www.powershellgallery.com/packages/VMware.CloudFoundation.Reporting
 [psgallery-module-ssoadmin]: https://www.powershellgallery.com/packages/VMware.vSphere.SsoAdmin
 [psgallery-module-pvs]: https://www.powershellgallery.com/packages/PowerValidatedSolutions
-[developer-module-powercli]: https://developer.vmware.com/tool/vmware-powercli
+[developer-module-powercli]: https://developer.broadcom.com/powercli
 [github-module-ssoadmin]: https://github.com/vmware/PowerCLI-Example-Scripts/tree/master/Modules/VMware.vSphere.SsoAdmin
-[github-os-photon]: https://vmware.github.io/photon/
