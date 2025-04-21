@@ -1,4 +1,5 @@
-name: Tests
+---
+name: Test
 
 on:
   push:
@@ -11,8 +12,10 @@ on:
 jobs:
   basic_tests:
     runs-on: ubuntu-latest
+    permissions:
+        contents: read
     steps:
-      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Run Basic Tests
         working-directory: ${{ github.workspace }}
         shell: pwsh
@@ -21,6 +24,8 @@ jobs:
           Set-PSRepository psgallery -InstallationPolicy trusted
           Write-Output "INFO: Installing module 'VMware.vSphere.SsoAdmin' from PSGallery."
           Install-Module -Name VMware.vSphere.SsoAdmin -confirm:$false -Force
+          Write-Output "INFO: Installing module 'VMware.PowerCLI' from PSGallery."
+          Install-Module -Name VMware.PowerCLI -confirm:$false -Force
           $moduleManifest = (Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter *.psd1).Name
           if ($moduleManifest) {
               Write-Output "SUCCESS: Manifest '$moduleManifest' found in '$env:GITHUB_WORKSPACE'."
@@ -37,7 +42,7 @@ jobs:
           $moduleManifestData = Import-PowerShellDataFile -Path $moduleManifest
           $requiredModules = $moduleManifestData.RequiredModules
           $requiredModules = $requiredModules | Where-Object { $_.ModuleName -ne 'VMware.vSphere.SsoAdmin' }
-          Write-Output "INFO: Required modules are $($requiredModules.ModuleName -join ', ')." 
+          Write-Output "INFO: Required modules are $($requiredModules.ModuleName -join ', ')."
           foreach ($module in $requiredModules) {
             $requiredModuleName = $module.ModuleName
             $licenseUri = [System.Uri] (Find-Module -Name $requiredModuleName).LicenseUri
