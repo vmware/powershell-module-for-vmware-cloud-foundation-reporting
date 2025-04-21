@@ -1,7 +1,25 @@
 ---
 version: 2
+
 updates:
-- package-ecosystem: "github-actions"
-  directory: "/"
-  schedule:
-      interval: "daily"
+  - package-ecosystem: github-actions
+    target-branch: develop
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - chore
+      - github-actions
+    commit-message:
+      prefix: 'chore(gh):'
+
+  - package-ecosystem: pip
+    target-branch: develop
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - chore
+      - dependencies
+    commit-message:
+      prefix: 'chore(gh):'
