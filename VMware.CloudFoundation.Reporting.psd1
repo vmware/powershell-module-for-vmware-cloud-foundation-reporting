@@ -11,7 +11,7 @@
     RootModule        = '.\VMware.CloudFoundation.Reporting.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '2.6.3.1001'
+    ModuleVersion     = '2.7.0.1000'
 
     # ID used to uniquely identify this module
     GUID              = '043bbd4d-206a-4520-87f5-070450379d72'
@@ -58,7 +58,7 @@
         }
         @{
             ModuleName    = 'PowerValidatedSolutions'
-            ModuleVersion = '2.11.0'
+            ModuleVersion = '2.11.1'
         }
     )
 
