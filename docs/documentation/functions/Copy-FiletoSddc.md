@@ -24,15 +24,7 @@ The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass
 ### Example 1
 
 ```powershell
-Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser vcf -vmPass VMw@re1! -source "C:\Temp\foo.txt" -destination "/home/vcf/foo.txt"
-```
-
-This example copies a file to the SDDC Manager appliance.
-
-### Example 2
-
-```powershell
-Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmuser vcf -vmPass VMw@re1! -source "C:\Temp\bar" -destination "/home/vcf/"
+Copy-FiletoSddc -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -vmUser [vm_username] -vmPass [vm_password] -source [source_path] -destination [destination_path]
 ```
 
 This example copies a file to the SDDC Manager appliance.
