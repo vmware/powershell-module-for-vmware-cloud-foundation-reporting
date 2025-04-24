@@ -25,18 +25,10 @@ The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass
 ### Example 1
 
 ```powershell
-Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser root -vmPass VMw@re1! -command "chage -l backup"
+Invoke-SddcCommand -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -vmUser [local_username] -vmPass [local_password] -command "chage -l backup"
 ```
 
-This example runs the command provided on the SDDC Manager appliance as the root user.
-
-### Example 2
-
-```powershell
-Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser vcf -vmPass VMw@re1! -command "echo Hello World."
-```
-
-This example runs the command provided on the SDDC Manager appliance as the vcf user.
+This example runs the command provided on the SDDC Manager appliance with the user specified for the `-vmUser` parameter.
 
 ## Parameters
 

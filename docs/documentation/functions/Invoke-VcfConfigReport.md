@@ -20,14 +20,14 @@ Invoke-VcfConfigReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddc
 
 ## Description
 
-The `Invoke-VcfConfigReport` provides a single cmdlet to generates a configuration report for a VMware Cloud Foundation instance.
+The `Invoke-VcfConfigReport` provides a single cmdlet to generate a configuration report for a VMware Cloud Foundation instance.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains
+Invoke-VcfConfigReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -allDomains
 ```
 
 This example generates the configuration report across a VMware Cloud Foundation instance.
@@ -35,7 +35,7 @@ This example generates the configuration report across a VMware Cloud Foundation
 ### Example 2
 
 ```powershell
-Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
+Invoke-VcfConfigReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name]
 ```
 
 This example generates the configuration report for a specific workload domain within a VMware Cloud Foundation instance.
