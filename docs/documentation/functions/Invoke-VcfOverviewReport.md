@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Generates the system overview report.
+Generates the system overview report for a VMware Cloud Foundation instance.
 
 ## Syntax
 
@@ -19,7 +19,7 @@ The `Invoke-VcfOverviewReport` provides a single cmdlet to generates a system ov
 ### Example 1
 
 ```powershell
-Invoke-VcfOverviewReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting
+Invoke-VcfOverviewReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path]
 ```
 
 This example generates the system overview report for a VMware Cloud Foundation instance.
@@ -27,7 +27,7 @@ This example generates the system overview report for a VMware Cloud Foundation 
 ### Example 2
 
 ```powershell
-Invoke-VcfOverviewReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -anonymized
+Invoke-VcfOverviewReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -anonymized
 ```
 
 This example generates the system overview report for a VMware Cloud Foundation instance, but will anonymize the output.

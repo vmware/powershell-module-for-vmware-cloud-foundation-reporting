@@ -27,7 +27,7 @@ The `Invoke-VcfAlertReport` provides a single cmdlet to generates the alert repo
 ### Example 1
 
 ```powershell
-Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains
+Invoke-VcfAlertReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -allDomains
 ```
 
 This example generates the alert report across a VMware Cloud Foundation instance.
@@ -35,7 +35,7 @@ This example generates the alert report across a VMware Cloud Foundation instanc
 ### Example 2
 
 ```powershell
-Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains -failureOnly
+Invoke-VcfAlertReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -allDomains -failureOnly
 ```
 
 This example generates the alert report across a VMware Cloud Foundation instance but for only failed items.
@@ -43,7 +43,7 @@ This example generates the alert report across a VMware Cloud Foundation instanc
 ### Example 3
 
 ```powershell
-Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
+Invoke-VcfAlertReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name]
 ```
 
 This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance.
@@ -51,7 +51,7 @@ This example generates the alert report for a specific workload domain in a VMwa
 ### Example 4
 
 ```powershell
-Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01 -failureOnly
+Invoke-VcfAlertReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name] -failureOnly
 ```
 
 This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance but for only failed items.
