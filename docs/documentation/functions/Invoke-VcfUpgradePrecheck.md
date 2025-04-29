@@ -19,7 +19,7 @@ The `Invoke-VcfUpgradePrecheck` runs an upgrade precheck for a workload domain
 ### Example 1
 
 ```powershell
-Invoke-VcfUpgradePrecheck -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
+Invoke-VcfUpgradePrecheck -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name]
 ```
 
 This example runs a health check for a specific workload domain within an SDDC Manager instance.

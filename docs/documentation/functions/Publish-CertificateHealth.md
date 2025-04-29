@@ -19,7 +19,8 @@ The `Publish-CertificateHealth` cmdlet formats the Certificate Health data from 
 ### Example 1
 
 ```powershell
-Publish-CertificateHealth -json <file-name> -html
+Publish-CertificateHealth -json [file_name]
+
 ```
 
 This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file.
@@ -27,7 +28,7 @@ This example extracts and formats the Certificate Health data as a PowerShell ob
 ### Example 2
 
 ```powershell
-Publish-CertificateHealth -json <file-name> -html-html
+Publish-CertificateHealth -json [file_name] -html
 ```
 
 This example extracts and formats the Certificate Health data as an HTML object from the JSON file.
@@ -35,7 +36,7 @@ This example extracts and formats the Certificate Health data as an HTML object 
 ### Example 3
 
 ```powershell
-Publish-CertificateHealth -json <file-name> -html-failureOnly
+Publish-CertificateHealth -json [file_name] -failureOnly
 ```
 
 This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file for only the failed items.

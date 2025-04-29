@@ -4,7 +4,6 @@
 
 Perform health checks for a VMware Cloud Foundation instance or workload domain.
 
-
 ## Syntax
 
 ### All-WorkloadDomains
