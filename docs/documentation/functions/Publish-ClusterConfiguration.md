@@ -9,13 +9,13 @@ Publish cluster configuration information in HTML format.
 ### All-WorkloadDomains
 
 ```powershell
-Publish-ClusterConfiguration -server <String> -user <String> -pass <String> [-allDomains] [<CommonParameters>]
+Publish-ClusterConfiguration [-server] <String> [-user] <String> [-pass] <String> [-allDomains] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-ClusterConfiguration -server <String> -user <String> -pass <String> -workloadDomain <String> [<CommonParameters>]
+Publish-ClusterConfiguration [-server] <String> [-user] <String> [-pass] <String> [-workloadDomain] <String> [<CommonParameters>]
 ```
 
 ## Description

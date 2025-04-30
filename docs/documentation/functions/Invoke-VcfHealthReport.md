@@ -9,14 +9,13 @@ Perform health checks for a VMware Cloud Foundation instance or workload domain.
 ### All-WorkloadDomains
 
 ```powershell
-Invoke-VcfHealthReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -sddcManagerLocalUser <String> -sddcManagerLocalPass <String> -reportPath <String> [-allDomains] [-failureOnly] [-darkMode] [<CommonParameters>]
+Invoke-VcfHealthReport [-sddcManagerFqdn] <String> [-sddcManagerUser] <String> [-sddcManagerPass] <String> [-sddcManagerLocalUser] <String> [-sddcManagerLocalPass] <String> [-reportPath] <String> [-allDomains] [-failureOnly] [-darkMode] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Invoke-VcfHealthReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -sddcManagerLocalUser <String> -sddcManagerLocalPass <String> -reportPath <String> -workloadDomain <String> [-failureOnly] [-darkMode] [<CommonParameters>]
-
+Invoke-VcfHealthReport [-sddcManagerFqdn] <String> [-sddcManagerUser] <String> [-sddcManagerPass] <String> [-sddcManagerLocalUser] <String> [-sddcManagerLocalPass] <String> [-reportPath] <String> [-workloadDomain] <String> [-failureOnly] [-darkMode] [<CommonParameters>]
 ```
 
 ## Description

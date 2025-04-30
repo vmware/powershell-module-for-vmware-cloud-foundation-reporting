@@ -15,9 +15,9 @@ Copy-FiletoSddc [-server] <String> [-user] <String> [-pass] <String> [-vmUser] <
 The `Copy-FiletoSddc` cmdlet copies files to the SDDC Manager appliance.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Validates that network connectivity is available to the Management Domain vCenter Server instance
-- Copies the files to the SDDC Manager appliance
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Validates that network connectivity is available to the Management Domain vCenter instance.
+- Copies the files to the SDDC Manager appliance.
 
 ## Examples
 
