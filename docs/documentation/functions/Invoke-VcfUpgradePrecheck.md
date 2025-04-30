@@ -7,12 +7,12 @@ Perform upgrade precheck.
 ## Syntax
 
 ```powershell
-Invoke-VcfUpgradePrecheck -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -reportPath <String> -workloadDomain <String> [-darkMode] [<CommonParameters>]
+Invoke-VcfUpgradePrecheck [-sddcManagerFqdn] <String> [-sddcManagerUser] <String> [-sddcManagerPass] <String> [-reportPath] <String> [-workloadDomain] <String> [-darkMode] [<CommonParameters>]
 ```
 
 ## Description
 
-The `Invoke-VcfUpgradePrecheck` runs an upgrade precheck for a workload domain
+The `Invoke-VcfUpgradePrecheck` runs an upgrade precheck for a workload domain.
 
 ## Examples
 

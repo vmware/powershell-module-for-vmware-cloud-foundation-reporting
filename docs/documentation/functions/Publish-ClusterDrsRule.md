@@ -9,13 +9,13 @@ Publish cluster DRS rule information in HTML format.
 ### All-WorkloadDomains
 
 ```powershell
-Publish-ClusterDrsRule -server <String> -user <String> -pass <String> [-allDomains] [<CommonParameters>]
+Publish-ClusterDrsRule [-server] <String> [-user] <String> [-pass] <String> [-allDomains] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-ClusterDrsRule -server <String> -user <String> -pass <String> -workloadDomain <String> [<CommonParameters>]
+Publish-ClusterDrsRule [-server] <String> [-user] <String> [-pass] <String> [-workloadDomain] <String> [<CommonParameters>]
 ```
 
 ## Description

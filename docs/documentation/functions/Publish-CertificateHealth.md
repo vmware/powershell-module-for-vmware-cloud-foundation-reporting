@@ -20,7 +20,6 @@ The `Publish-CertificateHealth` cmdlet formats the Certificate Health data from 
 
 ```powershell
 Publish-CertificateHealth -json [file_name]
-
 ```
 
 This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file.

@@ -16,9 +16,9 @@ Invoke-SddcCommand [-server] <String> [-user] <String> [-pass] <String> [-vmUser
 The `Invoke-SddcCommand` cmdlet runs a command within the SDDC Manager appliance.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Validates that network connectivity is available to the Management Domain vCenter Server instance
-- Runs the command provided within the SDDC Manager appliance
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Validates that network connectivity is available to the Management Domain vCenter instance.
+- Runs the command provided within the SDDC Manager appliance.
 
 ## Examples
 

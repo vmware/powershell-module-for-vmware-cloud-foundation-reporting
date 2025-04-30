@@ -9,13 +9,13 @@ Generates the configuration report.
 ### All-WorkloadDomains
 
 ```powershell
-Invoke-VcfConfigReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -reportPath <String> [-allDomains] [-darkMode] [<CommonParameters>]
+Invoke-VcfConfigReport [-sddcManagerFqdn] <String> [-sddcManagerUser] <String> [-sddcManagerPass] <String> [-reportPath] <String> [-allDomains] [-darkMode] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Invoke-VcfConfigReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -reportPath <String> -workloadDomain <String> [-darkMode] [<CommonParameters>]
+Invoke-VcfConfigReport [-sddcManagerFqdn] <String> [-sddcManagerUser] <String> [-sddcManagerPass] <String> [-reportPath] <String> [-workloadDomain] <String> [-darkMode] [<CommonParameters>]
 ```
 
 ## Description

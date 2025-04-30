@@ -9,13 +9,13 @@ Generates the alert report for a VMware Cloud Foundation instance.
 ### All-WorkloadDomains
 
 ```powershell
-Invoke-VcfAlertReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -reportPath <String> [-allDomains] [-failureOnly] [-darkMode] [<CommonParameters>]
+Invoke-VcfAlertReport [-sddcManagerFqdn] <String> [-sddcManagerUser] <String> [-sddcManagerPass] <String> [-reportPath] <String> [-allDomains] [-failureOnly] [-darkMode] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Invoke-VcfAlertReport -sddcManagerFqdn <String> -sddcManagerUser <String> -sddcManagerPass <String> -reportPath <String> -workloadDomain <String> [-failureOnly] [-darkMode] [<CommonParameters>]
+Invoke-VcfAlertReport [-sddcManagerFqdn] <String> [-sddcManagerUser ]<String> [-sddcManagerPass] <String> [-reportPath] <String> [-workloadDomain] <String> [-failureOnly] [-darkMode] [<CommonParameters>]
 ```
 
 ## Description
