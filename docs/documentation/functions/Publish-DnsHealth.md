@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the DNS Health data from the SoS JSON output.
+Formats the DNS health data from the SoS JSON output.
 
 ## Syntax
 
@@ -12,33 +12,33 @@ Publish-DnsHealth [-json] <String> [-html] [-failureOnly] [<CommonParameters>]
 
 ## Description
 
-The `Publish-DnsHealth` cmdlet formats the DNS Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-DnsHealth` cmdlet formats the DNS health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-DnsHealth -json <file-name>
+Publish-DnsHealth -json [file_name]
 ```
 
-This example extracts and formats the DNS Health data as a PowerShell object from the JSON file.
+This example extracts and formats the DNS health data as a PowerShell object from the JSON file.
 
 ### Example 2
 
 ```powershell
-Publish-DnsHealth -json <file-name> -html
+Publish-DnsHealth -json [file_name] -html
 ```
 
-This example extracts and formats the DNS Health data as an HTML object from the JSON file.
+This example extracts and formats the DNS health data as an HTML object from the JSON file.
 
 ### Example 3
 
 ```powershell
-Publish-DnsHealth -json <file-name> -failureOnly
+Publish-DnsHealth -json [file_name] -failureOnly
 ```
 
-This example extracts and formats the DNS Health data as a PowerShell object from the JSON file for only the failed items.
+This example extracts and formats the DNS health data as a PowerShell object from the JSON file for only the failed items.
 
 ## Parameters
 

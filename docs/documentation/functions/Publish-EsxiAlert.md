@@ -2,56 +2,56 @@
 
 ## Synopsis
 
-Publish system alerts/alarms from ESXi hosts in a vCenter Server instance managed by SDDC Manager.
+Publish system alerts/alarms from ESX hosts in a vCenter instance managed by SDDC Manager.
 
 ## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-EsxiAlert -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [<CommonParameters>]
+Publish-EsxiAlert [-server] <String> [-user] <String> [-pass] <String> [-allDomains] [-failureOnly] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-EsxiAlert -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [<CommonParameters>]
+Publish-EsxiAlert [-server] <String> [-user] <String> [-pass] <String> [-workloadDomain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
 ## Description
 
-The `Publish-EsxiAlert` cmdlet returns all alarms from ESXi hosts managed by SDDC Manager.
+The `Publish-EsxiAlert` cmdlet returns all alarms from ESX hosts managed by SDDC Manager.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the vCenter Server instance
-- Validates the authentication to vCenter Server with credentials from SDDC Manager
-- Collects the alerts from all ESXi hosts in vCenter Server instance
+- Validates that network connectivity is available to the vCenter instance
+- Validates the authentication to vCenter with credentials from SDDC Manager
+- Collects the alerts from all ESX hosts in a vCenter instance
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+Publish-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a all workload domains.
+This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a all workload domains.
 
 ### Example 2
 
 ```powershell
-Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+Publish-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
-This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a all workload domains but only for the failed items.
+This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a all workload domains but only for the failed items.
 
 ### Example 3
 
 ```powershell
-Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+Publish-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a workload domain named [workload_domain_name].
 
 ## Parameters
 

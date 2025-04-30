@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the Connectivity Health data from the SoS JSON output.
+Formats the connectivity health data from the SoS JSON output.
 
 ## Syntax
 
@@ -12,33 +12,33 @@ Publish-ConnectivityHealth [-json] <String> [-html] [-failureOnly] [<CommonParam
 
 ## Description
 
-The `Publish-ConnectivityHealth` cmdlet formats the Connectivity Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-ConnectivityHealth` cmdlet formats the connectivity health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-ConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-ConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
 ```
 
-This example extracts and formats the Connectivity Health data as a PowerShell object from the JSON file.
+This example extracts and formats the connectivity health data as a PowerShell object from the JSON file.
 
 ### Example 2
 
 ```powershell
-Publish-ConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -html
+Publish-ConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -html
 ```
 
-This example extracts and formats the Connectivity Health data as an HTML object from the JSON file.
+This example extracts and formats the connectivity health data as an HTML object from the JSON file.
 
 ### Example 3
 
 ```powershell
-Publish-ConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-ConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -failureOnly
 ```
 
-This example extracts and formats the Connectivity Health data as a PowerShell object from the JSON file for only the failed items.
+This example extracts and formats the connectivity health data as a PowerShell object from the JSON file for only the failed items.
 
 ## Parameters
 
