@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the Certificate Health data from the SoS JSON output.
+Formats the certificate health data from the SoS JSON output.
 
 ## Syntax
 
@@ -12,7 +12,7 @@ Publish-CertificateHealth [-json] <String> [-html] [-failureOnly] [<CommonParame
 
 ## Description
 
-The `Publish-CertificateHealth` cmdlet formats the Certificate Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-CertificateHealth` cmdlet formats the certificate health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
@@ -22,7 +22,7 @@ The `Publish-CertificateHealth` cmdlet formats the Certificate Health data from 
 Publish-CertificateHealth -json [file_name]
 ```
 
-This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file.
+This example extracts and formats the certificate health data as a PowerShell object from the JSON file.
 
 ### Example 2
 
@@ -30,7 +30,7 @@ This example extracts and formats the Certificate Health data as a PowerShell ob
 Publish-CertificateHealth -json [file_name] -html
 ```
 
-This example extracts and formats the Certificate Health data as an HTML object from the JSON file.
+This example extracts and formats the certificate health data as an HTML object from the JSON file.
 
 ### Example 3
 
@@ -38,13 +38,13 @@ This example extracts and formats the Certificate Health data as an HTML object 
 Publish-CertificateHealth -json [file_name] -failureOnly
 ```
 
-This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file for only the failed items.
+This example extracts and formats the certificate health data as a PowerShell object from the JSON file for only the failed items.
 
 ## Parameters
 
 ### -json
 
-The path to the JSON file containing the SoS Health Summary data.
+The path to the JSON file containing the SoS health summary data.
 
 ```yaml
 Type: String

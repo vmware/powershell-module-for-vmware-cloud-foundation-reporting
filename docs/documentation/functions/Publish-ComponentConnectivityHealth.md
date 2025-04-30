@@ -2,20 +2,20 @@
 
 ## Synopsis
 
-Request and publish Component Connectivity Health.
+Request and publish component connectivity health.
 
 ## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-ComponentConnectivityHealth -server <String> -user <String> -pass <String> -json <String> [-allDomains] [-failureOnly] [<CommonParameters>]
+Publish-ComponentConnectivityHealth [-server] <String> [-user] <String> [-pass] <String> [-json] <String> [-allDomains] [-failureOnly] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-ComponentConnectivityHealth -server <String> -user <String> -pass <String> -json <String> -workloadDomain <String> [-failureOnly] [<CommonParameters>]
+Publish-ComponentConnectivityHealth [-server] <String> [-user] <String> [-pass] <String> [-json] <String> [-workloadDomain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
 ## Description
@@ -23,15 +23,15 @@ Publish-ComponentConnectivityHealth -server <String> -user <String> -pass <Strin
 The `Publish-ComponentConnectivityHealth` cmdlet checks component connectivity across the VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Performs connectivityy health checks and outputs the results
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Performs connectivity health checks and outputs the results.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
 This example checks the component connectivity for all workload domains across the VMware Cloud Foundation instance.
@@ -39,7 +39,7 @@ This example checks the component connectivity for all workload domains across t
 ### Example 2
 
 ```powershell
-Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain sfo-w01
 ```
 
 This example checks the component connectivity for a single workload domain in a VMware Cloud Foundation instance.
@@ -47,7 +47,7 @@ This example checks the component connectivity for a single workload domain in a
 ### Example 3
 
 ```powershell
-Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
 This example checks the component connectivity for all workload domains across the VMware Cloud Foundation instance but only reports issues.
