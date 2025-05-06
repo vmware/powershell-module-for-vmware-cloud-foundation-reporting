@@ -2,40 +2,40 @@
 
 ## Synopsis
 
-Generates an ESXi core dump configuration report.
+Generates an ESX core dump configuration report.
 
 ## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-EsxiCoreDumpConfig -server <String> -user <String> -pass <String> [-html] [-allDomains] [<CommonParameters>]
+Publish-EsxiCoreDumpConfig [-server] <String> [-user] <String> [-pass] <String> [-html] [-allDomains] [<CommonParameters>]
 ```
 
 ### Specific--WorkloadDomain
 
 ```powershell
-Publish-EsxiCoreDumpConfig -server <String> -user <String> -pass <String> [-html] -workloadDomain <String> [<CommonParameters>]
+Publish-EsxiCoreDumpConfig [-server] <String> [-user] <String> [-pass] <String> [-html] [-workloadDomain] <String> [<CommonParameters>]
 ```
 
 ## Description
 
-The `Publish-EsxiCoreDumpConfig` cmdlet generates an ESXi core dump report for a workload domain.
+The `Publish-EsxiCoreDumpConfig` cmdlet generates an ESX core dump report for a workload domain.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Validates that network connectivity is available to the vCenter Server instance
-- Generates an ESXi core dump report for all ESXi hosts in a workload domain
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Validates that network connectivity is available to the vCenter instance.
+- Generates an ESX core dump report for all ESXi hosts in a workload domain.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -alldomains
+Publish-EsxiCoreDumpConfig -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -alldomains
 ```
 
-This example generates an ESXi core dump report for all ESXi hosts across the VMware Cloud Foundation instance.
+This example generates an ESX core dump report for all ESX hosts across the VMware Cloud Foundation instance.
 
 ## Parameters
 

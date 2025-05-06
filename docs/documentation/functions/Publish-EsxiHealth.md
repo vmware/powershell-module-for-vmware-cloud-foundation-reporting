@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the ESXi Health data from the SoS JSON output.
+Formats the ESX health data from the SoS JSON output.
 
 ## Syntax
 
@@ -12,33 +12,33 @@ Publish-EsxiHealth [-json] <String> [-html] [-failureOnly] [<CommonParameters>]
 
 ## Description
 
-The `Publish-EsxiHealth` cmdlet formats the ESXi Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-EsxiHealth` cmdlet formats the ESX health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-EsxiHealth -json <file-name>
+Publish-EsxiHealth -json [file_name]
 ```
 
-This example extracts and formats the ESXi Health data as a PowerShell object from the JSON file.
+This example extracts and formats the ESX health data as a PowerShell object from the JSON file.
 
 ### Example 2
 
 ```powershell
-Publish-EsxiHealth -json <file-name> -html
+Publish-EsxiHealth -json [file_name] -html
 ```
 
-This example extracts and formats the ESXi Health data as an HTML object from the JSON file.
+This example extracts and formats the ESX health data as an HTML object from the JSON file.
 
 ### Example 3
 
 ```powershell
-Publish-EsxiHealth -json <file-name> -failureOnly
+Publish-EsxiHealth -json [file_name] -failureOnly
 ```
 
-This example extracts and formats the ESXi Health data as a PowerShell object from the JSON file for only the failed items.
+This example extracts and formats the ESX health data as a PowerShell object from the JSON file for only the failed items.
 
 ## Parameters
 
