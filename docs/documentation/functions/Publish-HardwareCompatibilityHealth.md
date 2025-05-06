@@ -12,39 +12,39 @@ Publish-HardwareCompatibilityHealth [-json] <String> [-html] [-failureOnly] [<Co
 
 ## Description
 
-The `Publish-HardwareCompatibilityHealth` cmdlet formats the Hardware Compatibility data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-HardwareCompatibilityHealth` cmdlet formats the hardware compatibility data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-HardwareCompatibilityHealth -json <file-name>
+Publish-HardwareCompatibilityHealth -json [file_name]
 ```
 
-This example extracts and formats the Hardware Compatibility data as a PowerShell object from the JSON file.
+This example extracts and formats the hardware compatibility data as a PowerShell object from the JSON file.
 
 ### Example 2
 
 ```powershell
-Publish-HardwareCompatibilityHealth -json <file-name> -html
+Publish-HardwareCompatibilityHealth -json [file_name] -html
 ```
 
-This example extracts and formats the Hardware Compatibility data as an HTML object from the JSON file.
+This example extracts and formats the hardware compatibility data as an HTML object from the JSON file.
 
 ### Example 3
 
 ```powershell
-Publish-HardwareCompatibilityHealth -json <file-name> -failureOnly
+Publish-HardwareCompatibilityHealth -json [file_name] -failureOnly
 ```
 
-This example extracts and formats the Hardware Compatibility data as a PowerShell object from the JSON file for only the failed items.
+This example extracts and formats the hardware compatibility data as a PowerShell object from the JSON file for only the failed items.
 
 ## Parameters
 
 ### -json
 
-The path to the JSON file containing the SoS Health Summary data.
+The path to the JSON file containing the SoS health summary data.
 
 ```yaml
 Type: String

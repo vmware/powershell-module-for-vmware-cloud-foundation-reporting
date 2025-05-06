@@ -2,57 +2,57 @@
 
 ## Synopsis
 
-Publish system alerts/alarms from a NSX Manager cluster managed by SDDC Manager.
+Publish system alerts/alarms from NSX managed by SDDC Manager.
 
 ## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-NsxtAlert -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [<CommonParameters>]
+Publish-NsxtAlert [-server] <String> [-user] <String> [-pass] <String> [-allDomains] [-failureOnly] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-NsxtAlert -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [<CommonParameters>]
+Publish-NsxtAlert [-server] <String> [-user] <String> [-pass] <String> [-workloadDomain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
 ## Description
 
-The `Publish-NsxtAlert` cmdlet returns all alarms from an NSX Manager cluster.
-The cmdlet connects to the NSX Manager using the `-server`, `-user`, and `-pass` values:
+The `Publish-NsxtAlert` cmdlet returns all alarms from NSX.
+The cmdlet connects to NSX  using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the NSX Manager cluster
-- Validates that network connectivity is available to the vCenter Server instance
-- Gathers the details for the NSX Manager cluster
-- Collects the alerts
+- Validates that network connectivity is available to NSX.
+- Validates that network connectivity is available to the vCenter instance.
+- Gathers the details for NSX.
+- Collects the alerts.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+Publish-NsxtAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will return alarms from all NSX Manager clusters managed by SDDC Manager for a all workload domains.
+This example will return alarms from NSX managed by SDDC Manager for all workload domains.
 
 ### Example 2
 
 ```powershell
-Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+Publish-NsxtAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
-This example will return alarms from all NSX Manager clusters managed by SDDC Manager for a all workload domains but only for the failed items.
+This example will return alarms from NSX managed by SDDC Manager for all workload domains but only for the failed items.
 
 ### Example 3
 
 ```powershell
-Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+Publish-NsxtAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will return alarms from the NSX Manager cluster managed by SDDC Manager for a workload domain named sfo-w01.
+This example will return alarms from NSX managed by SDDC Manager for a specified workload domain.
 
 ## Parameters
 
