@@ -54,7 +54,7 @@ This example generates the alert report for a specific workload domain in a VMwa
 Invoke-VcfAlertReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name] -failureOnly
 ```
 
-This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance but for only failed items.
+This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance but only reports issues.
 
 ## Parameters
 

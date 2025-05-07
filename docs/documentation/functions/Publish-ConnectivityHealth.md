@@ -76,7 +76,7 @@ Accept wildcard characters: False
 
 ### -failureOnly
 
-Specifies that the output should only contain failed items.
+Switch to only output issues to the report.
 
 ```yaml
 Type: SwitchParameter

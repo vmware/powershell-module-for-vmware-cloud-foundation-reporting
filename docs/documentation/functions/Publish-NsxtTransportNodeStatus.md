@@ -2,64 +2,64 @@
 
 ## Synopsis
 
-Request and publish the status of NSX transport nodes managed by an NSX Manager cluster.
+Request and publish the status of NSX transport nodes.
 
 ## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-NsxtTransportNodeStatus -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-NsxtTransportNodeStatus [-server] <String> [-user] <String> [-pass] <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-NsxtTransportNodeStatus -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-NsxtTransportNodeStatus [-server] <String> [-user] <String> [-pass] <String> [-workloadDomain] <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ## Description
 
-The `Publish-NsxtTransportNodeStatus` cmdlet checks the status NSX transport nodes managed by an NSX Manager cluster and prepares the data to be published to an HTML report.
+The `Publish-NsxtTransportNodeStatus` cmdlet checks the status NSX transport nodes and prepares the data to be published to an HTML report.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Performs checks on the NSX transport node status and outputs the results
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Performs checks on the NSX transport node status and outputs the results.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+Publish-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will publish the status of all NSX transport nodes in a VMware Cloud Foundation instance.
+This example will publish the status of all the NSX transport nodes in a VMware Cloud Foundation instance.
 
 ### Example 2
 
 ```powershell
-Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+Publish-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
-This example will publish thestatus of all NSX transport nodes in a VMware Cloud Foundation instance but only reports issues.
+This example will publish the status of all the NSX transport nodes in a VMware Cloud Foundation instance but only reports issues.
 
 ### Example 3
 
 ```powershell
-Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+Publish-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will publish the BGP status for the NSX transport nodes in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
+This example will publish the status of all the NSX transport nodes in a VMware Cloud Foundation instance for a specified workload domain.
 
 ### Example 4
 
 ```powershell
-Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
+Publish-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
 ```
 
-This example will generate a json for the status of all NSX transport nodes in a VMware Cloud Foundation instance.
-and saves it under F:\Reporting with filename <timestamp>-nsxttransportnode-status.json
+This example will generate a json for the status of all the NSX transport nodes in a VMware Cloud Foundation instance.
+and saves it under the specified report path with filename `<timestamp>-nsxttransportnode-status.json`
 
 ## Parameters
 

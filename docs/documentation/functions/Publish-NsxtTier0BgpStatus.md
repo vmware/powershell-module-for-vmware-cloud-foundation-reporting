@@ -9,13 +9,13 @@ Request and publish the BGP status for the NSX Tier-0 gateways.
 ### All-WorkloadDomains
 
 ```powershell
-Publish-NsxtTier0BgpStatus -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-NsxtTier0BgpStatus [-server] <String> [-user] <String> [-pass] <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-NsxtTier0BgpStatus -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-NsxtTier0BgpStatus [-server] <String> [-user] <String> [-pass] <String> [-workloadDomain] <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ## Description
@@ -23,15 +23,15 @@ Publish-NsxtTier0BgpStatus -server <String> -user <String> -pass <String> -workl
 The `Publish-NsxtTier0BgpStatus` cmdlet checks the BGP status for the NSX Tier-0 gateways in a VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Performs checks on the BGP status and outputs the results
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Performs checks on the BGP status and outputs the results.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+Publish-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
 This example will publish the BGP status for all NSX Tier-0 gateways in a VMware Cloud Foundation instance.
@@ -39,7 +39,7 @@ This example will publish the BGP status for all NSX Tier-0 gateways in a VMware
 ### Example 2
 
 ```powershell
-Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+Publish-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
 This example will publish the BGP status for all NSX Tier-0 gateways in a VMware Cloud Foundation instance but only for the failed items.
@@ -47,19 +47,19 @@ This example will publish the BGP status for all NSX Tier-0 gateways in a VMware
 ### Example 3
 
 ```powershell
-Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+Publish-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will publish the BGP status for the NSX Tier-0 gateways in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
+This example will publish the BGP status for the NSX Tier-0 gateways in a VMware Cloud Foundation instance for a specified workload domain.
 
 ### Example 4
 
 ```powershell
-Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
+Publish-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
 ```
 
 This example will generate a json for the BGP status for all NSX Tier-0 gateways in a VMware Cloud Foundation instance.
-and saves it under F:\Reporting with filename <timestamp>-nsxttier0bgp-status.json
+and saves it under the specified report path with filename `<timestamp>-nsxttier0bgp-status.json`
 
 ## Parameters
 

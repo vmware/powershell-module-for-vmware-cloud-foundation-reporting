@@ -35,7 +35,7 @@ The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass
 Publish-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a all workload domains.
+This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for all workload domains.
 
 ### Example 2
 
@@ -43,7 +43,7 @@ This example will return alarms from all ESX hosts in vCenter managed by SDDC Ma
 Publish-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
-This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a all workload domains but only for the failed items.
+This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for all workload domains but only reports issues.
 
 ### Example 3
 
@@ -51,7 +51,7 @@ This example will return alarms from all ESX hosts in vCenter managed by SDDC Ma
 Publish-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a workload domain named [workload_domain_name].
+This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a specified workload domain.
 
 ## Parameters
 
