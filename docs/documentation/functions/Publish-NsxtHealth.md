@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the NSX Health data from the SoS JSON output.
+Formats the NSX health data from the SOS JSON output.
 
 ## Syntax
 
@@ -12,39 +12,39 @@ Publish-NsxtHealth [-json] <String> [-html] [-failureOnly] [<CommonParameters>]
 
 ## Description
 
-The `Publish-NsxtHealth` cmdlet formats the NSX Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-NsxtHealth` cmdlet formats the NSX health data from the SOS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-NsxtHealth -json <file-name>
+Publish-NsxtHealth -json [file_name]
 ```
 
-This example extracts and formats the NSX Health data as a PowerShell object from the JSON file.
+This example extracts and formats the NSX health data as a PowerShell object from the JSON file.
 
 ### Example 2
 
 ```powershell
-Publish-NsxtHealth -json <file-name> -html
+Publish-NsxtHealth -json [file_name] -html
 ```
 
-This example extracts and formats the NSX Health data as an HTML object from the JSON file.
+This example extracts and formats the NSX health data as an HTML object from the JSON file.
 
 ### Example 3
 
 ```powershell
-Publish-NsxtHealth -json <file-name> -failureOnly
+Publish-NsxtHealth -json [file_name] -failureOnly
 ```
 
-This example extracts and formats the NSX Health data as a PowerShell object from the JSON file for only the failed items.
+This example extracts and formats the NSX health data as a PowerShell object from the JSON file for only the failed items.
 
 ## Parameters
 
 ### -json
 
-The path to the JSON file containing the SoS Health Summary data.
+The path to the JSON file containing the SOS health summary data.
 
 ```yaml
 Type: String

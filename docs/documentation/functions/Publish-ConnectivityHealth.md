@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the connectivity health data from the SoS JSON output.
+Formats the connectivity health data from the SOS JSON output.
 
 ## Syntax
 
@@ -12,7 +12,7 @@ Publish-ConnectivityHealth [-json] <String> [-html] [-failureOnly] [<CommonParam
 
 ## Description
 
-The `Publish-ConnectivityHealth` cmdlet formats the connectivity health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-ConnectivityHealth` cmdlet formats the connectivity health data from the SOS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
@@ -44,7 +44,7 @@ This example extracts and formats the connectivity health data as a PowerShell o
 
 ### -json
 
-The path to the JSON file containing the SoS Health Summary data.
+The path to the JSON file containing the SOS health summary data.
 
 ```yaml
 Type: String
