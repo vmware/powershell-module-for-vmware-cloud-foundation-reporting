@@ -46,7 +46,7 @@ This example runs a health check for a specific workload domain within a VMware 
 Invoke-VcfHealthReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -sddcManagerLocalUser [local_username] -sddcManagerLocalPass [local_password] -reportPath [report_path] -allDomains -failureOnly
 ```
 
-This example runs a health check across a VMware Cloud Foundation instance but only ouputs issues to the HTML report.
+This example runs a health check across a VMware Cloud Foundation instance but only reports issues.
 
 ## Parameters
 

@@ -39,10 +39,10 @@ This example checks the component connectivity for all workload domains across t
 ### Example 2
 
 ```powershell
-Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain sfo-w01
+Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example checks the component connectivity for a single workload domain in a VMware Cloud Foundation instance.
+This example checks the component connectivity for a specified workload domain in a VMware Cloud Foundation instance.
 
 ### Example 3
 

@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the Password Health data from the SoS JSON output.
+Formats the password health data from the SOS JSON output.
 
 ## Syntax
 
@@ -12,39 +12,39 @@ Publish-PasswordHealth [-json] <String> [-html] [-failureOnly] [<CommonParameter
 
 ## Description
 
-The `Publish-PasswordHealth` cmdlet formats the Password Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-PasswordHealth` cmdlet formats the password health data from the SOS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-PasswordHealth -json <file-name>
+Publish-PasswordHealth -json [file_name]
 ```
 
-This example extracts and formats the Password Health data as a PowerShell object from the JSON file.
+This example extracts and formats the password health data as a PowerShell object from the JSON file.
 
 ### Example 2
 
 ```powershell
-Publish-PasswordHealth -json <file-name> -html
+Publish-PasswordHealth -json [file_name] -html
 ```
 
-This example extracts and formats the Password Health data as an HTML object from the JSON file.
+This example extracts and formats the password health data as an HTML object from the JSON file.
 
 ### Example 3
 
 ```powershell
-Publish-PasswordHealth -json <file-name> -failureOnly
+Publish-PasswordHealth -json [file_name] -failureOnly
 ```
 
-This example extracts and formats the Password Health data as a PowerShell object from the JSON file for only the failed items.
+This example extracts and formats the password health data as a PowerShell object from the JSON file for only the failed items.
 
 ## Parameters
 
 ### -json
 
-The path to the JSON file containing the SoS Health Summary data.
+The path to the JSON file containing the SOS health summary data.
 
 ```yaml
 Type: String

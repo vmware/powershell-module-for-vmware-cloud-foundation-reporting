@@ -54,7 +54,7 @@ This example checks NSX health outside the SOS Utility for a a specified workloa
 Publish-NsxtHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
-This example checks NSX health outside the SOS Utility for all workload domains across the VMware Cloud Foundation instance but for only the failed items.
+This example checks NSX health outside the SOS Utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
 
 ### Example 4

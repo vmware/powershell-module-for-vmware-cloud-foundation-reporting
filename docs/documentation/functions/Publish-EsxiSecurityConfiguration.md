@@ -35,7 +35,7 @@ The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass
 Publish-EsxiSecurityConfiguration [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will return ESX security details from all clusters in vCenter managed by SDDC Manager for a all workload domains.
+This example will return ESX security details from all clusters in vCenter managed by SDDC Manager for all workload domains.
 
 ### Example 2
 

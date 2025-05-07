@@ -50,7 +50,7 @@ This example checks NSX health for a specified workload domain in a VMware Cloud
 Publish-NsxtCombinedHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
-This example checks NSX health for all workload domains across the VMware Cloud Foundation instance but only for the failed items.
+This example checks NSX health for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
 ## Parameters
 
@@ -104,7 +104,7 @@ Accept wildcard characters: False
 
 ### -json
 
-{{ Fill json Description }}
+The path to the JSON file containing the SOS health summary data.
 
 ```yaml
 Type: String
