@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the Hardware Compatibility data from the SoS JSON output.
+Formats the Hardware Compatibility data from the SOS JSON output.
 
 ## Syntax
 
@@ -12,7 +12,7 @@ Publish-HardwareCompatibilityHealth [-json] <String> [-html] [-failureOnly] [<Co
 
 ## Description
 
-The `Publish-HardwareCompatibilityHealth` cmdlet formats the hardware compatibility data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-HardwareCompatibilityHealth` cmdlet formats the hardware compatibility data from the SOS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
@@ -44,7 +44,7 @@ This example extracts and formats the hardware compatibility data as a PowerShel
 
 ### -json
 
-The path to the JSON file containing the SoS health summary data.
+The path to the JSON file containing the SOS health summary data.
 
 ```yaml
 Type: String

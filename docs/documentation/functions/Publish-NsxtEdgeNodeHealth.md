@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the NSX Edge Node Health data from the SoS JSON output.
+Formats the NSX Edge Node health data from the SOS JSON output.
 
 ## Syntax
 
@@ -12,39 +12,39 @@ Publish-NsxtEdgeNodeHealth [-json] <String> [-html] [-failureOnly] [<CommonParam
 
 ## Description
 
-The `Publish-NsxtEdgeNodeHealth` cmdlet formats the NSX Edge Node Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-NsxtEdgeNodeHealth` cmdlet formats the NSX Edge Node health data from the SOS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-NsxtEdgeNodeHealth -json <file-name>
+Publish-NsxtEdgeNodeHealth -json [file_name]
 ```
 
-This example extracts and formats the NSX Edge Node Health data as a PowerShell object from the JSON file.
+This example extracts and formats the NSX Edge Node health data as a PowerShell object from the JSON file.
 
 ### Example 2
 
 ```powershell
-Publish-NsxtEdgeNodeHealth -json <file-name> -html
+Publish-NsxtEdgeNodeHealth -json [file_name] -html
 ```
 
-This example extracts and formats the NSX Edge Node Health data as an HTML object from the JSON file.
+This example extracts and formats the NSX Edge Node health data as an HTML object from the JSON file.
 
 ### Example 3
 
 ```powershell
-Publish-NsxtEdgeNodeHealth -json <file-name> -failureOnly
+Publish-NsxtEdgeNodeHealth -json [file_name] -failureOnly
 ```
 
-This example extracts and formats the NSX Edge Node Health data as a PowerShell object from the JSON file for only the failed items.
+This example extracts and formats the NSX Edge Node health data as a PowerShell object from the JSON file for only the failed items.
 
 ## Parameters
 
 ### -json
 
-The path to the JSON file containing the SoS Health Summary data.
+The path to the JSON file containing the SOS health summary data.
 
 ```yaml
 Type: String
