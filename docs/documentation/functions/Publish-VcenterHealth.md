@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the vCenter Server Health data from the SoS JSON output.
+Formats the vCenter health data from the SOS JSON output.
 
 ## Syntax
 
@@ -12,39 +12,39 @@ Publish-VcenterHealth [-json] <String> [-html] [-failureOnly] [<CommonParameters
 
 ## Description
 
-The `Publish-VcenterHealth` cmdlet formats the vCenter Server Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-VcenterHealth` cmdlet formats the vCenter health data from the SOS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-VcenterHealth -json <file-name>
+Publish-VcenterHealth -json [file_name]
 ```
 
-This example extracts and formats the vCenter Server Health data as a PowerShell object from the JSON file.
+This example extracts and formats the vCenter health data as a PowerShell object from the JSON file.
 
 ### Example 2
 
 ```powershell
-Publish-VcenterHealth -json <file-name> -html
+Publish-VcenterHealth -json [file_name] -html
 ```
 
-This example extracts and formats the vCenter Server Health data as an HTML object from the JSON file.
+This example extracts and formats the vCenter health data as an HTML object from the JSON file.
 
 ### Example 3
 
 ```powershell
-Publish-VcenterHealth -json <file-name> -failureOnly
+Publish-VcenterHealth -json [file_name] -failureOnly
 ```
 
-This example extracts and formats the vCenter Server Health data as a PowerShell object from the JSON file for only the failed items.
+This example extracts and formats the vCenter health data as a PowerShell object from the JSON file for only the failed items.
 
 ## Parameters
 
 ### -json
 
-The path to the JSON file containing the SoS Health Summary data.
+The path to the JSON file containing the SOS health summary data.
 
 ```yaml
 Type: String

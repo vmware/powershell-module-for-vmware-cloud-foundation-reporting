@@ -9,56 +9,56 @@ Request and publish the storage capacity status.
 ### All-WorkloadDomains
 
 ```powershell
-Publish-StorageCapacityHealth -server <String> -user <String> -pass <String> -localUser <String> -localPass <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-StorageCapacityHealth [-server] <String> [-user] <String> [-pass] <String> [-localUser] <String> [-localPass] <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-StorageCapacityHealth -server <String> -user <String> -pass <String> -localUser <String> -localPass <String> -workloadDomain <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-StorageCapacityHealth [-server] <String> [-user] <String> [-pass] <String> [-localUser] <String> [-localPass] <String> [-workloadDomain] <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ## Description
 
-The `Publish-StorageCapacityHealth` cmdlet checks the storage usage status for SDDC Manager, vCenter Server, Datastores and ESXi hosts, in a VMware Cloud Foundation instance and prepares the data to be published to an HTML report or plain text to console.
+The `Publish-StorageCapacityHealth` cmdlet checks the storage usage status for SDDC Manager, vCenter, datastores and ESX hosts, in a VMware Cloud Foundation instance and prepares the data to be published to an HTML report or plain text to console.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, -`pass`, `-localUser`, and `-localPass` values:
 
-- Validates the network connectivity and authantication to the SDDC Manager instance
-- Performs checks on the storage usage status and outputs the results
+- Validates the network connectivity and authentication to the SDDC Manager instance.
+- Performs checks on the storage usage status and outputs the results.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -allDomains
+Publish-StorageCapacityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_user_password] -allDomains
 ```
 
-This example will publish storage usage status for SDDC Manager, vCenter Server instances, ESXi hosts, and datastores in a VMware Cloud Foundation instance
+This example will publish storage usage status for SDDC Manager, vCenter instances, ESX hosts, and datastores in a VMware Cloud Foundation instance.
 
 ### Example 2
 
 ```powershell
-Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -allDomains -failureOnly
+Publish-StorageCapacityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_user_password] -allDomains -failureOnly
 ```
 
-This example will publish storage usage status for SDDC Manager, vCenter Server instances, ESXi hosts, and datastores in a VMware Cloud Foundation instance but only for the failed items.
+This example will publish storage usage status for SDDC Manager, vCenter instances, ESX hosts, and datastores in a VMware Cloud Foundation instance but only reports issues.
 
 ### Example 3
 
 ```powershell
-Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -workloadDomain sfo-w01
+Publish-StorageCapacityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_user_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance
+This example will publish storage usage status for a specified workload domain in a VMware Cloud Foundation instance.
 
 ### Example 4
 
 ```powershell
-Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -workloadDomain sfo-w01 -outputJson F:\Reporting
+Publish-StorageCapacityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_user_password] -workloadDomain sfo-w01 -outputJson [report_path]
 ```
 
-This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance and saves it as JSON under F:\Reporting with filename <timestamp>-storagecapacityhealth-status.json
+This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance and saves it as JSON under the specified report path with filename `<timestamp>-storagecapacityhealth-status.json`.
 
 ## Parameters
 

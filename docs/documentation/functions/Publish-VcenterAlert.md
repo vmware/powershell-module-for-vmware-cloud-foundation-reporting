@@ -2,56 +2,56 @@
 
 ## Synopsis
 
-Returns alarms from vCenter Server managed by SDDC Manager.
+Returns alarms from vCenter managed by SDDC Manager.
 
 ## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-VcenterAlert -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [<CommonParameters>]
+Publish-VcenterAlert [-server] <String> [-user] <String> [-pass] <String> [-allDomains] [-failureOnly] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-VcenterAlert -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [<CommonParameters>]
+Publish-VcenterAlert [-server] <String> [-user] <String> [-pass] <String> [-workloadDomain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
 ## Description
 
-The `Publish-VcenterAlert` cmdlet returns all alarms from vCenter Server managed by SDDC Manager.
+The `Publish-VcenterAlert` cmdlet returns all alarms from vCenter managed by SDDC Manager.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the vCenter Server instance
-- Validates the authentication to vCenter Server with credentials from SDDC Manager
-- Collects the alerts from vCenter Server
+- Validates that network connectivity is available to the vCenter instance.
+- Validates the authentication to vCenter with credentials from SDDC Manager.
+- Collects the alerts from vCenter.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+Publish-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will return alarms from a vCenter Server managed by SDDC Manager for all workload domains.
+This example will return alarms from a vCenter managed by SDDC Manager for all workload domains.
 
 ### Example 2
 
 ```powershell
-Publish-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+Publish-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will return alarms from a vCenter Server managed by SDDC Manager for all workload domains but only for the failed items.
+This example will return alarms from a vCenter managed by SDDC Manager for all workload domains but only reports issues.
 
 ### Example 3
 
 ```powershell
-Publish-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Publish-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will return alarms from a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+This example will return alarms from a vCenter managed by SDDC Manager for a specified workload domain.
 
 ## Parameters
 
