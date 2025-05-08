@@ -2,65 +2,64 @@
 
 ## Synopsis
 
-Request and publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes
-managed by SDDC Manager.
+Requests and publishes the snapshot status for the SDDC Manager, vCenter instances, and NSX Edge Nodes managed by SDDC Manager.
 
 ## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-SnapshotStatus -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-SnapshotStatus [-server] <String> [-user] <String> [-pass] <String> [-allDomains] [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomains
 
 ```powershell
-Publish-SnapshotStatus -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
+Publish-SnapshotStatus [-server] <String> [-user] <String> [-pass] <String> [-workloadDomain] <String> [-failureOnly] [-outputJson <String>] [<CommonParameters>]
 ```
 
 ## Description
 
-The `Publish-SnapshotStatus` cmdlet checks the snapshot status for SDDC Manager, vCenter Server instances, and NSX Edge nodes in a VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
+The `Publish-SnapshotStatus` cmdlet checks the snapshot status for SDDC Manager, vCenter instances, and NSX Edge Nodes in a VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Performs checks on the snapshot status and outputs the results
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Performs checks on the snapshot status and outputs the results.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+Publish-SnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.
+This example will publish the snapshot status for the SDDC Manager, vCenter instances, and NSX Edge Nodes managed by SDDC Manager.
 
 ### Example 2
 
 ```powershell
-Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+Publish-SnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
-This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager but only failed items
+This example will publish the snapshot status for the SDDC Manager, vCenter instances, and NSX Edge Nodes managed by SDDC Manager but only reports issues.
 
 ### Example 3
 
 ```powershell
-Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+Publish-SnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will publish the snapshot status for the SDDC Manager, vCenter Server instance, and NSX Edge nodes managed by SDDC Manager for a workload domain named sfo-w01.
+This example will publish the snapshot status for the SDDC Manager, vCenter instance, and NSX Edge Nodes managed by SDDC Manager for a specified workload domain.
 
 ### Example 4
 
 ```powershell
-Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
+Publish-SnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
 ```
 
-This example will generate a json for the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.
-and saves it under F:\Reporting with filename <timestamp>-snapshot-status.json
+This example will generate a json for the snapshot status for the SDDC Manager, vCenter instances, and NSX Edge Nodes managed by SDDC Manager
+and saves it under the specified report path with filename `<timestamp>-snapshot-status.json`
 
 ## Parameters
 
@@ -187,6 +186,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 The cmdlet will not publish the snapshot status for NSX Local Manager cluster appliances managed by SDDC Manager.
-Snapshots are not recommended for NSX Manager cluster appliances and are disabled by default.
+Snapshots are not recommended for NSX appliances and are disabled by default.
 
 ## RELATED LINKS
