@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the Service Health data from the SoS JSON output.
+Formats the service health data from the SOS JSON output.
 
 ## Syntax
 
@@ -12,39 +12,39 @@ Publish-ServiceHealth [-json] <String> [-html] [-failureOnly] [<CommonParameters
 
 ## Description
 
-The `Publish-ServiceHealth` cmdlet formats the Service Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-ServiceHealth` cmdlet formats the service health data from the SOS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-ServiceHealth -json <file-name>
+Publish-ServiceHealth -json [file_name]
 ```
 
-This example extracts and formats the Service Health data as a PowerShell object from the JSON file.
+This example extracts and formats the service health data as a PowerShell object from the JSON file.
 
 ### Example 2
 
 ```powershell
-Publish-ServiceHealth -json <file-name> -html
+Publish-ServiceHealth -json [file_name] -html
 ```
 
-This example extracts and formats the Service Health data as an HTML object from the JSON file.
+This example extracts and formats the service health data as an HTML object from the JSON file.
 
 ### Example 3
 
 ```powershell
-Publish-ServiceHealth -json <file-name> -failureOnly
+Publish-ServiceHealth -json [file_name] -failureOnly
 ```
 
-This example extracts and formats the Service Health data as a PowerShell object from the JSON file for only the failed items.
+This example extracts and formats the service health data as a PowerShell object from the JSON file for only the failed items.
 
 ## Parameters
 
 ### -json
 
-The path to the JSON file containing the SoS Health Summary data.
+The path to the JSON file containing the SOS health summary data.
 
 ```yaml
 Type: String

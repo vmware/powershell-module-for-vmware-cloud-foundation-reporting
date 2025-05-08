@@ -15,15 +15,15 @@ Publish-SddcManagerFreePool [-server] <String> [-user] <String> [-pass] <String>
 The `Publish-SddcManagerFreePool` cmdlet returns SDDC Manager free pool information in HTML format.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates the network connectivity and authentication to the SDDC Manager instance
-- Publishes information
+- Validates the network connectivity and authentication to the SDDC Manager.
+- Publishes information.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Publish-SddcManagerFreePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
 ```
 
 This example will return the free pool health from SDDC Manager.
@@ -31,19 +31,18 @@ This example will return the free pool health from SDDC Manager.
 ### Example 2
 
 ```powershell
-Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Publish-SddcManagerFreePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -failureOnly
 ```
 
-This example will return the free pool health from SDDC Manager and return the failures only.
+This example will return the free pool health from SDDC Manager but only reports issues.
 
 ### Example 3
 
 ```powershell
-Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -outputJson F:\Reporting
+Publish-SddcManagerFreePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -outputJson [report_path]
 ```
 
-This example will generate a json for the status the free pool health from SDDC Manager and saves it under 
-F:\Reporting with filename <timestamp>-sddc-manager-free-pool-status.json
+This example will generate a json for the status the free pool health from SDDC Manager and saves it under the specified report path with filename `<timestamp>-sddc-manager-free-pool-status.json`
 
 ## Parameters
 
