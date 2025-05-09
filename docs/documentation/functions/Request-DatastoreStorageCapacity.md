@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Checks the datastore usage in all vCenter Server instances.
+Checks the datastore usage in all vCenter instances.
 
 ## Syntax
 
@@ -15,28 +15,28 @@ Request-DatastoreStorageCapacity [-server] <String> [-user] <String> [-pass] <St
 The `Request-DatastoreStorageCapacity` cmdlet checks the datastore usage in all vCenters.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Validates that network connectivity is available to the vCenter Server instance
-- Gathers the details for each vCenter Server
-- Collects information about datastore usage
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Validates that network connectivity is available to the vCenter instance.
+- Gathers the details for each vCenter.
+- Collects information about datastore usage.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-DatastoreStorageCapacity -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will check datastores on all vCenter Servers managed by SDDC Manager in a VMware Cloud Foundation instance but only failed items.
+This example will check datastores on a vCenter managed by SDDC Manager in a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-DatastoreStorageCapacity -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will check datastore on a vCenter Servers managed by SDDC Manager for a workload domain.
+This example will check datastores on a vCenter managed by SDDC Manager in a VMware Cloud Foundation instance in a specified workload domain and will only report issues.
 
 ## Parameters
 

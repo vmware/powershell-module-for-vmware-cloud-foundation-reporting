@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Gets cluster DRS rules from a vCenter Server instance.
+Gets cluster DRS rules from a vCenter instance.
 
 ## Syntax
 
@@ -12,22 +12,22 @@ Request-ClusterDrsRule [-server] <String> [-user] <String> [-pass] <String> [-do
 
 ## Description
 
-The `Request-ClusterDrsRule` cmdlets gets the cluster DRS rules for a vCenter Server instance.
+The `Request-ClusterDrsRule` cmdlets gets the cluster DRS rules for a vCenter instance.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Validates that network connectivity is available to the vCenter Server instance
-- Gathers the cluster DRS rules from vCenter Server
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Validates that network connectivity is available to the vCenter instance.
+- Gathers the cluster DRS rules from vCenter.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-ClusterDrsRule -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
+Request-ClusterDrsRule -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example gets the cluster DRS rules for a vCenter Server instance based on the workload domain provided.
+This example gets the cluster DRS rules for a vCenter Server instance based on a specified workload domain.
 
 ## Parameters
 
