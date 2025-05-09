@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the vSAN Health data from the SoS JSON output.
+Formats the vSAN health data from the SOS JSON output.
 
 ## Syntax
 
@@ -12,39 +12,39 @@ Publish-VsanHealth [-json] <String> [-html] [-failureOnly] [<CommonParameters>]
 
 ## Description
 
-The `Publish-VsanHealth` cmdlet formats the vSAN Health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-VsanHealth` cmdlet formats the vSAN health data from the SOS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-VsanHealth -json <file-name>
+Publish-VsanHealth -json [file_name]
 ```
 
-This example extracts and formats the vSAN Health data as a PowerShell object from the JSON file.
+This example extracts and formats the vSAN health data as a PowerShell object from the JSON file.
 
 ### Example 2
 
 ```powershell
-Publish-VsanHealth -json <file-name> -html
+Publish-VsanHealth -json [file_name] -html
 ```
 
-This example extracts and formats the vSAN Health data as an HTML object from the JSON file.
+This example extracts and formats the vSAN health data as an HTML object from the JSON file.
 
 ### Example 3
 
 ```powershell
-Publish-VsanHealth -json <file-name> -failureOnly
+Publish-VsanHealth -json [file_name] -failureOnly
 ```
 
-This example extracts and formats the vSAN Health data as a PowerShell object from the JSON file for only the failed items.
+This example extracts and formats the vSAN health data as a PowerShell object from the JSON file for only the failed items.
 
 ## Parameters
 
 ### -json
 
-The path to the JSON file containing the SoS Health Summary data.
+The path to the JSON file containing the SOS health summary data.
 
 ```yaml
 Type: String

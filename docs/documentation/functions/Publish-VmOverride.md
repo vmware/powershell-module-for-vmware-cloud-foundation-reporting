@@ -2,48 +2,48 @@
 
 ## Synopsis
 
-Publish VM Override information in HTML format.
+Publish VM override information in HTML format.
 
 ## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Publish-VmOverride -server <String> -user <String> -pass <String> [-allDomains] [<CommonParameters>]
+Publish-VmOverride [-server] <String> [-user] <String> [-pass] <String> [-allDomains] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-VmOverride -server <String> -user <String> -pass <String> -workloadDomain <String> [<CommonParameters>]
+Publish-VmOverride [-server] <String> [-user] <String> [-pass] <String> [-workloadDomain] <String> [<CommonParameters>]
 ```
 
 ## Description
 
-The `Publish-VmOverride` cmdlet returns VM Override information in HTML format.
+The `Publish-VmOverride` cmdlet returns VM override information in HTML format.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the vCenter Server instance
-- Validates the authentication to vCenter Server with credentials from SDDC Manager
-- Publishes information
+- Validates that network connectivity is available to the vCenter instance.
+- Validates the authentication to vCenter with credentials from SDDC Manager.
+- Publishes information.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+Publish-VmOverride -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will return VM Override details from all clusters in vCenter Server managed by SDDC Manager for all workload domains.
+This example will return VM override details from all clusters in vCenter managed by SDDC Manager for all workload domains.
 
 ### Example 2
 
 ```powershell
-Publish-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+Publish-VmOverride -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will return VM Override details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+This example will return VM override details from all clusters in vCenter managed by SDDC Manager for a specified workload domain.
 
 ## Parameters
 

@@ -9,13 +9,13 @@ Publish the status of virtual machines with connected CD-ROMs in a workload doma
 ### All-WorkloadDomains
 
 ```powershell
-Publish-VmConnectedCdrom -server <String> -user <String> -pass <String> [-allDomains] [-outputJson <String>]  [<CommonParameters>]
+Publish-VmConnectedCdrom [-server] <String> [-user] <String> [-pass] <String> [-allDomains] [-outputJson <String>]  [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Publish-VmConnectedCdrom -server <String> -user <String> -pass <String> -workloadDomain <String> [-outputJson <String>]  [<CommonParameters>]
+Publish-VmConnectedCdrom [-server] <String> [-user] <String> [-pass] <String> [-workloadDomain] <String> [-outputJson <String>]  [<CommonParameters>]
 ```
 
 ## Description
@@ -23,16 +23,16 @@ Publish-VmConnectedCdrom -server <String> -user <String> -pass <String> -workloa
 The `Publish-VmConnectedCdrom` cmdlet returns the status of virtual machines with connected CD-ROMS in a workload domain in HTML format.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the vCenter Server instance
-- Validates the authentication to vCenter Server with credentials from SDDC Manager
-- Publishes information
+- Validates that network connectivity is available to the vCenter instance.
+- Validates the authentication to vCenter with credentials from SDDC Manager.
+- Publishes information.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+Publish-VmConnectedCdrom -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
 This example will returns the status of virtual machines with connected CD-ROMs in all workload domains.
@@ -40,19 +40,19 @@ This example will returns the status of virtual machines with connected CD-ROMs 
 ### Example 2
 
 ```powershell
-Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+Publish-VmConnectedCdrom -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will returns the status of virtual machines with connected CD-ROMs in a workload domain.
+This example will returns the status of virtual machines with connected CD-ROMs a specified workload domain.
 
 ### Example 3
 
 ```powershell
-Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
+Publish-VmConnectedCdrom -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
 ```
 
 This example will generate a json with the status of virtual machines with connected CD-ROMs in all workload domains
-and saves it under F:\Reporting with filename <timestamp>-cdrom-status.json
+and saves it under the specified report path with filename `<timestamp>-cdrom-status.json`
 
 ## Parameters
 
