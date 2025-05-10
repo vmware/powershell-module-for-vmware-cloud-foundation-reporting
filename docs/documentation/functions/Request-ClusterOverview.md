@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns overview of vSphere.
+Returns an overview of vSphere.
 
 ## Syntax
 
@@ -15,16 +15,16 @@ Request-ClusterOverview [-server] <String> [-user] <String> [-pass] <String> [-a
 The `Request-ClusterOverview` cmdlet returns an overview of the vSphere environment managed by SDDC Manager.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity and authentication to the SDDC Manager instance
-- Validates that network connectivity and authentication to the vCenter Server instances
-- Collects the vSphere overview detail
+- Validates that network connectivity and authentication to the SDDC Manager instance.
+- Validates that network connectivity and authentication to the vCenter instances.
+- Collects the vSphere overview detail.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-ClusterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Request-ClusterOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
 ```
 
 This example will return an overview of the vSphere environment managed by the SDDC Manager instance.
@@ -32,7 +32,7 @@ This example will return an overview of the vSphere environment managed by the S
 ### Example 2
 
 ```powershell
-Request-ClusterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
+Request-ClusterOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -anonymized
 ```
 
 This example will return an overview of the vSphere environment managed by the SDDC Manager instance, but will anonymize the output.

@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Gets cluster configuration from a vCenter Server instance.
+Gets cluster configuration from a vCenter instance.
 
 ## Syntax
 
@@ -12,22 +12,22 @@ Request-ClusterConfiguration [-server] <String> [-user] <String> [-pass] <String
 
 ## Description
 
-The `Request-ClusterConfiguration` cmdlets gets the cluster configuration for a vCenter Server instance.
+The `Request-ClusterConfiguration` cmdlets gets the cluster configuration for a vCenter instance.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Validates that network connectivity is available to the vCenter Server instance
-- Gathers the cluster details from vCenter Server
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Validates that network connectivity is available to the vCenter instance.
+- Gathers the cluster details from vCenter.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-ClusterConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
+Request-ClusterConfiguration -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example gets the cluster configuration for a vCenter Server instance based on the workload domain provided.
+This example gets the cluster configuration for a vCenter instance based on a specified workload domain.
 
 ## Parameters
 
