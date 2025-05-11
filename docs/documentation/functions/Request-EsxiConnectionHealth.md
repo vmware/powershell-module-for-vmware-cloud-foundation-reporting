@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns the connection status of ESXi hosts in a workload domain.
+Returns the connection status of ESX hosts in a workload domain.
 
 ## Syntax
 
@@ -12,30 +12,30 @@ Request-EsxiConnectionHealth [-server] <String> [-user] <String> [-pass] <String
 
 ## Description
 
-The `Request-EsxiConnectionHealth` cmdlet returns the connection status of ESXi hosts in a workload domain.
+The `Request-EsxiConnectionHealth` cmdlet returns the connection status of ESX hosts in a workload domain.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Validates that network connectivity is available to the vCenter Server instance
-- Gathers the connection status of ESXi hosts in a workload domain.
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Validates that network connectivity is available to the vCenter instance.
+- Gathers the connection status of ESX hosts in a workload domain.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-EsxiConnectionHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example returns the connection status of ESXi hosts in a workload domain.
+This example returns the connection status of ESX hosts in a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-EsxiConnectionHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example returns the connection status of ESXi hosts in a workload domain but only reports issues.
+This example returns the connection status of ESX hosts in a specified workload domain but only reports issues.
 
 ## Parameters
 
