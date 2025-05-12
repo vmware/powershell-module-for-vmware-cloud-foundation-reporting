@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Checks the disk usage for ESXi hosts.
+Checks the disk usage for ESX hosts.
 
 ## Syntax
 
@@ -12,30 +12,30 @@ Request-EsxiStorageCapacity [-server] <String> [-user] <String> [-pass] <String>
 
 ## Description
 
-The `Request-EsxiStorageCapacity` cmdlets checks the disk space usage on ESXi hosts.
+The `Request-EsxiStorageCapacity` cmdlets checks the disk space usage on ESX hosts.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates network connectivity and authentication to the SDDC Manager instance
-- Collects disk usage information for each ESXi host in the workload domain
-- Checks disk usage against thresholds and outputs the results
+- Validates network connectivity and authentication to the SDDC Manager instance.
+- Collects disk usage information for each ESX host in the workload domain.
+- Checks disk usage against thresholds and outputs the results.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-EsxiStorageCapacity -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will check disk usage for ESXi hosts managed by SDDC Manager for a single workload domain.
+This example will check disk usage for ESX hosts managed by SDDC Manager for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-EsxiStorageCapacity -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will check disk usage for ESXi hosts managed by SDDC Manager for a single workload domain but only reports issues.
+This example will check disk usage for ESX hosts managed by SDDC Manager for a specified workload domain but only reports issues.
 
 ## Parameters
 

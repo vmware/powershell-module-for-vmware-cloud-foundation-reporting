@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Gets ESXi security configuration from a vCenter Server instance.
+Gets ESX security configuration from a vCenter instance.
 
 ## Syntax
 
@@ -12,22 +12,22 @@ Request-EsxiSecurityConfiguration [-server] <String> [-user] <String> [-pass] <S
 
 ## Description
 
-The `Request-EsxiSecurityConfiguration` cmdlets gets ESXi security configuration for a vCenter Server instance.
+The `Request-EsxiSecurityConfiguration` cmdlets gets ESX security configuration for a vCenter instance.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Validates that network connectivity is available to the vCenter Server instance
-- Gathers the ESXi security configuration from vCenter Server
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Validates that network connectivity is available to the vCenter instance.
+- Gathers the ESX security configuration from vCenter.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-EsxiSecurityConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
+Request-EsxiSecurityConfiguration -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example gets the ESXi security configurationfor a vCenter Server instance based on the workload domain provided.
+This example gets the ESX security configuration for a vCenter instance based on a specified workload domain.
 
 ## Parameters
 

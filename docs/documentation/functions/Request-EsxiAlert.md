@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns Alarms from all ESXi hosts in vCenter Server instance.
+Returns alarms from all ESX hosts in a vCenter instance.
 
 ## Syntax
 
@@ -12,30 +12,30 @@ Request-EsxiAlert [-server] <String> [-user] <String> [-pass] <String> [[-domain
 
 ## Description
 
-The `Request-EsxiAlert` cmdlet returns all alarms from all ESXi hosts in vCenter Server managed by SDDC Manager.
+The `Request-EsxiAlert` cmdlet returns all alarms from all ESX hosts in vCenter managed by SDDC Manager.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the vCenter Server instance
-- Validates the authentication to vCenter Server with credentials from SDDC Manager
-- Collects the alerts from all ESXi hosts in vCenter Server instance
+- Validates that network connectivity is available to the vCenter instance.
+- Validates the authentication to vCenter with credentials from SDDC Manager.
+- Collects the alerts from all ESX hosts in vCenter instance.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01.
+This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01 but only for the failed items.
+This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a specified workload domain but only reports issues.
 
 ## Parameters
 
