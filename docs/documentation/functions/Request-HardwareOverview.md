@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns Hardware Overview.
+Returns hardware overview.
 
 ## Syntax
 
@@ -15,18 +15,18 @@ Request-HardwareOverview [-server] <String> [-user] <String> [-pass] <String> [<
 The `Request-VcfOverview` cmdlet returns an overview of the hardware in an SDDC Manager instance.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Collects the hardware details
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Collects the hardware details.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-HardwareOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Request-HardwareOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
 ```
 
-This example will return an overview of the SDDC Manager instance.
+This example will return a hardware overview of the SDDC Manager instance.
 
 ## Parameters
 
