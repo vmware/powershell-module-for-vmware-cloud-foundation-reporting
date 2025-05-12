@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Request the snapshot status for NSX Edge nodes.
+Request the snapshot status for NSX edge nodes.
 
 ## Syntax
 
@@ -12,31 +12,31 @@ Request-NsxtEdgeSnapshotStatus [-server] <String> [-user] <String> [-pass] <Stri
 
 ## Description
 
-The `Request-NsxtEdgeSnapshotStatus` cmdlet checks the snapshot status for NSX Edge nodes.
+The `Request-NsxtEdgeSnapshotStatus` cmdlet checks the snapshot status for NSX edge nodes.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates network connectivity and authentication to the SDDC Manager instance
-- Gathers the NSX Manager and NSX Edge node details from the SDDC Manager
-- Validates network connectivity and authentication to the vCenter Server instance
-- Performs checks on the snapshot status and outputs the results
+- Validates network connectivity and authentication to the SDDC Manager instance.
+- Gathers the NSX service and edge node details from the SDDC Manager.
+- Validates network connectivity and authentication to the vCenter instance.
+- Performs checks on the snapshot status and outputs the results.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-NsxtEdgeSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-NsxtEdgeSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will publish the snapshot status for all NSX Edge nodes managed by SDDC Manager for a specific workload domain.
+This example will publish the snapshot status for all NSX edge nodes managed by SDDC Manager for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-NsxtEdgeSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-NsxtEdgeSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will publish the snapshot status for all NSX Edge nodes managed by SDDC Manager for a specific workload domain. but only failed items.
+This example will publish the snapshot status for all NSX edge nodes managed by SDDC Manager for a specified workload domain but only reports issues.
 
 ## Parameters
 
