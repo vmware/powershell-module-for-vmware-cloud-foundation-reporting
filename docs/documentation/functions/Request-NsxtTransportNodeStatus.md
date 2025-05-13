@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns the status of NSX transport nodes managed by an NSX Manager cluster.
+Returns the status of NSX transport nodes managed by NSX.
 
 ## Syntax
 
@@ -12,31 +12,31 @@ Request-NsxtTransportNodeStatus [-server] <String> [-user] <String> [-pass] <Str
 
 ## Description
 
-The `Request-NsxtTransportNodeStatus` cmdlet returns the status NSX transport nodes managed by an NSX Manager cluster.
+The `Request-NsxtTransportNodeStatus` cmdlet returns the status NSX transport nodes managed by NSX.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates network connectivity and authentication to the SDDC Manager instance
-- Gathers the details for the NSX Manager cluster from the SDDC Manager
-- Validates network connectivity and authentication to the NSX Local Manager cluster
-- Collects the status of the transport nodes
+- Validates network connectivity and authentication to the SDDC Manager instance.
+- Gathers the details for NSX from the SDDC Manager.
+- Validates network connectivity and authentication to NSX.
+- Collects the status of the transport nodes.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will return the status of the NSX transport nodes managed by an NSX Manager cluster which is managed by SDDC Manager for a workload domain.
+This example will return the status of the NSX transport nodes managed by NSX which is managed by SDDC Manager for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will return the status of the NSX transport nodes managed by an NSX Manager cluster which is managed by SDDC Manager for a workload domain but only reports issues.
+This example will return the status of the NSX transport nodes managed by NSX which is managed by SDDC Manager for a specified workload domain but only reports issues.
 
 ## Parameters
 
