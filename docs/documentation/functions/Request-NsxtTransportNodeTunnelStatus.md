@@ -12,31 +12,31 @@ Request-NsxtTransportNodeTunnelStatus [-server] <String> [-user] <String> [-pass
 
 ## Description
 
-The `Request-NsxtTransportNodeTunnelStatus` cmdlet returns the status NSX transport nodes tunnels.
+The `Request-NsxtTransportNodeTunnelStatus` cmdlet returns the status of NSX transport nodes tunnels.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates network connectivity and authentication to the SDDC Manager instance
-- Gathers the details for the NSX Manager cluster from the SDDC Manager
-- Validates network connectivity and authentication to the NSX Local Manager cluster
-- Collects the status of the transport node tunnels
+- Validates network connectivity and authentication to the SDDC Manager instance.
+- Gathers the details for NSX from the SDDC Manager.
+- Validates network connectivity and authentication to NSX.
+- Collects the status of the transport node tunnels.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-NsxtTransportNodeTunnelStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will return the status of the NSX transport node tunnels for a workload domain.
+This example will return the status of the NSX transport node tunnels for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-NsxtTransportNodeTunnelStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will return the status of the NSX transport node tunnels for a workload domain but only reports issues.
+This example will return the status of the NSX transport node tunnels for a specified workload domain but only reports issues.
 
 ## Parameters
 

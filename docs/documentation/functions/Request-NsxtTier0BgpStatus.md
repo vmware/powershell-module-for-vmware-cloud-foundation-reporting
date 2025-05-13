@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster.
+Returns the BGP status for all Tier-0 gateways managed by NSX.
 
 ## Syntax
 
@@ -12,31 +12,31 @@ Request-NsxtTier0BgpStatus [-server] <String> [-user] <String> [-pass] <String> 
 
 ## Description
 
-The `Request-NsxtTier0BgpStatus` cmdlet returns the BGP status for all Tier-0 gateways managed by the NSX Manager cluster.
-The cmdlet connects to the NSX Local Manager using the `-server`, `-user`, and `-pass` values:
+The `Request-NsxtTier0BgpStatus` cmdlet returns the BGP status for all Tier-0 gateways managed by NSX.
+The cmdlet connects to NSX using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Validates that network connectivity is available to the NSX Local Manager cluster
-- Gathers the details for the NSX Local Manager cluster
-- Collects the BGP status for all Tier-0s managed by the NSX Local Manager cluster
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Validates that network connectivity is available to NSX.
+- Gathers the details for NSX.
+- Collects the BGP status for all Tier-0 gateways managed by NSX.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain.
+This example will return the BGP status for all Tier-0 gateways managed by NSX which is managed by SDDC Manager for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain but only reports issues.
+This example will return the BGP status for all Tier-0 gateways managed by NSX which is managed by SDDC Manager for a specified workload domain but only reports issues.
 
 ## Parameters
 

@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns the status of the Identity Manager integration for an NSX Manager cluster.
+Returns the status of the identity manager integration for NSX.
 
 ## Syntax
 
@@ -12,31 +12,31 @@ Request-NsxtVidmStatus [-server] <String> [-user] <String> [-pass] <String> [-do
 
 ## Description
 
-The `Request-NsxtVidmStatus` cmdlet returns the status of the Identity Manager integration for an NSX Manager cluster.
+The `Request-NsxtVidmStatus` cmdlet returns the status of the identity manager integration for NSX.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates network connectivity and authentication to the SDDC Manager instanc
-- Gathers the details for the NSX Manager cluster from the SDDC Manager
-- Validates network connectivity and authentication to the NSX Local Manager cluster
-- Collects the Identity Manager integration status details
+- Validates network connectivity and authentication to the SDDC Manager instance.
+- Gathers the details for NSX from the SDDC Manager.
+- Validates network connectivity and authentication to NSX.
+- Collects the identity manager integration status details.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-NsxtVidmStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-NsxtVidmStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will return the status of the Identity Manager integration for an NSX Manager cluster managed by SDDC Manager for a workload domain.
+This example will return the status of the identity manager integration for NSX managed by SDDC Manager for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-NsxtVidmStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-NsxtVidmStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will return the status of the Identity Manager integration for an NSX Manager cluster managed by SDDC Manager for a workload domain but only reports issues.
+This example will return the status of the identity manager integration for NSX managed by SDDC Manager for a specified workload domain but only reports issues.
 
 ## Parameters
 

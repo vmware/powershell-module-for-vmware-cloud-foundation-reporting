@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Gets resource pool details from a vCenter Server instance.
+Gets resource pool details from a vCenter instance.
 
 ## Syntax
 
@@ -12,22 +12,22 @@ Request-ResourcePool [-server] <String> [-user] <String> [-pass] <String> [-doma
 
 ## Description
 
-The `Request-ResourcePool` cmdlets gets the resource pool details for a vCenter Server instance.
+The `Request-ResourcePool` cmdlets gets the resource pool details for a vCenter instance.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Validates that network connectivity is available to the vCenter Server instance
-- Gathers the resource pool details from vCenter Server
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Validates that network connectivity is available to the vCenter instance.
+- Gathers the resource pool details from vCenter.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-ResourcePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
+Request-ResourcePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example gets the resource pool details for a vCenter Server instance based on the workload domain provided.
+This example gets the resource pool details for a vCenter instance based on a specified workload domain.
 
 ## Parameters
 
