@@ -2,43 +2,43 @@
 
 ## Synopsis
 
-Run SoS and save the JSON output.
+Run SOS and save the JSON output.
 
 ## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Request-SoSHealthJson -server <String> -user <String> -pass <String> -reportPath <String> [-allDomains] [<CommonParameters>]
+Request-SoSHealthJson [-server] <String> [-user] <String> [-pass] <String> [-reportPath] <String> [-allDomains] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomain
 
 ```powershell
-Request-SoSHealthJson -server <String> -user <String> -pass <String> -reportPath <String> -workloadDomain <String> [<CommonParameters>]
+Request-SoSHealthJson [-server] <String> [-user] <String> [-pass] <String> [-reportPath] <String> [-workloadDomain] <String> [<CommonParameters>]
 ```
 
 ## Description
 
-The `Request-SoSHealthJson` cmdlet connects to SDDC Manager, runs an SoS Health collection to JSON, and saves the JSON file to the local file system.
+The `Request-SoSHealthJson` cmdlet connects to SDDC Manager, runs an SOS health collection and saves to a JSON file on the local file system.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Reporting\HealthReports -allDomains
+Request-SoSHealthJson -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -reportPath [report_path] -allDomains
 ```
 
-This example runs an SoS Health collection for all domains in the SDDC and saves the JSON output to the local file system.
+This example runs an SOS health collection for all domains in the SDDC and saves the JSON file on the local file system in the specified report path.
 
 ### Example 2
 
 ```powershell
-Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Reporting\HealthReports -workloadDomain sfo-w01
+Request-SoSHealthJson -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name]
 ```
 
-This example runs an SoS Health collection for a workload domain in the SDDC and saves the JSON output to the local file system.
+This example runs an SOS health collection for a specified workload domain in the SDDC and saves the JSON file on the local file system in the specified report path.
 
 ## Parameters
 

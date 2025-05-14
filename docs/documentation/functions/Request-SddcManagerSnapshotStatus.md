@@ -15,17 +15,17 @@ Request-SddcManagerSnapshotStatus [-server] <String> [-user] <String> [-pass] <S
 The `Request-SddcManagerSnapshotStatus` cmdlet checks the snapshot status for SDDC Manager.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates network connectivity and authenticaton to the SDDC Manager instance
-- Gathers the details for the vCenter Server instance from the SDDC Manager
-- Validates network connectivity and authentication to the vCenter Server instance
-- Performs checks on the snapshot status and outputs the results
+- Validates network connectivity and authenticaton to the SDDC Manager instance.
+- Gathers the details for the vCenter instance from the SDDC Manager.
+- Validates network connectivity and authentication to the vCenter instance.
+- Performs checks on the snapshot status and outputs the results.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-SddcManagerSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Request-SddcManagerSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
 ```
 
 This example will publish the snapshot status for the SDDC Manager in a VMware Cloud Foundation instance.
@@ -33,10 +33,10 @@ This example will publish the snapshot status for the SDDC Manager in a VMware C
 ### Example 2
 
 ```powershell
-Request-SddcManagerSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+Request-SddcManagerSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -failureOnly
 ```
 
-This example will publish the snapshot status for the SDDC Manager in a VMware Cloud Foundation instance, but for only failed items.
+This example will publish the snapshot status for the SDDC Manager in a VMware Cloud Foundation instance but only reports issues.
 
 ## Parameters
 
