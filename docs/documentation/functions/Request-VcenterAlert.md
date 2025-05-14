@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns alarms from vCenter Server managed by SDDC Manager.
+Returns alarms from a vCenter instance managed by SDDC Manager.
 
 ## Syntax
 
@@ -12,38 +12,38 @@ Request-VcenterAlert [-server] <String> [-user] <String> [-pass] <String> [-doma
 
 ## Description
 
-The `Request-VcenterAlert` cmdlet returns all alarms from vCenter Server managed by SDDC Manager.
+The `Request-VcenterAlert` cmdlet returns all alarms from a vCenter instance managed by SDDC Manager.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the vCenter Server instance
-- Validates the authentication to vCenter Server with credentials from SDDC Manager
-- Collects the alerts from vCenter Server
+- Validates that network connectivity is available to the vCenter instance.
+- Validates the authentication to vCenter with credentials from SDDC Manager.
+- Collects the alerts from vCenter.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will return alarms of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+This example will return alarms of a vCenter managed by SDDC Manager for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -filterOut hostOnly
+Request-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -filterOut hostOnly
 ```
 
-This example will return alarms from ESXi hosts of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+This example will return alarms from ESX hosts of a vCenter managed by SDDC Manager for a specified workload domain.
 
 ### Example 3
 
 ```powershell
-Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will return alarms from vSAN clusters of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
+This example will return alarms from vSAN clusters of a vCenter managed by SDDC Manager for a specified workload domain but only reports issues.
 
 ## Parameters
 

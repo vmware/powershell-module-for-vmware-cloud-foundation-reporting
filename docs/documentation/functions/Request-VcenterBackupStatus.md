@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns the status of the file-level latest backup of a vCenter Server instance.
+Returns the status of the latest file-level backup of a vCenter instance.
 
 ## Syntax
 
@@ -12,31 +12,31 @@ Request-VcenterBackupStatus [-server] <String> [-user] <String> [-pass] <String>
 
 ## Description
 
-The `Request-VcenterBackupStatus` cmdlet returns the status of the latest backup of a vCenter Server instance.
+The `Request-VcenterBackupStatus` cmdlet returns the status of the latest file-level backup of a vCenter instance.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates network connectivity and authentication to the SDDC Manager instance
-- Gathers the details for the NvCenter Server instance from the SDDC Manager
-- Validates network connectivity and authentication to the vCenter Server instance
-- Collects the file-level backup status details
+- Validates network connectivity and authentication to the SDDC Manager instance.
+- Gathers the details for the vCenter instance from the SDDC Manager.
+- Validates network connectivity and authentication to the vCenter instance.
+- Collects the file-level backup status details.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-VcenterBackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain.
+This example will return the status of the latest file-level backup of a vCenter instance managed by SDDC Manager for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-VcenterBackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain but only reports issues.
+This example will return the status of the latest file-level backup of a vCenter instance managed by SDDC Manager for a specified workload domain but only reports issues.
 
 ## Parameters
 

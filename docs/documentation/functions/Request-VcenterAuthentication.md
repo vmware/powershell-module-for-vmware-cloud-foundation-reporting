@@ -2,55 +2,56 @@
 
 ## Synopsis
 
-Checks API authentication to vCenter Server instance.
+Checks API authentication to a vCenter instance.
 
 ## Syntax
 
 ### All-WorkloadDomains
 
 ```powershell
-Request-VcenterAuthentication -server <String> -user <String> -pass <String> [-allDomains] [-failureOnly] [<CommonParameters>]
+Request-VcenterAuthentication [-server] <String> [-user] <String> [-pass] <String> [-allDomains] [-failureOnly] [<CommonParameters>]
 ```
 
 ### Specific-WorkloadDomains
 
 ```powershell
-Request-VcenterAuthentication -server <String> -user <String> -pass <String> -workloadDomain <String> [-failureOnly] [<CommonParameters>]
+Request-VcenterAuthentication [-server] <String> [-user] <String> [-pass] <String> [-workloadDomain] <String> [-failureOnly] [<CommonParameters>]
 ```
 
 ## Description
 
-The `Request-VcenterAuthentication` cmdlets checks the authentication to vCenter Server instance.
+The `Request-VcenterAuthentication` cmdlets checks the authentication to a vCenter instance.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the SDDC Manager instance
-- Validates that network connectivity is available to the vCenter Server instance
+- Validates that network connectivity is available to the SDDC Manager instance.
+- Validates the authentication to vCenter with credentials from SDDC Manager.
+- Validates that network connectivity is available to the vCenter instance.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+Request-VcenterAuthentication -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will check authentication to vCenter Server API for all vCenter Server instances managed by SDDC Manager.
+This example will check authentication to vCenter API for all vCenter instances managed by SDDC Manager.
 
 ### Example 2
 
 ```powershell
-Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
+Request-VcenterAuthentication -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will check authentication to vCenter Server API for a single workload domain
+This example will check authentication to vCenter API for a specified workload domain.
 
 ### Example 3
 
 ```powershell
-Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+Request-VcenterAuthentication -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
-This example will check authentication to vCenter Server API for all vCenter Server instances but only reports issues.
+This example will check authentication to vCenter API for all vCenter instances managed by SDDC Manager but only reports issues.
 
 ## Parameters
 
