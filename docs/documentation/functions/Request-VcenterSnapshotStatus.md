@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Request the snapshot status for the vCenter Server instance.
+Request the snapshot status for the vCenter instance.
 
 ## Syntax
 
@@ -12,31 +12,31 @@ Request-VcenterSnapshotStatus [-server] <String> [-user] <String> [-pass] <Strin
 
 ## Description
 
-The `Request-VcenterSnapshotStatus` cmdlet checks the snapshot status for vCenter Server instance.
+The `Request-VcenterSnapshotStatus` cmdlet checks the snapshot status for vCenter instance.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates network connectivity and authentication to the SDDC Manager instance
-- Gathers the details for the vCenter Server instance from the SDDC Manager
-- Validates network connectivity and authentication to the vCenter Server instance
-- Performs checks on the snapshot status and outputs the results
+- Validates network connectivity and authentication to the SDDC Manager instance.
+- Gathers the details for the vCenter instance from the SDDC Manager.
+- Validates network connectivity and authentication to the vCenter instance.
+- Performs checks on the snapshot status and outputs the results.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-VcenterSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will publish the snapshot status for a vCenter Server instance for a specific workload domain.
+This example will publish the snapshot status for a vCenter instance managed by SDDC Manager for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-VcenterSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will publish the snapshot status for a vCenter Server instance for a specific workload domain, but only failed items.
+This example will publish the snapshot status for a vCenter instance managed by SDDC Manager for a specified workload domain but only reports issues.
 
 ## Parameters
 

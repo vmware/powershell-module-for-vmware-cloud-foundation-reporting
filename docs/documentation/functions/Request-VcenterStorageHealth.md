@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Checks the disk usage on a vCenter Server instance.
+Checks the disk usage on a vCenter instance.
 
 ## Syntax
 
@@ -12,31 +12,31 @@ Request-VcenterStorageHealth [-server] <String> [-user] <String> [-pass] <String
 
 ## Description
 
-The `Request-VcenterStorageHealth` cmdlets checks the disk space usage on a vCenter Server.
+The `Request-VcenterStorageHealth` cmdlets checks the disk space usage on a vCenter instance.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates network connectivity and authentication to the SDDC Manager instance
-- Validates network connectivity and authentication to the vCenter Server instance
-- Collects information for the disk usage
-- Checks disk usage against thresholds and outputs the results
+- Validates network connectivity and authentication to the SDDC Manager instance.
+- Validates network connectivity and authentication to the vCenter instance.
+- Collects information for the disk usage.
+- Checks disk usage against thresholds and outputs the results.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-VcenterStorageHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will check disk usage for a single workload domain
+This example will check disk usage for a vCenter instance managed by SDDC Manager for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+Request-VcenterStorageHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
-This example will check the disk usage for all vCenter Server instances but only reports issues.
+This example will check the disk usage for all vCenter instances managed by SDDC Manager but only reports issues.
 
 ## Parameters
 
