@@ -15,15 +15,15 @@ Request-VMwareAriaSuiteOverview [-server] <String> [-user] <String> [-pass] <Str
 The `Request-VMwareAriaSuiteOverview` cmdlet returns an overview of VMware Aria Suite products managed by SDDC Manager.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity and authentication to the SDDC Manager instance
-- Collects the VMware Aria Suite product overview detail
+- Validates that network connectivity and authentication to the SDDC Manager instance.
+- Collects the VMware Aria Suite product overview detail.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-VMwareAriaSuiteOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+Request-VMwareAriaSuiteOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
 ```
 
 This example will return an overview of VMware Aria Suite products managed by the SDDC Manager instance.
@@ -31,11 +31,10 @@ This example will return an overview of VMware Aria Suite products managed by th
 ### Example 2
 
 ```powershell
-Request-VMwareAriaSuiteOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
+Request-VMwareAriaSuiteOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -anonymized
 ```
 
-This example will return an overview of VMware Aria Suite products managed by the SDDC Manager instance, but
-will anonymize the output.
+This example will return an overview of VMware Aria Suite products managed by the SDDC Manager instance, but will anonymize the output.
 
 ## Parameters
 

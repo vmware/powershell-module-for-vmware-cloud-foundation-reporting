@@ -19,7 +19,7 @@ The `Test-VcfReportingPrereq` cmdlet checks that all the prerequisites have been
 ### Example 1
 
 ```powershell
-Test-VcfReportingPrereq -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1!
+Test-VcfReportingPrereq -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password]
 ```
 
 This example runs the prerequisite validation.

@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns vSAN Healthcheck alarms from a vCenter Server instance.
+Returns vSAN health check alarms from a vCenter instance.
 
 ## Syntax
 
@@ -12,30 +12,30 @@ Request-VsanAlert [-server] <String> [-user] <String> [-pass] <String> [-domain]
 
 ## Description
 
-The `Request-VsanAlert` cmdlet returns vSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
+The `Request-VsanAlert` cmdlet returns vSAN health check alarms from vCenter managed by SDDC Manager.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the vCenter Server instance
-- Validates the authentication to vCenter Server with credentials from SDDC Manager
-- Collects the vSAN Healthcheck alarms from vCenter Server
+- Validates that network connectivity is available to the vCenter instance.
+- Validates the authentication to vCenter with credentials from SDDC Manager.
+- Collects the vSAN health check alarms from vCenter.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
+Request-VsanAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
 ```
 
-This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain.
+This example will return vSAN health check alarms of a vCenter managed by SDDC Manager for a specified workload domain.
 
 ### Example 2
 
 ```powershell
-Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
+Request-VsanAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
 ```
 
-This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
+This example will return vSAN health check alarms of a vCenter managed by SDDC Manager for a workload domain but only reports issues.
 
 ## Parameters
 
