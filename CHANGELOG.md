@@ -2,12 +2,17 @@
 
 ## v2.7.0
 
-> Release Date: Not Released
+> Release Date: 2025-05-22
+
+Documentation:
+
+- Updated documentation to use example context. (#242, #243, #245, #246, #247, #248, #249, #250, #251, #252, #253, #254, #255, #256, #257, #258, #259, #260, #261, #262, #263)
 
 Chore:
 
 - Updated `VMware.PowerCLI` module dependency from v13.2.1 to v13.3.0. [#217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
 - Updated `PowerValidatedSolutions` module dependency from v2.11.0 to v2.12.1. [#217](https://github.com/vmware/powershell-module-for-vmware-cloud-foundation-reporting/pull/217)
+- Updated code of conduct, contributing, license, workflows, etc. (#234, #235, #236, #237, #238, #239, #240, #241)
 
 ## v2.6.3
 
