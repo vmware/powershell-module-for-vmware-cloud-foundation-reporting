@@ -1,2 +1,2 @@
-$sddcManagerLocalUser = "local_username"
-$sddcManagerLocalPass = "local_password"
+$sddcManagerLocalUser = "[local_username]"
+$sddcManagerLocalPass = "[local_password]"
