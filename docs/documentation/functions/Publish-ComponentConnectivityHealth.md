@@ -31,7 +31,7 @@ The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass
 ### Example 1
 
 ```powershell
-Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -json [json-file] -allDomains
 ```
 
 This example checks the component connectivity for all workload domains across the VMware Cloud Foundation instance.
@@ -39,7 +39,7 @@ This example checks the component connectivity for all workload domains across t
 ### Example 2
 
 ```powershell
-Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -json [json-file] -workloadDomain [workload_domain_name]
 ```
 
 This example checks the component connectivity for a specified workload domain in a VMware Cloud Foundation instance.
@@ -47,7 +47,7 @@ This example checks the component connectivity for a specified workload domain i
 ### Example 3
 
 ```powershell
-Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -json [json-file] -allDomains -failureOnly
 ```
 
 This example checks the component connectivity for all workload domains across the VMware Cloud Foundation instance but only reports issues.

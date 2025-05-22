@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns returns an overview of the SDDC Manager instance.
+Returns an overview of the SDDC Manager instance.
 
 ## Syntax
 

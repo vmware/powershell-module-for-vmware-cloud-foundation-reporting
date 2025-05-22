@@ -40,7 +40,7 @@ This example will return alarms from a vCenter managed by SDDC Manager for all w
 ### Example 2
 
 ```powershell
-Publish-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+Publish-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
 This example will return alarms from a vCenter managed by SDDC Manager for all workload domains but only reports issues.

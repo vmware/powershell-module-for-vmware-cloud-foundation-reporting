@@ -1,6 +1,6 @@
 # Generating an Overview Report
 
-The [`Invoke-VcfOverviewReport`](../functions/Invoke-VcfOverviewReport.md) cmdlet generates a system overview report. This report contains high-level information about the VMware Cloud Foundation system. This report may be used to provide a quick system overview of the system to your VMware representative.
+The [`Invoke-VcfOverviewReport`](../functions/Invoke-VcfOverviewReport.md) cmdlet generates a system overview report. This report contains high-level information about the VMware Cloud Foundation Instance. This report may be used to provide a quick system overview of the system to your VMware representative.
 
 ## Generate an Overview Report for a VMware Cloud Foundation Instance
 

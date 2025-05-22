@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Publish NSX health only for health checks which are not a part of the SOS Utility NSX health.
+Publish NSX health only for health checks which are not a part of the SoS Utility NSX health.
 Data obtained is a subset of `Publish-NsxtCombinedHealth` cmdlet.
 
 ## Syntax
@@ -21,7 +21,7 @@ Publish-NsxtHealthNonSOS [-server] <String> [-user] <String> [-pass] <String> [-
 
 ## Description
 
-The `Publish-NsxtHealthNonSOS` cmdlet performs additional checks outside of the SOS Utility to get the health of NSX on the VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
+The `Publish-NsxtHealthNonSOS` cmdlet performs additional checks outside of the SoS Utility to get the health of NSX on the VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
 - Validates that network connectivity and autehentication is available to SDDC Manager.
@@ -38,7 +38,7 @@ Data obtained is subset of Publish-NsxtCombinedHealth cmdlet.
 Publish-NsxtHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example checks NSX health outside the SOS Utility for all workload domains across the VMware Cloud Foundation instance.
+This example checks NSX health outside the SoS Utility for all workload domains across the VMware Cloud Foundation instance.
 
 ### Example 2
 
@@ -46,7 +46,7 @@ This example checks NSX health outside the SOS Utility for all workload domains 
 Publish-NsxtHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example checks NSX health outside the SOS Utility for a a specified workload domain in a VMware Cloud Foundation instance.
+This example checks NSX health outside the SoS Utility for all workload domains across the VMware Cloud Foundation instance.
 
 ### Example 3
 
@@ -54,7 +54,7 @@ This example checks NSX health outside the SOS Utility for a a specified workloa
 Publish-NsxtHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
-This example checks NSX health outside the SOS Utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
+This example checks NSX health outside the SoS Utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
 
 ### Example 4
@@ -63,7 +63,7 @@ This example checks NSX health outside the SOS Utility for all workload domains 
 Publish-NsxtHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
 ```
 
-This example checks NSX health outside the SOS Utility for all workload domains across the VMware Cloud Foundation instance and
+This example checks NSX health outside the SoS Utility for all workload domains across the VMware Cloud Foundation instance and
 and saves it as JSON under [report_path] with filename `<timestamp>-nsxtcombinedhealthnonsos-status.json`
 
 ## Parameters

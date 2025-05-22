@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the ping connectivity health data from the SOS JSON output.
+Formats the ping connectivity health data from the SoS JSON output.
 
 ## Syntax
 
@@ -12,7 +12,7 @@ Publish-PingConnectivityHealth [-json] <String> [-html] [-failureOnly] [<CommonP
 
 ## Description
 
-The `Publish-PingConnectivityHealth` cmdlet formats the ping connectivity health data from the SOS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-PingConnectivityHealth` cmdlet formats the ping connectivity health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
@@ -44,7 +44,7 @@ This example extracts and formats the ping connectivity health data as a PowerSh
 
 ### -json
 
-The path to the JSON file containing the SOS health summary data.
+The path to the JSON file containing the SoS health summary data.
 
 ```yaml
 Type: String

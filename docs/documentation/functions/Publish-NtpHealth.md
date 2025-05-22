@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the NTP health data from the SOS JSON output.
+Formats the NTP health data from the SoS JSON output.
 
 ## Syntax
 
@@ -12,7 +12,7 @@ Publish-NtpHealth [-json] <String> [-html] [-failureOnly] [<CommonParameters>]
 
 ## Description
 
-The `Publish-NtpHealth` cmdlet formats the NTP health data from the SOS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-NtpHealth` cmdlet formats the NTP health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
@@ -44,7 +44,7 @@ This example extracts and formats the NTP health data as a PowerShell object fro
 
 ### -json
 
-The path to the JSON file containing the SOS health summary data.
+The path to the JSON file containing the SoS health summary data.
 
 ```yaml
 Type: String

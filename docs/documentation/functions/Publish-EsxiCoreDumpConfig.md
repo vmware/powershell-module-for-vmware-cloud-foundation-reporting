@@ -25,7 +25,7 @@ The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass
 
 - Validates that network connectivity is available to the SDDC Manager instance.
 - Validates that network connectivity is available to the vCenter instance.
-- Generates an ESX core dump report for all ESXi hosts in a workload domain.
+- Generates an ESX core dump report for all ESX hosts in a workload domain.
 
 ## Examples
 

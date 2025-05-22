@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Perform upgrade precheck.
+Perform an upgrade precheck.
 
 ## Syntax
 

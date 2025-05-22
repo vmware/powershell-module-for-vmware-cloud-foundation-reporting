@@ -24,10 +24,10 @@ The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass
 ### Example 1
 
 ```powershell
-Request-ClusterDrsRule -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+Request-ClusterDrsRule -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example gets the cluster DRS rules for a vCenter Server instance based on a specified workload domain.
+This example gets the cluster DRS rules for a vCenter instance for a specified workload domain.
 
 ## Parameters
 

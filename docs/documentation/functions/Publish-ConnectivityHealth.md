@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Formats the connectivity health data from the SOS JSON output.
+Formats the connectivity health data from the SoS JSON output.
 
 ## Syntax
 
@@ -12,14 +12,14 @@ Publish-ConnectivityHealth [-json] <String> [-html] [-failureOnly] [<CommonParam
 
 ## Description
 
-The `Publish-ConnectivityHealth` cmdlet formats the connectivity health data from the SOS JSON output and publishes it as either a standard PowerShell object or an HTML object.
+The `Publish-ConnectivityHealth` cmdlet formats the connectivity health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
 ## Examples
 
 ### Example 1
 
 ```powershell
-Publish-ConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
+Publish-ConnectivityHealth -json [file_name]
 ```
 
 This example extracts and formats the connectivity health data as a PowerShell object from the JSON file.
@@ -27,7 +27,7 @@ This example extracts and formats the connectivity health data as a PowerShell o
 ### Example 2
 
 ```powershell
-Publish-ConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -html
+Publish-ConnectivityHealth -json [file_name] -html
 ```
 
 This example extracts and formats the connectivity health data as an HTML object from the JSON file.
@@ -35,7 +35,7 @@ This example extracts and formats the connectivity health data as an HTML object
 ### Example 3
 
 ```powershell
-Publish-ConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -failureOnly
+Publish-ConnectivityHealth -json [file_name] -failureOnly
 ```
 
 This example extracts and formats the connectivity health data as a PowerShell object from the JSON file for only the failed items.
@@ -44,7 +44,7 @@ This example extracts and formats the connectivity health data as a PowerShell o
 
 ### -json
 
-The path to the JSON file containing the SOS health summary data.
+The path to the JSON file containing the SoS health summary data.
 
 ```yaml
 Type: String

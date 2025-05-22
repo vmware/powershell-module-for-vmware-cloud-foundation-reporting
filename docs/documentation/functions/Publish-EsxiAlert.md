@@ -23,9 +23,9 @@ Publish-EsxiAlert [-server] <String> [-user] <String> [-pass] <String> [-workloa
 The `Publish-EsxiAlert` cmdlet returns all alarms from ESX hosts managed by SDDC Manager.
 The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
 
-- Validates that network connectivity is available to the vCenter instance
-- Validates the authentication to vCenter with credentials from SDDC Manager
-- Collects the alerts from all ESX hosts in a vCenter instance
+- Validates that network connectivity is available to the vCenter instance.
+- Validates the authentication to vCenter with credentials from SDDC Manager.
+- Collects the alerts from all ESX hosts in a vCenter instance.
 
 ## Examples
 

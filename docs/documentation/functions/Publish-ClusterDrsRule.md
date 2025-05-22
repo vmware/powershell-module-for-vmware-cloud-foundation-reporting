@@ -35,7 +35,7 @@ The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass
 Publish-ClusterDrsRule -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will return cluster DRS rules from all clusters in vCenter managed by SDDC Manager for all workload domains.
+This example will return cluster DRS rules from all clusters in vCenters managed by SDDC Manager for all workload domains.
 
 ### Example 2
 
@@ -43,7 +43,7 @@ This example will return cluster DRS rules from all clusters in vCenter managed 
 Publish-ClusterDrsRule -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will return cluster DRS rules from all clusters in vCenter managed by SDDC Manager for a specified workload domain named.
+This example will return cluster DRS rules from all clusters in vCenter managed by SDDC Manager for a specified workload domain.
 
 ## Parameters
 

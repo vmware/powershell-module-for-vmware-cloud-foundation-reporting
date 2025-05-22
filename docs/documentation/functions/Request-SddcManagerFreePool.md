@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Returns the status of the ESX hosts in the free pool managed by SDDC Manager..
+Returns the status of the ESX hosts in the free pool managed by SDDC Manager.
 
 ## Syntax
 
