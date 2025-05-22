@@ -1,1 +1,1 @@
-$reportPath = "report_path"
+$reportPath = "[report_path]"
