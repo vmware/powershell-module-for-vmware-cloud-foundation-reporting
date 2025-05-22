@@ -1,1 +1,1 @@
-$reportPath = "F:\Reporting"
+$reportPath = "report_path"

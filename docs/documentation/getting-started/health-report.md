@@ -1,6 +1,6 @@
 # Generating Health Reports
 
-The [`Invoke-VcfHealthReport`](../functions/Invoke-VcfHealthReport.md) cmdlet generates a health report. This report combines the SoS Utility health checks with additional health checks not presently available in the SoS Utility. The report contains detailed information about the health of the VMware Cloud Foundation system and its components.
+The [`Invoke-VcfHealthReport`](../functions/Invoke-VcfHealthReport.md) cmdlet generates a health report. This report combines the SoS Utility health checks with additional health checks not presently available in the SoS Utility. The report contains detailed information about the health of the VMware Cloud Foundation Instance and its components.
 
 ## Only Issues
 

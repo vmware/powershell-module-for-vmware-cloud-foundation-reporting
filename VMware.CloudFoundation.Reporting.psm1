@@ -207,22 +207,25 @@ Set-Variable -Name 'nsxEdgeSize' -Value '[
 Function Invoke-VcfHealthReport {
     <#
         .SYNOPSIS
-        Perform health checks
+        Perform health checks for a VMware Cloud Foundation instance or workload domain.
 
         .DESCRIPTION
         The Invoke-VcfHealthReport provides a single cmdlet to perform health checks across a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerLocalUser vcf -sddcManagerLocalPass VMw@re1! -reportPath F:\Reporting -allDomains
+        Invoke-VcfHealthReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -sddcManagerLocalUser [local_username]
+        -sddcManagerLocalPass [local_password] -reportPath [report_path] -allDomains
         This example runs a health check across a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerLocalUser vcf -sddcManagerLocalPass VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
+        Invoke-VcfHealthReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -sddcManagerLocalUser [local_username]
+        -sddcManagerLocalPass [local_password] -reportPath [report_path] -workloadDomain [workload_domain_name]
         This example runs a health check for a specific workload domain within a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfHealthReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -sddcManagerLocalUser vcf -sddcManagerLocalPass VMw@re1! -reportPath F:\Reporting -allDomains -failureOnly
-        This example runs a health check across a VMware Cloud Foundation instance but only ouputs issues to the HTML report.
+        Invoke-VcfHealthReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -sddcManagerLocalUser [local_username]
+        -sddcManagerLocalPass [local_password] -reportPath [report_path] -allDomains -failureOnly
+        This example runs a health check across a VMware Cloud Foundation instance but only reports issues.
 
         .PARAMETER sddcManagerFqdn
         The fully qualified domain name of the SDDC Manager.
@@ -352,8 +355,8 @@ Function Invoke-VcfHealthReport {
                 Write-LogMessage -Type INFO -Message "Generating the NTP Health Report using the SoS output for $workflowMessage."
                 $ntpHtml = Invoke-Expression "Publish-NtpHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $ntpHtml
 
-                # Generating the vCenter Server Health Data Using the SoS Data
-                Write-LogMessage -Type INFO -Message "Generating the vCenter Server Health Report using the SoS output for $workflowMessage."
+                # Generating the vCenter Health Data Using the SoS Data
+                Write-LogMessage -Type INFO -Message "Generating the vCenter Health Report using the SoS output for $workflowMessage."
                 $vcenterHtml = Invoke-Expression "Publish-VcenterHealth -json $jsonFilePath -html $($failureOnlySwitch)"; $reportData += $vcenterHtml
 
                 # Generating the ESXi Health Data Using the SoS Data
@@ -441,20 +444,20 @@ Function Invoke-VcfAlertReport {
         The Invoke-VcfAlertReport provides a single cmdlet to generates the alert report for a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains
+        Invoke-VcfAlertReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -allDomains
         This example generates the alert report across a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains -failureOnly
+        Invoke-VcfAlertReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -allDomains -failureOnly
         This example generates the alert report across a VMware Cloud Foundation instance but for only failed items.
 
         .EXAMPLE
-        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
+        Invoke-VcfAlertReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name]
         This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfAlertReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01 -failureOnly
-        This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance but for only failed items.
+        Invoke-VcfAlertReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name] -failureOnly
+        This example generates the alert report for a specific workload domain in a VMware Cloud Foundation instance but only reports issues.
 
         .PARAMETER sddcManagerFqdn
         The fully qualified domain name of the SDDC Manager.
@@ -521,8 +524,8 @@ Function Invoke-VcfAlertReport {
                 Write-LogMessage -Type INFO -Message "Setting up the log file to path $logfile."
                 Write-LogMessage -Type INFO -Message "Setting up report folder and report $reportName."
 
-                # Generate vCenter Server Alerts Using PowerShell Function
-                Write-LogMessage -Type INFO -Message "Generating the vCenter Server alerts for $workflowMessage."
+                # Generate vCenter Alerts Using PowerShell Function
+                Write-LogMessage -Type INFO -Message "Generating the vCenter alerts for $workflowMessage."
                 $vCenterAlertHtml = Invoke-Expression "Publish-VcenterAlert -server $sddcManagerFqdn -user $sddcManagerUser -pass $sddcManagerPass $($commandSwitch)"; $reportData += $vCenterAlertHtml
 
                 # Generate ESXi Alerts Using PowerShell Function
@@ -568,17 +571,17 @@ Export-ModuleMember -Function Invoke-VcfAlertReport
 Function Invoke-VcfConfigReport {
     <#
         .SYNOPSIS
-        Generates the configuration report
+        Generates the configuration report.
 
         .DESCRIPTION
-        The Invoke-VcfConfigReport provides a single cmdlet to generates a configuration report for a VMware Cloud Foundation instance.
+        The Invoke-VcfConfigReport provides a single cmdlet to generate a configuration report for a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -allDomains
+        Invoke-VcfConfigReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -allDomains
         This example generates the configuration report across a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfConfigReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
+        Invoke-VcfConfigReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name]
         This example generates the configuration report for a specific workload domain within a VMware Cloud Foundation instance.
 
         .PARAMETER sddcManagerFqdn
@@ -696,13 +699,13 @@ Export-ModuleMember -Function Invoke-VcfConfigReport
 Function Invoke-VcfUpgradePrecheck {
     <#
         .SYNOPSIS
-        Perform upgrade precheck
+        Performs an upgrade precheck.
 
         .DESCRIPTION
-        The Invoke-VcfUpgradePrecheck runs an upgrade precheck for a workload domain
+        The Invoke-VcfUpgradePrecheck runs an upgrade precheck for a workload domain.
 
         .EXAMPLE
-        Invoke-VcfUpgradePrecheck -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -workloadDomain sfo-w01
+        Invoke-VcfUpgradePrecheck -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name]
         This example runs a health check for a specific workload domain within an SDDC Manager instance.
 
         .PARAMETER sddcManagerFqdn
@@ -834,17 +837,17 @@ Export-ModuleMember -Function Invoke-VcfUpgradePrecheck
 Function Invoke-VcfOverviewReport {
     <#
         .SYNOPSIS
-        Generates the system overview report
+        Generates the system overview report for a VMware Cloud Foundation instance.
 
         .DESCRIPTION
         The Invoke-VcfOverviewReport provides a single cmdlet to generates a system overview report for a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfOverviewReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting
+        Invoke-VcfOverviewReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path]
         This example generates the system overview report for a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Invoke-VcfOverviewReport -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1! -reportPath F:\Reporting -anonymized
+        Invoke-VcfOverviewReport -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password] -reportPath [report_path] -anonymized
         This example generates the system overview report for a VMware Cloud Foundation instance, but will anonymize the output.
 
         .PARAMETER sddcManagerFqdn
@@ -942,16 +945,15 @@ Function Request-SoSHealthJson {
         Run SoS and save the JSON output.
 
         .DESCRIPTION
-        The Request-SoSHealthJson cmdlet connects to SDDC Manager, runs an SoS Health collection to JSON, and saves the
-        JSON file to the local file system.
+        The Request-SoSHealthJson cmdlet connects to SDDC Manager, runs an SoS health collection and saves to a JSON file on the local file system.
 
         .EXAMPLE
-        Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Reporting\HealthReports -allDomains
-        This example runs an SoS Health collection for all domains in the SDDC and saves the JSON output to the local file system.
+        Request-SoSHealthJson -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -reportPath [report_path] -allDomains
+        This example runs an SoS health collection for all domains in the SDDC and saves the JSON file on the local file system in the specified report path.
 
         .EXAMPLE
-        Request-SoSHealthJson -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -reportPath F:\Reporting\HealthReports -workloadDomain sfo-w01
-        This example runs an SoS Health collection for a workload domain in the SDDC and saves the JSON output to the local file system.
+        Request-SoSHealthJson -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name]
+        This example runs an SoS health collection for a specified workload domain in the SDDC and saves the JSON file on the local file system in the specified report path.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -1128,26 +1130,25 @@ Export-ModuleMember -Function Request-SoSHealthJson
 Function Publish-CertificateHealth {
     <#
         .SYNOPSIS
-        Formats the Certificate Health data from the SoS JSON output.
+        Formats the certificate health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-CertificateHealth cmdlet formats the Certificate Health data from the SoS JSON output and publishes
-        it as either a standard PowerShell object or an HTML object.
+        TThe Publish-CertificateHealth cmdlet formats the certificate health data from the SoS JSON output and publishes it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-CertificateHealth -json <file-name>
-        This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file.
+        Publish-CertificateHealth -json [file_name]
+        This example extracts and formats the certificate health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-CertificateHealth -json <file-name> -html
-        This example extracts and formats the Certificate Health data as an HTML object from the JSON file.
+        Publish-CertificateHealth -json [file_name] -html
+        This example extracts and formats the certificate health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-CertificateHealth -json <file-name> -failureOnly
-        This example extracts and formats the Certificate Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-CertificateHealth -json [file_name] -failureOnly
+        This example extracts and formats the certificate health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -1170,7 +1171,7 @@ Function Publish-CertificateHealth {
         }
 
         $customObject = New-Object System.Collections.ArrayList
-        $jsonInputData = $targetContent.'Certificates'.'Certificate Status' # Extract Data from the provided SOS JSON
+        $jsonInputData = $targetContent.'Certificates'.'Certificate Status' # Extract Data from the provided SoS JSON
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning 'Certificate Status data not found in the JSON file: SKIPPED'
         } else {
@@ -1233,26 +1234,26 @@ Export-ModuleMember -Function Publish-CertificateHealth
 Function Publish-ConnectivityHealth {
     <#
         .SYNOPSIS
-        Formats the Connectivity Health data from the SoS JSON output.
+        Formats the connectivity health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-ConnectivityHealth cmdlet formats the Connectivity Health data from the SoS JSON output and
+        The Publish-ConnectivityHealth cmdlet formats the connectivity health data from the SoS JSON output and
         publishes it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-ConnectivityHealth -json <file-name>
-        This example extracts and formats the Connectivity Health data as a PowerShell object from the JSON file.
+        Publish-ConnectivityHealth -json [file_name]
+        This example extracts and formats the connectivity health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-ConnectivityHealth -json <file-name> -html
-        This example extracts and formats the Connectivity Health data as an HTML object from the JSON file.
+        Publish-ConnectivityHealth -json [file_name] -html
+        This example extracts and formats the connectivity health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-ConnectivityHealth -json <file-name> -failureOnly
-        This example extracts and formats the Connectivity Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-ConnectivityHealth -json [file_name] -failureOnly
+        This example extracts and formats the connectivity health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -1275,13 +1276,13 @@ Function Publish-ConnectivityHealth {
         }
 
         $customObject = New-Object System.Collections.ArrayList
-        $jsonInputCheck = $targetContent.Connectivity.'Connectivity Status' # Extract Data from the provided SOS JSON
+        $jsonInputCheck = $targetContent.Connectivity.'Connectivity Status' # Extract Data from the provided SoS JSON
         if (($jsonInputCheck | Measure-Object).Count -lt 1) {
             Write-Warning 'Connectivity Status data not found in the JSON file: SKIPPED'
         } else {
 
             # ESXi SSH Status
-            $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi SSH Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi SSH Status' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -1290,7 +1291,7 @@ Function Publish-ConnectivityHealth {
             $customObject += $outputObject # Adding individual component to main customObject
 
             # ESXi API Status
-            $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi API Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.Connectivity.'Connectivity Status'.'ESXi API Status' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -1299,7 +1300,7 @@ Function Publish-ConnectivityHealth {
             $customObject += $outputObject # Adding individual component to main customObject
 
             # Additional Items Status
-            $jsonInputData = $targetContent.Connectivity.'Connectivity Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.Connectivity.'Connectivity Status' # Extract Data from the provided SoS JSON
             $jsonInputData.PSObject.Properties.Remove('ESXi SSH Status')
             $jsonInputData.PSObject.Properties.Remove('ESXi API Status')
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
@@ -1337,26 +1338,26 @@ Export-ModuleMember -Function Publish-ConnectivityHealth
 Function Publish-PingConnectivityHealth {
     <#
         .SYNOPSIS
-        Formats the Ping Connectivity Health data from the SoS JSON output.
+        Formats the ping connectivity health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-PingConnectivityHealth cmdlet formats the Ping Connectivity Health data from the SoS JSON output and
+        The Publish-PingConnectivityHealth cmdlet formats the ping connectivity health data from the SoS JSON output and
         publishes it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-PingConnectivityHealth -json <file-name>
-        This example extracts and formats the Ping Connectivity Health data as a PowerShell object from the JSON file.
+        Publish-PingConnectivityHealth -json [file_name]
+        This example extracts and formats the ping connectivity health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-PingConnectivityHealth -json <file-name> -html
-        This example extracts and formats the Ping Connectivity Health data as an HTML object from the JSON file.
+        Publish-PingConnectivityHealth -json [file_name] -html
+        This example extracts and formats the ping connectivity health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-PingConnectivityHealth -json <file-name> -failureOnly
-        This example extracts and formats the Ping Connectivity Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-PingConnectivityHealth -json [file_name] -failureOnly
+        This example extracts and formats the ping connectivity health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -1430,26 +1431,26 @@ Export-ModuleMember -Function Publish-PingConnectivityHealth
 Function Publish-DnsHealth {
     <#
         .SYNOPSIS
-        Formats the DNS Health data from the SoS JSON output.
+        Formats the DNS health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-DnsHealth cmdlet formats the DNS Health data from the SoS JSON output and publishes it as
+        The Publish-DnsHealth cmdlet formats the DNS health data from the SoS JSON output and publishes it as
         either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-DnsHealth -json <file-name>
-        This example extracts and formats the DNS Health data as a PowerShell object from the JSON file.
+        Publish-DnsHealth -json [file_name]
+        This example extracts and formats the DNS health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-DnsHealth -json <file-name> -html
-        This example extracts and formats the DNS Health data as an HTML object from the JSON file.
+        Publish-DnsHealth -json [file_name] -html
+        This example extracts and formats the DNS health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-DnsHealth -json <file-name> -failureOnly
-        This example extracts and formats the DNS Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-DnsHealth -json [file_name] -failureOnly
+        This example extracts and formats the DNS health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -1473,7 +1474,7 @@ Function Publish-DnsHealth {
 
         # Forward Lookup Health Status
         $allForwardLookupObject = New-Object System.Collections.ArrayList
-        $jsonForwardLookupInput = $targetContent.'DNS lookup Status'.'Forward lookup Status' # Extract Data from the provided SOS JSON
+        $jsonForwardLookupInput = $targetContent.'DNS lookup Status'.'Forward lookup Status' # Extract Data from the provided SoS JSON
         if (($jsonForwardLookupInput | Measure-Object).Count -lt 1) {
             Write-Warning 'Forward Lookup Status not found in the JSON file: SKIPPED'
         } else {
@@ -1486,7 +1487,7 @@ Function Publish-DnsHealth {
 
         # Reverse Lookup Health Status
         $allReverseLookupObject = New-Object System.Collections.ArrayList
-        $jsonReverseLookupInput = $targetContent.'DNS lookup Status'.'Reverse lookup Status' # Extract Data from the provided SOS JSON
+        $jsonReverseLookupInput = $targetContent.'DNS lookup Status'.'Reverse lookup Status' # Extract Data from the provided SoS JSON
         if (($jsonReverseLookupInput | Measure-Object).Count -lt 1) {
             Write-Warning 'Reverse Lookup Status not found in the JSON file: SKIPPED'
         } else {
@@ -1537,26 +1538,26 @@ Export-ModuleMember -Function Publish-DnsHealth
 Function Publish-EsxiHealth {
     <#
         .SYNOPSIS
-        Formats the ESXi Health data from the SoS JSON output.
+        Formats the ESX health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-EsxiHealth cmdlet formats the ESXi Health data from the SoS JSON output and publishes it as
+        The Publish-EsxiHealth cmdlet formats the ESX health data from the SoS JSON output and publishes it as
         either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-EsxiHealth -json <file-name>
-        This example extracts and formats the ESXi Health data as a PowerShell object from the JSON file.
+        Publish-EsxiHealth -json [file-name]
+        This example extracts and formats the ESX health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-EsxiHealth -json <file-name> -html
-        This example extracts and formats the ESXi Health data as an HTML object from the JSON file.
+        Publish-EsxiHealth -json [file-name] -html
+        This example extracts and formats the ESX health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-EsxiHealth -json <file-name> -failureOnly
-        This example extracts and formats the ESXi Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-EsxiHealth -json [file-name] -failureOnly
+        This example extracts and formats the ESX health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -1581,13 +1582,13 @@ Function Publish-EsxiHealth {
         # ESXi Overall Health Status
         $allOverallHealthObject = New-Object System.Collections.ArrayList
 
-        $jsonGeneralCheck = $targetContent.General # Extract Data from the provided SOS JSON
+        $jsonGeneralCheck = $targetContent.General # Extract Data from the provided SoS JSON
         if (($jsonGeneralCheck | Measure-Object).Count -lt 1) {
             Write-Warning 'General data not found in the JSON file: SKIPPED'
         } else {
             # ESXi Core Dump Status
             $allCoreDumpObject = New-Object System.Collections.ArrayList
-            $jsonInputData = $targetContent.General.'ESXi Core Dump Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.General.'ESXi Core Dump Status' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $allCoreDumpObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -1595,12 +1596,12 @@ Function Publish-EsxiHealth {
             }
         }
 
-        $jsonComputeCheck = $targetContent.Compute # Extract Data from the provided SOS JSON
+        $jsonComputeCheck = $targetContent.Compute # Extract Data from the provided SoS JSON
         if (($jsonComputeCheck | Measure-Object).Count -lt 1) {
             Write-Warning 'Compute data not found in the JSON file: SKIPPED'
         } else {
             # ESXi Overall Health Status
-            $jsonInputData = $targetContent.Compute.'ESXi Overall Health' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.Compute.'ESXi Overall Health' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $allOverallHealthObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -1609,7 +1610,7 @@ Function Publish-EsxiHealth {
 
             # ESXi License Status
             $allLicenseObject = New-Object System.Collections.ArrayList
-            $jsonInputData = $targetContent.Compute.'ESXi License Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.Compute.'ESXi License Status' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $allLicenseObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -1694,26 +1695,26 @@ Export-ModuleMember -Function Publish-EsxiHealth
 Function Publish-NsxtHealth {
     <#
         .SYNOPSIS
-        Formats the NSX Health data from the SoS JSON output.
+        Formats the NSX health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-NsxtHealth cmdlet formats the NSX Health data from the SoS JSON output and publishes it as
+        The Publish-NsxtHealth cmdlet formats the NSX health data from the SoS JSON output and publishes it as
         either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-NsxtHealth -json <file-name>
-        This example extracts and formats the NSX Health data as a PowerShell object from the JSON file.
+        Publish-NsxtHealth -json [file-name]
+        This example extracts and formats the NSX health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-NsxtHealth -json <file-name> -html
-        This example extracts and formats the NSX Health data as an HTML object from the JSON file.
+        Publish-NsxtHealth -json [file-name] -html
+        This example extracts and formats the NSX health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-NsxtHealth -json <file-name> -failureOnly
-        This example extracts and formats the NSX Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-NsxtHealth -json [file-name] -failureOnly
+        This example extracts and formats the NSX health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -1736,7 +1737,7 @@ Function Publish-NsxtHealth {
         }
 
         $customObject = New-Object System.Collections.ArrayList
-        $jsonInputCheck = $targetContent.General.'NSX Health' # Extract Data from the provided SOS JSON
+        $jsonInputCheck = $targetContent.General.'NSX Health' # Extract Data from the provided SoS JSON
         if (($jsonInputCheck | Measure-Object).Count -lt 1) {
             Write-Warning 'NSX Health data not found in the JSON file: SKIPPED'
         } else {
@@ -1844,26 +1845,26 @@ Export-ModuleMember -Function Publish-NsxtHealth
 Function Publish-NsxtEdgeNodeHealth {
     <#
         .SYNOPSIS
-        Formats the NSX Edge Node Health data from the SoS JSON output.
+        Formats the NSX Edge Node health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-NsxtEdgeNodeHealth cmdlet formats the NSX Edge Node Health data from the SoS JSON output and
+        The Publish-NsxtEdgeNodeHealth cmdlet formats the NSX Edge Node health data from the SoS JSON output and
         publishes it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-NsxtEdgeNodeHealth -json <file-name>
-        This example extracts and formats the NSX Edge Node Health data as a PowerShell object from the JSON file.
+        Publish-NsxtEdgeNodeHealth -json [file-name]
+        This example extracts and formats the NSX Edge Node health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-NsxtEdgeNodeHealth -json <file-name> -html
-        This example extracts and formats the NSX Edge Node Health data as an HTML object from the JSON file.
+        Publish-NsxtEdgeNodeHealth -json [file-name] -html
+        This example extracts and formats the NSX Edge Node health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-NsxtEdgeNodeHealth -json <file-name> -failureOnly
-        This example extracts and formats the NSX Edge Node Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-NsxtEdgeNodeHealth -json [file-name] -failureOnly
+        This example extracts and formats the NSX Edge Node health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -1938,26 +1939,26 @@ Export-ModuleMember -Function Publish-NsxtEdgeNodeHealth
 Function Publish-NsxtEdgeClusterHealth {
     <#
         .SYNOPSIS
-        Formats the NSX Edge Cluster Health data from the SoS JSON output.
+        Formats the NSX Edge Cluster health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-NsxtEdgeClusterHealth cmdlet formats the NSX Edge Cluster Health data from the SoS JSON output and
+        The Publish-NsxtEdgeClusterHealth cmdlet formats the NSX Edge Cluster health data from the SoS JSON output and
         publishes it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-NsxtEdgeClusterHealth -json <file-name>
-        This example extracts and formats the NSX Edge Cluster Health data as a PowerShell object from the JSON file.
+        Publish-NsxtEdgeNodeClusterHealth -json [file-name]
+        This example extracts and formats the NSX Edge Cluster health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-NsxtEdgeClusterHealth -json <file-name> -html
-        This example extracts and formats the NSX Edge Cluster Health data as an HTML object from the JSON file.
+        Publish-NsxtEdgeNodeClusterHealth -json [file-name] -html
+        This example extracts and formats the NSX Edge Cluster health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-NsxtEdgeClusterHealth -json <file-name> -failureOnly
-        This example extracts and formats the NSX Edge Cluster Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-NsxtEdgeNodeClusterHealth -json [file-name] -failureOnly
+        This example extracts and formats the NSX Edge Cluster health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -2040,26 +2041,26 @@ Export-ModuleMember -Function Publish-NsxtEdgeClusterHealth
 Function Publish-NtpHealth {
     <#
         .SYNOPSIS
-        Formats the NTP Health data from the SoS JSON output.
+        Formats the NTP health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-NtpHealth cmdlet formats the NTP Health data from the SoS JSON output and publishes it as
+        The Publish-NtpHealth cmdlet formats the NTP health data from the SoS JSON output and publishes it as
         either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-NtpHealth -json <file-name>
-        This example extracts and formats the NTP Health data as a PowerShell object from the JSON file.
+        Publish-NtpHealth -json [file-name]
+        This example extracts and formats the NTP health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-NtpHealth -json <file-name> -html
-        This example extracts and formats the NTP Health data as an HTML object from the JSON file.
+        Publish-NtpHealth -json [file-name] -html
+        This example extracts and formats the NTP health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-NtpHealth -json <file-name> -failureOnly
-        This example extracts and formats the NTP Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-NtpHealth -json [file-name] -failureOnly
+        This example extracts and formats the NTP health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -2082,7 +2083,7 @@ Function Publish-NtpHealth {
         }
 
         # NTP Health Status
-        $jsonInputData = $targetContent.'NTP' # Extract Data from the provided SOS JSON
+        $jsonInputData = $targetContent.'NTP' # Extract Data from the provided SoS JSON
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning 'NTP data not found in the JSON file: SKIPPED'
         } else {
@@ -2122,26 +2123,26 @@ Export-ModuleMember -Function Publish-NtpHealth
 Function Publish-PasswordHealth {
     <#
         .SYNOPSIS
-        Formats the Password Health data from the SoS JSON output.
+        Formats the password health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-PasswordHealth cmdlet formats the Password Health data from the SoS JSON output and publishes it as
+        The Publish-PasswordHealth cmdlet formats the password health data from the SoS JSON output and publishes it as
         either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-PasswordHealth -json <file-name>
-        This example extracts and formats the Password Health data as a PowerShell object from the JSON file.
+        Publish-PasswordHealth -json [file-name]
+        This example extracts and formats the password health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-PasswordHealth -json <file-name> -html
-        This example extracts and formats the Password Health data as an HTML object from the JSON file.
+        Publish-PasswordHealth -json [file-name] -html
+        This example extracts and formats the password health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-PasswordHealth -json <file-name> -failureOnly
-        This example extracts and formats the Password Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-PasswordHealth -json [file-name] -failureOnly
+        This example extracts and formats the password health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -2164,7 +2165,7 @@ Function Publish-PasswordHealth {
         }
 
         # Password Expiry Health
-        $jsonInputData = $targetContent.'Password Expiry Status' # Extract Data from the provided SOS JSON
+        $jsonInputData = $targetContent.'Password Expiry Status' # Extract Data from the provided SoS JSON
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning 'Password Expiry Status not found in the JSON file: SKIPPED'
         } else {
@@ -2214,26 +2215,26 @@ Export-ModuleMember -Function Publish-PasswordHealth
 Function Publish-VersionHealth {
     <#
         .SYNOPSIS
-        Formats the Version Health data from the SoS JSON output.
+        Formats the version health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-VersionHealth cmdlet formats the Version Health data from the SoS JSON output and publishes it as
+        The Publish-VersionHealth cmdlet formats the version health data from the SoS JSON output and publishes it as
         either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-VersionHealth -json <file-name>
-        This example extracts and formats the Version Health data as a PowerShell object from the JSON file.
+        Publish-VersionHealth -json [file-name]
+        This example extracts and formats the version health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-VersionHealth -json <file-name> -html
-        This example extracts and formats the Version Health data as an HTML object from the JSON file.
+        Publish-VersionHealth -json [file-name] -html
+        This example extracts and formats the version health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-VersionHealth -json <file-name> -failureOnly
-        This example extracts and formats the Version Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-VersionHealth -json [file-name] -failureOnly
+        This example extracts and formats the version health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -2256,7 +2257,7 @@ Function Publish-VersionHealth {
         }
 
         # Version Health
-        $jsonInputData = $targetContent.'Version Check Status' # Extract Data from the provided SOS JSON
+        $jsonInputData = $targetContent.'Version Check Status' # Extract Data from the provided SoS JSON
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning 'Version Check Status not found in the JSON file: SKIPPED'
         } else {
@@ -2306,23 +2307,23 @@ Function Publish-HardwareCompatibilityHealth {
         Formats the Hardware Compatibility data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-HardwareCompatibilityHealth cmdlet formats the Hardware Compatibility data from the SoS JSON output and publishes
+        The Publish-HardwareCompatibilityHealth cmdlet formats the hardware compatibility data from the SoS JSON output and publishes
         it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-HardwareCompatibilityHealth -json <file-name>
-        This example extracts and formats the Hardware Compatibility data as a PowerShell object from the JSON file.
+        Publish-HardwareCompatibilityHealth -json [file-name]
+        This example extracts and formats the hardware compatibility data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-HardwareCompatibilityHealth -json <file-name> -html
-        This example extracts and formats the Hardware Compatibility data as an HTML object from the JSON file.
+        Publish-HardwareCompatibilityHealth -json [file-name] -html
+        This example extracts and formats the hardware compatibility data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-HardwareCompatibilityHealth -json <file-name> -failureOnly
-        This example extracts and formats the Hardware Compatibility data as a PowerShell object from the JSON file for only the failed items.
+        Publish-HardwareCompatibilityHealth -json [file-name] -failureOnly
+        This example extracts and formats the hardware compatibility data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -2345,7 +2346,7 @@ Function Publish-HardwareCompatibilityHealth {
         }
 
         # Hardware Compatibility
-        $jsonInputData = $targetContent.'Hardware Compatibility' # Extract Data from the provided SOS JSON
+        $jsonInputData = $targetContent.'Hardware Compatibility' # Extract Data from the provided SoS JSON
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning 'Hardware Compatibility not found in the JSON file: SKIPPED'
         } else {
@@ -2401,26 +2402,26 @@ Export-ModuleMember -Function Publish-HardwareCompatibilityHealth
 Function Publish-ServiceHealth {
     <#
         .SYNOPSIS
-        Formats the Service Health data from the SoS JSON output.
+        Formats the service health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-ServiceHealth cmdlet formats the Service Health data from the SoS JSON output and publishes it as
+        The Publish-ServiceHealth cmdlet formats the service health data from the SoS JSON output and publishes it as
         either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-ServiceHealth -json <file-name>
-        This example extracts and formats the Service Health data as a PowerShell object from the JSON file.
+        Publish-ServiceHealth -json [file-name]
+        This example extracts and formats the service health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-ServiceHealth -json <file-name> -html
-        This example extracts and formats the Service Health data as an HTML object from the JSON file.
+        Publish-ServiceHealth -json [file-name] -html
+        This example extracts and formats the service health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-ServiceHealth -json <file-name> -failureOnly
-        This example extracts and formats the Service Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-ServiceHealth -json [file-name] -failureOnly
+        This example extracts and formats the service health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -2443,7 +2444,7 @@ Function Publish-ServiceHealth {
         }
 
         $outputObject = New-Object System.Collections.ArrayList
-        $inputData = $targetContent.'Services' # Extract Data from the provided SOS JSON
+        $inputData = $targetContent.'Services' # Extract Data from the provided SoS JSON
         if (($inputData | Measure-Object).Count -lt 1) {
             Write-Warning 'Services data not found in the JSON file: SKIPPED'
         } else {
@@ -2491,26 +2492,26 @@ Export-ModuleMember -Function Publish-ServiceHealth
 Function Publish-VcenterHealth {
     <#
         .SYNOPSIS
-        Formats the vCenter Server Health data from the SoS JSON output.
+        Formats the vCenter health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-VcenterHealth cmdlet formats the vCenter Server Health data from the SoS JSON output and publishes
+        The Publish-VcenterHealth cmdlet formats the vCenter health data from the SoS JSON output and publishes
         it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-VcenterHealth -json <file-name>
-        This example extracts and formats the vCenter Server Health data as a PowerShell object from the JSON file.
+        Publish-VcenterHealth -json [file-name]
+        This example extracts and formats the vCenter health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-VcenterHealth -json <file-name> -html
-        This example extracts and formats the vCenter Server Health data as an HTML object from the JSON file.
+        Publish-VcenterHealth -json [file-name] -html
+        This example extracts and formats the vCenter health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-VcenterHealth -json <file-name> -failureOnly
-        This example extracts and formats the vCenter Server Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-VcenterHealth -json [file-name] -failureOnly
+        This example extracts and formats the vCenter health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -2532,10 +2533,10 @@ Function Publish-VcenterHealth {
             $targetContent = Get-Content $json | ConvertFrom-Json
         }
 
-        # vCenter Server Overall Health
-        $jsonInputData = $targetContent.Compute.'vCenter Overall Health' # Extract Data from the provided SOS JSON
+        # vCenter Overall Health
+        $jsonInputData = $targetContent.Compute.'vCenter Overall Health' # Extract Data from the provided SoS JSON
         if (($jsonInputData | Measure-Object).Count -lt 1) {
-            Write-Warning "vCenter Server Overall Health data not found in the JSON file: SKIPPED"
+            Write-Warning "vCenter Overall Health data not found in the JSON file: SKIPPED"
         } else {
             if ($PsBoundParameters.ContainsKey('failureOnly')) {
                 $vcenterOverall = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
@@ -2547,9 +2548,9 @@ Function Publish-VcenterHealth {
             $ringTopologyHealth = New-Object System.Collections.ArrayList
             $vcfVersion = ((Get-VCFManager).version -Split ('\.\d{1}\-\d{8}')) -split '\s+' -match '\S'
             if ($vcfVersion -eq "4.2.1") {
-                $jsonInputData = $targetContent.Connectivity.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SOS JSON
+                $jsonInputData = $targetContent.Connectivity.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SoS JSON
             } else {
-                $jsonInputData = $targetContent.General.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SOS JSON
+                $jsonInputData = $targetContent.General.'Vcenter Ring Topology Status'.'Vcenter Ring Topology Status' # Extract Data from the provided SoS JSON
             }
             $elementObject = New-Object -TypeName psobject
             $elementObject | Add-Member -notepropertyname 'Component' -notepropertyvalue ($jsonInputData.area -SPlit  ("SDDC:"))[-1].Trim()
@@ -2607,26 +2608,26 @@ Export-ModuleMember -Function Publish-VcenterHealth
 Function Publish-VsanHealth {
     <#
         .SYNOPSIS
-        Formats the vSAN Health data from the SoS JSON output.
+        Formats the vSAN health data from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-VsanHealth cmdlet formats the vSAN Health data from the SoS JSON output and publishes it as
-        either a standard PowerShell object or an HTML object.
+        The Publish-VsanHealth cmdlet formats the vSAN health data from the SoS JSON output and publishes
+        it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-VsanHealth -json <file-name>
-        This example extracts and formats the vSAN Health data as a PowerShell object from the JSON file.
+        Publish-VsanHealth -json [file-name]
+        This example extracts and formats the vSAN health data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-VsanHealth -json <file-name> -html
-        This example extracts and formats the vSAN Health data as an HTML object from the JSON file.
+        Publish-VsanHealth -json [file-name] -html
+        This example extracts and formats the vSAN health data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-VsanHealth -json <file-name> -failureOnly
-        This example extracts and formats the vSAN Health data as a PowerShell object from the JSON file for only the failed items.
+        Publish-VsanHealth -json [file-name] -failureOnly
+        This example extracts and formats the vSAN health data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -2649,13 +2650,13 @@ Function Publish-VsanHealth {
         }
 
         $customObject = New-Object System.Collections.ArrayList
-        $jsonInputCheck = $targetContent.vSAN # Extract Data from the provided SOS JSON
+        $jsonInputCheck = $targetContent.vSAN # Extract Data from the provided SoS JSON
         if (($jsonInputCheck | Measure-Object).Count -lt 1) {
             Write-Warning 'vSAN data not found in the JSON file: SKIPPED'
         } else {
 
             # Cluster Health Status
-            $jsonInputData = $targetContent.vSAN.'Cluster vSAN Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.vSAN.'Cluster vSAN Status' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -2664,7 +2665,7 @@ Function Publish-VsanHealth {
             $customObject += $outputObject # Adding individual component to main customObject
 
             # Cluster Disk Status
-            $jsonInputData = $targetContent.vSAN.'Cluster Disk Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.vSAN.'Cluster Disk Status' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -2673,7 +2674,7 @@ Function Publish-VsanHealth {
             $customObject += $outputObject # Adding individual component to main customObject
 
             # Cluster Capacity Utilization
-            $jsonInputData = $targetContent.vSAN.'vSAN Capacity Utilization' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.vSAN.'vSAN Capacity Utilization' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -2682,7 +2683,7 @@ Function Publish-VsanHealth {
             $customObject += $outputObject # Adding individual component to main customObject
 
             # Cluster Active ReSync Objects
-            $jsonInputData = $targetContent.vSAN.'Active ReSync Objects' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.vSAN.'Active ReSync Objects' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -2691,7 +2692,7 @@ Function Publish-VsanHealth {
             $customObject += $outputObject # Adding individual component to main customObject
 
             # Cluster Data Compression Status
-            $jsonInputData = $targetContent.vSAN.'Cluster Data Compression Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.vSAN.'Cluster Data Compression Status' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -2700,7 +2701,7 @@ Function Publish-VsanHealth {
             $customObject += $outputObject # Adding individual component to main customObject
 
             # Cluster Data Encryption Status
-            $jsonInputData = $targetContent.vSAN.'Cluster Data Encryption Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.vSAN.'Cluster Data Encryption Status' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -2709,7 +2710,7 @@ Function Publish-VsanHealth {
             $customObject += $outputObject # Adding individual component to main customObject
 
             # Cluster Data Deduplication Status
-            $jsonInputData = $targetContent.vSAN.'Cluster Data Deduplication Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.vSAN.'Cluster Data Deduplication Status' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -2718,7 +2719,7 @@ Function Publish-VsanHealth {
             $customObject += $outputObject # Adding individual component to main customObject
 
             # Stretched Cluster Status
-            $jsonInputData = $targetContent.vSAN.'Stretched Cluster Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.vSAN.'Stretched Cluster Status' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -2727,7 +2728,7 @@ Function Publish-VsanHealth {
             $customObject += $outputObject # Adding individual component to main customObject
 
             # Stretched Cluster Health Status
-            $jsonInputData = $targetContent.vSAN.'Stretched Cluster Health Status' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.vSAN.'Stretched Cluster Health Status' # Extract Data from the provided SoS JSON
             if ($PsBoundParameters.ContainsKey("failureOnly")) {
                 $outputObject = Read-JsonElement -inputData $jsonInputData -failureOnly # Call Function to Structure the Data for Report Output
             } else {
@@ -2736,7 +2737,7 @@ Function Publish-VsanHealth {
             $customObject += $outputObject # Adding individual component to main customObject
 
             # Stretched Cluster Tests
-            $jsonInputData = $targetContent.vSAN.'Stretched Cluster Tests' # Extract Data from the provided SOS JSON
+            $jsonInputData = $targetContent.vSAN.'Stretched Cluster Tests' # Extract Data from the provided SoS JSON
             foreach ($component in $jsonInputData.PsObject.Properties.Value) {
                 foreach ($element in $component.PsObject.Properties.Value) {
                     $outputObject = New-Object -TypeName psobject
@@ -2782,26 +2783,26 @@ Export-ModuleMember -Function Publish-VsanHealth
 Function Publish-VsanStoragePolicy {
     <#
         .SYNOPSIS
-        Formats the vSAN Storage Policy for virtual machines from the SoS JSON output.
+        Formats the vSAN storage policy for virtual machines from the SoS JSON output.
 
         .DESCRIPTION
-        The Publish-VsanStoragePolicy cmdlet formats the vSAN Storage Policy data from the SoS JSON output and
+        The Publish-VsanStoragePolicy cmdlet formats the vSAN storage policy data from the SoS JSON output and
         publishes it as either a standard PowerShell object or an HTML object.
 
         .EXAMPLE
-        Publish-VsanStoragePolicy -json <file-name>
-        This example extracts and formats the vSAN Storage Policy data as a PowerShell object from the JSON file.
+        Publish-VsanStoragePolicy -json [file-name]
+        This example extracts and formats the vSAN storage policy data as a PowerShell object from the JSON file.
 
         .EXAMPLE
-        Publish-VsanStoragePolicy -json <file-name> -html
-        This example extracts and formats the vSAN Storage Policy data as an HTML object from the JSON file.
+        Publish-VsanStoragePolicy -json [file-name] -html
+        This example extracts and formats the vSAN storage policy data as an HTML object from the JSON file.
 
         .EXAMPLE
-        Publish-VsanStoragePolicy -json <file-name> -failureOnly
-        This example extracts and formats the vSAN Storage Policy data as a PowerShell object from the JSON file for only the failed items.
+        Publish-VsanStoragePolicy -json [file-name] -failureOnly
+        This example extracts and formats the vSAN storage policy data as a PowerShell object from the JSON file for only the failed items.
 
         .PARAMETER json
-        The path to the JSON file containing the SoS Health Summary data.
+        The path to the JSON file containing the SoS health summary data.
 
         .PARAMETER html
         Specifies that the output should be formatted as an HTML object.
@@ -2824,7 +2825,7 @@ Function Publish-VsanStoragePolicy {
         }
 
         # VSAN Storage Policy
-        $jsonInputData = $targetContent.vSAN # Extract Data from the provided SOS JSON
+        $jsonInputData = $targetContent.vSAN # Extract Data from the provided SoS JSON
         if (($jsonInputData | Measure-Object).Count -lt 1) {
             Write-Warning 'vSAN data not found in the JSON file: SKIPPED'
         } else {
@@ -2894,29 +2895,29 @@ Function Publish-BackupStatus {
         Request and publish the backup status.
 
         .DESCRIPTION
-        The Publish-BackupStatus cmdlet checks the backup status for SDDC Manager, vCenter Server instances, and NSX
+        The Publish-BackupStatus cmdlet checks the backup status for SDDC Manager, vCenter instances, and NSX
         Local Manager clusters in a VMware Cloud Foundation instance and prepares the data to be published to an HTML
-        report. The cmdlet connects to SDDC Manager using the -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Performs checks on the backup status and outputs the results
+        report. The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Performs checks on the backup status and outputs the results.
         - outputJson parameter takes in name of the folder to save the json. Filename is autogenerated.
 
         .EXAMPLE
-        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance.
+        Publish-BackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will publish the backup status for the SDDC Manager, vCenter instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will publish the backup status for the SDDC Manager, vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance but only reports issues.
+        Publish-BackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will publish the backup status for the SDDC Manager, vCenter instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance but only reports issues.
 
         .EXAMPLE
-        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will publish the backup status for the vCenter Server instances, and NSX Local Manager clusters in workload domain sfo-w01.
+        Publish-BackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will publish the backup status for the vCenter instances, and NSX Local Manager clusters in the specified workload domain.
 
         .EXAMPLE
-        Publish-BackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
-        This example will generate a json for the backup status for the vCenter Server instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance
-        and saves it under F:\Reporting with filename <timestamp>-backup-status.json
+        Publish-BackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
+        This example will generate a json for the backup status for the vCenter instances, and NSX Local Manager clusters in a VMware Cloud Foundation instance and saves it under the
+        specified report path with filename <timestamp>-backup-status.json.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -3014,31 +3015,30 @@ Export-ModuleMember -Function Publish-BackupStatus
 Function Publish-NsxtTransportNodeStatus {
     <#
 		.SYNOPSIS
-        Request and publish the status of NSX transport nodes managed by an NSX Manager cluster.
+        Request and publish the status of NSX transport nodes.
 
         .DESCRIPTION
-        The Publish-NsxtTransportNodeStatus cmdlet checks the status NSX transport nodes managed by an NSX Manager cluster
-        and prepares the data to be published to an HTML report.  The cmdlet connects to SDDC Manager using the
-        -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Performs checks on the NSX transport node status and outputs the results
+        The Publish-NsxtTransportNodeStatus cmdlet checks the status NSX transport nodes and prepares the data to be published to an HTML report.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Performs checks on the NSX transport node status and outputs the results.
 
         .EXAMPLE
-        Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will publish the status of all NSX transport nodes in a VMware Cloud Foundation instance.
+        Publish-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will publish the status of all the NSX transport nodes in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will publish thestatus of all NSX transport nodes in a VMware Cloud Foundation instance but only reports issues.
+        Publish-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will publish the status of all the NSX transport nodes in a VMware Cloud Foundation instance but only reports issues.
 
         .EXAMPLE
-        Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will publish the BGP status for the NSX transport nodes in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
+        Publish-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will publish the status of all the NSX transport nodes in a VMware Cloud Foundation instance for a specified workload domain.
 
         .EXAMPLE
-        Publish-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
-        This example will generate a json for the status of all NSX transport nodes in a VMware Cloud Foundation instance.
-        and saves it under F:\Reporting with filename <timestamp>-nsxttransportnode-status.json
+        Publish-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
+        This example will generate a json for the status of all the NSX transport nodes in a VMware Cloud Foundation instance.
+        and saves it under the specified report path with filename <timestamp>-nsxttransportnode-status.json
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -3128,28 +3128,27 @@ Function Publish-NsxtTransportNodeTunnelStatus {
         Request and publish the status of NSX transport node tunnels.
 
         .DESCRIPTION
-        The Publish-NsxtTransportNodeStatus cmdlet checks the status NSX transport node tunnels and prepares the data
-        to be published to an HTML report. The cmdlet connects to SDDC Manager using the -server, -user, and password
-        values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Performs checks on the NSX transport node tunnel status and outputs the results
+        The Publish-NsxtTransportNodeStatus cmdlet checks the status NSX transport node tunnels and prepares the data to be published to an HTML report.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Performs checks on the NSX transport node tunnel status and outputs the results.
 
         .EXAMPLE
-        Publish-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will publish the status of all NSX transport node tunnels in a VMware Cloud Foundation instance.
+        Publish-NsxtTransportNodeTunnelStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will publish the status of all the NSX transport node tunnels in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will publish thestatus of all NSX transport node tunnels in a VMware Cloud Foundation instance but only reports issues.
+        Publish-NsxtTransportNodeTunnelStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will publish thestatus of all the NSX transport node tunnels in a VMware Cloud Foundation instance but only reports issues.
 
         .EXAMPLE
-        Publish-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will publish the BGP status for the NSX transport node tunnels in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
+        Publish-NsxtTransportNodeTunnelStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will publish the BGP status for the NSX transport node tunnels in a VMware Cloud Foundation instance for a specified workload domain.
 
         .EXAMPLE
-        Publish-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
-        This example will generate a json for the status of all NSX transport node tunnels in a VMware Cloud Foundation instance
-        and saves it under F:\Reporting with filename <timestamp>-nsxttntunnel-status.json
+        Publish-NsxtTransportNodeTunnelStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
+        This example will generate a JSON for the status of all of the NSX transport node tunnels in a VMware Cloud Foundation instance and saves it under the specified report path
+        with filename <timestamp>-nsxttntunnel-status.json
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -3239,28 +3238,27 @@ Function Publish-NsxtTier0BgpStatus {
         Request and publish the BGP status for the NSX Tier-0 gateways.
 
         .DESCRIPTION
-        The Publish-NsxtTier0BgpStatus cmdlet checks the BGP status for the NSX Tier-0 gateways in a VMware Cloud
-        Foundation instance and prepares the data to be published to an HTML report.  The cmdlet connects to SDDC
-        Manager using the -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Performs checks on the BGP status and outputs the results
+        The Publish-NsxtTier0BgpStatus cmdlet checks the BGP status for the NSX Tier-0 gateways in a VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Performs checks on the BGP status and outputs the results.
 
         .EXAMPLE
-        Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
+        Publish-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
         This example will publish the BGP status for all NSX Tier-0 gateways in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
+        Publish-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
         This example will publish the BGP status for all NSX Tier-0 gateways in a VMware Cloud Foundation instance but only for the failed items.
 
         .EXAMPLE
-        Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will publish the BGP status for the NSX Tier-0 gateways in a VMware Cloud Foundation instance for a workload domain named sfo-w01.
+        Publish-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will publish the BGP status for the NSX Tier-0 gateways in a VMware Cloud Foundation instance for a specified workload domain.
 
         .EXAMPLE
-        Publish-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
+        Publish-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
         This example will generate a json for the BGP status for all NSX Tier-0 gateways in a VMware Cloud Foundation instance.
-        and saves it under F:\Reporting with filename <timestamp>-nsxttier0bgp-status.json
+        and saves it under the specified report path with filename <timestamp>-nsxttier0bgp-status.json
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -3347,36 +3345,34 @@ Export-ModuleMember -Function Publish-NsxtTier0BgpStatus
 Function Publish-SnapshotStatus {
     <#
 		.SYNOPSIS
-        Request and publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes
-        managed by SDDC Manager.
+        Requests and publishes the snapshot status for the SDDC Manager, vCenter instances, and NSX Edge Nodes managed by SDDC Manager.
 
         .DESCRIPTION
-        The Publish-SnapshotStatus cmdlet checks the snapshot status for SDDC Manager, vCenter Server instances,
-        and NSX Edge nodes in a VMware Cloud Foundation instance and prepares the data to be published
-        to an HTML report. The cmdlet connects to SDDC Manager using the -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Performs checks on the snapshot status and outputs the results
+        The Publish-SnapshotStatus cmdlet checks the snapshot status for SDDC Manager, vCenter instances, and NSX Edge Nodes in a VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Performs checks on the snapshot status and outputs the results.
 
         .NOTES
         The cmdlet will not publish the snapshot status for NSX Local Manager cluster appliances managed by SDDC Manager.
-        Snapshots are not recommended for NSX Manager cluster appliances and are disabled by default.
+        Snapshots are not recommended for NSX appliances and are disabled by default.
 
         .EXAMPLE
-        Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.
+        Publish-SnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will publish the snapshot status for the SDDC Manager, vCenter instances, and NSX Edge Nodes managed by SDDC Manager.
 
         .EXAMPLE
-        Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will publish the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager but only failed items
+        Publish-SnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will publish the snapshot status for the SDDC Manager, vCenter instances, and NSX Edge Nodes managed by SDDC Manager but only reports issues.
 
         .EXAMPLE
-        Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will publish the snapshot status for the SDDC Manager, vCenter Server instance, and NSX Edge nodes managed by SDDC Manager for a workload domain named sfo-w01.
+        Publish-SnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will publish the snapshot status for the SDDC Manager, vCenter instance, and NSX Edge Nodes managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Publish-SnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
-        This example will generate a json for the snapshot status for the SDDC Manager, vCenter Server instances, and NSX Edge nodes managed by SDDC Manager.
-        and saves it under F:\Reporting with filename <timestamp>-snapshot-status.json
+        Publish-SnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
+        This example will generate a json for the snapshot status for the SDDC Manager, vCenter instances, and NSX Edge Nodes managed by SDDC Manager
+        and saves it under the specified report path with filename <timestamp>-snapshot-status.json
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -3474,32 +3470,33 @@ Export-ModuleMember -Function Publish-SnapshotStatus
 Function Publish-NsxtHealthNonSOS {
     <#
 		.SYNOPSIS
-        Publish NSX Manager Health only for health checks which are not a part of SOS Utility NSX health. Data obtained is a subset of Publish-NsxtCombinedHealth cmdlet.
+        Publish NSX health only for health checks which are not a part of the SoS Utility NSX health.
+        Data obtained is a subset of Publish-NsxtCombinedHealth cmdlet.
 
         .DESCRIPTION
-        The Publish-NsxtHealthNonSOS cmdlet performs additional checks outside of SOS Utility to get the health of NSX Manager on the VMware Cloud Foundation instance
-        and prepares the data to be published to an HTML report. Data obtained is subset of Publish-NsxtCombinedHealth cmdlet. The cmdlet connects to SDDC Manager using the
-        -server, -user, and password values:
-        - Validates that network connectivity and autehentication is available to SDDC Manager
-        - Validates that network connectivity and autehentication is available to NSX Manager
-        - Performs health checks and outputs the results
+        The Publish-NsxtHealthNonSOS cmdlet performs additional checks outside of the SoS Utility to get the health of NSX on the VMware Cloud Foundation instance and prepares the
+        data to be published to an HTML report.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity and autehentication is available to SDDC Manager.
+        - Validates that network connectivity and autehentication is available to NSX.
+        - Performs health checks and outputs the results.
+        Data obtained is subset of Publish-NsxtCombinedHealth cmdlet
 
         .EXAMPLE
-        Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example checks NSX Manager health outside SOS Utility for all workload domains across the VMware Cloud Foundation instance.
+        Publish-NsxtHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example checks NSX health outside the SoS Utility for all workload domains across the VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example checks NSX Manager health outside SOS Utility for a single workload domain in a VMware Cloud Foundation instance.
+        Publish-NsxtHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example checks NSX health outside the SoS Utility for all workload domains across the VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example checks NSX Manager health outside SOS Utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
+        Publish-NsxtHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example checks NSX health outside the SoS Utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
         .EXAMPLE
-        Publish-NsxtHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
-        This example checks NSX Manager health outside SOS Utility for all workload domains across the VMware Cloud Foundation instance and
-        and saves it as JSON under F:\Reporting with filename <timestamp>-nsxtcombinedhealthnonsos-status.json
+        This example checks NSX health outside the SoS Utility for all workload domains across the VMware Cloud Foundation instance and
+        and saves it as JSON under [report_path] with filename <timestamp>-nsxtcombinedhealthnonsos-status.json
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -3565,9 +3562,9 @@ Function Publish-NsxtHealthNonSOS {
         } else {
             if ($allNsxtHealthObject.Count -eq 0) { $addNoIssues = $true }
             if ($addNoIssues) {
-                $allNsxtHealthObject = $allNsxtHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status - Non SOS</h3>' -PostContent '<p>No issues found.</p>'
+                $allNsxtHealthObject = $allNsxtHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status - Non SoS</h3>' -PostContent '<p>No issues found.</p>'
             } else {
-                $allNsxtHealthObject = $allNsxtHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status - Non SOS</h3>' -As Table
+                $allNsxtHealthObject = $allNsxtHealthObject | Sort-Object Component, Resource | ConvertTo-Html -Fragment -PreContent '<a id="nsx-local-manager"></a><h3>NSX Manager Health Status - Non SoS</h3>' -As Table
             }
             $allNsxtHealthObject = Convert-CssClass -htmldata $allNsxtHealthObject
             $allNsxtHealthObject
@@ -3582,27 +3579,26 @@ Export-ModuleMember -Function Publish-NsxtHealthNonSOS
 Function Publish-NsxtCombinedHealth {
     <#
 		.SYNOPSIS
-        Request and publish NSX Manager Health.
+        Request and publish NSX health.
 
         .DESCRIPTION
-        The Publish-NsxtCombinedHealth cmdlet checks the health of NSX Manager on the VMware Cloud Foundation instance
-        and prepares the data to be published to an HTML report. The cmdlet connects to SDDC Manager using the
-        -server, -user, and password values:
-        - Validates that network connectivity and autehentication is available to SDDC Manager
-        - Validates that network connectivity and autehentication is available to NSX Manager
-        - Performs health checks and outputs the results
+        The Publish-NsxtCombinedHealth cmdlet checks the health of NSX in the VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity and authentication is available to SDDC Manager.
+        - Validates that network connectivity and authentication is available to NSX.
+        - Performs health checks and outputs the results.
 
         .EXAMPLE
-        Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains
-        This example checks NSX Manager health for all workload domains across the VMware Cloud Foundation instance.
+        Publish-NsxtCombinedHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example checks NSX health for all workload domains across the VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -workloadDomain sfo-w01
-        This example checks NSX Manager health for a single workload domain in a VMware Cloud Foundation instance.
+        Publish-NsxtCombinedHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example checks NSX health for a specified workload domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-NsxtCombinedHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains -failureOnly
-        This example checks NSX Manager health for all workload domains across the VMware Cloud Foundation instance but only reports issues.
+        Publish-NsxtCombinedHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example checks NSX health for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -3682,28 +3678,30 @@ Function Publish-StorageCapacityHealth {
         Request and publish the storage capacity status.
 
         .DESCRIPTION
-        The Publish-StorageCapacityHealth cmdlet checks the storage usage status for SDDC Manager, vCenter Server,
-        Datastores and ESXi hosts, in a VMware Cloud Foundation instance and prepares the data to be published
-        to an HTML report or plain text to console. The cmdlet connects to SDDC Manager using the -server, -user, -pass, -localUser, and -localPass values:
-        - Validates the network connectivity and authantication to the SDDC Manager instance
-        - Performs checks on the storage usage status and outputs the results
+        The Publish-StorageCapacityHealth cmdlet checks the storage usage status for SDDC Manager, vCenter, datastores and ESX hosts, in a VMware Cloud Foundation instance
+        and prepares the data to be published to an HTML report or plain text to console.
+        The cmdlet connects to the SDDC Manager using the -server, -user, -pass, -localUser, and -localPass values:
+        - Validates the network connectivity and authentication to the SDDC Manager instance.
+        - Performs checks on the storage usage status and outputs the results.
 
         .EXAMPLE
-        Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -allDomains
-        This example will publish storage usage status for SDDC Manager, vCenter Server instances, ESXi hosts, and datastores in a VMware Cloud Foundation instance
+        Publish-StorageCapacityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_user_password] -allDomains
+        This example will publish storage usage status for SDDC Manager, vCenter instances, ESX hosts, and datastores in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -allDomains -failureOnly
-        This example will publish storage usage status for SDDC Manager, vCenter Server instances, ESXi hosts, and datastores in a VMware Cloud Foundation instance but only for the failed items.
+        Publish-StorageCapacityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_user_password] -allDomains -failureOnly
+        This example will publish storage usage status for SDDC Manager, vCenter instances, ESX hosts, and datastores in a VMware Cloud Foundation instance but only reports issues.
 
         .EXAMPLE
-        Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -workloadDomain sfo-w01
-        This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance
+        Publish-StorageCapacityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_user_password] -workloadDomain
+        [workload_domain_name]
+        This example will publish storage usage status for a specified workload domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-StorageCapacityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -workloadDomain sfo-w01 -outputJson F:\Reporting
-        This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance
-        and saves it as JSON under F:\Reporting with filename <timestamp>-storagecapacityhealth-status.json
+        Publish-StorageCapacityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_user_password] -workloadDomain
+        [workload_domain_name] -outputJson [report_path]
+        This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance and
+        saves it as JSON under the specified report path with filename <timestamp>-storagecapacityhealth-status.json.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -3853,23 +3851,23 @@ Export-ModuleMember -Function Publish-StorageCapacityHealth
 Function Request-NsxtVidmStatus {
     <#
         .SYNOPSIS
-        Returns the status of the Identity Manager integration for an NSX Manager cluster.
+        Returns the status of the identity manager integration for NSX.
 
         .DESCRIPTION
-        The Request-NsxtVidmStatus cmdlet returns the status of the Identity Manager integration for an NSX Manager cluster.
+        The Request-NsxtVidmStatus cmdlet returns the status of the identity manager integration for NSX.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates network connectivity and authentication to the SDDC Manager instanc
-        - Gathers the details for the NSX Manager cluster from the SDDC Manager
-        - Validates network connectivity and authentication to the NSX Local Manager cluster
-        - Collects the Identity Manager integration status details
+        - Validates network connectivity and authentication to the SDDC Manager instance.
+        - Gathers the details for NSX from the SDDC Manager.
+        - Validates network connectivity and authentication to NSX.
+        - Collects the identity manager integration status details.
 
         .EXAMPLE
-        Request-NsxtVidmStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return the status of the Identity Manager integration for an NSX Manager cluster managed by SDDC Manager for a workload domain.
+        Request-NsxtVidmStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return the status of the identity manager integration for NSX managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-NsxtVidmStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return the status of the Identity Manager integration for an NSX Manager cluster managed by SDDC Manager for a workload domain but only reports issues.
+        Request-NsxtVidmStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will return the status of the identity manager integration for NSX managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -3958,23 +3956,23 @@ Export-ModuleMember -Function Request-NsxtVidmStatus
 Function Request-NsxtComputeManagerStatus {
     <#
         .SYNOPSIS
-        Returns the status of the compute managers attached to an NSX Manager cluster.
+        Returns the status of the compute managers attached to NSX.
 
         .DESCRIPTION
-        The Request-NsxtComputeManagerStatus cmdlet returns the status of the compute managers attached to an NSX Manager cluster.
+        The Request-NsxtComputeManagerStatus cmdlet returns the status of the compute managers attached to NSX.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates network connectivity and authentication to the SDDC Manager instance
-        - Gathers the details for the NSX Manager cluster from the SDDC Manager
-        - Validates network connectivity and authentication to the NSX Local Manager cluster
-        - Collects the status of the compute managers
+        - Validates network connectivity and authentication to the SDDC Manager instance.
+        - Gathers the details for NSX from the SDDC Manager.
+        - Validates network connectivity and authentication to NSX.
+        - Collects the status of the compute managers.
 
         .EXAMPLE
-        Request-NsxtComputeManagerStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return the status of the compute managers attached to an NSX Manager cluster managed by SDDC Manager for a workload domain.
+        Request-NsxtComputeManagerStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return the status of the compute managers attached to NSX managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-NsxtComputeManagerStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return the status of the compute managers attached to an NSX Manager cluster managed by SDDC Manager for a workload domain but only reports issues.
+        Request-NsxtComputeManagerStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will return the status of the compute managers attached to NSX managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -4066,19 +4064,19 @@ Function Request-SddcManagerSnapshotStatus {
 
         .DESCRIPTION
         The Request-SddcManagerSnapshotStatus cmdlet checks the snapshot status for SDDC Manager.
-        The cmdlet connects to SDDC Manager using the -server, -user, and password values:
-        - Validates network connectivity and authenticaton to the SDDC Manager instance
-        - Gathers the details for the vCenter Server instance from the SDDC Manager
-        - Validates network connectivity and authentication to the vCenter Server instance
-        - Performs checks on the snapshot status and outputs the results
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates network connectivity and authenticaton to the SDDC Manager instance.
+        - Gathers the details for the vCenter instance from the SDDC Manager.
+        - Validates network connectivity and authentication to the vCenter instance.
+        - Performs checks on the snapshot status and outputs the results.
 
         .EXAMPLE
-        Request-SddcManagerSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        Request-SddcManagerSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
         This example will publish the snapshot status for the SDDC Manager in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Request-SddcManagerSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
-        This example will publish the snapshot status for the SDDC Manager in a VMware Cloud Foundation instance, but for only failed items.
+        Request-SddcManagerSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -failureOnly
+        This example will publish the snapshot status for the SDDC Manager in a VMware Cloud Foundation instance but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -4184,23 +4182,23 @@ Export-ModuleMember -Function Request-SddcManagerSnapshotStatus
 Function Request-VcenterSnapshotStatus {
     <#
 		.SYNOPSIS
-        Request the snapshot status for the vCenter Server instance.
+        Request the snapshot status for the vCenter instance.
 
         .DESCRIPTION
-        The Request-VcenterSnapshotStatus cmdlet checks the snapshot status for vCenter Server instance.
-        The cmdlet connects to SDDC Manager using the -server, -user, and password values:
-        - Validates network connectivity and authentication to the SDDC Manager instance
-        - Gathers the details for the vCenter Server instance from the SDDC Manager
-        - Validates network connectivity and authentication to the vCenter Server instance
-        - Performs checks on the snapshot status and outputs the results
+        The Request-VcenterSnapshotStatus cmdlet checks the snapshot status for vCenter instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates network connectivity and authentication to the SDDC Manager instance.
+        - Gathers the details for the vCenter instance from the SDDC Manager.
+        - Validates network connectivity and authentication to the vCenter instance.
+        - Performs checks on the snapshot status and outputs the results.
 
         .EXAMPLE
-        Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will publish the snapshot status for a vCenter Server instance for a specific workload domain.
+        Request-VcenterSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will publish the snapshot status for a vCenter instance managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-VcenterSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will publish the snapshot status for a vCenter Server instance for a specific workload domain, but only failed items.
+        Request-VcenterSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will publish the snapshot status for a vCenter instance managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -4312,23 +4310,23 @@ Export-ModuleMember -Function Request-VcenterSnapshotStatus
 Function Request-NsxtEdgeSnapshotStatus {
     <#
 		.SYNOPSIS
-        Request the snapshot status for NSX Edge nodes.
+        Request the snapshot status for NSX edge nodes.
 
         .DESCRIPTION
-        The Request-NsxtEdgeSnapshotStatus cmdlet checks the snapshot status for NSX Edge nodes.
-        The cmdlet connects to SDDC Manager using the -server, -user, and password values:
-        - Validates network connectivity and authentication to the SDDC Manager instance
-        - Gathers the NSX Manager and NSX Edge node details from the SDDC Manager
-        - Validates network connectivity and authentication to the vCenter Server instance
-        - Performs checks on the snapshot status and outputs the results
+        The Request-NsxtEdgeSnapshotStatus cmdlet checks the snapshot status for NSX edge nodes.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates network connectivity and authentication to the SDDC Manager instance.
+        - Gathers the NSX service and edge node details from the SDDC Manager.
+        - Validates network connectivity and authentication to the vCenter instance.
+        - Performs checks on the snapshot status and outputs the results.
 
         .EXAMPLE
-        Request-NsxtEdgeSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will publish the snapshot status for all NSX Edge nodes managed by SDDC Manager for a specific workload domain.
+        Request-NsxtEdgeSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will publish the snapshot status for all NSX edge nodes managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-NsxtEdgeSnapshotStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will publish the snapshot status for all NSX Edge nodes managed by SDDC Manager for a specific workload domain. but only failed items.
+        Request-NsxtEdgeSnapshotStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will publish the snapshot status for all NSX edge nodes managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -4449,17 +4447,17 @@ Function Request-SddcManagerBackupStatus {
         Returns the status of the file-level latest backup task in an SDDC Manager instance.
 
         .DESCRIPTION
-        The Request-SddcManagerBackupStatus cmdlet returns the status of the latest file-level backup task in an SDDC
-        Manager instance. The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates network connectivity and authentication to the SDDC Manager instance
-        - Collects the latest file-level backup status details
+        The Request-SddcManagerBackupStatus cmdlet returns the status of the latest file-level backup task in an SDDC Manager instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates network connectivity and authentication to the SDDC Manager instance.
+        - Collects the latest file-level backup status details.
 
         .EXAMPLE
-        Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        Request-SddcManagerBackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
         This example will return the status of the latest file-level backup task in an SDDC Manager instance.
 
         .EXAMPLE
-        Request-SddcManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
+        Request-SddcManagerBackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -failureOnly
         This example will return the status of the latest file-level backup task in an SDDC Manager instance but only reports issues.
 
         .PARAMETER server
@@ -4569,23 +4567,23 @@ Export-ModuleMember -Function Request-SddcManagerBackupStatus
 Function Request-NsxtManagerBackupStatus {
     <#
         .SYNOPSIS
-        Returns the status of the latest file-level backup of an NSX Manager cluster.
+        Returns the status of the latest file-level backup of an NSX.
 
         .DESCRIPTION
-        The Request-NsxtManagerBackupStatus cmdlet returns the status of the latest backup of an NSX Manager cluster.
+        The Request-NsxtManagerBackupStatus cmdlet returns the status of the latest backup of an NSX instance.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates network connectivity and authentication to the SDDC Manager instance
-        - Gathers the details for the NSX Manager cluster from the SDDC Manager
-        - Validates network connectivity and authentication to the NSX Manager cluster
-        - Collects the file-level backup status details
+        - Validates network connectivity and authentication to the SDDC Manager instance.
+        - Gathers the details for NSX from the SDDC Manager.
+        - Validates network connectivity and authentication to NSX.
+        - Collects the file-level backup status details.
 
         .EXAMPLE
-        Request-NsxtManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return the status of the latest file-level backup of an NSX Manager cluster managed by SDDC Manager for a workload domain.
+        Request-NsxtManagerBackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return the status of the latest file-level backup of NSX managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-NsxtManagerBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return the status of the latest file-level backup of an NSX Manager cluster managed by SDDC Manager for a workload domain but only reports issues.
+        Request-NsxtManagerBackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will return the status of the latest file-level backup of NSX managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -4812,23 +4810,23 @@ Export-ModuleMember -Function Request-NsxtManagerBackupStatus
 Function Request-VcenterBackupStatus {
     <#
         .SYNOPSIS
-        Returns the status of the file-level latest backup of a vCenter Server instance.
+        Returns the status of the latest file-level backup of a vCenter instance.
 
         .DESCRIPTION
-        The Request-VcenterBackupStatus cmdlet returns the status of the latest backup of a vCenter Server instance.
+        The Request-VcenterBackupStatus cmdlet returns the status of the latest file-level backup of a vCenter instance.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates network connectivity and authentication to the SDDC Manager instance
-        - Gathers the details for the NvCenter Server instance from the SDDC Manager
-        - Validates network connectivity and authentication to the vCenter Server instance
-        - Collects the file-level backup status details
+        - Validates network connectivity and authentication to the SDDC Manager instance.
+        - Gathers the details for the vCenter instance from the SDDC Manager.
+        - Validates network connectivity and authentication to the vCenter instance.
+        - Collects the file-level backup status details.
 
         .EXAMPLE
-        Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain.
+        Request-VcenterBackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return the status of the latest file-level backup of a vCenter instance managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-VcenterBackupStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return the status of the latest file-level backup of a vCenter Server instance managed by SDDC Manager for a workload domain but only reports issues.
+        Request-VcenterBackupStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will return the status of the latest file-level backup of a vCenter instance managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -4955,23 +4953,23 @@ Export-ModuleMember -Function Request-VcenterBackupStatus
 Function Request-DatastoreStorageCapacity {
     <#
 		.SYNOPSIS
-        Checks the datastore usage in all vCenter Server instances.
+        Checks the datastore usage in all vCenter instances.
 
         .DESCRIPTION
-        The Request-DatastoreStorageCapacity cmdlet checks the datastore usage in all vCenters. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the details for each vCenter Server
-        - Collects information about datastore usage
+        The Request-DatastoreStorageCapacity cmdlet checks the datastore usage in all vCenters.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Gathers the details for each vCenter.
+        - Collects information about datastore usage.
 
         .EXAMPLE
-        Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will check datastores on all vCenter Servers managed by SDDC Manager in a VMware Cloud Foundation instance but only failed items.
+        Request-DatastoreStorageCapacity -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will check datastores on a vCenter managed by SDDC Manager in a specified workload domain.
 
         .EXAMPLE
-        Request-DatastoreStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will check datastore on a vCenter Servers managed by SDDC Manager for a workload domain.
+        Request-DatastoreStorageCapacity -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will check datastores on a vCenter managed by SDDC Manager in a VMware Cloud Foundation instance in a specified workload domain and will only report issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -5068,23 +5066,23 @@ Export-ModuleMember -Function Request-DatastoreStorageCapacity
 Function Request-VcenterStorageHealth {
     <#
 		.SYNOPSIS
-        Checks the disk usage on a vCenter Server instance.
+        Checks the disk usage on a vCenter instance.
 
         .DESCRIPTION
-        The Request-VcenterStorageHealth cmdlets checks the disk space usage on a vCenter Server. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates network connectivity and authentication to the SDDC Manager instance
-        - Validates network connectivity and authentication to the vCenter Server instance
-        - Collects information for the disk usage
-        - Checks disk usage against thresholds and outputs the results
+        The Request-VcenterStorageHealth cmdlets checks the disk space usage on a vCenter instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates network connectivity and authentication to the SDDC Manager instance.
+        - Validates network connectivity and authentication to the vCenter instance.
+        - Collects information for the disk usage.
+        - Checks disk usage against thresholds and outputs the results.
 
         .EXAMPLE
-        Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will check disk usage for a single workload domain
+        Request-VcenterStorageHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will check disk usage for a vCenter instance managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-VcenterStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will check the disk usage for all vCenter Server instances but only reports issues.
+        Request-VcenterStorageHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will check the disk usage for all vCenter instances managed by SDDC Manager but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -5132,7 +5130,7 @@ Function Request-VcenterStorageHealth {
                                 } else {
                                     Format-DfStorageHealth -dfOutput $dfOutput -systemFqdn $vcenter.fqdn
                                 }
-                             } else {
+                            } else {
                                 $alert = "RED"
                                 $message = "vCenter Connection check failed!"
                                 $elementObject = New-Object System.Collections.ArrayList
@@ -5142,7 +5140,7 @@ Function Request-VcenterStorageHealth {
                                 $elementObject | Add-Member -NotePropertyName 'Alert' -NotePropertyValue $alert
                                 $elementObject | Add-Member -NotePropertyName 'Message' -NotePropertyValue $message
                                 $customObject += $elementObject
-                              }
+                            }
                                 $customObject | Sort-Object Component, Resource
 
                         }
@@ -5160,20 +5158,20 @@ Export-ModuleMember -Function Request-VcenterStorageHealth
 Function Request-SddcManagerStorageHealth {
     <#
 		.SYNOPSIS
-        Checks the storage health (capacity) in an SDDC Manager appliance.
+        Checks the storage health capacity in an SDDC Manager appliance.
 
         .DESCRIPTION
-        The Request-SddcManagerStorageHealth cmdlet checks the disk free space on the SDDC Manager appliance.
-        The cmdlet connects to SDDC Manager using the -server, -user, -pass, -localUser, and -localPass values:
-        - Performs checks on the local storage used space and outputs the results
+        The Request-SddcManagerStorageHealth cmdlet checks the hard disk space in an SDDC Manager appliance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, -pass, -localUser, and -localPass values:
+        - Performs checks on the local storage used space in an SDDC Manager appliance and outputs the results.
 
         .EXAMPLE
-        Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1!
-        This example checks the hard disk space in the SDDC Manager appliance.
+        Request-SddcManagerStorageHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_password]
+        This example checks the hard disk space in an SDDC Manager appliance.
 
         .EXAMPLE
-        Request-SddcManagerStorageHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -localUser vcf -localPass VMw@re1! -failureOnly
-        This example checks the hard disk space in the SDDC Manager appliance and outputs only the failures.
+        Request-SddcManagerStorageHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_password] -failureOnly
+        This example checks the hard disk space in an SDDC Manager appliance.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -5226,22 +5224,22 @@ Export-ModuleMember -Function Request-SddcManagerStorageHealth
 Function Request-EsxiStorageCapacity {
     <#
 		.SYNOPSIS
-        Checks the disk usage for ESXi hosts.
+        Checks the disk usage for ESX hosts.
 
         .DESCRIPTION
-        The Request-EsxiStorageCapacity cmdlets checks the disk space usage on ESXi hosts. The cmdlet connects to SDDC
-        Manager using the -server, -user, and -pass values:
-        - Validates network connectivity and authentication to the SDDC Manager instance
-        - Collects disk usage information for each ESXi host in the workload domain
-        - Checks disk usage against thresholds and outputs the results
+        The Request-EsxiStorageCapacity cmdlets checks the disk space usage on ESX hosts.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates network connectivity and authentication to the SDDC Manager instance.
+        - Collects disk usage information for each ESX host in the workload domain.
+        - Checks disk usage against thresholds and outputs the results.
 
         .EXAMPLE
-        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will check disk usage for ESXi hosts managed by SDDC Manager for a single workload domain.
+        Request-EsxiStorageCapacity -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will check disk usage for ESX hosts managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-EsxiStorageCapacity -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will check disk usage for ESXi hosts managed by SDDC Manager for a single workload domain but only reports issues.
+        Request-EsxiStorageCapacity -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will check disk usage for ESX hosts managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -5317,32 +5315,31 @@ Export-ModuleMember -Function Request-EsxiStorageCapacity
 Function Publish-ComponentConnectivityHealthNonSOS {
     <#
 		.SYNOPSIS
-        Request and publish Component Connectivity Health only for health checks which are not a part of SOS Utility NSX health.
-		Data obtained is a subset of Publish-ComponentConnectivityHealth cmdlet.
+        Request and publish component connectivity health only for health checks which are not a part of SoS Utility health.
+        Data obtained is a subset of Publish-ComponentConnectivityHealth cmdlet.
 
         .DESCRIPTION
-        The Publish-ComponentConnectivityHealthNonSOS cmdlet checks component connectivity across the VMware Cloud Foundation
-        instance and prepares the data to be published to an HTML report. The cmdlet connects to SDDC Manager using the
-        -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Performs connectivityy health checks and outputs the results
+        The Publish-ComponentConnectivityHealthNonSOS cmdlet checks component connectivity across the VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Performs connectivityy health checks and outputs the results.
 
         .EXAMPLE
-        Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance.
+        Publish-ComponentConnectivityHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example checks the component connectivity outside of SoS utility for all workload domains across the VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!  -workloadDomain sfo-w01
-        This example checks the component connectivity outside of SOS utility for a single workload domain in a VMware Cloud Foundation instance.
+        Publish-ComponentConnectivityHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]  -workloadDomain [workload_domain_name]
+        This example checks the component connectivity outside of SoS utility for a single workload domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
+        Publish-ComponentConnectivityHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example checks the component connectivity outside of SoS utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
 		.EXAMPLE
-        Publish-ComponentConnectivityHealthNonSOS -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -jsonOutput F:\Reporting
-        This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance
-		and saves it under F:\Reporting with filename <timestamp>-componentconnectivityhealthnonsos-status.json
+        Publish-ComponentConnectivityHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -jsonOutput [report_path]
+        This example checks the component connectivity outside of SoS utility for all workload domains across the VMware Cloud Foundation instance
+        and saves it under [report_path] with filename <timestamp>-componentconnectivityhealthnonsos-status.json.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -5421,25 +5418,24 @@ Export-ModuleMember -Function Publish-ComponentConnectivityHealthNonSOS
 Function Publish-ComponentConnectivityHealth {
     <#
 		.SYNOPSIS
-        Request and publish Component Connectivity Health.
+        Request and publish component connectivity health.
 
         .DESCRIPTION
-        The Publish-ComponentConnectivityHealth cmdlet checks component connectivity across the VMware Cloud Foundation
-        instance and prepares the data to be published to an HTML report. The cmdlet connects to SDDC Manager using the
-        -server, -user, and password values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Performs connectivityy health checks and outputs the results
+        The Publish-ComponentConnectivityHealth cmdlet checks component connectivity across the VMware Cloud Foundation instance and prepares the data to be published to an HTML report.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Performs connectivity health checks and outputs the results.
 
         .EXAMPLE
-        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains
+        Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -json [json-file] -allDomains
         This example checks the component connectivity for all workload domains across the VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -workloadDomain sfo-w01
-        This example checks the component connectivity for a single workload domain in a VMware Cloud Foundation instance.
+        Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -json [json-file] -workloadDomain [workload_domain_name]
+        This example checks the component connectivity for a specified workload domain in a VMware Cloud Foundation instance.
 
         .EXAMPLE
-        Publish-ComponentConnectivityHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -json <json-file> -allDomains -failureOnly
+        Publish-ComponentConnectivityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -json [json-file] -allDomains -failureOnly
         This example checks the component connectivity for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
         .PARAMETER server
@@ -5518,25 +5514,26 @@ Export-ModuleMember -Function Publish-ComponentConnectivityHealth
 Function Request-VcenterAuthentication {
     <#
 		.SYNOPSIS
-        Checks API authentication to vCenter Server instance.
+        Checks API authentication to a vCenter instance.
 
         .DESCRIPTION
-        The Request-VcenterAuthentication cmdlets checks the authentication to vCenter Server instance. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
+        The Request-VcenterAuthentication cmdlets checks the authentication to a vCenter instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Validates that network connectivity is available to the vCenter instance.
 
         .EXAMPLE
-        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will check authentication to vCenter Server API for all vCenter Server instances managed by SDDC Manager.
+        Request-VcenterAuthentication -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will check authentication to vCenter API for all vCenter instances managed by SDDC Manager.
 
         .EXAMPLE
-        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will check authentication to vCenter Server API for a single workload domain
+        Request-VcenterAuthentication -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will check authentication to vCenter API for a specified workload domain.
 
         .EXAMPLE
-        Request-VcenterAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will check authentication to vCenter Server API for all vCenter Server instances but only reports issues.
+        Request-VcenterAuthentication -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will check authentication to vCenter API for all vCenter instances managed by SDDC Manager but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -5635,25 +5632,25 @@ Export-ModuleMember -Function Request-VcenterAuthentication
 Function Request-NsxtAuthentication {
     <#
 		.SYNOPSIS
-        Checks API authentication to NSX Manager cluster.
+        Checks API authentication to NSX.
 
         .DESCRIPTION
-        The Request-NsxtAuthentication cmdlets checks the authentication to NSX Manager cluster. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the NSX Manager cluster
+        The Request-NsxtAuthentication cmdlets checks the authentication to NSX.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to NSX.
 
         .EXAMPLE
-        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will check authentication to NSX Manager API for all NSX Manager clusters managed by SDDC Manager.
+        Request-NsxtAuthentication -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will check authentication to the NSX API for all instances of NSX managed by SDDC Manager.
 
         .EXAMPLE
-        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will check authentication to NSX Manager API for a single workload domain
+        Request-NsxtAuthentication -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will check authentication to the NSX API for a specified workload domain.
 
         .EXAMPLE
-        Request-NsxtAuthentication -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will check authentication to NSX Manager API for all NSX Manager clusters but only reports issues.
+        Request-NsxtAuthentication -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will check authentication to the NSX API for all instances of NSX managed by SDDC Manager but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -5763,23 +5760,23 @@ Export-ModuleMember -Function Request-NsxtAuthentication
 Function Request-NsxtTransportNodeStatus {
     <#
         .SYNOPSIS
-        Returns the status of NSX transport nodes managed by an NSX Manager cluster.
+        Returns the status of NSX transport nodes managed by NSX.
 
         .DESCRIPTION
-        The Request-NsxtTransportNodeStatus cmdlet returns the status NSX transport nodes managed by an NSX Manager cluster.
+        The Request-NsxtTransportNodeStatus cmdlet returns the status NSX transport nodes managed by NSX.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates network connectivity and authentication to the SDDC Manager instance
-        - Gathers the details for the NSX Manager cluster from the SDDC Manager
-        - Validates network connectivity and authentication to the NSX Local Manager cluster
-        - Collects the status of the transport nodes
+        - Validates network connectivity and authentication to the SDDC Manager instance.
+        - Gathers the details for NSX from the SDDC Manager.
+        - Validates network connectivity and authentication to NSX.
+        - Collects the status of the transport nodes.
 
         .EXAMPLE
-        Request-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return the status of the NSX transport nodes managed by an NSX Manager cluster which is managed by SDDC Manager for a workload domain.
+        Request-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return the status of the NSX transport nodes managed by NSX which is managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-NsxtTransportNodeStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return the status of the NSX transport nodes managed by an NSX Manager cluster which is managed by SDDC Manager for a workload domain but only reports issues.
+        Request-NsxtTransportNodeStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will return the status of the NSX transport nodes managed by NSX which is managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -5868,20 +5865,20 @@ Function Request-NsxtTransportNodeTunnelStatus {
         Returns the status of NSX transport node tunnels.
 
         .DESCRIPTION
-        The Request-NsxtTransportNodeTunnelStatus cmdlet returns the status NSX transport nodes tunnels.
+        The Request-NsxtTransportNodeTunnelStatus cmdlet returns the status of NSX transport nodes tunnels.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates network connectivity and authentication to the SDDC Manager instance
-        - Gathers the details for the NSX Manager cluster from the SDDC Manager
-        - Validates network connectivity and authentication to the NSX Local Manager cluster
-        - Collects the status of the transport node tunnels
+        - Validates network connectivity and authentication to the SDDC Manager instance.
+        - Gathers the details for NSX from the SDDC Manager.
+        - Validates network connectivity and authentication to NSX.
+        - Collects the status of the transport node tunnels.
 
         .EXAMPLE
-        Request-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return the status of the NSX transport node tunnels for a workload domain.
+        Request-NsxtTransportNodeTunnelStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return the status of the NSX transport node tunnels for a specified workload domain.
 
         .EXAMPLE
-        Request-NsxtTransportNodeTunnelStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return the status of the NSX transport node tunnels for a workload domain but only reports issues.
+        Request-NsxtTransportNodeTunnelStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will return the status of the NSX transport node tunnels for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -5978,23 +5975,23 @@ Export-ModuleMember -Function Request-NsxtTransportNodeTunnelStatus
 Function Request-NsxtTier0BgpStatus {
     <#
         .SYNOPSIS
-        Returns the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster.
+        Returns the BGP status for all Tier-0 gateways managed by NSX.
 
         .DESCRIPTION
-        The Request-NsxtTier0BgpStatus cmdlet returns the BGP status for all Tier-0 gateways managed by the NSX Manager
-        cluster. The cmdlet connects to the NSX Local Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the NSX Local Manager cluster
-        - Gathers the details for the NSX Local Manager cluster
-        - Collects the BGP status for all Tier-0s managed by the NSX Local Manager cluster
+        The Request-NsxtTier0BgpStatus cmdlet returns the BGP status for all Tier-0 gateways managed by NSX.
+        The cmdlet connects to NSX using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to NSX.
+        - Gathers the details for NSX.
+        - Collects the BGP status for all Tier-0 gateways managed by NSX.
 
         .EXAMPLE
-        Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain.
+        Request-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return the BGP status for all Tier-0 gateways managed by NSX which is managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-NsxtTier0BgpStatus -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return the BGP status for all Tier-0 gateways managed by the NSX Local Manager cluster that is managed by SDDC Manager for a workload domain but only reports issues.
+        Request-NsxtTier0BgpStatus -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will return the BGP status for all Tier-0 gateways managed by NSX which is managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -6087,24 +6084,25 @@ Function Publish-VmConnectedCdrom {
         Publish the status of virtual machines with connected CD-ROMs in a workload domain in HTML format.
 
         .DESCRIPTION
-        The Publish-VmConnectedCdrom cmdlet returns the status of virtual machines with connected CD-ROMS in a workload
-        domain in HTML format. The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Publishes information
+        The Publish-VmConnectedCdrom cmdlet returns the status of virtual machines with connected CD-ROMS in a workload domain in HTML format.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Publishes information.
 
         .EXAMPLE
-        Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will returns the status of virtual machines with connected CD-ROMs in all workload domains.
+        Publish-VmConnectedCdrom -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will return the status of virtual machines with connected CD-ROMs in all workload domains.
 
         .EXAMPLE
-        Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will returns the status of virtual machines with connected CD-ROMs in a workload domain.
+        Publish-VmConnectedCdrom -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will return the status of virtual machines with connected CD-ROMs a specified workload domain.
 
         .EXAMPLE
-        Publish-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
+        Publish-VmConnectedCdrom -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
         This example will generate a json with the status of virtual machines with connected CD-ROMs in all workload domains
-        and saves it under F:\Reporting with filename <timestamp>-cdrom-status.json
+        and saves it under the specified report path with filename <timestamp>-cdrom-status.json
+
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -6175,18 +6173,18 @@ Export-ModuleMember -Function Publish-VmConnectedCdrom
 Function Request-VmConnectedCdrom {
     <#
 		.SYNOPSIS
-        Returns the status of virtual machines with connected CD-ROMs in a workload domain.
+        Returns the status of virtual machines with connected CD-ROMs in a specified workload domain.
 
         .DESCRIPTION
-        The Request-VmConnectedCdrom cmdlet returns the status of virtual machines with connected CD-ROMs in a workload
-        domain. The cmdlet connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the status of virtual machines with connected CD-ROMs in a workload domain.
+        The Request-VmConnectedCdrom cmdlet returns the status of virtual machines with connected CD-ROMs in a specified workload domain.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Gathers the status of virtual machines with connected CD-ROMs in a specified workload domain.
 
         .EXAMPLE
-        Request-VmConnectedCdrom -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example returns the status of virtual machines with connected CD-ROMs in a workload domain.
+        Request-VmConnectedCdrom -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example returns the status of virtual machines with connected CD-ROMs in a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -6223,7 +6221,7 @@ Function Request-VmConnectedCdrom {
                                 $allVms = Get-VM -Server $vcfVcenterDetails.fqdn | Select-Object Name, @{Name = 'ISO Path'; Expression = { $cdDrive = $_ | Get-CDDrive | Where-Object { $_.ConnectionState.Connected -eq 'true' }; if ($cdDrive) { $cdDrive.isopath } else { 'N/A' } } } |  Sort-Object "ISO Path"
                                 foreach ($vm in $allVms) {
                                     # Set the alert and message based on the CD-ROM connection
-                                   # Warning, connected CD-ROM
+                                    # Warning, connected CD-ROM
                                     if ($vm.'ISO Path' -eq "N/A"){
                                         $alert = 'GREEN'
                                         $message = 'No virtual CD-ROM connected.'
@@ -6258,31 +6256,31 @@ Export-ModuleMember -Function Request-VmConnectedCdrom
 Function Publish-EsxiConnectionHealth {
     <#
         .SYNOPSIS
-        Publish the connection status of ESXi hosts in a workload domain in HTML format.
+        Publish the connection status of ESX hosts in a workload domain in HTML format.
 
         .DESCRIPTION
-        The Publish-EsxiConnectionHealth cmdlet returns the status of virtual machines with connected CD-ROMS in a workload
-        domain in HTML format. The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Publishes information
+        The Publish-EsxiConnectionHealth cmdlet returns the connection status of ESX hosts in a workload domain in HTML format.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Publishes information.
 
         .EXAMPLE
-        Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will publish the connection status of ESXi hosts in all workload domains.
+        Publish-EsxiConnectionHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will publish the connection status of ESX hosts in all workload domains.
 
         .EXAMPLE
-        Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will publish the connection status of ESXi hosts in a workload domain.
+        Publish-EsxiConnectionHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will publish the connection status of ESX hosts in a workload domain.
 
         .EXAMPLE
-        Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will publish the connection status of ESXi hosts in all workload domains but only for failures.
+        Publish-EsxiConnectionHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will publish the connection status of ESX hosts in all workload domains but only reports issues.
 
         .EXAMPLE
-        Publish-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -outputJson F:\Reporting
-        This example will generate a json for the connection status of ESXi hosts in all workload domains and
-        saves it under F:\Reporting with filename <timestamp>-esxi-connection-status.json
+        Publish-EsxiConnectionHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
+        This example will generate a json for the connection status of ESX hosts in all workload domains and
+        saves it under the specified report path with filename <timestamp>-esxi-connection-status.json.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -6365,22 +6363,22 @@ Export-ModuleMember -Function Publish-EsxiConnectionHealth
 Function Request-EsxiConnectionHealth {
     <#
 		.SYNOPSIS
-        Returns the connection status of ESXi hosts in a workload domain.
+        Returns the connection status of ESX hosts in a workload domain.
 
         .DESCRIPTION
-        The Request-EsxiConnectionHealth cmdlet returns the connection status of ESXi hosts in a workload domain.
-        The cmdlet connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the connection status of ESXi hosts in a workload domain.
+        The Request-EsxiConnectionHealth cmdlet returns the connection status of ESX hosts in a workload domain.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Gathers the connection status of ESX hosts in a workload domain.
 
         .EXAMPLE
-        Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example returns the connection status of ESXi hosts in a workload domain.
+        Request-EsxiConnectionHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example returns the connection status of ESX hosts in a specified workload domain.
 
         .EXAMPLE
-        Request-EsxiConnectionHealth -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example returns the connection status of ESXi hosts in a workload domain but only reports issues.
+        Request-EsxiConnectionHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example returns the connection status of ESX hosts in a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -6473,21 +6471,21 @@ Function Publish-SddcManagerFreePool {
         .DESCRIPTION
         The Publish-SddcManagerFreePool cmdlet returns SDDC Manager free pool information in HTML format.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates the network connectivity and authentication to the SDDC Manager instance
-        - Publishes information
+        - Validates the network connectivity and authentication to the SDDC Manager.
+        - Publishes information.
 
         .EXAMPLE
-        Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        Publish-SddcManagerFreePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
         This example will return the free pool health from SDDC Manager.
 
         .EXAMPLE
-        Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
-        This example will return the free pool health from SDDC Manager and return the failures only.
+        Publish-SddcManagerFreePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -failureOnly
+        This example will return the free pool health from SDDC Manager but only reports issues.
 
         .EXAMPLE
-        Publish-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -outputJson F:\Reporting
-        This example will generate a json for the status the free pool health from SDDC Manager and saves it under
-        F:\Reporting with filename <timestamp>-sddc-manager-free-pool-status.json
+        Publish-SddcManagerFreePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -outputJson [report_path]
+        This example will generate a json for the status the free pool health from SDDC Manager and saves it under the
+        specified report path with filename <timestamp>-sddc-manager-free-pool-status.json
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -6542,7 +6540,7 @@ Function Publish-SddcManagerFreePool {
                         }
                     }
                 } else {
-                     if ($PsBoundParameters.ContainsKey('outputJson')) {
+                    if ($PsBoundParameters.ContainsKey('outputJson')) {
                         $json = Start-CreateOutputJsonDirectory -jsonFolder $outputJson -jsonFileSuffix $sddcFreePoolJsonSuffix
                         $allConfigurationObject | ConvertTo-JSON -Depth 10 -EnumsAsStrings| Out-File $json -Encoding ASCII
                         Write-Output "JSON Created at $json"
@@ -6564,21 +6562,21 @@ Export-ModuleMember -Function Publish-SddcManagerFreePool
 Function Request-SddcManagerFreePool {
     <#
         .SYNOPSIS
-        Returns the status of the ESXi hosts in the free pool.
+        Returns the status of the ESX hosts in the free pool managed by SDDC Manager.
 
         .DESCRIPTION
-        The Request-SddcManagerFreePool cmdlet returns status of the ESXi hosts in the free pool. The cmdlet connects
-        to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity and authentication is possible to the SDDC Manager instance
-        - Gathers the details for the ESXi hosts in the free pool
+        The Request-SddcManagerFreePool cmdlet returns status of the ESX hosts in the free pool managed by SDDC Manager.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity and authentication is possible to the SDDC Manager instance.
+        - Gathers the details for the ESX hosts in the free pool.
 
         .EXAMPLE
-        Request-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
-        This example will return the ESXi hosts in the free pool managed by SDDC Manager for a workload domain.
+        Request-SddcManagerFreePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
+        This example will return the ESX hosts in the free pool managed by SDDC Manager.
 
         .EXAMPLE
-        Request-SddcManagerFreePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -failureOnly
-        This example will return the ESXi hosts in the free pool managed by SDDC Manager for a workload domain but only reports issues.
+        Request-SddcManagerFreePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -failureOnly
+        This example will return the ESX hosts in the free pool managed by SDDC Manager for a workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -6691,26 +6689,26 @@ Export-ModuleMember -Function Request-SddcManagerFreePool
 Function Publish-EsxiAlert {
     <#
         .SYNOPSIS
-        Publish system alerts/alarms from ESXi hosts in a vCenter Server instance managed by SDDC Manager.
+        Publish system alerts/alarms from ESX hosts in a vCenter instance managed by SDDC Manager.
 
         .DESCRIPTION
-        The Publish-EsxiAlert cmdlet returns all alarms from ESXi hosts managed by SDDC Manager.
+        The Publish-EsxiAlert cmdlet returns all alarms from ESX hosts managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Collects the alerts from all ESXi hosts in vCenter Server instance
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Collects the alerts from all ESX hosts in a vCenter instance.
 
         .EXAMPLE
-        Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a all workload domains.
+        Publish-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for all workload domains.
 
         .EXAMPLE
-        Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a all workload domains but only for the failed items.
+        Publish-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for all workload domains but only reports issues.
 
         .EXAMPLE
-        Publish-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+        Publish-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -6784,27 +6782,27 @@ Export-ModuleMember -Function Publish-EsxiAlert
 Function Publish-NsxtAlert {
     <#
         .SYNOPSIS
-        Publish system alerts/alarms from a NSX Manager cluster managed by SDDC Manager.
+        Publish system alerts/alarms from NSX managed by SDDC Manager.
 
         .DESCRIPTION
-        The Publish-NsxtAlert cmdlet returns all alarms from an NSX Manager cluster.
-        The cmdlet connects to the NSX Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the NSX Manager cluster
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the details for the NSX Manager cluster
-        - Collects the alerts
+        The Publish-NsxtAlert cmdlet returns all alarms from NSX.
+        The cmdlet connects to NSX  using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to NSX.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Gathers the details for NSX.
+        - Collects the alerts.
 
         .EXAMPLE
-        Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return alarms from all NSX Manager clusters managed by SDDC Manager for a all workload domains.
+        Publish-NsxtAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will return alarms from NSX managed by SDDC Manager for all workload domains.
 
         .EXAMPLE
-        Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will return alarms from all NSX Manager clusters managed by SDDC Manager for a all workload domains but only for the failed items.
+        Publish-NsxtAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will return alarms from NSX managed by SDDC Manager for all workload domains but only for the failed items.
 
         .EXAMPLE
-        Publish-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return alarms from the NSX Manager cluster managed by SDDC Manager for a workload domain named sfo-w01.
+        Publish-NsxtAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will return alarms from NSX managed by SDDC Manager for a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -6878,26 +6876,26 @@ Export-ModuleMember -Function Publish-NsxtAlert
 Function Publish-VcenterAlert {
     <#
         .SYNOPSIS
-        Returns alarms from vCenter Server managed by SDDC Manager.
+        Returns alarms from vCenter managed by SDDC Manager.
 
         .DESCRIPTION
-        The Publish-VcenterAlert cmdlet returns all alarms from vCenter Server managed by SDDC Manager.
+        The Publish-VcenterAlert cmdlet returns all alarms from vCenter managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Collects the alerts from vCenter Server
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Collects the alerts from vCenter.
 
         .EXAMPLE
-        Publish-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return alarms from a vCenter Server managed by SDDC Manager for all workload domains.
+        Publish-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will return alarms from a vCenter managed by SDDC Manager for all workload domains.
 
         .EXAMPLE
-        Publish-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return alarms from a vCenter Server managed by SDDC Manager for all workload domains but only for the failed items.
+        Publish-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will return alarms from a vCenter managed by SDDC Manager for all workload domains but only reports issues.
 
         .EXAMPLE
-        Publish-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return alarms from a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+        Publish-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return alarms from a vCenter managed by SDDC Manager for a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -6971,26 +6969,26 @@ Export-ModuleMember -Function Publish-VcenterAlert
 Function Publish-VsanAlert {
     <#
         .SYNOPSIS
-        RPublish the vSAN Healthcheck alarms from a vCenter Server instance.
+        Publish the vSAN healthcheck alarms from a vCenter instance.
 
         .DESCRIPTION
-        The Publish-VsanAlert cmdlet returns vSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
+        The Publish-VsanAlert cmdlet returns vSAN healthcheck alarms from vCenter managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Collects the vSAN Healthcheck alarms from vCenter Server
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Collects the vSAN healthcheck alarms from vCenter.
 
         .EXAMPLE
-        Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return vSAN Healthcheck alarms for all vCenter Server instances managed by SDDC Manager for a workload domain.
+        Publish-VsanAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will return vSAN healthcheck alarms for all vCenter instances managed by SDDC Manager for all workload domains.
 
         .EXAMPLE
-        Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains -failureOnly
-        This example will return vSAN Healthcheck alarms for all vCenter Server instances managed by SDDC Manager for a workload domain but only failed items.
+        Publish-VsanAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
+        This example will return vSAN healthcheck alarms for all vCenter instances managed by SDDC Manager for all workload domains but only reports issues.
 
         .EXAMPLE
-        Publish-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+        Publish-VsanAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will return vSAN healthcheck alarms of a vCenter managed by SDDC Manager for a workload domain named a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7064,23 +7062,23 @@ Export-ModuleMember -Function Publish-VsanAlert
 Function Request-NsxtAlert {
     <#
         .SYNOPSIS
-        Returns alarms from an NSX Manager cluster.
+        Returns alarms from NSX.
 
         .DESCRIPTION
-        The Request-NsxtAlert cmdlet returns all alarms from an NSX Manager cluster.
+        The Request-NsxtAlert cmdlet returns all alarms from NSX.
         The cmdlet connects to the NSX Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the NSX Manager cluster
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the details for the NSX Manager cluster
-        - Collects the alerts
+        - Validates that network connectivity is available to NSX.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Gathers the details for NSX.
+        - Collects the alerts.
 
         .EXAMPLE
-        Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain.
+        Request-NsxtAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return alarms of NSX managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-NsxtAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return alarms of an NSX Manager cluster managed by SDDC Manager for a workload domain but only for the failed items.
+        Request-NsxtAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will return alarms of NSX managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7154,22 +7152,22 @@ Export-ModuleMember -Function Request-NsxtAlert
 Function Request-VsanAlert {
     <#
         .SYNOPSIS
-        Returns vSAN Healthcheck alarms from a vCenter Server instance.
+        Returns vSAN health check alarms from a vCenter instance.
 
         .DESCRIPTION
-        The Request-VsanAlert cmdlet returns vSAN Healthcheck alarms from vCenter Server managed by SDDC Manager.
+        The Request-VsanAlert cmdlet returns vSAN health check alarms from vCenter managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Collects the vSAN Healthcheck alarms from vCenter Server
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Collects the vSAN health check alarms from vCenter.
 
         .EXAMPLE
-        Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain.
+        Request-VsanAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return vSAN health check alarms of a vCenter managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-VsanAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return vSAN Healthcheck alarms of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
+        Request-VsanAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will return vSAN health check alarms of a vCenter managed by SDDC Manager for a workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7237,26 +7235,26 @@ Export-ModuleMember -Function Request-VsanAlert
 Function Request-VcenterAlert {
     <#
         .SYNOPSIS
-        Returns alarms from vCenter Server managed by SDDC Manager.
+        Returns alarms from a vCenter instance managed by SDDC Manager.
 
         .DESCRIPTION
-        The Request-VcenterAlert cmdlet returns all alarms from vCenter Server managed by SDDC Manager.
+        The Request-VcenterAlert cmdlet returns all alarms from a vCenter instance managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Collects the alerts from vCenter Server
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Collects the alerts from vCenter.
 
         .EXAMPLE
-        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return alarms of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+        Request-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return alarms of a vCenter managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -filterOut hostOnly
-        This example will return alarms from ESXi hosts of a vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+        Request-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -filterOut hostOnly
+        This example will return alarms from ESX hosts of a vCenter managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-VcenterAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return alarms from vSAN clusters of a vCenter Server managed by SDDC Manager for a workload domain but only for the failed items.
+        Request-VcenterAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will return alarms from vSAN clusters of a vCenter managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7353,22 +7351,22 @@ Export-ModuleMember -Function Request-VcenterAlert
 Function Request-EsxiAlert {
     <#
         .SYNOPSIS
-        Returns Alarms from all ESXi hosts in vCenter Server instance.
+        Returns alarms from all ESX hosts in a vCenter instance.
 
         .DESCRIPTION
-        The Request-EsxiAlert cmdlet returns all alarms from all ESXi hosts in vCenter Server managed by SDDC Manager.
+        The Request-EsxiAlert cmdlet returns all alarms from all ESX hosts in vCenter managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Collects the alerts from all ESXi hosts in vCenter Server instance
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Collects the alerts from all ESX hosts in vCenter instance.
 
         .EXAMPLE
-        Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-w01
-        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01.
+        Request-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a specified workload domain.
 
         .EXAMPLE
-        Request-EsxiAlert -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass  VMw@re1!VMw@re1! -domain sfo-w01 -failureOnly
-        This example will return alarms from all ESXi hosts in vCenter Server managed by SDDC Manager for a workload domain sfo-w01 but only for the failed items.
+        Request-EsxiAlert -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name] -failureOnly
+        This example will return alarms from all ESX hosts in vCenter managed by SDDC Manager for a specified workload domain but only reports issues.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7452,17 +7450,17 @@ Function Publish-ClusterConfiguration {
         .DESCRIPTION
         The Publish-ClusterConfiguration cmdlet returns cluster configuration information in HTML format.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Publishes information
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Publishes information.
 
         .EXAMPLE
-        Publish-ClusterConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return cluster configuration from all clusters in vCenter Server managed by SDDC Manager for a all workload domains.
+        Publish-ClusterConfiguration -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will return cluster configuration from all clusters in vCenter managed by SDDC Manager for all workload domains.
 
         .EXAMPLE
-        Publish-ClusterConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return cluster configuration from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+        Publish-ClusterConfiguration -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will return cluster configuration from all clusters in vCenter managed by SDDC Manager for a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7517,18 +7515,18 @@ Export-ModuleMember -Function Publish-ClusterConfiguration
 Function Publish-EsxiCoreDumpConfig {
     <#
 		.SYNOPSIS
-        Generates an ESXi core dump configuration report.
+        Generates an ESX core dump configuration report.
 
         .DESCRIPTION
-        The Publish-EsxiCoreDumpConfig cmdlet generates an ESXi core dump report for a workload domain. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Generates an ESXi core dump report for all ESXi hosts in a workload domain
+        The Publish-EsxiCoreDumpConfig cmdlet generates an ESX core dump report for a workload domain.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Generates an ESX core dump report for all ESX hosts in a workload domain.
 
         .EXAMPLE
-        Publish-EsxiCoreDumpConfig -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -alldomains
-        This example generates an ESXi core dump report for all ESXi hosts across the VMware Cloud Foundation instance.
+        Publish-EsxiCoreDumpConfig -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -alldomains
+        This example generates an ESX core dump report for all ESX hosts across the VMware Cloud Foundation instance.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7626,18 +7624,18 @@ Export-ModuleMember -Function Publish-EsxiCoreDumpConfig
 Function Request-ClusterConfiguration {
     <#
 		.SYNOPSIS
-        Gets cluster configuration from a vCenter Server instance.
+        Gets cluster configuration from a vCenter instance.
 
         .DESCRIPTION
-        The Request-ClusterConfiguration cmdlets gets the cluster configuration for a vCenter Server instance. The
-        cmdlet  connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the cluster details from vCenter Server
+        The Request-ClusterConfiguration cmdlets gets the cluster configuration for a vCenter instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Gathers the cluster details from vCenter.
 
         .EXAMPLE
-        Request-ClusterConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the cluster configuration for a vCenter Server instance based on the workload domain provided.
+        Request-ClusterConfiguration -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example gets the cluster configuration for a vCenter instance based on a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7709,17 +7707,17 @@ Function Publish-ClusterDrsRule {
         .DESCRIPTION
         The Publish-ClusterDrsRule cmdlet returns cluster DRS rule information in HTML format.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Publishes information
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Publishes information.
 
         .EXAMPLE
-        Publish-ClusterDrsRule -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return cluster DRS rules from all clusters in vCenter Server managed by SDDC Manager for a all workload domains.
+        Publish-ClusterDrsRule -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will return cluster DRS rules from all clusters in vCenters managed by SDDC Manager for all workload domains.
 
         .EXAMPLE
-        Publish-ClusterDrsRule -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return cluster DRS rules from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+        Publish-ClusterDrsRule -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will return cluster DRS rules from all clusters in vCenter managed by SDDC Manager for a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7778,18 +7776,18 @@ Export-ModuleMember -Function Publish-ClusterDrsRule
 Function Request-ClusterDrsRule {
     <#
 		.SYNOPSIS
-        Gets cluster DRS rules from a vCenter Server instance.
+        Gets cluster DRS rules from a vCenter instance.
 
         .DESCRIPTION
-        The Request-ClusterDrsRule cmdlets gets the cluster DRS rules for a vCenter Server instance. The
-        cmdlet  connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the cluster DRS rules from vCenter Server
+        The Request-ClusterDrsRule cmdlets gets the cluster DRS rules for a vCenter instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Gathers the cluster DRS rules from vCenter.
 
         .EXAMPLE
-        Request-ClusterDrsRule -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the cluster DRS rules for a vCenter Server instance based on the workload domain provided.
+        Request-ClusterDrsRule -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example gets the cluster DRS rules for a vCenter instance for a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7860,17 +7858,17 @@ Function Publish-ResourcePool {
         .DESCRIPTION
         The Publish-ResourcePool cmdlet returns resource pool information in HTML format.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Publishes resource pool information
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Publishes resource pool information.
 
         .EXAMPLE
-        Publish-ResourcePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return resource pool details from all clusters in vCenter Server managed by SDDC Manager for a all workload domains.
+        Publish-ResourcePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will return resource pool details from all clusters in vCenter managed by SDDC Manager for all workload domains.
 
         .EXAMPLE
-        Publish-ResourcePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return resource pool details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+        Publish-ResourcePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will return resource pool details from all clusters in vCenter managed by SDDC Manager for a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7924,18 +7922,18 @@ Export-ModuleMember -Function Publish-ResourcePool
 Function Request-ResourcePool {
     <#
 		.SYNOPSIS
-        Gets resource pool details from a vCenter Server instance.
+        Gets resource pool details from a vCenter instance.
 
         .DESCRIPTION
-        The Request-ResourcePool cmdlets gets the resource pool details for a vCenter Server instance. The cmdlet
-        connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the resource pool details from vCenter Server
+        The Request-ResourcePool cmdlets gets the resource pool details for a vCenter instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Gathers the resource pool details from vCenter.
 
         .EXAMPLE
-        Request-ResourcePool -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the resource pool details for a vCenter Server instance based on the workload domain provided.
+        Request-ResourcePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example gets the resource pool details for a vCenter instance based on a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -7998,22 +7996,22 @@ Export-ModuleMember -Function Request-ResourcePool
 Function Publish-VmOverride {
     <#
         .SYNOPSIS
-        Publish VM Override information in HTML format.
+        Publish VM override information in HTML format.
 
         .DESCRIPTION
-        The Publish-VmOverride cmdlet returns VM Override information in HTML format.
+        The Publish-VmOverride cmdlet returns VM override information in HTML format.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Publishes information
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Publishes information.
 
         .EXAMPLE
-        Publish-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return VM Override details from all clusters in vCenter Server managed by SDDC Manager for all workload domains.
+        Publish-VmOverride -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will return VM override details from all clusters in vCenter managed by SDDC Manager for all workload domains.
 
         .EXAMPLE
-        Publish-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return VM Override details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+        Publish-VmOverride -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will return VM override details from all clusters in vCenter managed by SDDC Manager for a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -8067,18 +8065,18 @@ Export-ModuleMember -Function Publish-VmOverride
 Function Request-VmOverride {
     <#
 		.SYNOPSIS
-        Gets VM Override setting from a vCenter Server instance.
+        Gets the VM override setting from a vCenter instance.
 
         .DESCRIPTION
-        The Request-VmOverride cmdlets gets VM Override setting for a vCenter Server instance. The cmdlet connects to
-        SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the VM Override settings from vCenter Server
+        The Request-VmOverride cmdlets gets the VM override setting for a vCenter instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Gathers the VM override settings from vCenter.
 
         .EXAMPLE
-        Request-VmOverride -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the VM Override setting for a vCenter Server instance based on the workload domain provided.
+        Request-VmOverride -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example gets the VM override setting for a vCenter instance based on a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -8141,17 +8139,17 @@ Function Publish-VirtualNetwork {
         .DESCRIPTION
         The Publish-VirtualNetwork cmdlet returns vSphere virtual networking information in HTML format.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Publishes information
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Publishes information.
 
         .EXAMPLE
-        Publish-VirtualNetwork -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return vSphere virtual networking details from all clusters in vCenter Server managed by SDDC Manager for a all workload domains.
+        Publish-VirtualNetwork -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will return vSphere virtual networking details from all clusters in vCenter managed by SDDC Manager for all workload domains.
 
         .EXAMPLE
-        Publish-VirtualNetwork -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return vSphere virtual networking details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+        Publish-VirtualNetwork -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will return vSphere virtual networking details from all clusters in vCenter managed by SDDC Manager for a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -8205,18 +8203,18 @@ Export-ModuleMember -Function Publish-VirtualNetwork
 Function Request-VirtualNetwork {
     <#
 		.SYNOPSIS
-        Gets vSphere virtual networking configuration from a vCenter Server instance.
+        Gets vSphere virtual networking configuration from a vCenter instance.
 
         .DESCRIPTION
-        The Request-VirtualNetwork cmdlets gets vSphere virtual networking configuration for a vCenter Server instance.
-        The cmdlet connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the vSphere virtual networking configuration from vCenter Server
+        The Request-VirtualNetwork cmdlets gets vSphere virtual networking configuration for a vCenter instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Gathers the vSphere virtual networking configuration from vCenter.
 
         .EXAMPLE
-        Request-VirtualNetwork -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the vSphere virtual networking configurationfor a vCenter Server instance based on the workload domain provided.
+        Request-VirtualNetwork -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example gets the vSphere virtual networking configuration for a vCenter instance managed by SDDC Manager a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -8281,22 +8279,22 @@ Export-ModuleMember -Function Request-VirtualNetwork
 Function Publish-EsxiSecurityConfiguration {
     <#
         .SYNOPSIS
-        Publish ESXi security information in HTML format.
+        Publish ESX security information in HTML format.
 
         .DESCRIPTION
-        The Publish-EsxiSecurityConfiguration cmdlet returns ESXi security information in HTML format.
+        The Publish-EsxiSecurityConfiguration cmdlet returns ESX security information in HTML format.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Validates the authentication to vCenter Server with credentials from SDDC Manager
-        - Publishes information
+        - Validates that network connectivity is available to the vCenter instance.
+        - Validates the authentication to vCenter with credentials from SDDC Manager.
+        - Publishes information.
 
         .EXAMPLE
-        Publish-EsxiSecurityConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -allDomains
-        This example will return ESXi security details from all clusters in vCenter Server managed by SDDC Manager for a all workload domains.
+        Publish-EsxiSecurityConfiguration [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
+        This example will return ESX security details from all clusters in vCenter managed by SDDC Manager for all workload domains.
 
         .EXAMPLE
-        Publish-EsxiSecurityConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -workloadDomain sfo-w01
-        This example will return ESXi security details from all clusters in vCenter Server managed by SDDC Manager for a workload domain named sfo-w01.
+        Publish-EsxiSecurityConfiguration [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
+        This example will return ESX security details from all clusters in vCenter managed by SDDC Manager for a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -8350,18 +8348,18 @@ Export-ModuleMember -Function Publish-EsxiSecurityConfiguration
 Function Request-EsxiSecurityConfiguration {
     <#
 		.SYNOPSIS
-        Gets ESXi security configuration from a vCenter Server instance.
+        Gets ESX security configuration from a vCenter instance.
 
         .DESCRIPTION
-        The Request-EsxiSecurityConfiguration cmdlets gets ESXi security configuration for a vCenter Server instance.
-        The cmdlet connects to SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the vCenter Server instance
-        - Gathers the ESXi security configuration from vCenter Server
+        The Request-EsxiSecurityConfiguration cmdlets gets ESX security configuration for a vCenter instance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the vCenter instance.
+        - Gathers the ESX security configuration from vCenter.
 
         .EXAMPLE
-        Request-EsxiSecurityConfiguration -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -domain sfo-m01
-        This example gets the ESXi security configurationfor a vCenter Server instance based on the workload domain provided.
+        Request-EsxiSecurityConfiguration -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -domain [workload_domain_name]
+        This example gets the ESX security configuration for a vCenter instance based on a specified workload domain.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -8431,16 +8429,16 @@ Function Publish-VcfSystemOverview {
         .DESCRIPTION
         The Publish-VcfSystemOverview cmdlet returns an overview of the Vmware Cloud Foundation instance.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Collects the system overview details from the environment
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Collects the system overview details from the environment.
 
         .EXAMPLE
-        Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
-        This example will return system overview report for a all workload domains.
+        Publish-VcfSystemOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
+        This example will return system overview report for all workload domains.
 
         .EXAMPLE
-        Publish-VcfSystemOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
-        This example will return system overview report for a all workload domains, but with anonymized data.
+        Publish-VcfSystemOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -anonymized
+        This example will return system overview report for all workload domains, but with anonymized data.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -8529,20 +8527,20 @@ Export-ModuleMember -Function Publish-VcfSystemOverview
 Function Request-VcfOverview {
     <#
         .SYNOPSIS
-        Returns System Overview.
+        Returns an overview of the SDDC Manager instance.
 
         .DESCRIPTION
         The Request-VcfOverview cmdlet returns an overview of the SDDC Manager instance.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Collects the overview detail
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Collects the overview detail.
 
         .EXAMPLE
-        Request-VcfOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        Request-VcfOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
         This example will return an overview of the SDDC Manager instance.
 
         .EXAMPLE
-        Request-VcfOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
+        Request-VcfOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -anonymized
         This example will return an overview of the SDDC Manager instance, but will anonymize the output.
 
         .PARAMETER server
@@ -8608,17 +8606,17 @@ Export-ModuleMember -Function Request-VcfOverview
 Function Request-HardwareOverview {
     <#
         .SYNOPSIS
-        Returns Hardware Overview.
+        Returns hardware overview.
 
         .DESCRIPTION
         The Request-VcfOverview cmdlet returns an overview of the hardware in an SDDC Manager instance.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Collects the hardware details
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Collects the hardware details.
 
         .EXAMPLE
-        Request-HardwareOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
-        This example will return an overview of the SDDC Manager instance.
+        Request-HardwareOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
+        This example will return a hardware overview of the SDDC Manager instance.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -8701,22 +8699,22 @@ Export-ModuleMember -Function Request-HardwareOverview
 Function Request-VcenterOverview {
     <#
         .SYNOPSIS
-        Returns overview of vSphere.
+        Returns an overview of vSphere.
 
         .DESCRIPTION
         The Request-VcenterOverview cmdlet returns an overview of the vSphere environment managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity and authentication to the SDDC Manager instance
-        - Validates that network connectivity and authentication to the vCenter Server instances
-        - Collects the vSphere overview detail
+        - Validates that network connectivity and authentication is available to the SDDC Manager instance.
+        - Validates that network connectivity and authentication is available to the vCenter instances.
+        - Collects the vSphere overview detail.
 
         .EXAMPLE
-        Request-VcenterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
-        This example will return an overview of the vSphere environment managed by the SDDC Manager instance.
+        Request-VcenterOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
+        This example will return an overview of the vSphere environment managed by SDDC Manager.
 
         .EXAMPLE
-        Request-VcenterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -aanonymized
-        This example will return an overview of the vSphere environment managed by the SDDC Manager instance, but will anonymize the output.
+        Request-VcenterOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -anonymized
+        This example will return an overview of the vSphere environment managed by SDDC Manager, but will anonymize the output.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -8803,30 +8801,30 @@ Export-ModuleMember -Function Request-VcenterOverview
 Function Request-EsxiOverview {
     <#
         .SYNOPSIS
-        Returns overview of ESXi hosts.
+        Returns an overview of ESX hosts.
 
         .DESCRIPTION
-        The Request-EsxiOverview cmdlet returns an overview of the ESXi host managed by SDDC Manager.
+        The Request-EsxiOverview cmdlet returns an overview of the ESX hosts managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity and authentication to the SDDC Manager instance
-        - Validates that network connectivity and authentication to the vCenter Server instances
-        - Collects the ESXi host overview detail
+        - Validates that network connectivity and authentication to the SDDC Manager instance.
+        - Validates that network connectivity and authentication to the vCenter instances.
+        - Collects the ESX host overview detail.
 
         .EXAMPLE
-        Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
-        This example will return an overview of the ESXi hosts managed by the SDDC Manager instance.
+        Request-EsxiOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
+        This example will return an overview of the ESX hosts managed by the SDDC Manager instance.
 
         .EXAMPLE
-        Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -subscription
+        Request-EsxiOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -subscription
         This example will return an overview of the ESXi hosts managed by the SDDC Manager instance with the number of cores for VCF+ subscription.
 
         .EXAMPLE
-        Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -subscription -outputCsv F:\Reporting
-        This example will return an overview of the ESXi hosts managed by the SDDC Manager instance with the number of cores for VCF+ subscription and save as a CSV file to F:\Reporting.
+        Request-EsxiOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -subscription -outputCsv [report_path]
+        This example will return an overview of the ESX hosts managed by the SDDC Manager instance with the number of cores for VCF+ subscription and save as a CSV file to the specified report path.
 
         .EXAMPLE
-        Request-EsxiOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
-        This example will return an overview of the ESXi hosts managed by the SDDC Manager instance, but will anonymize the output.
+        Request-EsxiOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -anonymized
+        This example will return an overview of the ESX hosts managed by the SDDC Manager instance, but will anonymize the output.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -8979,21 +8977,21 @@ Export-ModuleMember -Function Request-EsxiOverview
 Function Request-ClusterOverview {
     <#
         .SYNOPSIS
-        Returns overview of vSphere.
+        Returns an overview of vSphere.
 
         .DESCRIPTION
         The Request-ClusterOverview cmdlet returns an overview of the vSphere environment managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity and authentication to the SDDC Manager instance
-        - Validates that network connectivity and authentication to the vCenter Server instances
-        - Collects the vSphere overview detail
+        - Validates that network connectivity and authentication to the SDDC Manager instance.
+        - Validates that network connectivity and authentication to the vCenter instances.
+        - Collects the vSphere overview detail.
 
         .EXAMPLE
-        Request-ClusterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        Request-ClusterOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
         This example will return an overview of the vSphere environment managed by the SDDC Manager instance.
 
         .EXAMPLE
-        Request-ClusterOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
+        Request-ClusterOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -anonymized
         This example will return an overview of the vSphere environment managed by the SDDC Manager instance, but will anonymize the output.
 
         .PARAMETER server
@@ -9055,15 +9053,15 @@ Function Request-NetworkOverview {
         .DESCRIPTION
         The Request-NetworkOverview cmdlet returns an overview of the networking managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity and authentication to the SDDC Manager instance
-        - Collects the networking overview detail
+        - Validates that network connectivity and authentication to the SDDC Manager instance.
+        - Collects the networking overview detail.
 
         .EXAMPLE
-        Request-NetworkOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        Request-NetworkOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
         This example will return an overview of the networking managed by the SDDC Manager instance.
 
         .EXAMPLE
-        Request-NetworkOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
+        Request-NetworkOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -anonymized
         This example will return an overview of the networking managed by the SDDC Manager instance, but will anonymize the output.
 
         .PARAMETER server
@@ -9149,17 +9147,16 @@ Function Request-VMwareAriaSuiteOverview {
         .DESCRIPTION
         The Request-VMwareAriaSuiteOverview cmdlet returns an overview of VMware Aria Suite products managed by SDDC Manager.
         The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity and authentication to the SDDC Manager instance
-        - Collects the VMware Aria Suite product overview detail
+        - Validates that network connectivity and authentication to the SDDC Manager instance.
+        - Collects the VMware Aria Suite product overview detail.
 
         .EXAMPLE
-        Request-VMwareAriaSuiteOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
+        Request-VMwareAriaSuiteOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
         This example will return an overview of VMware Aria Suite products managed by the SDDC Manager instance.
 
         .EXAMPLE
-        Request-VMwareAriaSuiteOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -anonymized
-        This example will return an overview of VMware Aria Suite products managed by the SDDC Manager instance, but
-        will anonymize the output.
+        Request-VMwareAriaSuiteOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -anonymized
+        This example will return an overview of VMware Aria Suite products managed by the SDDC Manager instance, but will anonymize the output.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -9236,17 +9233,17 @@ Export-ModuleMember -Function Request-VMwareAriaSuiteOverview
 Function Request-ValidatedSolutionOverview {
     <#
         .SYNOPSIS
-        Returns VMware Validated Solution Overview.
+        Returns VMware Validated Solution overview.
 
         .DESCRIPTION
-        The Request-ValidatedSolutionOverview cmdlet returns an overview of VMware Validated Solutions deployed.
-        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Collects the VMware Validated Solution details
+        The `Request-ValidatedSolutionOverview` cmdlet returns an overview of VMware Validated Solutions that are deployed.
+        The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass` values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Collects the VMware Validated Solution details.
 
         .EXAMPLE
-        Request-ValidatedSolutionOverview -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1!
-        This example will return an overview of VMware Validated Solutions.
+        Request-ValidatedSolutionOverview -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]
+        This example will return an overview of VMware Validated Solutions that are deployed.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -9406,11 +9403,10 @@ Function Test-VcfReportingPrereq {
         Verifies that the minimum dependencies are met to run the PowerShell module.
 
         .DESCRIPTION
-        The Test-VcfReportingPrereq cmdlet verifies that the minimum dependencies are met to
-        run the the PowerShell module.
+        The `Test-VcfReportingPrereq` cmdlet checks that all the prerequisites have been met to run the PowerShell module.
 
         .EXAMPLE
-        Test-VcfReportingPrereq -sddcManagerFqdn sfo-vcf01.sfo.rainpole.io -sddcManagerUser admin@local -sddcManagerPass VMw@re1!VMw@re1!
+        Test-VcfReportingPrereq -sddcManagerFqdn [sddc_manager_fqdn] -sddcManagerUser [admin_username] -sddcManagerPass [admin_password]
         This example runs the prerequisite validation.
 
         .PARAMETER sddcManagerFqdn
@@ -9585,19 +9581,15 @@ Function Invoke-SddcCommand {
         Run a command on SDDC Manager.
 
         .DESCRIPTION
-        The Invoke-SddcCommand cmdlet runs a command within the SDDC Manager appliance. The cmdlet connects to SDDC
-        Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the Management Domain vCenter Server instance
-        - Runs the command provided within the SDDC Manager appliance
+        The Invoke-SddcCommand cmdlet runs a command within the SDDC Manager appliance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the Management Domain vCenter instance.
+        - Runs the command provided within the SDDC Manager appliance.
 
         .EXAMPLE
-        Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser root -vmPass VMw@re1! -command "chage -l backup"
-        This example runs the command provided on the SDDC Manager appliance as the root user.
-
-        .EXAMPLE
-        Invoke-SddcCommand -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser vcf -vmPass VMw@re1! -command "echo Hello World."
-        This example runs the command provided on the SDDC Manager appliance as the vcf user.
+        Invoke-SddcCommand -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -vmUser [local_username] -vmPass [local_password] -command "chage -l backup"
+        This example runs the command provided on the SDDC Manager appliance with the user specified for the `-vmUser` parameter.
 
         .PARAMETER server
         The fully qualified domain name of the SDDC Manager.
@@ -9652,18 +9644,14 @@ Function Copy-FiletoSddc {
         Copy a file to SDDC Manager.
 
         .DESCRIPTION
-        The Copy-FiletoSddc cmdlet copies files to the SDDC Manager appliance. The cmdlet connects to SDDC
-        Manager using the -server, -user, and -pass values:
-        - Validates that network connectivity is available to the SDDC Manager instance
-        - Validates that network connectivity is available to the Management Domain vCenter Server instance
-        - Copies the files to the SDDC Manager appliance
+        The Copy-FiletoSddc cmdlet copies files to the SDDC Manager appliance.
+        The cmdlet connects to the SDDC Manager using the -server, -user, and -pass values:
+        - Validates that network connectivity is available to the SDDC Manager instance.
+        - Validates that network connectivity is available to the Management Domain vCenter instance.
+        - Copies the files to the SDDC Manager appliance.
 
         .EXAMPLE
-        Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmUser vcf -vmPass VMw@re1! -source "C:\Temp\foo.txt" -destination "/home/vcf/foo.txt"
-        This example copies a file to the SDDC Manager appliance.
-
-        .EXAMPLE
-        Copy-FiletoSddc -server sfo-vcf01.sfo.rainpole.io -user admin@local -pass VMw@re1!VMw@re1! -vmuser vcf -vmPass VMw@re1! -source "C:\Temp\bar" -destination "/home/vcf/"
+        Copy-FiletoSddc -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -vmUser [vm_username] -vmPass [vm_password] -source [source_path] -destination [destination_path]
         This example copies a file to the SDDC Manager appliance.
 
         .PARAMETER server

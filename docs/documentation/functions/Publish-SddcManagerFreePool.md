@@ -42,7 +42,8 @@ This example will return the free pool health from SDDC Manager but only reports
 Publish-SddcManagerFreePool -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -outputJson [report_path]
 ```
 
-This example will generate a json for the status the free pool health from SDDC Manager and saves it under the specified report path with filename `<timestamp>-sddc-manager-free-pool-status.json`
+This example will generate a json for the status the free pool health from SDDC Manager and saves it under the
+specified report path with filename `<timestamp>-sddc-manager-free-pool-status.json`
 
 ## Parameters
 

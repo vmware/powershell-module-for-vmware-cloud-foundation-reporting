@@ -1,2 +1,2 @@
-$sddcManagerLocalUser = "vcf"  
-$sddcManagerLocalPass = "VMw@re1!"
+$sddcManagerLocalUser = "local_username"
+$sddcManagerLocalPass = "local_password"

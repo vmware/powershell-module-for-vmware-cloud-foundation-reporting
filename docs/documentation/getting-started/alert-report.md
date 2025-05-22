@@ -1,6 +1,6 @@
 # Generating Alert Reports
 
-The [`Invoke-VcfAlertReport`](../functions/Invoke-VcfAlertReport.md) cmdlet generates a system alert report. This report collects information about the system alerts that are currently active in the VMware Cloud Foundation system for the platform components. This report reduces the need to login to multiple product interfaces to collect information about the system alerts.
+The [`Invoke-VcfAlertReport`](../functions/Invoke-VcfAlertReport.md) cmdlet generates a system alert report. This report collects information about the system alerts that are currently active in the VMware Cloud Foundation instance for the platform components. This report reduces the need to login to multiple product interfaces to collect information about the system alerts.
 
 ## Only Issues
 

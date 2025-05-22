@@ -104,7 +104,7 @@ Accept wildcard characters: False
 
 ### -json
 
-The path to the JSON file containing the SOS health summary data.
+The path to the JSON file containing the SoS health summary data.
 
 ```yaml
 Type: String

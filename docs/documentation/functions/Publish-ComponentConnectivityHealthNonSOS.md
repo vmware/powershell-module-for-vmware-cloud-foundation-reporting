@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Request and publish component connectivity health only for health checks which are not a part of SOS Utility health.
+Request and publish component connectivity health only for health checks which are not a part of SoS Utility health.
 Data obtained is a subset of Publish-ComponentConnectivityHealth cmdlet.
 
 ## Syntax
@@ -35,7 +35,7 @@ The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass
 Publish-ComponentConnectivityHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance.
+This example checks the component connectivity outside of SoS utility for all workload domains across the VMware Cloud Foundation instance.
 
 ### Example 2
 
@@ -43,7 +43,7 @@ This example checks the component connectivity outside of SOS utility for all wo
 Publish-ComponentConnectivityHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password]  -workloadDomain [workload_domain_name]
 ```
 
-This example checks the component connectivity outside of SOS utility for a single workload domain in a VMware Cloud Foundation instance.
+This example checks the component connectivity outside of SoS utility for a single workload domain in a VMware Cloud Foundation instance.
 
 ### Example 3
 
@@ -51,7 +51,7 @@ This example checks the component connectivity outside of SOS utility for a sing
 Publish-ComponentConnectivityHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -failureOnly
 ```
 
-This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
+This example checks the component connectivity outside of SoS utility for all workload domains across the VMware Cloud Foundation instance but only reports issues.
 
 ### Example 4
 
@@ -59,7 +59,7 @@ This example checks the component connectivity outside of SOS utility for all wo
 Publish-ComponentConnectivityHealthNonSOS -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -jsonOutput [report_path]
 ```
 
-This example checks the component connectivity outside of SOS utility for all workload domains across the VMware Cloud Foundation instance and saves it under [report_path] with filename `<timestamp>-componentconnectivityhealthnonsos-status.json`.
+This example checks the component connectivity outside of SoS utility for all workload domains across the VMware Cloud Foundation instance and saves it under [report_path] with filename `<timestamp>-componentconnectivityhealthnonsos-status.json`.
 
 ## Parameters
 

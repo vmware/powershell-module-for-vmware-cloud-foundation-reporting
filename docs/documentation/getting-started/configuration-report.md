@@ -1,6 +1,6 @@
 # Generating Configuration Reports
 
-The [`Invoke-VcfConfigReport`](../functions/Invoke-VcfConfigReport.md) cmdlet generates a configuration report. This report collects information about the configuration settings in a VMware Cloud Foundation system for the platform components. This report reduces the need to login to multiple product interfaces and endpoints to collect information about the configuration.
+The [`Invoke-VcfConfigReport`](../functions/Invoke-VcfConfigReport.md) cmdlet generates a configuration report. This report collects information about the configuration settings in a VMware Cloud Foundation Instance for the platform components. This report reduces the need to login to multiple product interfaces and endpoints to collect information about the configuration.
 
 ## VMware Cloud Foundation Instance
 

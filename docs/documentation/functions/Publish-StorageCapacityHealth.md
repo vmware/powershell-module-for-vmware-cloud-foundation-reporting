@@ -55,7 +55,7 @@ This example will publish storage usage status for a specified workload domain i
 ### Example 4
 
 ```powershell
-Publish-StorageCapacityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_user_password] -workloadDomain sfo-w01 -outputJson [report_path]
+Publish-StorageCapacityHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -localUser [local_username] -localPass [local_user_password] -workloadDomain [workload_domain_name] -outputJson [report_path]
 ```
 
 This example will publish storage usage status for a specific workload domain in a VMware Cloud Foundation instance and saves it as JSON under the specified report path with filename `<timestamp>-storagecapacityhealth-status.json`.

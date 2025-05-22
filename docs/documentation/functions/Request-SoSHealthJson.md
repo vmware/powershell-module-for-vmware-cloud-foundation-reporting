@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Run SOS and save the JSON output.
+Run SoS and save the JSON output.
 
 ## Syntax
 
@@ -20,7 +20,7 @@ Request-SoSHealthJson [-server] <String> [-user] <String> [-pass] <String> [-rep
 
 ## Description
 
-The `Request-SoSHealthJson` cmdlet connects to SDDC Manager, runs an SOS health collection and saves to a JSON file on the local file system.
+The `Request-SoSHealthJson` cmdlet connects to SDDC Manager, runs an SoS health collection and saves to a JSON file on the local file system.
 
 ## Examples
 
@@ -30,7 +30,7 @@ The `Request-SoSHealthJson` cmdlet connects to SDDC Manager, runs an SOS health 
 Request-SoSHealthJson -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -reportPath [report_path] -allDomains
 ```
 
-This example runs an SOS health collection for all domains in the SDDC and saves the JSON file on the local file system in the specified report path.
+This example runs an SoS health collection for all domains in the SDDC and saves the JSON file on the local file system in the specified report path.
 
 ### Example 2
 
@@ -38,7 +38,7 @@ This example runs an SOS health collection for all domains in the SDDC and saves
 Request-SoSHealthJson -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -reportPath [report_path] -workloadDomain [workload_domain_name]
 ```
 
-This example runs an SOS health collection for a specified workload domain in the SDDC and saves the JSON file on the local file system in the specified report path.
+This example runs an SoS health collection for a specified workload domain in the SDDC and saves the JSON file on the local file system in the specified report path.
 
 ## Parameters
 

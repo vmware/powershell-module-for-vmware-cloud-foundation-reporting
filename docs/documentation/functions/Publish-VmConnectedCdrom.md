@@ -35,7 +35,7 @@ The cmdlet connects to the SDDC Manager using the `-server`, `-user`, and `-pass
 Publish-VmConnectedCdrom -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains
 ```
 
-This example will returns the status of virtual machines with connected CD-ROMs in all workload domains.
+This example will return the status of virtual machines with connected CD-ROMs in all workload domains.
 
 ### Example 2
 
@@ -43,7 +43,7 @@ This example will returns the status of virtual machines with connected CD-ROMs 
 Publish-VmConnectedCdrom -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -workloadDomain [workload_domain_name]
 ```
 
-This example will returns the status of virtual machines with connected CD-ROMs a specified workload domain.
+This example will return the status of virtual machines with connected CD-ROMs a specified workload domain.
 
 ### Example 3
 

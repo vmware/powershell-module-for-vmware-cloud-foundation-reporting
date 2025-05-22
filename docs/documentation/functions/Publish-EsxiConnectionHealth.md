@@ -59,7 +59,8 @@ This example will publish the connection status of ESX hosts in all workload dom
 Publish-EsxiConnectionHealth -server [sddc_manager_fqdn] -user [admin_username] -pass [admin_password] -allDomains -outputJson [report_path]
 ```
 
-This example will generate a json for the connection status of ESX hosts in all workload domains and saves it under the specified report path with filename `<timestamp>-esxi-connection-status.json`.
+This example will generate a json for the connection status of ESX hosts in all workload domains and
+saves it under the specified report path with filename `<timestamp>-esxi-connection-status.json`.
 
 ## Parameters
 
