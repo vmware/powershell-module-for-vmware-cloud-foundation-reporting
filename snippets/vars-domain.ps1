@@ -1,1 +1,1 @@
-$workloadDomain = "workload_domain_name"
+$workloadDomain = "[workload_domain_name]"

@@ -3360,9 +3360,9 @@
 </code></pre></div>
 <p>To verify the module dependencies are installed, run the following commands in the PowerShell console.</p>
 <p><strong>Example</strong>:</p>
-<div class="highlight"><pre><span></span><code><span class="nv">$sddcManagerFqdn</span> <span class="p">=</span> <span class="s2">&quot;sddc_manager_fqdn&quot;</span>
-<span class="nv">$sddcManagerUser</span> <span class="p">=</span> <span class="s2">&quot;admin_username&quot;</span>
-<span class="nv">$sddcManagerPass</span> <span class="p">=</span> <span class="s2">&quot;admin_password&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="nv">$sddcManagerFqdn</span> <span class="p">=</span> <span class="s2">&quot;[sddc_manager_fqdn]&quot;</span>
+<span class="nv">$sddcManagerUser</span> <span class="p">=</span> <span class="s2">&quot;[admin_username]&quot;</span>
+<span class="nv">$sddcManagerPass</span> <span class="p">=</span> <span class="s2">&quot;[admin_password]&quot;</span>
 
 <span class="nb">Test-VcfReportingPrereq</span> <span class="n">-sddcManagerFqdn</span> <span class="nv">$sddcManagerFqdn</span> <span class="n">-sddcManagerUser</span> <span class="nv">$sddcManagerUser</span> <span class="n">-sddcManagerPass</span> <span class="nv">$sddcManagerPass</span>
 </code></pre></div>

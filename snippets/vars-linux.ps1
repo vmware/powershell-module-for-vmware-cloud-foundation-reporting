@@ -1,1 +1,1 @@
-$reportPath = "/home/vmware/reporting"
+$reportPath = "[report_path]"
