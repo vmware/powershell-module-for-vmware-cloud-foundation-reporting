@@ -9,6 +9,9 @@ on:
       - "**.psd1"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   basic_tests:
     runs-on: ubuntu-latest

@@ -4,6 +4,9 @@ name: Publish Documentation
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   publish-docs:
     runs-on: ubuntu-latest
