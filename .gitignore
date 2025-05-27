@@ -1,7 +1,12 @@
-# MacOS
-## Ignore desktop services files.
+# Ignore editor directories.
+.idea/
+.vscode/
+
+# Ignore temporary editor files.
+*~
+
+# Ignore macOS desktop services store files.
 **/.DS_Store
 
-# MkDocs
-## Ignore site directory.
+## Ignore MkDocs site directory.
 **/.site/**
