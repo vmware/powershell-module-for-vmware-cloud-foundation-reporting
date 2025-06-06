@@ -17,9 +17,11 @@ insight to the operational state of [VMware Cloud Foundation][docs-vmware-cloud-
 PowerShell cmdlets. These cmdlets provide quick access to information from the PowerShell console as well as the
 ability to publish pre-defined HTML reports.
 
+For details on specific VMware Cloud Foundation versions supported by this module, please refer to the [documentation][docs-module].
+
 ## Documentation
 
-For detailed instructions on using this module, refer to the [official documentation][docs-module].
+For detailed instructions on using this module, refer to the [documentation][docs-module].
 
 ## Contributing
 
