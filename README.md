@@ -4,11 +4,11 @@
 
 # PowerShell Module for VMware Cloud Foundation Reporting
 
-[<img src="https://img.shields.io/badge/Documentation-Read-blue?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Documentation">][docs-module]&nbsp;&nbsp;
-[<img src="https://img.shields.io/badge/Changelog-Read-blue?style=for-the-badge&logo=github&logoColor=white" alt="CHANGELOG" >][changelog]
-
-[<img src="https://img.shields.io/powershellgallery/v/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery">][psgallery-module]&nbsp;&nbsp;
-<img src="https://img.shields.io/powershellgallery/dt/VMware.CloudFoundation.Reporting?style=for-the-badge&logo=powershell&logoColor=white" alt="PowerShell Gallery Downloads">
+[![Documentation](https://img.shields.io/badge/Read-documentation-blue?logo=readthedocs)][docs-module]
+[![PS Version](https://img.shields.io/powershellgallery/v/VMware.CloudFoundation.Reporting?label=Version)](https://www.powershellgallery.com/packages/VMware.CloudFoundation.Reporting)
+[![PS Downloads](https://img.shields.io/powershellgallery/dt/VMware.CloudFoundation.Reporting?label=Downloads)](https://www.powershellgallery.com/packages/VMware.CloudFoundation.Reporting)
+[![Changelog](https://img.shields.io/badge/Changelog-Read-blue)](CHANGELOG.md)
+[![GitHub Clones](https://img.shields.io/badge/dynamic/json?color=success&label=Clone&query=count&url=https://gist.githubusercontent.com/nathanthaler/3c82845142447c9d2bdd38b0c573e33d/raw/clone.json&logo=github)](https://gist.githubusercontent.com/nathanthaler/3c82845142447c9d2bdd38b0c573e33d/raw/clone.json)
 
 ## Overview
 
